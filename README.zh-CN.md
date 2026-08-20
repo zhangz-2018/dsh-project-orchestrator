@@ -68,7 +68,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.2.0
+dsh plugin --profile web add dsh-project-orchestrator@1.2.1
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -129,13 +129,13 @@ Runtime 记录只代表当前 Harness Host 内的本地事实。1.x **不提供*
 - Transcript 有大小限制，并尽力对疑似凭证文本脱敏；这不是 DLP。
 - 已批准的测试命令会有意通过平台 Shell 执行；拥有完整工具权限的 Agent 可以修改所选工作区。
 
-在敏感仓库中使用前，请阅读 [SECURITY.md](SECURITY.md)。无法完全信任仓库内容时，应使用专用操作系统账户或更强的沙箱。
+在敏感仓库中使用前，请阅读 [安全策略](SECURITY.zh-CN.md)。无法完全信任仓库内容时，应使用专用操作系统账户或更强的沙箱。
 
 ## 存储、备份与恢复
 
 存储域名为 `project_orchestrator`；标准本地 Profile 通常持久化到 `~/.dsh/storages/project_orchestrator.json`。升级或执行破坏性维护前，请停止 Harness 并备份此文件。
 
-存储版本 1 会把缺失的新表视为空兼容表。1.x 支持向前迁移，但不保证降级安全。详见 [docs/operations.md](docs/operations.md)。
+存储版本 1 会把缺失的新表视为空兼容表。1.x 支持向前迁移，但不保证降级安全。详见 [运维文档](docs/operations.zh-CN.md)。
 
 ## 开发与验证
 
@@ -149,6 +149,7 @@ pnpm verify
 
 ```bash
 pnpm typecheck
+pnpm docs:check
 pnpm test
 pnpm build
 pnpm smoke:package
@@ -158,19 +159,18 @@ pnpm smoke:package
 
 ## 文档
 
-- [HTTP 与 CLI 契约](docs/api.md)
-- [架构与事实来源规则](docs/architecture.md)
-- [兼容性与稳定性策略](docs/compatibility.md)
-- [运维、备份、升级与回滚](docs/operations.md)
-- [从本地或 Scope 构建迁移](docs/migration.md)
-- [维护者发布手册](docs/releasing.md)
-- [贡献指南](CONTRIBUTING.md)
-- [安全策略](SECURITY.md)
-- [支持策略](SUPPORT.md)
-- [治理规则](GOVERNANCE.md)
-- [变更日志](CHANGELOG.md)
-
-> 除本 README 外，部分专题文档目前仍以英文提供。
+- [HTTP 与 CLI 契约](docs/api.zh-CN.md)
+- [架构与事实来源规则](docs/architecture.zh-CN.md)
+- [兼容性与稳定性策略](docs/compatibility.zh-CN.md)
+- [运维、备份、升级与回滚](docs/operations.zh-CN.md)
+- [从本地或 Scope 构建迁移](docs/migration.zh-CN.md)
+- [维护者发布手册](docs/releasing.zh-CN.md)
+- [贡献指南](CONTRIBUTING.zh-CN.md)
+- [安全策略](SECURITY.zh-CN.md)
+- [支持策略](SUPPORT.zh-CN.md)
+- [治理规则](GOVERNANCE.zh-CN.md)
+- [行为准则](CODE_OF_CONDUCT.zh-CN.md)
+- [变更日志](CHANGELOG.zh-CN.md)
 
 ## 项目声明
 

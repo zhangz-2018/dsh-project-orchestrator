@@ -1,5 +1,7 @@
 # Contributing
 
+English | [简体中文](CONTRIBUTING.zh-CN.md)
+
 Thank you for improving `dsh-project-orchestrator`.
 
 ## Before opening a change

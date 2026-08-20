@@ -1,5 +1,7 @@
 # Operations
 
+English | [简体中文](operations.zh-CN.md)
+
 ## Health and snapshot
 
 ```bash

@@ -1,6 +1,6 @@
 {
   "name": "dsh-project-orchestrator",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A durable, approval-gated project orchestration workbench for DeepSeek Harness.",
   "license": "MIT",
   "author": "zhangz-2018",
@@ -32,8 +32,20 @@
     "lib/types",
     "README.md",
     "README.zh-CN.md",
-    "LICENSE",
-    "CHANGELOG.md"
+    "docs",
+    "CONTRIBUTING.md",
+    "CONTRIBUTING.zh-CN.md",
+    "SECURITY.md",
+    "SECURITY.zh-CN.md",
+    "SUPPORT.md",
+    "SUPPORT.zh-CN.md",
+    "GOVERNANCE.md",
+    "GOVERNANCE.zh-CN.md",
+    "CODE_OF_CONDUCT.md",
+    "CODE_OF_CONDUCT.zh-CN.md",
+    "CHANGELOG.md",
+    "CHANGELOG.zh-CN.md",
+    "LICENSE"
   ],
   "scripts": {
     "clean": "node scripts/clean.mjs",
@@ -41,8 +53,9 @@
     "typecheck": "tsc --noEmit",
     "check": "pnpm run typecheck",
     "test": "pnpm run build && node --test tests/*.test.mjs",
+    "docs:check": "node scripts/docs-smoke.mjs",
     "smoke:package": "node scripts/package-smoke.mjs",
-    "verify": "pnpm run typecheck && pnpm run test && pnpm run smoke:package",
+    "verify": "pnpm run typecheck && pnpm run docs:check && pnpm run test && pnpm run smoke:package",
     "prepack": "pnpm run build",
     "prepublishOnly": "pnpm run verify"
   },

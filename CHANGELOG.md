@@ -1,6 +1,19 @@
 # Changelog
 
+English | [简体中文](CHANGELOG.zh-CN.md)
+
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.2.1] - 2026-08-20
+
+### Added
+
+- Complete Simplified Chinese editions of the API, architecture, compatibility, operations, migration, release, contribution, security, support, governance, code-of-conduct, and changelog documentation.
+- Bidirectional language navigation and automated documentation link/package-content verification.
+
+### Changed
+
+- The Simplified Chinese README now links exclusively to Chinese documentation pages, and the npm package includes both language editions.
 
 ## [1.2.0] - 2026-08-20
 

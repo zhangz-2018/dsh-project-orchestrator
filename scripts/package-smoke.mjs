@@ -18,7 +18,16 @@ try {
   const [entry] = JSON.parse(packed.stdout)
   if (entry?.filename === undefined || !Array.isArray(entry.files)) throw new Error('npm pack did not return one inspectable artifact.')
   const files = new Map(entry.files.map((file) => [file.path, file]))
-  for (const required of ['package.json', 'README.md', 'README.zh-CN.md', 'LICENSE', 'CHANGELOG.md', 'lib/index.js', 'lib/client.js', 'lib/cli.js', 'lib/types/index.d.ts']) {
+  for (const required of [
+    'package.json', 'README.md', 'README.zh-CN.md', 'LICENSE',
+    'CHANGELOG.md', 'CHANGELOG.zh-CN.md', 'CONTRIBUTING.md', 'CONTRIBUTING.zh-CN.md',
+    'SECURITY.md', 'SECURITY.zh-CN.md', 'SUPPORT.md', 'SUPPORT.zh-CN.md',
+    'GOVERNANCE.md', 'GOVERNANCE.zh-CN.md', 'CODE_OF_CONDUCT.md', 'CODE_OF_CONDUCT.zh-CN.md',
+    'docs/api.md', 'docs/api.zh-CN.md', 'docs/architecture.md', 'docs/architecture.zh-CN.md',
+    'docs/compatibility.md', 'docs/compatibility.zh-CN.md', 'docs/operations.md', 'docs/operations.zh-CN.md',
+    'docs/migration.md', 'docs/migration.zh-CN.md', 'docs/releasing.md', 'docs/releasing.zh-CN.md',
+    'lib/index.js', 'lib/client.js', 'lib/cli.js', 'lib/types/index.d.ts',
+  ]) {
     if (!files.has(required)) throw new Error(`Packed package is missing ${required}.`)
   }
   for (const file of files.keys()) {

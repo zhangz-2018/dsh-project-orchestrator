@@ -1,5 +1,7 @@
 # Contributor Covenant Code of Conduct
 
+English | [简体中文](CODE_OF_CONDUCT.zh-CN.md)
+
 ## Our pledge
 
 We pledge to make participation in this project a harassment-free experience for everyone, regardless of identity, background, experience, or ability.

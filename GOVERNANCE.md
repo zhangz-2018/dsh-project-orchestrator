@@ -1,5 +1,7 @@
 # Governance
 
+English | [简体中文](GOVERNANCE.zh-CN.md)
+
 The project is maintained by `zhangz-2018` under a maintainer-led model.
 
 Maintainers review changes, manage releases, respond to security reports, and define the certified Harness compatibility matrix. Significant changes to storage, security boundaries, Issue ownership, execution semantics, or public API require a documented design in the pull request and explicit maintainer approval.

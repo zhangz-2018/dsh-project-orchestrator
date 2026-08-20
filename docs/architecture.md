@@ -1,5 +1,7 @@
 # Architecture
 
+English | [简体中文](architecture.zh-CN.md)
+
 ## Package halves
 
 The package is a static dual-half Cordis plugin:

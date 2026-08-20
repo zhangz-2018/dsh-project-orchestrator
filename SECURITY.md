@@ -1,5 +1,7 @@
 # Security policy
 
+English | [简体中文](SECURITY.zh-CN.md)
+
 ## Supported versions
 
 Security fixes are provided for the latest 1.x release certified in `docs/compatibility.md`.

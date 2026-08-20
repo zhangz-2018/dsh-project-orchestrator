@@ -1,5 +1,7 @@
 # HTTP and CLI contracts
 
+English | [简体中文](api.zh-CN.md)
+
 Base path: `/project-orchestrator/api`
 
 All responses are JSON and carry `Cache-Control: no-store`. Failed requests use:

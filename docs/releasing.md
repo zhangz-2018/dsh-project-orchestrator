@@ -1,5 +1,7 @@
 # Release runbook
 
+English | [简体中文](releasing.zh-CN.md)
+
 Only maintainers publish releases.
 
 ## One-time repository setup

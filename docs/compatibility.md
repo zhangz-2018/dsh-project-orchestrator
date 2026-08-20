@@ -1,5 +1,7 @@
 # Compatibility and stability
 
+English | [简体中文](compatibility.zh-CN.md)
+
 ## Certified matrix
 
 | Plugin | DeepSeek Harness | Cordis | Node.js | Git | Platforms |
