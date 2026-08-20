@@ -21,3 +21,14 @@ test('client bundle registers with the Harness module loader', async () => {
   assert.equal(typeof exported.apply, 'function')
   assert.deepEqual(Array.from(exported.inject), ['slots'])
 })
+
+test('client exposes explicit empty and AI creation actions', async () => {
+  const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
+  const bundle = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
+  assert.match(source, /空项目/)
+  assert.match(source, /AI 智能拆解/)
+  assert.match(source, /创建空项目/)
+  assert.match(source, /创建并让 AI 拆解/)
+  assert.match(source, /打开目录/)
+  assert.match(bundle, /open-directory/)
+})

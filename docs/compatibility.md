@@ -13,7 +13,8 @@ Harness prerelease SemVer does not imply compatibility across release candidates
 Within the 1.x line, the project treats these as public compatibility contracts:
 
 - package root export, `./client`, and CLI binary names;
-- HTTP route paths, status classes, and structured `{ error: { code, message } }` failures;
+- HTTP route paths, documented status classes, and structured `{ error: { code, message } }` failures;
+- omitted `POST /projects` creation mode retaining legacy AI decomposition, while explicit `mode: "empty"` returns a non-planning `201` draft;
 - Command idempotency and review ownership semantics;
 - storage-domain name and forward-readable version-1 records;
 - queued-work recovery and terminal cleanup ordering;
@@ -34,6 +35,7 @@ The following require a new major version:
 
 - one active Harness Host is supported per storage domain;
 - remote/reverse-proxied mutation clients fail the loopback and same-origin policy by design;
-- Windows process groups, shells, and Git worktrees are not certified;
+- Windows process groups, shells, Git worktrees, and local directory opening are not certified;
+- local directory opening is certified only for macOS `open` and Linux `xdg-open` and is unavailable to remote/reverse-proxied clients by design;
 - PR support stores references and evidence; it does not push or authenticate with providers;
 - Transcript redaction is best effort and not a DLP system.

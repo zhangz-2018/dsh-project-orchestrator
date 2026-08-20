@@ -2,31 +2,73 @@
 
 [English](README.md) | 简体中文
 
-一个面向 [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) 的持久化、审批驱动项目编排工作台。
+面向 [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) 的本地项目编排工作台：先建立项目事实，再按需使用 AI，最后由人工批准执行。
 
-`dsh-project-orchestrator` 为现有 Harness 安装提供 Host 服务、响应式 Web 工作台和仅限本机回环地址访问的 CLI。它把项目（Project）、事项（Issue）、任务运行（TaskRun）、人工决策（Decision）、Agent 容量、Git worktree 证据、执行记录（Transcript）、产物（Artifact）和自动化回执统一到一个可审计的本地工作流中。
+它为现有 Harness Profile 增加 Host 服务、响应式 Web 工作台和仅限本机回环地址的 CLI。项目、事项、任务、Agent、运行证据、人工决策和自动化回执都会持久化到同一套可审计工作流中。
 
-> **兼容性说明：** v1.1.0 仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成兼容性验证。后续 Harness 候选版本需要经过测试后才会纳入支持范围。
+> **兼容性：** 当前 1.x 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
 
-## 核心特性
+## 先了解三个原则
 
-- **审批后执行：** AI 先生成与修订版本和哈希绑定的计划，只有获得明确批准后才开始执行。
-- **持久化事项执行：** 分配、重新分配、停止、继续、评审和决策请求最终都会收敛为幂等的 Command 记录。
-- **运行时与容量控制：** 支持 Runtime 心跳、Agent `maxConcurrency`、队列保留、重启恢复、目录锁和工作区租约。
-- **真实 Git 隔离：** 以失败关闭方式创建 worktree，使用确定性分支，记录基准/最终提交、受限差异、产物和清理证据。
-- **人工协作：** 提供收件箱、评审门禁、评论、活动记录、Squad、委派子事项和 Leader 续作能力。
-- **可审计自动化：** 提供有界 Autopilot、外部触发去重、回环 CLI、执行记录脱敏，并明确标记未知的 Token/成本数据。
-- **响应式工作台：** 在现有 Harness Web Shell 中提供收件箱、事项、项目、Agent、Squad、Runtime、Skill 和自主交付页面。
-- **项目环境发现：** 已批准的命令会优先使用 `<project>/.venv`（如存在），并记录最终解析出的执行环境。
-- **中文优先规划：** 新项目默认生成简体中文任务，也可切换为英文；尚未执行的旧计划可以重新生成中文版本，并且必须重新审批。
+1. **创建项目不等于调用 AI。** 新建窗口默认选择“空项目”，只保存名称和目录，不读取代码，不创建任务，也不会启动 Planner。
+2. **AI 拆解是显式操作。** 只有选择“AI 智能拆解”，或者稍后点击“补充需求并让 AI 拆解”，才会读取需求并生成计划。
+3. **计划不等于执行。** AI 生成的计划与 Revision 和 plan hash 绑定，必须由人明确批准后才能开始修改仓库。
+
+## 创建项目
+
+### 方式一：空项目（默认）
+
+适合还没有 PRD、只想登记仓库、准备手动管理任务，或者暂时不希望 AI 介入的场景。
+
+创建时只需要：
+
+- 项目名称；
+- 一个已存在的绝对工作目录。
+
+创建结果：
+
+- Project 状态为 `draft`；
+- PRD 和技术方案可以为空；
+- Task 数量为 0；
+- 不创建审批记录；
+- 不调用 Planner 或执行 Agent。
+
+之后可以直接添加手动任务，也可以编辑项目，补充交付目标，再明确选择“保存并让 AI 重新规划”。
+
+### 方式二：AI 智能拆解
+
+适合已经有 PRD、验收目标或较完整交付说明的场景。需要提供工作目录和非空交付简报；技术方案可选。
+
+Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代码任务、测试任务、依赖关系和验证命令。新项目默认生成简体中文任务，也可以切换为英文。生成后仍需人工批准，AI 不会直接开始实施。
+
+### 打开项目目录
+
+项目详情中的“打开目录”会调用本机文件管理器：
+
+- macOS：Finder；
+- Linux：系统 `xdg-open` 对应的文件管理器；
+- Windows：当前未认证，不承诺可用。
+
+这个操作只接受 Project ID。Host 会从持久化 Project 读取工作目录并在操作时重新校验；浏览器不能提交任意本机路径。
+
+## 核心能力
+
+- **审批后执行：** 计划与 Revision/hash 绑定，明确批准后才执行。
+- **可恢复的事项执行：** 分配、重新分配、停止、继续、评审和决策请求收敛为幂等 Command。
+- **Runtime 与容量控制：** Runtime 心跳、Agent `maxConcurrency`、队列保留、重启恢复、目录锁和工作区租约。
+- **真实 Git 隔离：** 以失败关闭方式创建 worktree，记录基准/最终提交、受限差异、产物和清理证据。
+- **人工协作：** 收件箱、评审门禁、评论、Activity、Squad、委派子事项和 Leader 续作。
+- **可审计自动化：** 有界 Autopilot、外部触发去重、回环 CLI、Transcript 脱敏，以及明确的未知 Token/成本状态。
+- **项目环境发现：** 已批准命令优先使用 `<project>/.venv`（如存在），并记录最终执行环境。
+- **响应式工作台：** 在原有 Harness Web Shell 中提供 Inbox、Issue、Project、Agent、Squad、Runtime、Skill 和自主交付页面。
 
 ## 安装
 
-Harness Profile 插件管理器负责提供所需的 Host peer 依赖，因此请先安装 pnpm，再添加 npm 包。不要依赖 npm 的 peer 自动解析，把本插件当作独立应用安装；Harness `0.1.0-rc.6` 的预发布传递 peer 范围可能会解析出混合 RC 版本依赖树。
+Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm，再通过 `dsh plugin` 安装已发布版本；不要把插件当作独立 Node 应用依赖 npm 自动解析 Harness 的预发布 peer。
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.1.0
+dsh plugin --profile web add dsh-project-orchestrator@1.2.0
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -36,19 +78,19 @@ dsh plugin --profile web add dsh-project-orchestrator@1.1.0
   name: dsh-project-orchestrator
 ```
 
-重启现有的 `dsh web` 进程，然后刷新当前访问地址。不要为同一个 Profile 启动第二个 Web 服务。
+重启现有 `dsh web` 进程并刷新当前页面。不要为同一个 Profile 启动第二个 Web 服务。
 
-验证 Host 端：
+验证 Host：
 
 ```bash
 curl --fail http://127.0.0.1:3080/project-orchestrator/api/health
 ```
 
-启动入口会显示在 Harness 侧边栏底部。
+入口会出现在 Harness 侧边栏底部。
 
 ## CLI
 
-随包提供的 CLI 与 Web 客户端调用同一个本机回环 API，并拒绝访问非回环地址：
+CLI 与 Web 客户端调用同一个本机回环 API，并拒绝非回环地址：
 
 ```bash
 dsh-project-orchestrator --help
@@ -58,7 +100,7 @@ dsh-project-orchestrator stats
 dsh-project-orchestrator command '{"type":"autopilot_tick","actorType":"human","payload":{"agentId":"...","limit":10}}'
 ```
 
-只有当 Harness 仍监听本机回环地址时，才可以覆盖默认 API 地址：
+只有 Harness 仍监听本机回环地址时，才可以覆盖默认 API 地址：
 
 ```bash
 DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
@@ -67,34 +109,35 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 
 ## 执行模型
 
-1. Project 持有已批准计划和资源（Resource）。
-2. Issue 持有分配关系、生命周期、评审状态及其当前 TaskRun 指针。
-3. TaskRun 表示一次排队/执行尝试，并持有对应证据。
-4. Runtime 控制本地调度资格，Agent 提供执行容量。
-5. 执行前必须先获取 worktree 或原地工作区租约。
-6. Harness Session 事件会被投影为有界、已脱敏的 Transcript 条目。
-7. 工作区清理和证据归档完成后，TaskRun 才会进入终态。
-8. 只有人工评审通过，Issue 才能完成。
+1. Project 保存交付简报、资源、计划版本和审批状态。
+2. Issue 保存分配关系、生命周期、评审状态和当前 TaskRun。
+3. TaskRun 表示一次排队或执行尝试，并持有对应证据。
+4. Runtime 控制本机调度资格，Agent 提供执行容量。
+5. 执行前必须获取 worktree 或原地工作区租约。
+6. Harness Session 事件会投影为有界、尽力脱敏的 Transcript。
+7. 清理工作区并归档证据后，TaskRun 才会进入终态。
+8. Issue 只有经过人工评审才可以完成。
 
-Runtime 记录代表本地 Harness Host 内的运行事实。v1.1.0 **不提供**远程 Agent 执行、双活 Host、分布式锁、远程分支推送或经过代码托管平台认证的 Pull Request 创建能力。
+Runtime 记录只代表当前 Harness Host 内的本地事实。1.x **不提供**远程 Agent 执行、双活 Host、分布式锁、远程分支推送或由代码托管平台认证的 Pull Request 创建。
 
-## 安全模型
+## 安全边界
 
-- 修改操作要求请求来自回环 Peer 和回环 Host，并具有匹配的 `Origin` 与同源 Fetch Metadata。
+- 修改请求必须来自回环 Peer 和回环 Host，并具有匹配的 `Origin` 与同源 Fetch Metadata；这不是多租户身份认证。
 - CLI 只接受回环地址。
+- “打开目录”使用持久化 Project 路径、固定系统程序和独立 argv，不经过 shell。
 - 子进程环境会移除疑似凭证的环境变量。
-- Transcript 投影有大小限制，并尽力对疑似凭证的文本执行脱敏。
-- 已批准的测试命令会有意通过平台 Shell 执行。拥有完整工具权限的 Agent 可以修改所选工作区。
+- Transcript 有大小限制，并尽力对疑似凭证文本脱敏；这不是 DLP。
+- 已批准的测试命令会有意通过平台 Shell 执行；拥有完整工具权限的 Agent 可以修改所选工作区。
 
-在敏感仓库中使用本插件前，请先阅读 [SECURITY.md](SECURITY.md)。如果无法完全信任仓库内容，请使用专用操作系统账户或更强的沙箱隔离。
+在敏感仓库中使用前，请阅读 [SECURITY.md](SECURITY.md)。无法完全信任仓库内容时，应使用专用操作系统账户或更强的沙箱。
 
-## 存储与恢复
+## 存储、备份与恢复
 
-存储域名为 `project_orchestrator`；标准本地 Profile 通常把数据持久化到 `~/.dsh/storages/project_orchestrator.json`。升级或执行破坏性维护前，请先停止 Harness，再备份此文件。
+存储域名为 `project_orchestrator`；标准本地 Profile 通常持久化到 `~/.dsh/storages/project_orchestrator.json`。升级或执行破坏性维护前，请停止 Harness 并备份此文件。
 
-存储版本 1 会把缺失的新表视为空兼容表。v1 系列支持向前迁移，但不保证降级安全。详见 [docs/operations.md](docs/operations.md)。
+存储版本 1 会把缺失的新表视为空兼容表。1.x 支持向前迁移，但不保证降级安全。详见 [docs/operations.md](docs/operations.md)。
 
-## 开发
+## 开发与验证
 
 ```bash
 corepack enable
@@ -111,12 +154,12 @@ pnpm build
 pnpm smoke:package
 ```
 
-包冒烟测试会构建实际发布的 npm 产物，检查文件白名单和可执行权限，在干净的临时项目中完成安装，验证 CLI 帮助/版本命令，并拒绝包含绝对用户目录路径的 Source Map。
+包冒烟测试会构建真实 npm 产物，检查文件白名单和可执行权限，在干净临时项目中安装并验证 CLI，同时拒绝包含绝对用户目录路径的 Source Map。
 
 ## 文档
 
-- [架构与事实来源规则](docs/architecture.md)
 - [HTTP 与 CLI 契约](docs/api.md)
+- [架构与事实来源规则](docs/architecture.md)
 - [兼容性与稳定性策略](docs/compatibility.md)
 - [运维、备份、升级与回滚](docs/operations.md)
 - [从本地或 Scope 构建迁移](docs/migration.md)
@@ -127,11 +170,11 @@ pnpm smoke:package
 - [治理规则](GOVERNANCE.md)
 - [变更日志](CHANGELOG.md)
 
-> 以上专题文档目前以英文提供。
+> 除本 README 外，部分专题文档目前仍以英文提供。
 
-## 项目状态与关联声明
+## 项目声明
 
-这是一个独立的社区插件，并非 DeepSeek 或 DeepSeek Harness 官方项目。DeepSeek 及相关名称可能是其各自所有者的商标。
+这是独立社区插件，并非 DeepSeek 或 DeepSeek Harness 官方项目。DeepSeek 及相关名称可能是其各自所有者的商标。
 
 ## 许可证
 

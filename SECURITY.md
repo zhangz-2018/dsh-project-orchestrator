@@ -21,6 +21,8 @@ Operators must understand these intentional capabilities:
 - credential-shaped environment variables are filtered and Transcript text is redacted best effort, but this is not comprehensive secret detection or DLP;
 - storage is local JSON and is not encrypted by this plugin;
 - mutation protection is loopback and same-origin, not user authentication or multi-tenant authorization;
+- the directory-open action is a local operating-system side effect: it accepts only a Project ID, resolves persisted `project.cwd`, rejects broad roots, and invokes fixed macOS/Linux opener executables without a shell; same-origin page code can still trigger it;
+- macOS and Linux directory opening are certified; Windows directory opening is intentionally unsupported until certified;
 - one Host process is assumed; active/active access to the same storage is unsupported.
 
 Run Harness under a least-privilege OS account, restrict repository access, review Agent tool policy, use isolated worktrees where possible, protect the storage file, and never approve commands from untrusted plans without review.

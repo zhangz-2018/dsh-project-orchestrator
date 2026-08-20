@@ -26,12 +26,22 @@ All responses are JSON and carry `Cache-Control: no-store`. Failed requests use:
 
 Inbox query fields are strict: `kind`, `projectId`, `issueId`, and bounded `limit`.
 
-## Project planning routes
+## Project creation and planning routes
 
-- `POST /projects` creates a Project and starts planning. `taskLanguage` is `zh-CN` by default and may be `en`.
-- `POST /projects/:id/replan` accepts `{ "taskLanguage": "zh-CN" }` or `en`, replaces only an unexecuted plan, increments the Project revision, clears current approval, and starts decomposition.
-- `POST /projects/:id/decompose` starts planning for a draft Project using its stored language.
+`POST /projects` accepts two explicit request modes:
+
+- `{ "mode": "empty", "name": "Project name", "cwd": "/absolute/existing/path", ... }` creates a `draft` Project and returns `201`. It permits empty `prd` and `technicalDesign`, creates no Tasks or approval, and does not invoke a Planner or Agent.
+- `{ "mode": "ai", "cwd": "/absolute/existing/path", "prd": "Delivery brief", ... }` creates a Project, starts decomposition, and returns `202`.
+
+For 1.x backward compatibility, omitting `mode` retains the pre-existing AI behavior and therefore requires a non-empty `prd`. New Web clients default to `mode: "empty"`; API omission is not the Web default. `taskLanguage` defaults to `zh-CN` and may be `en`.
+
+Additional routes:
+
+- `PUT /projects/:id` saves Project metadata without invoking AI or invalidating the current plan. When Tasks already exist, changes to plan-affecting fields (`cwd`, PRD, technical design, priority, owner, or task language) are rejected with `project-replan-required`; name and summary remain safe metadata-only edits. A taskless draft may keep or add an empty PRD.
+- `POST /projects/:id/replan` accepts `{ "taskLanguage": "zh-CN" }` or `en` and may atomically include a full validated `project` edit payload. It rejects Projects with execution history before persisting edits, replaces only an unexecuted plan, increments the Project revision, clears current approval, and starts decomposition.
+- `POST /projects/:id/decompose` explicitly starts planning for a draft Project using its stored language and rejects an empty PRD with `project-brief-required`.
 - `POST /projects/:id/approve` remains revision/hash-bound; a regenerated plan always requires fresh approval.
+- `POST /projects/:id/open-directory` accepts no path body. It resolves the authoritative persisted `project.cwd`, revalidates it, invokes the certified operating-system opener without a shell, and returns `{ "ok": true }`. macOS and Linux are certified; Windows is not.
 
 Chinese mode validates that summary, titles, descriptions, and acceptance criteria contain Chinese text. JSON keys, task IDs, code symbols, paths, Agent roles, and commands are never translated.
 

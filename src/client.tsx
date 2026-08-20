@@ -749,7 +749,8 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const planComplete = tasks.some((task) => task.kind === 'code') && tasks.some((task) => task.kind === 'test') && tasks.every((task) => task.testCommand.trim() !== '')
   const canApprove = project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent
   const canRetry = approvalCurrent && ['approved', 'failed', 'cancelled'].includes(project.status)
-  const canReplan = ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
+  const canReplan = project.prd.trim() !== '' && ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
+  const openDirectory = () => model.action(() => mutate<{ ok: true }>(`/projects/${project.id}/open-directory`, 'POST'), '已在本机文件管理器中打开项目目录。')
   const completed = tasks.filter((task) => task.status === 'completed' && task.testExitCode === 0).length
   const currentTask = latestRun?.currentTaskId ? tasks.find((task) => task.id === latestRun.currentTaskId) : undefined
   const resources = state.snapshot.resources.filter((resource) => resource.projectId === project.id)
@@ -772,7 +773,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div><span>任务语言</span><strong>{(project.taskLanguage ?? 'zh-CN') === 'zh-CN' ? '简体中文' : 'English'}</strong></div>
         <div><span>当前版本</span><strong>Revision {project.revision}</strong></div>
         <div><span>测试进度</span><strong>{completed}/{tasks.length}</strong></div>
-        <div><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong></div>
+        <div className="po-project-directory"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong><ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div>
       </div>
       <section className="po-project-context-grid" aria-label="项目协作上下文">
          <div className="po-context-panel"><div className="po-section-heading"><div><h2>Issues</h2><p>{issues.length} 个长期工作事项 · {taskRuns.length} 次执行</p></div></div>{issues.length === 0 ? <p className="po-context-empty">自动交付计划会逐步关联到 Issue。</p> : issues.slice(0, 4).map((issue) => <button key={issue.id} type="button" className="po-context-row po-context-row-button" onClick={() => model.openIssue(issue.id)}><strong>{issue.title}</strong><span>{issue.status} · {issue.priority}</span></button>)}</div>
@@ -788,19 +789,20 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         {project.status === 'failed' ? <div className="po-intervention-panel" role="alert"><strong>AI 已暂停，保留了已通过的任务</strong><span>{project.lastError || '执行未完成，请检查失败任务的测试证据。'}</span></div> : null}
         <div className="po-gate-actions">
           {canApprove ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={() => void approveAndExecuteProject(model, project, planHash)}>批准计划并开始实施</ActionButton> : null}
-          {canReplan ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>重新生成中文计划</ActionButton> : null}
+          {project.status === 'draft' && tasks.length === 0 ? <ActionButton variant="primary" icon={<IconEditOutline16 />} disabled={state.loading} onClick={() => model.openProjectForm(project.id)}>补充需求并让 AI 拆解</ActionButton> : null}
+          {canReplan && tasks.length > 0 ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>重新生成中文计划</ActionButton> : null}
           {project.status === 'failed' && canRetry ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>让 AI 修复并继续</ActionButton> : null}
           {project.status === 'cancelled' && canRetry ? <ActionButton variant="primary" icon={<IconPlayOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>继续自动实施</ActionButton> : null}
           {active ? <ActionButton variant="outline" icon={<IconStopFill16 />} disabled={state.loading} onClick={() => void cancelProject(model, project)}>停止运行</ActionButton> : null}
         </div>
       </section>
       <div className="po-project-artifacts">
-        <details className="po-artifact-disclosure" open><summary>需求简报</summary><div className="po-document-text">{project.prd}</div></details>
-        <details className="po-artifact-disclosure"><summary>AI 生成的实施方案</summary><div className="po-document-text">{project.technicalDesign}</div></details>
+        <details className="po-artifact-disclosure" open><summary>需求简报</summary><div className="po-document-text">{project.prd || '尚未填写。空项目可以先手动管理任务，之后再补充需求并启动 AI 拆解。'}</div></details>
+        <details className="po-artifact-disclosure"><summary>技术方案上下文</summary><div className="po-document-text">{project.technicalDesign || '尚未填写。'}</div></details>
       </div>
       <section className="po-project-task-section">
         <div className="po-section-heading"><div><h2>项目任务</h2><p>{completed}/{tasks.length} 个任务测试通过</p></div>{['draft', 'failed', 'cancelled'].includes(project.status) ? <ActionButton variant="outline" size="sm" icon={<IconPlusOutline16 />} disabled={active || state.loading} onClick={() => model.openPanel('task-new')}>添加任务</ActionButton> : null}</div>
-        {tasks.length === 0 ? <EmptyState title="尚未拆解任务" body="使用 PRD 自动拆解，或者手动添加代码和测试任务。" /> : tasks.map((task) => <button key={task.id} type="button" className="po-project-task-row" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{agentName(state.snapshot, task.agentId)} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button>)}
+        {tasks.length === 0 ? <EmptyState title="这是一个空项目" body="现在还没有任务。你可以手动添加任务，或补充需求后明确选择让 AI 拆解。" /> : tasks.map((task) => <button key={task.id} type="button" className="po-project-task-row" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{agentName(state.snapshot, task.agentId)} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button>)}
       </section>
       {latestRun ? <RunSummary run={latestRun} snapshot={state.snapshot} /> : null}
     </section>
@@ -1067,9 +1069,34 @@ function AgentProfile({ agent, state, model }: { agent: AgentRecord; state: Work
 }
 
 function ModalShell({ title, subtitle, close, children, footer, wide = false }: { title: string; subtitle?: string; close: () => void; children: React.ReactNode; footer: React.ReactNode; wide?: boolean }) {
+  const dialogRef = useRef<HTMLElement>(null)
+  const closeRef = useRef(close)
+  closeRef.current = close
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : undefined
+    const focusable = () => [...(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), details > summary, [href], [tabindex]:not([tabindex="-1"])') ?? [])].filter((element) => element.offsetParent !== null)
+    const initial = window.setTimeout(() => (dialogRef.current?.querySelector<HTMLElement>('[autofocus]') ?? focusable()[0])?.focus(), 0)
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); closeRef.current(); return }
+      if (event.key !== 'Tab') return
+      const candidates = focusable()
+      if (candidates.length === 0) { event.preventDefault(); dialogRef.current?.focus(); return }
+      const first = candidates[0]!
+      const last = candidates[candidates.length - 1]!
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+      else if (!dialogRef.current?.contains(document.activeElement)) { event.preventDefault(); first.focus() }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.clearTimeout(initial)
+      window.removeEventListener('keydown', onKeyDown)
+      if (previousFocus?.isConnected) previousFocus.focus()
+    }
+  }, [])
   return (
     <div className="po-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close() }}>
-      <section className={`po-modal${wide ? ' po-modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+      <section ref={dialogRef} tabIndex={-1} className={`po-modal${wide ? ' po-modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
         <header><div><h2>{title}</h2>{subtitle ? <p>{subtitle}</p> : null}</div><button type="button" className="po-icon-button" aria-label="关闭" onClick={close}><IconCloseOutline16 /></button></header>
         <div className="po-modal-body">{children}</div>
         <footer>{footer}</footer>
@@ -1078,7 +1105,10 @@ function ModalShell({ title, subtitle, close, children, footer, wide = false }: 
   )
 }
 
+type ProjectCreationMode = 'empty' | 'ai'
+
 interface ProjectIntakeValue {
+  mode: ProjectCreationMode
   name: string
   summary: string
   priority: Priority
@@ -1092,8 +1122,8 @@ interface ProjectIntakeValue {
 function ProjectDialog({ state, model, project }: { state: WorkbenchState; model: WorkbenchModel; project?: ProjectRecord | undefined }) {
   const stored = project === undefined ? loadProjectIntakeDraft() : undefined
   const [value, setValue] = useState<ProjectIntakeValue>(() => project ? {
-    name: project.name, summary: project.summary, priority: project.priority ?? 'medium', owner: project.owner ?? '', cwd: project.cwd, prd: project.prd, technicalDesign: project.technicalDesign, taskLanguage: project.taskLanguage ?? 'zh-CN',
-  } : stored ?? { name: '', summary: '', priority: 'medium', owner: '', cwd: '', prd: '', technicalDesign: '', taskLanguage: 'zh-CN' })
+    mode: project.prd.trim() === '' ? 'empty' : 'ai', name: project.name, summary: project.summary, priority: project.priority ?? 'medium', owner: project.owner ?? '', cwd: project.cwd, prd: project.prd, technicalDesign: project.technicalDesign, taskLanguage: project.taskLanguage ?? 'zh-CN',
+  } : stored ?? { mode: 'empty', name: '', summary: '', priority: 'medium', owner: '', cwd: '', prd: '', technicalDesign: '', taskLanguage: 'zh-CN' })
   const [nameLocked, setNameLocked] = useState(Boolean(project?.name || stored?.name))
   const [importError, setImportError] = useState<string>()
   const importInput = useRef<HTMLInputElement>(null)
@@ -1118,28 +1148,38 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
     if (project === undefined) window.localStorage.setItem(PROJECT_INTAKE_STORAGE_KEY, JSON.stringify(value))
     model.closePanel()
   }
-  const submit = async () => {
-    const payload = { ...value, name: value.name.trim() || suggestProjectName(value.prd) || '未命名项目' }
+  const submit = async (planWithAi = value.mode === 'ai') => {
+    const name = value.name.trim() || suggestProjectName(value.prd) || '未命名项目'
+    const { mode, ...editable } = value
     const result = await model.action(async () => {
-      if (project === undefined) return mutate<ProjectRecord>('/projects', 'POST', payload)
-      await mutate<ProjectRecord>(`/projects/${project.id}`, 'PUT', payload)
-      return mutate<ProjectRecord>(`/projects/${project.id}/decompose`, 'POST')
-    }, project === undefined ? '项目已创建，AI 正在生成执行计划。' : '项目已更新并重新规划，原审批已失效。')
+      if (project === undefined) return mutate<ProjectRecord>('/projects', 'POST', { ...editable, name, mode })
+      if (!planWithAi) return mutate<ProjectRecord>(`/projects/${project.id}`, 'PUT', { ...editable, name })
+      return mutate<ProjectRecord>(`/projects/${project.id}/replan`, 'POST', { taskLanguage: editable.taskLanguage, project: { ...editable, name } })
+    }, project === undefined
+      ? mode === 'empty' ? '空项目已创建，没有调用 AI 或生成任务。' : '项目已创建，AI 正在生成执行计划。'
+      : planWithAi ? '项目已更新并重新规划，原审批已失效。' : '项目资料已保存，没有调用 AI。')
     if (result) {
       if (project === undefined) window.localStorage.removeItem(PROJECT_INTAKE_STORAGE_KEY)
       model.closePanel()
       model.openProject(result.id)
     }
   }
+  const footer = project === undefined ? <>
+    <ActionButton variant="ghost" onClick={saveAndClose}>保存草稿并关闭</ActionButton>
+    <ActionButton variant="primary" disabled={state.loading || !validProject(value, value.mode === 'ai')} onClick={() => void submit()}>{value.mode === 'empty' ? '创建空项目' : '创建并让 AI 拆解'}</ActionButton>
+  </> : <>
+    <ActionButton variant="ghost" onClick={saveAndClose}>取消</ActionButton>
+    <ActionButton variant="outline" disabled={state.loading || !validProject(value, false)} onClick={() => void submit(false)}>仅保存</ActionButton>
+    <ActionButton variant="primary" disabled={state.loading || !validProject(value, true)} onClick={() => void submit(true)}>保存并让 AI 重新规划</ActionButton>
+  </>
   return (
-    <ModalShell title={project ? '编辑项目简报' : '创建项目计划'} subtitle={project ? '修改简报会让当前计划重新等待批准。' : '描述交付结果，AI 会检查仓库并生成可执行计划。'} close={saveAndClose} wide footer={<><ActionButton variant="ghost" onClick={saveAndClose}>保存草稿并关闭</ActionButton><ActionButton variant="primary" disabled={state.loading || !validProject(value)} onClick={() => void submit()}>{project ? '保存并重新规划' : '创建并生成计划'}</ActionButton></>}>
+    <ModalShell title={project ? '编辑项目' : '创建项目'} subtitle={project ? '保存资料不会自动调用 AI；只有选择重新规划时才会生成并替换任务计划。' : '先选择创建方式。空项目不会调用 AI，也不会自动生成任务。'} close={saveAndClose} wide footer={footer}>
       <div className="po-project-intake">
-        {!project ? <div className="po-intake-intro"><span className="po-project-glyph"><IconFolderOpenOutline16 /></span><div><h3>先说清楚要交付什么</h3><p>可以粘贴 PRD、需求说明或验收目标。技术拆解、代码任务、测试任务和依赖关系由 AI 生成。</p></div></div> : null}
-        <Field label="交付目标与约束" hint="描述结果、范围、规则和验收标准。可以直接粘贴 Markdown。"><textarea className="po-textarea po-brief-editor" autoFocus={!project} required value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="例如：为现有 API 增加无密码登录，包含数据库迁移、接口、前端登录页、异常处理和回归测试。" /></Field>
-        <div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><button type="button" onClick={() => { setImportTarget('prd'); importInput.current?.click() }}>导入需求文件</button><button type="button" onClick={() => { setImportTarget('technicalDesign'); importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text" hidden aria-label="导入 Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></div>
+        {project === undefined ? <fieldset className="po-project-mode"><legend>创建方式</legend><label className={value.mode === 'empty' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-mode" value="empty" checked={value.mode === 'empty'} onChange={() => setValue({ ...value, mode: 'empty' })} /><span><strong>空项目</strong><small>只保存项目名称和目录。稍后可以手动添加任务，或补充需求后再让 AI 拆解。</small></span></label><label className={value.mode === 'ai' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-mode" value="ai" checked={value.mode === 'ai'} onChange={() => setValue({ ...value, mode: 'ai' })} /><span><strong>AI 智能拆解</strong><small>AI 会只读检查仓库，生成代码与测试任务；计划仍需人工批准后才能执行。</small></span></label></fieldset> : null}
+        <div className="po-form-grid"><Field label="项目名称" hint={value.mode === 'empty' ? '空项目必须填写名称。' : '可留空，系统会根据交付目标生成。'}><input className="po-input" autoFocus={!project} required={value.mode === 'empty'} value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="例如：支付网关重构" /></Field><Field label="代码仓库 / 工作目录" hint={value.mode === 'ai' ? 'AI 会只读检查该目录；批准后执行智能体才会修改文件。' : '创建时只记录目录，不读取代码，也不调用 AI。'}><input className="po-input" required value={value.cwd} onChange={(event) => setValue({ ...value, cwd: event.target.value })} placeholder="/absolute/path/to/repository" /></Field></div>
+        {value.mode === 'ai' || project !== undefined ? <><Field label="交付目标与约束" hint="只有点击“让 AI 规划”时才会提交给 Planner。"><textarea className="po-textarea po-brief-editor" required={value.mode === 'ai'} value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="描述结果、范围、规则和验收标准；支持 Markdown。" /></Field><div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><button type="button" onClick={() => { setImportTarget('prd'); importInput.current?.click() }}>导入需求文件</button><button type="button" onClick={() => { setImportTarget('technicalDesign'); importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text" hidden aria-label="导入 Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></div></> : <div className="po-empty-project-note"><IconFolderOpenOutline16 /><div><strong>不会自动拆任务</strong><p>创建后项目状态为“待规划”，任务数量为 0。你可以直接添加手动任务，或编辑项目补充需求后再启动 AI。</p></div></div>}
         {importError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{importError}</div> : null}
-        <Field label="代码仓库 / 工作目录" hint="AI 会在这个目录中读取代码和测试，并由执行智能体在批准后修改。"><input className="po-input" required value={value.cwd} onChange={(event) => setValue({ ...value, cwd: event.target.value })} placeholder="/absolute/path/to/repository" /></Field>
-        <details className="po-project-constraints"><summary>补充约束（可选）</summary><div className="po-project-constraints-body"><Field label="项目名称"><input className="po-input" value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="不填写时根据交付目标生成" /></Field><Field label="技术方案上下文" hint="没有单独方案可以留空，AI 会根据交付目标和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="可粘贴已有模块、接口、数据、测试和发布约束。" /></Field><div className="po-field-pair"><Field label="任务语言" hint="只影响标题、描述和验收说明；命令与代码标识保持原样。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>
+        <details className="po-project-constraints"><summary>补充项目资料（可选）</summary><div className="po-project-constraints-body"><Field label="项目摘要"><textarea className="po-textarea" value={value.summary} onChange={(event) => setValue({ ...value, summary: event.target.value })} placeholder="用于项目列表和详情页的简短说明。" /></Field>{value.mode === 'ai' || project !== undefined ? <Field label="技术方案上下文" hint="可以留空，AI 会根据需求和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="已有模块、接口、数据、测试和发布约束。" /></Field> : null}<div className="po-field-pair"><Field label="任务语言" hint="仅在 AI 生成任务时生效；命令和代码标识不会翻译。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>
       </div>
     </ModalShell>
   )
@@ -1347,7 +1387,9 @@ function loadAgentBuilderDraft(): StoredAgentBuilderDraft | undefined {
     return undefined
   }
 }
-function validProject(value: { name: string; cwd: string; prd: string; technicalDesign: string }): boolean { return value.cwd.trim() !== '' && value.prd.trim() !== '' }
+function validProject(value: { name: string; cwd: string; prd: string }, requireBrief: boolean): boolean {
+  return value.cwd.trim() !== '' && (!requireBrief || value.prd.trim() !== '') && (requireBrief || value.name.trim() !== '')
+}
 function suggestProjectName(brief: string): string {
   const candidate = brief.split('\n').map((line) => line.replace(/^\s*#+\s*/, '').trim()).find((line) => line.length > 0) ?? ''
   return candidate.replace(/[。.!！?？].*$/, '').slice(0, 80)
@@ -1359,6 +1401,7 @@ function loadProjectIntakeDraft(): ProjectIntakeValue | undefined {
     const draft = JSON.parse(raw) as Partial<ProjectIntakeValue>
     if (typeof draft.prd !== 'string' || typeof draft.cwd !== 'string') return undefined
     return {
+      mode: draft.mode === 'empty' || draft.mode === 'ai' ? draft.mode : draft.prd.trim() === '' ? 'empty' : 'ai',
       name: typeof draft.name === 'string' ? draft.name : '',
       summary: typeof draft.summary === 'string' ? draft.summary : '',
       priority: draft.priority === 'low' || draft.priority === 'medium' || draft.priority === 'high' || draft.priority === 'urgent' ? draft.priority : 'medium',
@@ -1384,7 +1427,9 @@ function lifecyclePhaseState(project: ProjectRecord, phase: 'understanding' | 'p
   return phaseIndex < currentIndex || project.status === 'completed' ? 'done' : phase === current ? 'current' : 'pending'
 }
 function lifecycleDescription(project: ProjectRecord, tasks: TaskRecord[], currentTask: TaskRecord | undefined): string {
-  if (project.status === 'decomposing') return 'AI 正在读取仓库结构、现有测试和交付目标。计划生成后会自动进入批准阶段。'
+  if (project.status === 'draft' && project.prd.trim() === '') return '空项目尚未启动 AI。你可以先手动添加任务，或补充需求后明确选择让 AI 拆解。'
+  if (project.status === 'draft') return '项目资料已保存，尚未启动 AI。需要时可以手动添加任务或开始智能拆解。'
+  if (project.status === 'decomposing') return 'AI 正在只读检查仓库结构、现有测试和交付目标。计划生成后会进入批准阶段。'
   if (project.status === 'awaiting_approval') return `AI 已生成 ${tasks.length} 个依赖任务，确认一次后会自动执行并验证。`
   if (project.status === 'running') return currentTask ? `正在执行：${currentTask.title}。通过测试后会自动进入下一个依赖任务。` : 'AI 正在按依赖顺序执行并验证任务。'
   if (project.status === 'failed') return '自动修复已达到本轮上限，等待你确认继续或修改项目简报。'

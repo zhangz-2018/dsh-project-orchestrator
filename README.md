@@ -6,10 +6,19 @@ A durable, approval-gated project orchestration workbench for [DeepSeek Harness]
 
 `dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It keeps Projects, Issues, TaskRuns, human Decisions, Agent capacity, Git worktree evidence, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
 
-> **Compatibility:** v1.1.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.2.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+
+## Project creation is not an AI side effect
+
+The Web client defaults to **Empty Project**. It records the Project name and existing working directory without reading the repository, invoking a Planner, creating Tasks, or creating an approval. Add Tasks manually, or add a delivery brief later and explicitly request AI decomposition.
+
+Choose **AI decomposition** only when a delivery brief is ready. Planning inspects the repository read-only, generates code and test Tasks, and still requires explicit human approval before execution.
+
+The Project detail view can open the persisted working directory in Finder on macOS or the system file manager through `xdg-open` on Linux. The Host accepts only a Project ID for this action; Windows is not certified.
 
 ## Highlights
 
+- **Explicit AI planning:** Project creation and AI decomposition are separate actions; an empty Project is the Web default.
 - **Approval-gated delivery:** AI planning produces a revision/hash-bound plan; execution starts only after explicit approval.
 - **Durable Issue execution:** assignment, reassign, stop, continue, review, and Decision requests converge on idempotent Command records.
 - **Runtime and capacity controls:** Runtime heartbeat, Agent `maxConcurrency`, queue retention, restart recovery, directory locks, and workspace leases.
@@ -26,7 +35,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.1.0
+dsh plugin --profile web add dsh-project-orchestrator@1.2.0
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -76,7 +85,7 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 7. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
 8. Human review approval is the only Issue completion path.
 
-Runtime records are local Harness Host facts. v1.1.0 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
+Runtime records are local Harness Host facts. v1.2.0 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
 
 ## Security model
 

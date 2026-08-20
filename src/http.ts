@@ -110,7 +110,8 @@ export function createHttpHandler(service: OrchestratorService) {
         }
 
         if (method === 'POST' && path === '/projects') {
-          return json(res, 202, await service.createProjectAndStart(await readJson(req)))
+          const project = await service.createProjectFromRequest(await readJson(req))
+          return json(res, project.status === 'decomposing' ? 202 : 201, project)
         }
         const projectTasks = matchOne(path, /^\/projects\/([^/]+)\/tasks$/)
         if (projectTasks !== undefined && method === 'POST') {
@@ -135,6 +136,10 @@ export function createHttpHandler(service: OrchestratorService) {
         const decompose = matchOne(path, /^\/projects\/([^/]+)\/decompose$/)
         if (decompose !== undefined && method === 'POST') {
           return json(res, 202, await service.startDecomposition(decompose))
+        }
+        const openDirectory = matchOne(path, /^\/projects\/([^/]+)\/open-directory$/)
+        if (openDirectory !== undefined && method === 'POST') {
+          return json(res, 200, await service.openProjectDirectory(openDirectory))
         }
         const approve = matchOne(path, /^\/projects\/([^/]+)\/approve$/)
         if (approve !== undefined && method === 'POST') {

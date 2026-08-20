@@ -264,8 +264,11 @@ export const styles = `
 .po-progress-ring { --po-progress: 0deg; width: 20px; height: 20px; border-radius: 50%; display: inline-block; background: conic-gradient(#10a36a var(--po-progress), #e5e7eb 0); position: relative; }
 .po-progress-ring::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--dsw-alias-bg-base, #fff); }
 .po-project-detail-page { padding-bottom: 48px; }
-.po-project-summary-band { min-height: 86px; padding: 14px 24px; display: grid; grid-template-columns: 110px 90px 130px 130px 110px minmax(200px, 1fr); gap: 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); background: var(--dsw-alias-bg-layer-1, #fafafa); }
+.po-project-summary-band { min-height: 86px; padding: 14px 24px; display: grid; grid-template-columns: 100px 82px 110px 110px 110px 90px minmax(220px, 1fr); gap: 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); background: var(--dsw-alias-bg-layer-1, #fafafa); }
 .po-project-summary-band > div { min-width: 0; display: grid; align-content: center; gap: 6px; }
+.po-project-directory { grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; }
+.po-project-directory > span { grid-column: 1 / -1; }
+.po-project-directory .po-button { align-self: center; }
 .po-project-summary-band span:first-child { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
 .po-project-summary-band strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .po-delivery-gate, .po-document-section, .po-project-task-section, .po-run-summary { margin: 18px 24px 0; padding: 18px; border: 1px solid var(--dsw-alias-border-l2, #e5e7eb); border-radius: 7px; }
@@ -426,6 +429,19 @@ export const styles = `
 .po-modal > footer { min-height: 64px; padding: 10px 18px; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
 .po-spacer { flex: 1; }
 .po-project-intake { display: grid; gap: 18px; }
+.po-project-mode { margin: 0; border: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.po-project-mode legend { grid-column: 1 / -1; margin-bottom: 8px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 12px; font-weight: 650; }
+.po-project-mode-option { min-width: 0; min-height: 88px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 8px; padding: 14px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; background: var(--dsw-alias-bg-base, #fff); }
+.po-project-mode-option:hover { background: var(--dsw-alias-interactive-bg-hover, #f4f4f5); }
+.po-project-mode-option-selected { border-color: #185fa3; background: #eef5fb; box-shadow: inset 0 0 0 1px #185fa3; }
+.po-project-mode-option input { margin-top: 3px; accent-color: #185fa3; }
+.po-project-mode-option span { min-width: 0; display: grid; gap: 5px; }
+.po-project-mode-option strong { font-size: 13px; }
+.po-project-mode-option small { color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; line-height: 1.5; }
+.po-empty-project-note { border: 1px solid var(--dsw-alias-border-l2, #e5e7eb); border-radius: 8px; padding: 14px; display: flex; align-items: flex-start; gap: 12px; color: var(--dsw-alias-label-secondary, #52525b); background: var(--dsw-alias-bg-layer-1, #fafafa); }
+.po-empty-project-note > svg { flex: 0 0 auto; margin-top: 2px; }
+.po-empty-project-note strong { color: var(--dsw-alias-label-primary, #18181b); font-size: 13px; }
+.po-empty-project-note p { max-width: 68ch; margin: 5px 0 0; font-size: 12px; line-height: 1.55; }
 .po-intake-intro { padding: 2px 0 6px; display: flex; align-items: flex-start; gap: 14px; }
 .po-intake-intro h3 { margin: 0; font-size: 18px; }
 .po-intake-intro p { max-width: 68ch; margin: 6px 0 0; color: var(--dsw-alias-label-secondary, #52525b); line-height: 1.55; }
@@ -619,7 +635,10 @@ export const styles = `
   .po-modal-backdrop { padding: 0; align-items: end; }
   .po-modal, .po-modal-wide { width: 100%; max-height: calc(100vh - 20px); border-radius: 8px 8px 0 0; }
   .po-modal-body { padding: 16px 14px; }
-  .po-form-grid, .po-field-pair { grid-template-columns: 1fr; }
+  .po-form-grid, .po-field-pair, .po-project-mode { grid-template-columns: 1fr; }
+  .po-project-mode-option { min-height: 88px; }
+  .po-modal > footer { flex-wrap: wrap; }
+  .po-modal > footer .po-button { min-height: 44px; flex: 1 1 150px; }
   .po-field-wide { grid-column: auto; }
   .po-intake-intro { padding-top: 4px; }
   .po-brief-editor { min-height: 200px; }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { chmod, mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { execFile } from 'node:child_process'
@@ -287,56 +287,40 @@ test('editing task priority and tags invalidates approval and clears all task ev
   assert.deepEqual(store.projectTasks(changed).map((task) => task.testOutput), [undefined, undefined])
 })
 
-test('updating a completed project clears task evidence and forces every gate to rerun', async () => {
+test('saving Project metadata preserves the current plan, approval, and task evidence', async () => {
   const store = memoryStore()
-  const observation = {}
-  const service = new OrchestratorService(agentContext('Agent reran after project change.', observation), store)
-  const approved = await approvedProject(service, store, ['printf code-reran', 'printf test-reran'])
-  const completedAt = '2026-08-17T01:00:00.000Z'
-  for (const task of store.projectTasks(approved)) {
-    await store.tasks.put(task.id, {
-      ...task,
-      status: 'completed',
-      sessionId: `old-session-${task.id}`,
-      latestRunId: 'old-run',
-      testExitCode: 0,
-      testOutput: 'old passing evidence',
-      resultSummary: 'Old agent result.',
-      updatedAt: completedAt,
-    })
-  }
-  await store.projects.put(approved.id, { ...approved, status: 'completed', updatedAt: completedAt })
-
+  const service = new OrchestratorService(agentContext('Unused.'), store)
+  const approved = await approvedProject(service, store, ['true', 'true'])
+  const beforeTasks = structuredClone(store.projectTasks(approved))
   const changed = await service.updateProject(approved.id, {
     name: 'Changed project name',
     summary: 'Changed summary',
-    cwd: '/tmp',
-    prd: 'Changed PRD',
-    technicalDesign: 'Changed technical design',
+    cwd: approved.cwd,
+    prd: approved.prd,
+    technicalDesign: approved.technicalDesign,
+    priority: approved.priority,
+    owner: approved.owner,
+    taskLanguage: approved.taskLanguage,
   })
-  assert.equal(changed.status, 'draft')
-  assert.equal(changed.revision, approved.revision + 1)
-  assert.equal(changed.approvedRevision, undefined)
+  assert.equal(changed.status, approved.status)
+  assert.equal(changed.revision, approved.revision)
+  assert.equal(changed.approvedRevision, approved.approvedRevision)
   assert.equal(changed.name, 'Changed project name')
   assert.equal(changed.summary, 'Changed summary')
-  assert.equal(changed.prd, 'Changed PRD')
-  assert.equal(changed.technicalDesign, 'Changed technical design')
-  for (const task of store.projectTasks(changed)) {
-    assert.equal(task.status, 'draft')
-    assert.equal(task.sessionId, undefined)
-    assert.equal(task.latestRunId, undefined)
-    assert.equal(task.testExitCode, undefined)
-    assert.equal(task.testOutput, undefined)
-    assert.equal(task.resultSummary, undefined)
-  }
-  assert.throws(() => assertExecutable(changed, store.projectTasks(changed), store.approvalFor(changed)), /approved/)
+  assert.deepEqual(store.projectTasks(changed), beforeTasks)
+  assert.doesNotThrow(() => assertExecutable(changed, store.projectTasks(changed), store.approvalFor(changed)))
 
-  const reapproved = await service.approveProject(changed.id, 'tester')
-  const run = await service.startExecution(reapproved.id)
-  assert.equal((await waitForRun(store, run.id)).status, 'completed')
-  assert.equal(observation.createCalls, 2)
-  assert.match(store.tasks.get('code').testOutput, /code-reran/)
-  assert.match(store.tasks.get('test').testOutput, /test-reran/)
+  await assert.rejects(() => service.updateProject(approved.id, {
+    name: changed.name,
+    summary: changed.summary,
+    cwd: approved.cwd,
+    prd: 'Changed PRD',
+    technicalDesign: approved.technicalDesign,
+    priority: approved.priority,
+    owner: approved.owner,
+    taskLanguage: approved.taskLanguage,
+  }), (error) => error.code === 'project-replan-required')
+  assert.deepEqual(store.projectTasks(changed), beforeTasks)
 })
 
 test('manual task creation validates the plan and invalidates approval', async () => {
@@ -746,6 +730,87 @@ test('project intake starts decomposition without a second user action', async (
   const settled = store.projects.get(project.id)
   assert.equal(settled.status, 'awaiting_approval')
   assert.equal(store.projectTasks(settled).length, 2)
+})
+
+test('empty project creation persists a draft without invoking AI or creating tasks', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-empty-project-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: '空项目', cwd: root })
+    assert.equal(project.status, 'draft')
+    assert.equal(project.prd, '')
+    assert.equal(project.technicalDesign, '')
+    assert.deepEqual(project.taskIds, [])
+    assert.equal(store.projectTasks(project).length, 0)
+    assert.equal(store.resources.size, 0)
+    assert.equal(store.issues.size, 0)
+    assert.equal(store.approvals.size, 0)
+    await assert.rejects(() => service.startDecomposition(project.id), (error) => error.code === 'project-brief-required')
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('an empty project can add a brief and explicitly start AI decomposition later', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-later-planning-'))
+  try {
+    const store = memoryStore()
+    const response = JSON.stringify({ summary: '后续计划。', tasks: [
+      { id: 'implement', title: '实现后续需求', kind: 'code', description: '完成后续需求。', acceptanceCriteria: ['后续需求可验证'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'true' },
+      { id: 'verify', title: '验证后续需求', kind: 'test', description: '增加后续测试。', acceptanceCriteria: ['后续测试通过'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: 'true' },
+    ] })
+    const service = new OrchestratorService(agentContext(response), store)
+    const empty = await service.createProjectFromRequest({ mode: 'empty', name: '后续规划', cwd: root })
+    await service.updateProject(empty.id, { name: empty.name, cwd: root, prd: '现在让 AI 拆解。' })
+    const planning = await service.startDecomposition(empty.id)
+    assert.equal(planning.status, 'decomposing')
+    assert.equal(store.resources.size, 1)
+    assert.equal(store.issues.size, 1)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    assert.equal(store.projects.get(empty.id).status, 'awaiting_approval')
+    assert.equal(store.projectTasks(store.projects.get(empty.id)).length, 2)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('omitted creation mode preserves AI planning compatibility', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-compatible-project-'))
+  try {
+    const store = memoryStore()
+    const response = JSON.stringify({ summary: '兼容计划。', tasks: [
+      { id: 'implement', title: '实现兼容功能', kind: 'code', description: '完成兼容实现。', acceptanceCriteria: ['功能可以验证'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'true' },
+      { id: 'verify', title: '验证兼容功能', kind: 'test', description: '增加兼容测试。', acceptanceCriteria: ['兼容测试通过'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: 'true' },
+    ] })
+    const service = new OrchestratorService(agentContext(response), store)
+    const project = await service.createProjectFromRequest({ cwd: root, prd: '兼容旧客户端。' })
+    assert.equal(project.status, 'decomposing')
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('project directory opening uses the persisted canonical path and rejects broad roots', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-open-project-'))
+  const opened = []
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store, async (path) => { opened.push(path) })
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: '目录项目', cwd: root })
+    assert.deepEqual(await service.openProjectDirectory(project.id), { ok: true })
+    assert.deepEqual(opened, [await realpath(root)])
+    const broad = await service.createProject({ name: 'Broad', cwd: '/tmp', prd: 'Legacy compatibility.' })
+    await assert.rejects(() => service.openProjectDirectory(broad.id), (error) => error.code === 'unsafe-resource-path')
+    const broadLink = join(root, 'broad-link')
+    await symlink('/tmp', broadLink)
+    const linked = await service.createProjectFromRequest({ mode: 'empty', name: '符号链接项目', cwd: broadLink })
+    await assert.rejects(() => service.openProjectDirectory(linked.id), (error) => error.code === 'unsafe-resource-path')
+    await assert.rejects(() => service.openProjectDirectory('missing-project'), (error) => error.code === 'project-not-found')
+    assert.equal(opened.length, 1)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
 })
 
 test('planner defaults to Chinese human-facing tasks while preserving technical commands', async () => {

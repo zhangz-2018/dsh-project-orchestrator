@@ -356,8 +356,8 @@ export const ProjectRecordSchema = z.object({
   name: z.string().min(1).max(160),
   summary: z.string().max(1_000),
   cwd: z.string().min(1).max(4_096),
-  prd: z.string().min(1).max(500_000),
-  technicalDesign: z.string().min(1).max(500_000),
+  prd: z.string().max(500_000),
+  technicalDesign: z.string().max(500_000),
   priority: PrioritySchema.optional(),
   owner: OwnerSchema.optional(),
   taskLanguage: TaskLanguageSchema.optional(),
@@ -469,19 +469,46 @@ export const AgentInputSchema = z.object({
 
 const DEFAULT_TECHNICAL_DESIGN = 'No separate technical design was supplied. Inspect the repository read-only, follow its existing architecture and tests, state material assumptions in the generated plan, and choose the smallest implementation that satisfies the delivery brief.'
 
-export const ProjectInputSchema = z.object({
-  name: z.string().trim().max(160).default('').transform((value) => value || 'Untitled project'),
+const ProjectEditableInputSchema = z.object({
+  name: z.string().trim().max(160).default(''),
   summary: z.string().trim().max(1_000).default(''),
   cwd: z.string().trim().min(1).max(4_096),
-  prd: z.string().trim().min(1).max(500_000),
-  technicalDesign: z.string().trim().max(500_000).default('').transform((value) => value || DEFAULT_TECHNICAL_DESIGN),
+  prd: z.string().trim().max(500_000).default(''),
+  technicalDesign: z.string().trim().max(500_000).default(''),
   priority: PrioritySchema.default('medium'),
   owner: OwnerSchema.default(''),
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
 }).strict()
 
+export const ProjectInputSchema = ProjectEditableInputSchema.superRefine((value, context) => {
+  if (value.prd === '') context.addIssue({ code: z.ZodIssueCode.custom, path: ['prd'], message: 'A delivery brief is required for AI planning.' })
+}).transform((value) => ({
+  ...value,
+  name: value.name || 'Untitled project',
+  technicalDesign: value.technicalDesign || DEFAULT_TECHNICAL_DESIGN,
+}))
+
+export const ProjectUpdateInputSchema = ProjectEditableInputSchema.transform((value) => ({
+  ...value,
+  name: value.name || 'Untitled project',
+}))
+
+export const ProjectCreateRequestSchema = z.union([
+  ProjectEditableInputSchema.extend({ mode: z.literal('empty') }).superRefine((value, context) => {
+    if (value.name === '') context.addIssue({ code: z.ZodIssueCode.custom, path: ['name'], message: 'A project name is required for an empty project.' })
+  }),
+  ProjectEditableInputSchema.extend({ mode: z.literal('ai').default('ai') }).superRefine((value, context) => {
+    if (value.prd === '') context.addIssue({ code: z.ZodIssueCode.custom, path: ['prd'], message: 'A delivery brief is required for AI planning.' })
+  }).transform((value) => ({
+    ...value,
+    name: value.name || 'Untitled project',
+    technicalDesign: value.technicalDesign || DEFAULT_TECHNICAL_DESIGN,
+  })),
+])
+
 export const ProjectReplanRequestSchema = z.object({
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
+  project: ProjectUpdateInputSchema.optional(),
 }).strict()
 
 export const ProjectApprovalRequestSchema = z.object({
@@ -699,6 +726,8 @@ export type AgentBuilderMessage = z.infer<typeof AgentBuilderMessageSchema>
 export type AgentDraftRequest = z.infer<typeof AgentDraftRequestSchema>
 export type AgentBuilderResponse = z.infer<typeof AgentBuilderResponseSchema>
 export type ProjectInput = z.infer<typeof ProjectInputSchema>
+export type ProjectUpdateInput = z.infer<typeof ProjectUpdateInputSchema>
+export type ProjectCreateRequest = z.infer<typeof ProjectCreateRequestSchema>
 export type TaskLanguage = z.infer<typeof TaskLanguageSchema>
 export type ProjectReplanRequest = z.infer<typeof ProjectReplanRequestSchema>
 export type ProjectApprovalRequest = z.infer<typeof ProjectApprovalRequestSchema>

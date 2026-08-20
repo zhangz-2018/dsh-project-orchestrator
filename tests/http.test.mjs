@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { Readable } from 'node:stream'
 import test from 'node:test'
-import { createHttpHandler } from '../lib/index.js'
+import { createHttpHandler, WorkflowError } from '../lib/index.js'
 
 class Request extends Readable {
   constructor({ method = 'GET', url = '/', headers = {}, body = '', remoteAddress = '127.0.0.1' }) {
@@ -51,7 +51,8 @@ function service() {
      async deleteRuntime() {},
      async createIssue(body) { return { id: 'issue', ...body } },
     async draftAgent() { return { name: 'Draft', role: 'Reviewer', description: '', persona: 'Review.', preset: 'standard', toolPolicy: 'read_only' } },
-    async createProjectAndStart(body) { return { id: 'project', status: 'decomposing', ...body } },
+    async createProjectFromRequest(body) { return { id: 'project', status: body.mode === 'empty' ? 'draft' : 'decomposing', ...body } },
+    async openProjectDirectory() { return { ok: true } },
     async replanProject(id, body) { return { id, status: 'decomposing', ...body } },
     async approveAndStartExecution(id, body) { return { project: { id, status: 'running' }, run: { id: 'run', projectId: id, status: 'queued', approvalRevision: body.revision, approvalPlanHash: body.planHash, createdAt: 'now' } } },
     async retryExecution(id) { return { project: { id, status: 'running' }, run: { id: 'retry-run', projectId: id, status: 'queued', createdAt: 'now' } } },
@@ -92,6 +93,58 @@ test('project creation starts planning and approval starts execution through one
   }), approveResponse)
   assert.equal(approveResponse.statusCode, 202)
   assert.equal(JSON.parse(approveResponse.body).run.status, 'queued')
+})
+
+test('empty project creation returns a draft without starting planning', async () => {
+  const fake = service()
+  const res = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects',
+    headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
+    body: JSON.stringify({ mode: 'empty', name: '空项目', cwd: '/workspace' }),
+  }), res)
+  assert.equal(res.statusCode, 201)
+  assert.equal(JSON.parse(res.body).status, 'draft')
+})
+
+test('project directory open route is same-origin, project-id scoped, and ignores arbitrary path bodies', async () => {
+  const fake = service()
+  let openedId
+  fake.openProjectDirectory = async (id) => { openedId = id; return { ok: true } }
+  const res = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects/project-1/open-directory',
+    headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
+    body: JSON.stringify({ path: '/etc' }),
+  }), res)
+  assert.equal(res.statusCode, 200)
+  assert.equal(openedId, 'project-1')
+  assert.deepEqual(JSON.parse(res.body), { ok: true })
+
+  const crossOrigin = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects/project-2/open-directory',
+    headers: { host: '127.0.0.1:3080', origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site' },
+  }), crossOrigin)
+  assert.equal(crossOrigin.statusCode, 403)
+  assert.equal(openedId, 'project-1')
+})
+
+test('project directory opener failures preserve stable HTTP status and error codes', async () => {
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  for (const [code, status] of [
+    ['directory-open-unsupported', 501],
+    ['directory-opener-unavailable', 503],
+    ['directory-open-failed', 500],
+    ['directory-open-timeout', 504],
+  ]) {
+    const fake = service()
+    fake.openProjectDirectory = async () => { throw new WorkflowError(code, 'Stable safe message.', status) }
+    const res = response()
+    await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/open-directory', headers }), res)
+    assert.equal(res.statusCode, status)
+    assert.deepEqual(JSON.parse(res.body), { error: { code, message: 'Stable safe message.' } })
+  }
 })
 
 test('project replan route owns language change behind same-origin serialization', async () => {
