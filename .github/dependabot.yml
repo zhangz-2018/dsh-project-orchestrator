@@ -16,6 +16,10 @@ updates:
         update-types: [minor, patch]
     ignore:
       - dependency-name: "@deepseek-ai/*"
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     labels: [dependencies]
     commit-message:
       prefix: deps
@@ -28,6 +32,11 @@ updates:
       time: "05:30"
       timezone: Etc/UTC
     open-pull-requests-limit: 5
+    groups:
+      codeql-actions:
+        patterns: ["github/codeql-action/*"]
+      node-runtime-actions:
+        patterns: ["actions/checkout", "actions/setup-node"]
     labels: [dependencies, github-actions]
     commit-message:
       prefix: ci
