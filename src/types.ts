@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const AgentToolPolicySchema = z.enum(['full', 'read_only'])
 export const AgentStatusSchema = z.enum(['active', 'archived'])
 export const PrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'])
+export const TaskLanguageSchema = z.enum(['zh-CN', 'en'])
 export const RuntimeStatusSchema = z.enum(['online', 'offline', 'unstable'])
 export const ResourceKindSchema = z.enum(['github_repo', 'local_directory'])
 export const ResourceExecutionModeSchema = z.enum(['in_place', 'worktree'])
@@ -359,6 +360,7 @@ export const ProjectRecordSchema = z.object({
   technicalDesign: z.string().min(1).max(500_000),
   priority: PrioritySchema.optional(),
   owner: OwnerSchema.optional(),
+  taskLanguage: TaskLanguageSchema.optional(),
   status: ProjectStatusSchema,
   revision: z.number().int().positive(),
   approvedRevision: z.number().int().positive().optional(),
@@ -475,6 +477,11 @@ export const ProjectInputSchema = z.object({
   technicalDesign: z.string().trim().max(500_000).default('').transform((value) => value || DEFAULT_TECHNICAL_DESIGN),
   priority: PrioritySchema.default('medium'),
   owner: OwnerSchema.default(''),
+  taskLanguage: TaskLanguageSchema.default('zh-CN'),
+}).strict()
+
+export const ProjectReplanRequestSchema = z.object({
+  taskLanguage: TaskLanguageSchema.default('zh-CN'),
 }).strict()
 
 export const ProjectApprovalRequestSchema = z.object({
@@ -692,6 +699,8 @@ export type AgentBuilderMessage = z.infer<typeof AgentBuilderMessageSchema>
 export type AgentDraftRequest = z.infer<typeof AgentDraftRequestSchema>
 export type AgentBuilderResponse = z.infer<typeof AgentBuilderResponseSchema>
 export type ProjectInput = z.infer<typeof ProjectInputSchema>
+export type TaskLanguage = z.infer<typeof TaskLanguageSchema>
+export type ProjectReplanRequest = z.infer<typeof ProjectReplanRequestSchema>
 export type ProjectApprovalRequest = z.infer<typeof ProjectApprovalRequestSchema>
 export type TaskInput = z.infer<typeof TaskInputSchema>
 export type TaskUpdate = z.infer<typeof TaskUpdateSchema>

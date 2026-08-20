@@ -738,13 +738,72 @@ test('project intake starts decomposition without a second user action', async (
     { id: 'verify', title: 'Verify change', kind: 'test', description: 'Add regression coverage.', acceptanceCriteria: ['Regression is covered'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: 'true' },
   ] })
   const service = new OrchestratorService(agentContext(response), store)
-  const project = await service.createProjectAndStart({ name: '', cwd: '/tmp', prd: 'Build a feature.', technicalDesign: '' })
+  const project = await service.createProjectAndStart({ name: '', cwd: '/tmp', prd: 'Build a feature.', technicalDesign: '', taskLanguage: 'en' })
   assert.equal(project.status, 'decomposing')
+  assert.equal(project.taskLanguage, 'en')
   assert.equal(project.technicalDesign.includes('No separate technical design'), true)
   await new Promise((resolve) => setTimeout(resolve, 30))
   const settled = store.projects.get(project.id)
   assert.equal(settled.status, 'awaiting_approval')
   assert.equal(store.projectTasks(settled).length, 2)
+})
+
+test('planner defaults to Chinese human-facing tasks while preserving technical commands', async () => {
+  const store = memoryStore()
+  const observation = {}
+  const response = JSON.stringify({ summary: '完成中文交付计划。', tasks: [
+    { id: 'implement', title: '实现功能变更', kind: 'code', description: '按照现有架构完成实现。', acceptanceCriteria: ['功能行为符合需求'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'mvn -q -DskipTests package' },
+    { id: 'verify', title: '补充回归测试', kind: 'test', description: '增加自动化回归覆盖。', acceptanceCriteria: ['目标测试全部通过'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: "mvn -q test -Dtest='*FeatureTest'" },
+  ] })
+  const service = new OrchestratorService(agentContext(response, observation), store)
+  const project = await service.createProjectAndStart({ cwd: '/tmp', prd: '实现新功能。' })
+  await new Promise((resolve) => setTimeout(resolve, 30))
+  const settled = store.projects.get(project.id)
+  const tasks = store.projectTasks(settled)
+  assert.equal(settled.taskLanguage, 'zh-CN')
+  assert.match(observation.prompt, /Human-facing task language: zh-CN/)
+  assert.match(observation.prompt, /never translate commands/)
+  assert.equal(tasks[0].title, '实现功能变更')
+  assert.equal(tasks[0].testCommand, 'mvn -q -DskipTests package')
+})
+
+test('an unexecuted approved project can regenerate a Chinese plan and requires fresh approval', async () => {
+  const store = memoryStore()
+  const observation = {}
+  const response = JSON.stringify({ summary: '重新生成中文计划。', tasks: [
+    { id: 'code_zh', title: '实现中文任务', kind: 'code', description: '完成代码修改。', acceptanceCriteria: ['代码修改可验证'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'true' },
+    { id: 'test_zh', title: '验证中文任务', kind: 'test', description: '增加测试覆盖。', acceptanceCriteria: ['回归测试通过'], dependencies: ['code_zh'], suggestedAgentRole: 'Test Engineer', testCommand: 'true' },
+  ] })
+  const service = new OrchestratorService(agentContext(response, observation), store)
+  const approved = await approvedProject(service, store, ['true', 'true'])
+  const oldTaskIds = [...approved.taskIds]
+  const oldRevision = approved.revision
+  const pending = await service.replanProject(approved.id, { taskLanguage: 'zh-CN' })
+  assert.equal(pending.status, 'decomposing')
+  assert.equal(pending.revision, oldRevision + 1)
+  assert.equal(pending.approvedRevision, undefined)
+  await new Promise((resolve) => setTimeout(resolve, 30))
+  const settled = store.projects.get(approved.id)
+  assert.equal(settled.status, 'awaiting_approval')
+  assert.equal(settled.revision, oldRevision + 2)
+  assert.equal(settled.approvedRevision, undefined)
+  assert.equal(store.approvalFor(settled), undefined)
+  assert.deepEqual(store.projectTasks(settled).map((task) => task.title), ['实现中文任务', '验证中文任务'])
+  assert.equal(oldTaskIds.every((id) => store.tasks.get(id) === undefined), true)
+  assert.match(observation.prompt, /Human-facing task language: zh-CN/)
+})
+
+test('plan regeneration rejects execution history and unsupported language without mutation', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const approved = await approvedProject(service, store, ['true', 'true'])
+  const before = structuredClone(store.projects.get(approved.id))
+  await store.runs.put('historical-run', { id: 'historical-run', projectId: approved.id, status: 'failed', createdAt: now })
+  await assert.rejects(() => service.replanProject(approved.id, { taskLanguage: 'zh-CN' }), (error) => error.code === 'project-already-executed')
+  assert.deepEqual(store.projects.get(approved.id), before)
+  await store.runs.delete('historical-run')
+  await assert.rejects(() => service.replanProject(approved.id, { taskLanguage: 'fr' }))
+  assert.deepEqual(store.projects.get(approved.id), before)
 })
 
 test('approval binds expected revision and plan hash and starts exactly one run', async () => {

@@ -52,6 +52,7 @@ function service() {
      async createIssue(body) { return { id: 'issue', ...body } },
     async draftAgent() { return { name: 'Draft', role: 'Reviewer', description: '', persona: 'Review.', preset: 'standard', toolPolicy: 'read_only' } },
     async createProjectAndStart(body) { return { id: 'project', status: 'decomposing', ...body } },
+    async replanProject(id, body) { return { id, status: 'decomposing', ...body } },
     async approveAndStartExecution(id, body) { return { project: { id, status: 'running' }, run: { id: 'run', projectId: id, status: 'queued', approvalRevision: body.revision, approvalPlanHash: body.planHash, createdAt: 'now' } } },
     async retryExecution(id) { return { project: { id, status: 'running' }, run: { id: 'retry-run', projectId: id, status: 'queued', createdAt: 'now' } } },
     async createTask(projectId, body) { return { id: 'task', projectId, ...body } },
@@ -91,6 +92,18 @@ test('project creation starts planning and approval starts execution through one
   }), approveResponse)
   assert.equal(approveResponse.statusCode, 202)
   assert.equal(JSON.parse(approveResponse.body).run.status, 'queued')
+})
+
+test('project replan route owns language change behind same-origin serialization', async () => {
+  const fake = service()
+  const res = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects/project-1/replan',
+    headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
+    body: JSON.stringify({ taskLanguage: 'zh-CN' }),
+  }), res)
+  assert.equal(res.statusCode, 202)
+  assert.deepEqual(JSON.parse(res.body), { id: 'project-1', status: 'decomposing', taskLanguage: 'zh-CN' })
 })
 
 test('runtime, issue, and project resource routes use the serialized mutation boundary', async () => {

@@ -13,6 +13,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Inbox, workload, run statistics, bounded Autopilot, idempotent external triggers, and loopback CLI.
 - Responsive Harness Web workbench with Inbox, Issues, Projects, Agents, Squads, Runtimes, Skills, and Autonomous Delivery pages.
 - Project-local `.venv` discovery for approved test commands and persisted execution-environment evidence.
+- Project-level `zh-CN`/`en` planning language, Simplified Chinese by default, plus approval-invalidating regeneration for unexecuted plans.
 
 ### Compatibility
 

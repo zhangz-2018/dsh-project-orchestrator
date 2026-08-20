@@ -1,6 +1,7 @@
 export type AgentToolPolicy = 'full' | 'read_only'
 export type Priority = 'low' | 'medium' | 'high' | 'urgent'
 export type ProjectStatus = 'draft' | 'decomposing' | 'awaiting_approval' | 'approved' | 'running' | 'completed' | 'failed' | 'cancelled'
+export type TaskLanguage = 'zh-CN' | 'en'
 export type TaskStatus = 'draft' | 'queued' | 'running' | 'verifying' | 'completed' | 'failed' | 'blocked' | 'cancelled'
 export type BoardStage = 'planned' | 'todo' | 'in_progress' | 'review'
 export type RuntimeStatus = 'online' | 'offline' | 'unstable'
@@ -65,6 +66,7 @@ export interface ProjectRecord {
   technicalDesign: string
   priority?: Priority
   owner?: string
+  taskLanguage?: TaskLanguage
   status: ProjectStatus
   revision: number
   approvedRevision?: number

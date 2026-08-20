@@ -128,6 +128,10 @@ export function createHttpHandler(service: OrchestratorService) {
           await service.deleteProject(project)
           return json(res, 200, { ok: true })
         }
+        const replan = matchOne(path, /^\/projects\/([^/]+)\/replan$/)
+        if (replan !== undefined && method === 'POST') {
+          return json(res, 202, await service.replanProject(replan, await readJson(req)))
+        }
         const decompose = matchOne(path, /^\/projects\/([^/]+)\/decompose$/)
         if (decompose !== undefined && method === 'POST') {
           return json(res, 202, await service.startDecomposition(decompose))

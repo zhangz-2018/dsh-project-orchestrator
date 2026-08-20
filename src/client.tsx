@@ -40,6 +40,7 @@ import type {
   RunRecord,
   RuntimeRecord,
   Snapshot,
+  TaskLanguage,
   TaskRecord,
   TaskStatus,
 } from './client-types.js'
@@ -748,6 +749,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const planComplete = tasks.some((task) => task.kind === 'code') && tasks.some((task) => task.kind === 'test') && tasks.every((task) => task.testCommand.trim() !== '')
   const canApprove = project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent
   const canRetry = approvalCurrent && ['approved', 'failed', 'cancelled'].includes(project.status)
+  const canReplan = ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
   const completed = tasks.filter((task) => task.status === 'completed' && task.testExitCode === 0).length
   const currentTask = latestRun?.currentTaskId ? tasks.find((task) => task.id === latestRun.currentTaskId) : undefined
   const resources = state.snapshot.resources.filter((resource) => resource.projectId === project.id)
@@ -767,6 +769,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div><span>状态</span><StatusBadge status={project.status} /></div>
         <div><span>优先级</span><PriorityBadge priority={project.priority ?? 'medium'} /></div>
         <div><span>负责人</span><strong>{project.owner?.trim() || '未分配'}</strong></div>
+        <div><span>任务语言</span><strong>{(project.taskLanguage ?? 'zh-CN') === 'zh-CN' ? '简体中文' : 'English'}</strong></div>
         <div><span>当前版本</span><strong>Revision {project.revision}</strong></div>
         <div><span>测试进度</span><strong>{completed}/{tasks.length}</strong></div>
         <div><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong></div>
@@ -785,7 +788,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         {project.status === 'failed' ? <div className="po-intervention-panel" role="alert"><strong>AI 已暂停，保留了已通过的任务</strong><span>{project.lastError || '执行未完成，请检查失败任务的测试证据。'}</span></div> : null}
         <div className="po-gate-actions">
           {canApprove ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={() => void approveAndExecuteProject(model, project, planHash)}>批准计划并开始实施</ActionButton> : null}
-          {project.status === 'draft' ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void decomposeProject(model, project)}>让 AI 重新生成计划</ActionButton> : null}
+          {canReplan ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>重新生成中文计划</ActionButton> : null}
           {project.status === 'failed' && canRetry ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>让 AI 修复并继续</ActionButton> : null}
           {project.status === 'cancelled' && canRetry ? <ActionButton variant="primary" icon={<IconPlayOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>继续自动实施</ActionButton> : null}
           {active ? <ActionButton variant="outline" icon={<IconStopFill16 />} disabled={state.loading} onClick={() => void cancelProject(model, project)}>停止运行</ActionButton> : null}
@@ -1083,13 +1086,14 @@ interface ProjectIntakeValue {
   cwd: string
   prd: string
   technicalDesign: string
+  taskLanguage: TaskLanguage
 }
 
 function ProjectDialog({ state, model, project }: { state: WorkbenchState; model: WorkbenchModel; project?: ProjectRecord | undefined }) {
   const stored = project === undefined ? loadProjectIntakeDraft() : undefined
   const [value, setValue] = useState<ProjectIntakeValue>(() => project ? {
-    name: project.name, summary: project.summary, priority: project.priority ?? 'medium', owner: project.owner ?? '', cwd: project.cwd, prd: project.prd, technicalDesign: project.technicalDesign,
-  } : stored ?? { name: '', summary: '', priority: 'medium', owner: '', cwd: '', prd: '', technicalDesign: '' })
+    name: project.name, summary: project.summary, priority: project.priority ?? 'medium', owner: project.owner ?? '', cwd: project.cwd, prd: project.prd, technicalDesign: project.technicalDesign, taskLanguage: project.taskLanguage ?? 'zh-CN',
+  } : stored ?? { name: '', summary: '', priority: 'medium', owner: '', cwd: '', prd: '', technicalDesign: '', taskLanguage: 'zh-CN' })
   const [nameLocked, setNameLocked] = useState(Boolean(project?.name || stored?.name))
   const [importError, setImportError] = useState<string>()
   const importInput = useRef<HTMLInputElement>(null)
@@ -1116,7 +1120,11 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
   }
   const submit = async () => {
     const payload = { ...value, name: value.name.trim() || suggestProjectName(value.prd) || '未命名项目' }
-    const result = await model.action(() => project === undefined ? mutate<ProjectRecord>('/projects', 'POST', payload) : mutate<ProjectRecord>(`/projects/${project.id}`, 'PUT', payload), project === undefined ? '项目已创建，AI 正在生成执行计划。' : '项目已更新，原审批已失效。')
+    const result = await model.action(async () => {
+      if (project === undefined) return mutate<ProjectRecord>('/projects', 'POST', payload)
+      await mutate<ProjectRecord>(`/projects/${project.id}`, 'PUT', payload)
+      return mutate<ProjectRecord>(`/projects/${project.id}/decompose`, 'POST')
+    }, project === undefined ? '项目已创建，AI 正在生成执行计划。' : '项目已更新并重新规划，原审批已失效。')
     if (result) {
       if (project === undefined) window.localStorage.removeItem(PROJECT_INTAKE_STORAGE_KEY)
       model.closePanel()
@@ -1131,7 +1139,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
         <div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><button type="button" onClick={() => { setImportTarget('prd'); importInput.current?.click() }}>导入需求文件</button><button type="button" onClick={() => { setImportTarget('technicalDesign'); importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text" hidden aria-label="导入 Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></div>
         {importError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{importError}</div> : null}
         <Field label="代码仓库 / 工作目录" hint="AI 会在这个目录中读取代码和测试，并由执行智能体在批准后修改。"><input className="po-input" required value={value.cwd} onChange={(event) => setValue({ ...value, cwd: event.target.value })} placeholder="/absolute/path/to/repository" /></Field>
-        <details className="po-project-constraints"><summary>补充约束（可选）</summary><div className="po-project-constraints-body"><Field label="项目名称"><input className="po-input" value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="不填写时根据交付目标生成" /></Field><Field label="技术方案上下文" hint="没有单独方案可以留空，AI 会根据交付目标和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="可粘贴已有模块、接口、数据、测试和发布约束。" /></Field><div className="po-field-pair"><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></div></details>
+        <details className="po-project-constraints"><summary>补充约束（可选）</summary><div className="po-project-constraints-body"><Field label="项目名称"><input className="po-input" value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="不填写时根据交付目标生成" /></Field><Field label="技术方案上下文" hint="没有单独方案可以留空，AI 会根据交付目标和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="可粘贴已有模块、接口、数据、测试和发布约束。" /></Field><div className="po-field-pair"><Field label="任务语言" hint="只影响标题、描述和验收说明；命令与代码标识保持原样。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>
       </div>
     </ModalShell>
   )
@@ -1238,8 +1246,9 @@ function MessageBar({ state, model }: { state: WorkbenchState; model: WorkbenchM
   return <button type="button" role="status" aria-live="polite" className={`po-toast${state.notice ? ' po-toast-success' : ''}`} onClick={model.clearMessages}>{state.error ?? state.notice}<IconCloseOutline16 /></button>
 }
 
-async function decomposeProject(model: WorkbenchModel, project: ProjectRecord) {
-  await model.action(() => mutate(`/projects/${project.id}/decompose`, 'POST'), '任务拆解已启动。')
+async function regenerateProjectPlan(model: WorkbenchModel, project: ProjectRecord, taskLanguage: TaskLanguage) {
+  if (project.taskIds.length > 0 && !window.confirm('重新生成会替换当前任务计划，并使已有审批失效。生成完成后需要重新批准，是否继续？')) return
+  await model.action(() => mutate(`/projects/${project.id}/replan`, 'POST', { taskLanguage }), taskLanguage === 'zh-CN' ? '中文任务计划正在重新生成，完成后需要重新批准。' : 'English task plan regeneration started; approval will be required again.')
 }
 async function approveAndExecuteProject(model: WorkbenchModel, project: ProjectRecord, planHash: string | undefined) {
   if (!planHash) return
@@ -1357,6 +1366,7 @@ function loadProjectIntakeDraft(): ProjectIntakeValue | undefined {
       cwd: draft.cwd,
       prd: draft.prd,
       technicalDesign: typeof draft.technicalDesign === 'string' ? draft.technicalDesign : '',
+      taskLanguage: draft.taskLanguage === 'en' ? 'en' : 'zh-CN',
     }
   } catch {
     return undefined

@@ -26,6 +26,15 @@ All responses are JSON and carry `Cache-Control: no-store`. Failed requests use:
 
 Inbox query fields are strict: `kind`, `projectId`, `issueId`, and bounded `limit`.
 
+## Project planning routes
+
+- `POST /projects` creates a Project and starts planning. `taskLanguage` is `zh-CN` by default and may be `en`.
+- `POST /projects/:id/replan` accepts `{ "taskLanguage": "zh-CN" }` or `en`, replaces only an unexecuted plan, increments the Project revision, clears current approval, and starts decomposition.
+- `POST /projects/:id/decompose` starts planning for a draft Project using its stored language.
+- `POST /projects/:id/approve` remains revision/hash-bound; a regenerated plan always requires fresh approval.
+
+Chinese mode validates that summary, titles, descriptions, and acceptance criteria contain Chinese text. JSON keys, task IDs, code symbols, paths, Agent roles, and commands are never translated.
+
 ## Unified command route
 
 `POST /commands` accepts a Command input. Supported types:

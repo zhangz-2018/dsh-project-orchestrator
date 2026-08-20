@@ -18,6 +18,7 @@ A durable, approval-gated project orchestration workbench for [DeepSeek Harness]
 - **Auditable automation:** bounded Autopilot, external-trigger deduplication, loopback CLI, Transcript redaction, and explicit unknown token/cost facts.
 - **Responsive workbench:** Inbox, Issues, Projects, Agents, Squads, Runtimes, Skills, and Autonomous Delivery inside the existing Harness Web shell.
 - **Project environment discovery:** approved commands use `<project>/.venv` when present and record the resolved execution environment.
+- **Chinese-first planning:** new Projects default to Simplified Chinese human-facing tasks, can opt into English, and can regenerate an unexecuted plan in Chinese with fresh approval required.
 
 ## Install
 
