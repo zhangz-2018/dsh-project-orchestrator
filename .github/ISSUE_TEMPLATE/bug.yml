@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a reproducible defect in a supported environment
+title: "bug: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, private repository content, raw storage, or unredacted Transcripts.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Plugin, Harness, Cordis, Node.js, Git, and OS versions.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal steps, expected behavior, and actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence
+      description: Error codes, bounded logs, TaskRun state, or screenshots with secrets removed.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I reproduced this on a certified compatibility-matrix environment.
+          required: true
+        - label: I removed secrets and private repository data.
+          required: true

@@ -1,0 +1,248 @@
+import { z } from 'zod'
+import {
+  defineDomain,
+  domainTable,
+  type Domain,
+} from '@deepseek-ai/dsh-storage-domain'
+import {
+  ActivityEventSchema,
+  CommentRecordSchema,
+  DecisionRecordSchema,
+  SquadRecordSchema,
+  DelegationRecordSchema,
+  TranscriptEntrySchema,
+  ArtifactRecordSchema,
+  CommandRecordSchema,
+  ExternalTriggerRecordSchema,
+  SkillRecordSchema,
+  LocalDirectoryLockRecordSchema,
+  WorkspaceLeaseRecordSchema,
+  AgentRecordSchema,
+  ApprovalRecordSchema,
+  IssueRecordSchema,
+  ProjectRecordSchema,
+  ProjectResourceSchema,
+  RunRecordSchema,
+  RuntimeRecordSchema,
+  TaskRecordSchema,
+  TaskRunRecordSchema,
+  type ActivityEvent,
+  type CommentRecord,
+  type DecisionRecord,
+  type SquadRecord,
+  type DelegationRecord,
+  type TranscriptEntry,
+  type ArtifactRecord,
+  type CommandRecord,
+  type ExternalTriggerRecord,
+  type SkillRecord,
+  type LocalDirectoryLockRecord,
+  type WorkspaceLeaseRecord,
+  type AgentRecord,
+  type ApprovalRecord,
+  type IssueRecord,
+  type ProjectRecord,
+  type ProjectResource,
+  type RunRecord,
+  type RuntimeRecord,
+  type Snapshot,
+  type TaskRecord,
+  type TaskRunRecord,
+} from './types.js'
+import { WorkflowError, planDigest } from './workflow.js'
+
+export const orchestratorDomain = defineDomain({
+  name: 'project_orchestrator',
+  version: 1,
+  global: {
+    schema: z.object({ schemaVersion: z.literal(1) }),
+    initial: { schemaVersion: 1 },
+  },
+  tables: {
+    agents: domainTable<string, AgentRecord>(AgentRecordSchema),
+    projects: domainTable<string, ProjectRecord>(ProjectRecordSchema),
+    tasks: domainTable<string, TaskRecord>(TaskRecordSchema),
+    approvals: domainTable<string, ApprovalRecord>(ApprovalRecordSchema),
+    runs: domainTable<string, RunRecord>(RunRecordSchema),
+    runtimes: domainTable<string, RuntimeRecord>(RuntimeRecordSchema),
+    resources: domainTable<string, ProjectResource>(ProjectResourceSchema),
+    issues: domainTable<string, IssueRecord>(IssueRecordSchema),
+    task_runs: domainTable<string, TaskRunRecord>(TaskRunRecordSchema),
+    activity: domainTable<string, ActivityEvent>(ActivityEventSchema),
+    comments: domainTable<string, CommentRecord>(CommentRecordSchema),
+    decisions: domainTable<string, DecisionRecord>(DecisionRecordSchema),
+    squads: domainTable<string, SquadRecord>(SquadRecordSchema),
+    delegations: domainTable<string, DelegationRecord>(DelegationRecordSchema),
+    transcripts: domainTable<string, TranscriptEntry>(TranscriptEntrySchema),
+    artifacts: domainTable<string, ArtifactRecord>(ArtifactRecordSchema),
+    commands: domainTable<string, CommandRecord>(CommandRecordSchema),
+    external_triggers: domainTable<string, ExternalTriggerRecord>(ExternalTriggerRecordSchema),
+    skills: domainTable<string, SkillRecord>(SkillRecordSchema),
+    local_directory_locks: domainTable<string, LocalDirectoryLockRecord>(LocalDirectoryLockRecordSchema),
+    workspace_leases: domainTable<string, WorkspaceLeaseRecord>(WorkspaceLeaseRecordSchema),
+  },
+})
+
+export class OrchestratorStore {
+  readonly agents
+  readonly projects
+  readonly tasks
+  readonly approvals
+  readonly runs
+  readonly runtimes
+  readonly resources
+  readonly issues
+  readonly taskRuns
+  readonly activity
+  readonly comments
+  readonly decisions
+  readonly squads
+  readonly delegations
+  readonly transcripts
+  readonly artifacts
+  readonly commands
+  readonly externalTriggers
+  readonly skills
+  readonly localDirectoryLocks
+  readonly workspaceLeases
+
+  constructor(readonly domain: Domain<typeof orchestratorDomain>) {
+    this.agents = domain.table('agents')
+    this.projects = domain.table('projects')
+    this.tasks = domain.table('tasks')
+    this.approvals = domain.table('approvals')
+    this.runs = domain.table('runs')
+    this.runtimes = optionalTable<RuntimeRecord>(domain, 'runtimes')
+    this.resources = optionalTable<ProjectResource>(domain, 'resources')
+    this.issues = optionalTable<IssueRecord>(domain, 'issues')
+    this.taskRuns = optionalTable<TaskRunRecord>(domain, 'task_runs')
+    this.activity = optionalTable<ActivityEvent>(domain, 'activity')
+    this.comments = optionalTable<CommentRecord>(domain, 'comments')
+    this.decisions = optionalTable<DecisionRecord>(domain, 'decisions')
+    this.squads = optionalTable<SquadRecord>(domain, 'squads')
+    this.delegations = optionalTable<DelegationRecord>(domain, 'delegations')
+    this.transcripts = optionalTable<TranscriptEntry>(domain, 'transcripts')
+    this.artifacts = optionalTable<ArtifactRecord>(domain, 'artifacts')
+    this.commands = optionalTable<CommandRecord>(domain, 'commands')
+    this.externalTriggers = optionalTable<ExternalTriggerRecord>(domain, 'external_triggers')
+    this.skills = optionalTable<SkillRecord>(domain, 'skills')
+    this.localDirectoryLocks = optionalTable<LocalDirectoryLockRecord>(domain, 'local_directory_locks')
+    this.workspaceLeases = optionalTable<WorkspaceLeaseRecord>(domain, 'workspace_leases')
+  }
+
+  snapshot(): Snapshot {
+    const projects = [...this.projects.entries()].map(([, value]) => value).sort(byUpdatedAt)
+    const projectIds = new Set(projects.map((project) => project.id))
+    const issues = [...this.issues.entries()].map(([, value]) => value).sort(byUpdatedAt)
+    const taskRuns = [...this.taskRuns.entries()].map(([, value]) => value).sort(byCreatedAt)
+    const activity = [...this.activity.entries()].map(([, value]) => value).sort(byCreatedAt)
+    const comments = [...this.comments.entries()].map(([, value]) => value).sort(byCreatedAt)
+    const issueIds = new Set(issues.map((issue) => issue.id))
+    const taskRunIds = new Set(taskRuns.map((run) => run.id))
+    const activeTaskIds = new Set(projects.flatMap((project) => project.taskIds))
+    const planHashes: Record<string, string> = {}
+    for (const project of projects) {
+      try {
+        planHashes[project.id] = planDigest(project, this.projectTasks(project))
+      } catch (error) {
+        if (!(error instanceof WorkflowError) || error.code !== 'inconsistent-plan') throw error
+      }
+    }
+    return {
+      agents: [...this.agents.entries()].map(([, value]) => value).sort(byUpdatedAt),
+      projects,
+      tasks: [...this.tasks.entries()]
+        .filter(([id]) => activeTaskIds.has(id))
+        .map(([, value]) => value)
+        .sort((left, right) => left.ordinal - right.ordinal),
+      approvals: [...this.approvals.entries()]
+        .map(([, value]) => value)
+        .filter((approval) => projectIds.has(approval.projectId))
+        .sort((left, right) => right.approvedAt.localeCompare(left.approvedAt)),
+      runs: [...this.runs.entries()]
+        .map(([, value]) => value)
+        .filter((run) => projectIds.has(run.projectId))
+        .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      planHashes,
+      runtimes: [...this.runtimes.entries()].map(([, value]) => value).sort(byUpdatedAt),
+      resources: [...this.resources.entries()].map(([, value]) => value).filter((resource) => projectIds.has(resource.projectId)).sort(byUpdatedAt),
+      issues: issues.filter((issue) => issue.projectId === undefined || projectIds.has(issue.projectId)),
+      taskRuns: taskRuns.filter((run) => projectIds.has(run.projectId)),
+      activity: activity.filter((event) => event.projectId === undefined || projectIds.has(event.projectId)),
+      comments: comments.filter((comment) => issues.some((issue) => issue.id === comment.issueId)),
+      decisions: [...this.decisions.entries()]
+        .map(([, value]) => value)
+        .filter((decision) => (decision.projectId === undefined || projectIds.has(decision.projectId)) && (decision.issueId === undefined || issueIds.has(decision.issueId)) && (decision.taskRunId === undefined || taskRunIds.has(decision.taskRunId)))
+        .sort(byCreatedAt),
+      squads: [...this.squads.entries()].map(([, value]) => value).sort(byUpdatedAt),
+      delegations: [...this.delegations.entries()]
+        .map(([, value]) => value)
+        .filter((delegation) => projectIds.has(delegation.projectId) && issueIds.has(delegation.parentIssueId) && issueIds.has(delegation.childIssueId))
+        .sort(byUpdatedAt),
+      transcripts: [...this.transcripts.entries()]
+        .map(([, value]) => value)
+        .filter((entry) => taskRunIds.has(entry.taskRunId))
+        .sort((left, right) => left.taskRunId.localeCompare(right.taskRunId) || left.sequence - right.sequence),
+      artifacts: [...this.artifacts.entries()]
+        .map(([, value]) => value)
+        .filter((artifact) => projectIds.has(artifact.projectId) && (artifact.issueId === undefined || issueIds.has(artifact.issueId)) && (artifact.taskRunId === undefined || taskRunIds.has(artifact.taskRunId)))
+        .sort(byCreatedAt),
+      commands: [...this.commands.entries()]
+        .map(([, value]) => value)
+        .filter((command) => (command.projectId === undefined || projectIds.has(command.projectId)) && (command.issueId === undefined || issueIds.has(command.issueId)))
+        .sort(byCreatedAt),
+      externalTriggers: [...this.externalTriggers.entries()].map(([, value]) => value).sort((left, right) => right.receivedAt.localeCompare(left.receivedAt)),
+      skills: [...this.skills.entries()].map(([, value]) => value).sort(byUpdatedAt),
+      workspaceLeases: [...this.workspaceLeases.entries()].map(([, value]) => value).filter((lease) => projectIds.has(lease.projectId)).sort((left, right) => right.acquiredAt.localeCompare(left.acquiredAt)),
+      localDirectoryLocks: [...this.localDirectoryLocks.entries()].map(([, value]) => value).filter((lock) => projectIds.has(lock.projectId)).sort((left, right) => right.acquiredAt.localeCompare(left.acquiredAt)),
+      inbox: [],
+      agentWorkloads: [],
+      runStatistics: [],
+    }
+  }
+
+  projectTasks(project: ProjectRecord): TaskRecord[] {
+    if (new Set(project.taskIds).size !== project.taskIds.length) {
+      throw new WorkflowError('inconsistent-plan', `Project "${project.id}" contains duplicate task pointers.`, 500)
+    }
+    return project.taskIds
+      .map((id) => {
+        const task = this.tasks.get(id)
+        if (task === undefined) {
+          throw new WorkflowError('inconsistent-plan', `Project "${project.id}" references missing task "${id}".`, 500)
+        }
+        if (task.projectId !== project.id) {
+          throw new WorkflowError('inconsistent-plan', `Task "${id}" does not belong to project "${project.id}".`, 500)
+        }
+        return task
+      })
+      .sort((left, right) => left.ordinal - right.ordinal)
+  }
+
+  approvalFor(project: ProjectRecord): ApprovalRecord | undefined {
+    return this.approvals.get(`${project.id}:${project.revision}`)
+  }
+}
+
+function optionalTable<T>(domain: Domain<typeof orchestratorDomain>, name: string): any {
+  try {
+    const table = (domain as any).table(name)
+    if (table === undefined) throw new Error(`missing table ${name}`)
+    return table
+  } catch {
+    return {
+      get: () => undefined,
+      entries: () => [][Symbol.iterator](),
+      put: async () => { throw new WorkflowError('storage-table-unavailable', `Storage table "${name}" is unavailable in this legacy test domain.`, 503) },
+      delete: async () => false,
+    } as any
+  }
+}
+
+function byUpdatedAt<T extends { updatedAt: string }>(left: T, right: T): number {
+  return right.updatedAt.localeCompare(left.updatedAt)
+}
+
+function byCreatedAt<T extends { createdAt: string }>(left: T, right: T): number {
+  return right.createdAt.localeCompare(left.createdAt)
+}
