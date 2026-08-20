@@ -12,6 +12,15 @@ A durable, approval-gated project orchestration workbench for [DeepSeek Harness]
 
 The Web client defaults to **Empty Project**. It records the Project name and existing working directory without reading the repository, invoking a Planner, creating Tasks, or creating an approval. Add Tasks manually, or add a delivery brief later and explicitly request AI decomposition.
 
+### Code sources
+
+Project creation supports two code-source modes:
+
+- **Local repository:** click **Choose directory** to use the Harness Host directory picker. The browser cannot submit an arbitrary local path; the Host revalidates that the selected path is an existing absolute directory when saving.
+- **GitHub repository:** enter a credential-free `https://github.com/owner/repository` URL, inspect its branches and open Issues, and choose the branch to pull. Creation shallow-clones that branch into a Harness-managed directory and imports selected Issues into the Project. Set `GITHUB_TOKEN` or `GH_TOKEN` to increase GitHub API access limits.
+
+Selected Issues are stored as durable Project Issues. In AI mode, their content is used as the Planner brief when no separate delivery brief is supplied. Empty Projects still do not invoke AI.
+
 Choose **AI decomposition** only when a delivery brief is ready. Planning inspects the repository read-only, generates code and test Tasks, and still requires explicit human approval before execution.
 
 The Project detail view can open the persisted working directory in Finder on macOS or the system file manager through `xdg-open` on Linux. The Host accepts only a Project ID for this action; Windows is not certified.

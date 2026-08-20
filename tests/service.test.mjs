@@ -752,6 +752,115 @@ test('empty project creation persists a draft without invoking AI or creating ta
   }
 })
 
+test('local source creation validates and persists the selected directory', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-local-source-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: '本地仓库', source: { kind: 'local_directory', path: root } })
+    assert.equal(project.cwd, root)
+    await assert.rejects(() => service.createProjectFromRequest({ mode: 'empty', name: '非法路径', source: { kind: 'local_directory', path: 'relative/path' } }), (error) => error.code === 'invalid-cwd')
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('GitHub source rejects duplicate Issue numbers', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-duplicate-issue-'))
+  try {
+    const service = new OrchestratorService({}, memoryStore())
+    await assert.rejects(() => service.createProjectFromRequest({ mode: 'empty', name: '重复事项', source: { kind: 'github_repo', repositoryUrl: 'https://github.com/example/demo', ref: 'main', issueNumbers: [7, 7] } }), (error) => error?.issues?.some((issue) => issue.message === 'GitHub Issue numbers must be unique.'))
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('GitHub source clones the selected branch and imports selected Issues', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-github-source-'))
+  const priorRoot = process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
+  process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT = root
+  const calls = []
+  const inspection = {
+    repositoryUrl: 'https://github.com/example/demo.git', owner: 'example', name: 'demo', defaultBranch: 'main',
+    branches: [{ name: 'main', protected: true }, { name: 'feature', protected: false }],
+    issues: [{ number: 7, title: '修复登录', body: '登录失败时显示明确错误。', url: 'https://github.com/example/demo/issues/7', labels: ['bug'] }],
+  }
+  const provider = {
+    async inspect(url) { calls.push(['inspect', url]); return inspection },
+    async clone(url, ref, destination) { calls.push(['clone', url, ref, destination]); await mkdir(destination, { recursive: true }); await writeFile(join(destination, 'README.md'), '# demo') },
+  }
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store, async () => {}, provider)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: '远程仓库', source: { kind: 'github_repo', repositoryUrl: 'https://github.com/example/demo', ref: 'feature', issueNumbers: [7] } })
+    assert.equal(project.status, 'draft')
+    assert.equal(project.cwd.startsWith(await realpath(root)), true)
+    assert.equal(calls[1][2], 'feature')
+    assert.equal([...store.resources.records.values()].filter((resource) => resource.projectId === project.id).length, 1)
+    const resource = [...store.resources.records.values()].find((candidate) => candidate.projectId === project.id)
+    assert.equal(resource.kind, 'github_repo')
+    assert.equal(resource.sourcePath, project.cwd)
+    assert.equal([...store.resources.records.values()].some((resource) => resource.kind === 'github_repo' && resource.ref === 'feature'), true)
+    const imported = [...store.issues.records.values()].find((issue) => issue.labels.includes('github-issue-7'))
+    assert.equal(imported.title, '修复登录')
+    assert.match(imported.description, /issues\/7/)
+    await assert.rejects(() => service.createProjectFromRequest({ mode: 'empty', name: '错误分支', source: { kind: 'github_repo', repositoryUrl: inspection.repositoryUrl, ref: 'missing', issueNumbers: [] } }), (error) => error.code === 'repository-ref-not-found')
+  } finally {
+    if (priorRoot === undefined) delete process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
+    else process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT = priorRoot
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('remote project creation rolls back persisted records when source attachment fails', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-github-rollback-'))
+  const priorRoot = process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
+  process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT = root
+  let clonedDirectory
+  const inspection = { repositoryUrl: 'https://github.com/example/demo.git', owner: 'example', name: 'demo', defaultBranch: 'main', branches: [{ name: 'main', protected: true }], issues: [] }
+  const provider = { async inspect() { return inspection }, async clone(_url, _ref, destination) { clonedDirectory = destination; await mkdir(destination, { recursive: true }) } }
+  try {
+    const store = memoryStore()
+    store.resources.put = async () => { throw new Error('resource write failed') }
+    const service = new OrchestratorService({}, store, async () => {}, provider)
+    await assert.rejects(() => service.createProjectFromRequest({ mode: 'empty', name: '回滚项目', source: { kind: 'github_repo', repositoryUrl: inspection.repositoryUrl, ref: 'main', issueNumbers: [] } }))
+    assert.equal(store.projects.size, 0)
+    assert.equal(store.resources.size, 0)
+    assert.equal(store.issues.size, 0)
+    await assert.rejects(() => stat(clonedDirectory))
+  } finally {
+    if (priorRoot === undefined) delete process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
+    else process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT = priorRoot
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('GitHub Issues can provide the AI planning brief when no PRD is pasted', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-github-ai-'))
+  const priorRoot = process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
+  process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT = root
+  const inspection = { repositoryUrl: 'https://github.com/example/demo.git', owner: 'example', name: 'demo', defaultBranch: 'main', branches: [{ name: 'main', protected: true }], issues: [{ number: 9, title: '增加审计日志', body: '记录配置变更。', url: 'https://github.com/example/demo/issues/9', labels: ['feature'] }] }
+  const provider = { async inspect() { return inspection }, async clone(_url, _ref, destination) { await mkdir(destination, { recursive: true }) } }
+  const response = JSON.stringify({ summary: '根据 Issue 生成计划。', tasks: [
+    { id: 'implement', title: '实现审计日志', kind: 'code', description: '记录配置变更。', acceptanceCriteria: ['变更被记录'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'npm test' },
+    { id: 'verify', title: '验证审计日志', kind: 'test', description: '补充回归测试。', acceptanceCriteria: ['测试通过'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: 'npm test' },
+  ] })
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(response), store, async () => {}, provider)
+    const project = await service.createProjectFromRequest({ mode: 'ai', source: { kind: 'github_repo', repositoryUrl: inspection.repositoryUrl, ref: 'main', issueNumbers: [9] } })
+    assert.equal(project.status, 'decomposing')
+    assert.match(project.prd, /GitHub Issue #9/)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    assert.equal(store.projects.get(project.id).status, 'awaiting_approval')
+    assert.equal([...store.resources.records.values()].filter((resource) => resource.projectId === project.id).length, 1)
+  } finally {
+    if (priorRoot === undefined) delete process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
+    else process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT = priorRoot
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 test('an empty project can add a brief and explicitly start AI decomposition later', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-later-planning-'))
   try {

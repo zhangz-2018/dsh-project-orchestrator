@@ -12,6 +12,7 @@ export function createHttpHandler(service: OrchestratorService) {
       const url = new URL(req.url ?? '/', `http://${req.headers.host ?? '127.0.0.1'}`)
       const path = url.pathname.slice(API_PREFIX.length) || '/'
       const method = req.method ?? 'GET'
+      if (method === 'GET') assertLoopbackRead(req)
       if (method === 'GET' && path === '/snapshot') return json(res, 200, service.snapshot())
       if (method === 'GET' && path === '/inbox') return json(res, 200, await service.getInbox(queryObject(url)))
       if (method === 'GET' && path === '/agents/workload') return json(res, 200, await service.getAgentWorkloads())
@@ -32,6 +33,13 @@ export function createHttpHandler(service: OrchestratorService) {
       assertSameOrigin(req)
       if (method === 'POST' && path === '/agents/draft') {
         return json(res, 200, await service.draftAgent(await readJson(req)))
+      }
+      if (method === 'POST' && path === '/repositories/inspect') {
+        return json(res, 200, await service.inspectRepository(await readJson(req)))
+      }
+      if (method === 'POST' && path === '/projects') {
+        const project = await service.createProjectFromRequest(await readJson(req))
+        return json(res, project.status === 'decomposing' ? 202 : 201, project)
       }
       await service.serializedMutation(async () => {
         if (method === 'POST' && path === '/agents') {
@@ -109,10 +117,6 @@ export function createHttpHandler(service: OrchestratorService) {
           return json(res, 200, { ok: true })
         }
 
-        if (method === 'POST' && path === '/projects') {
-          const project = await service.createProjectFromRequest(await readJson(req))
-          return json(res, project.status === 'decomposing' ? 202 : 201, project)
-        }
         const projectTasks = matchOne(path, /^\/projects\/([^/]+)\/tasks$/)
         if (projectTasks !== undefined && method === 'POST') {
           return json(res, 201, await service.createTask(projectTasks, await readJson(req)))
@@ -206,22 +210,12 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   }
 }
 
+function assertLoopbackRead(req: IncomingMessage): void {
+  assertLoopbackHost(req)
+}
+
 function assertSameOrigin(req: IncomingMessage): void {
-  const host = req.headers.host
-  if (host === undefined) throw new WorkflowError('invalid-origin', 'Host header is required.', 403)
-  let requestHost: URL
-  try {
-    requestHost = new URL(`http://${host}`)
-  } catch {
-    throw new WorkflowError('invalid-origin', 'Host header is invalid.', 403)
-  }
-  if (!['127.0.0.1', 'localhost', '::1'].includes(requestHost.hostname)) {
-    throw new WorkflowError('invalid-origin', 'Mutating API calls are allowed only from the loopback Harness Web host.', 403)
-  }
-  const remoteAddress = req.socket.remoteAddress
-  if (remoteAddress === undefined || !isLoopbackAddress(remoteAddress)) {
-    throw new WorkflowError('invalid-origin', 'Mutating API calls require a loopback network peer.', 403)
-  }
+  const requestHost = assertLoopbackHost(req)
   const fetchSite = req.headers['sec-fetch-site']
   if (fetchSite !== undefined && fetchSite !== 'same-origin') {
     throw new WorkflowError('invalid-origin', 'Cross-site API request was rejected.', 403)
@@ -237,6 +231,25 @@ function assertSameOrigin(req: IncomingMessage): void {
   if (!['http:', 'https:'].includes(originUrl.protocol) || originUrl.host !== requestHost.host) {
     throw new WorkflowError('invalid-origin', 'Cross-origin API request was rejected.', 403)
   }
+}
+
+function assertLoopbackHost(req: IncomingMessage): URL {
+  const host = req.headers.host
+  if (host === undefined) throw new WorkflowError('invalid-origin', 'Host header is required.', 403)
+  let requestHost: URL
+  try {
+    requestHost = new URL(`http://${host}`)
+  } catch {
+    throw new WorkflowError('invalid-origin', 'Host header is invalid.', 403)
+  }
+  if (!['127.0.0.1', 'localhost', '::1'].includes(requestHost.hostname)) {
+    throw new WorkflowError('invalid-origin', 'API reads and mutations are allowed only from the loopback Harness Web host.', 403)
+  }
+  const remoteAddress = req.socket.remoteAddress
+  if (remoteAddress === undefined || !isLoopbackAddress(remoteAddress)) {
+    throw new WorkflowError('invalid-origin', 'API reads and mutations require a loopback network peer.', 403)
+  }
+  return requestHost
 }
 
 function isLoopbackAddress(address: string): boolean {

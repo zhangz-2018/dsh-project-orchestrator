@@ -50,6 +50,7 @@ function service() {
      async heartbeatRuntime(id, status) { return { id, status } },
      async deleteRuntime() {},
      async createIssue(body) { return { id: 'issue', ...body } },
+     async inspectRepository(body) { return { repositoryUrl: body.repositoryUrl, owner: 'owner', name: 'repo', defaultBranch: 'main', branches: [{ name: 'main', protected: true }], issues: [] } },
     async draftAgent() { return { name: 'Draft', role: 'Reviewer', description: '', persona: 'Review.', preset: 'standard', toolPolicy: 'read_only' } },
     async createProjectFromRequest(body) { return { id: 'project', status: body.mode === 'empty' ? 'draft' : 'decomposing', ...body } },
     async openProjectDirectory() { return { ok: true } },
@@ -72,6 +73,17 @@ test('snapshot endpoint returns no-store JSON', async () => {
      runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], inbox: [], agentWorkloads: [], runStatistics: [],
     projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {},
   })
+})
+
+test('read routes reject non-loopback peers before exposing project data', async () => {
+  const res = response()
+  await createHttpHandler(service())(new Request({
+    url: '/project-orchestrator/api/snapshot',
+    remoteAddress: '203.0.113.8',
+    headers: { host: '127.0.0.1:3080' },
+  }), res)
+  assert.equal(res.statusCode, 403)
+  assert.equal(JSON.parse(res.body).error.code, 'invalid-origin')
 })
 
 test('project creation starts planning and approval starts execution through one route', async () => {
@@ -105,6 +117,22 @@ test('empty project creation returns a draft without starting planning', async (
   }), res)
   assert.equal(res.statusCode, 201)
   assert.equal(JSON.parse(res.body).status, 'draft')
+})
+
+test('repository inspection and project cloning routes run outside the HTTP mutation lock', async () => {
+  const fake = service()
+  let lockCalls = 0
+  fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const inspectResponse = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/repositories/inspect', headers, body: JSON.stringify({ repositoryUrl: 'https://github.com/owner/repo' }) }), inspectResponse)
+  assert.equal(inspectResponse.statusCode, 200)
+  assert.equal(JSON.parse(inspectResponse.body).defaultBranch, 'main')
+
+  const createResponse = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects', headers, body: JSON.stringify({ mode: 'empty', name: 'Repo', source: { kind: 'github_repo', repositoryUrl: 'https://github.com/owner/repo', ref: 'main', issueNumbers: [] } }) }), createResponse)
+  assert.equal(createResponse.statusCode, 201)
+  assert.equal(lockCalls, 0)
 })
 
 test('project directory open route is same-origin, project-id scoped, and ignores arbitrary path bodies', async () => {

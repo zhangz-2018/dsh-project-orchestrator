@@ -249,6 +249,7 @@ export const ProjectResourceSchema = z.object({
   kind: ResourceKindSchema,
   location: z.string().trim().min(1).max(4_096),
   ref: z.string().trim().max(500).optional(),
+  sourcePath: z.string().trim().min(1).max(4_096).optional(),
   executionMode: ResourceExecutionModeSchema,
   runtimeId: z.string().min(1).optional(),
   createdAt: z.string().min(1),
@@ -469,6 +470,47 @@ export const AgentInputSchema = z.object({
 
 const DEFAULT_TECHNICAL_DESIGN = 'No separate technical design was supplied. Inspect the repository read-only, follow its existing architecture and tests, state material assumptions in the generated plan, and choose the smallest implementation that satisfies the delivery brief.'
 
+export const ProjectSourceSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('local_directory'),
+    path: z.string().trim().min(1).max(4_096),
+  }).strict(),
+  z.object({
+    kind: z.literal('github_repo'),
+    repositoryUrl: z.string().trim().url().max(4_096),
+    ref: z.string().trim().min(1).max(500),
+    issueNumbers: z.array(z.number().int().positive()).max(100).default([]).superRefine((numbers, context) => {
+      if (new Set(numbers).size !== numbers.length) context.addIssue({ code: z.ZodIssueCode.custom, message: 'GitHub Issue numbers must be unique.' })
+    }),
+  }).strict(),
+])
+
+export const RepositoryInspectRequestSchema = z.object({
+  repositoryUrl: z.string().trim().url().max(4_096),
+}).strict()
+
+export const RepositoryBranchSchema = z.object({
+  name: z.string().min(1).max(500),
+  protected: z.boolean().default(false),
+}).strict()
+
+export const RepositoryIssueSchema = z.object({
+  number: z.number().int().positive(),
+  title: z.string().min(1).max(240),
+  body: z.string().max(100_000),
+  url: z.string().url().max(4_096),
+  labels: z.array(z.string().min(1).max(64)).max(50),
+}).strict()
+
+export const RepositoryInspectionSchema = z.object({
+  repositoryUrl: z.string().url().max(4_096),
+  owner: z.string().min(1).max(100),
+  name: z.string().min(1).max(100),
+  defaultBranch: z.string().min(1).max(500),
+  branches: z.array(RepositoryBranchSchema).min(1).max(100),
+  issues: z.array(RepositoryIssueSchema).max(100),
+}).strict()
+
 const ProjectEditableInputSchema = z.object({
   name: z.string().trim().max(160).default(''),
   summary: z.string().trim().max(1_000).default(''),
@@ -479,6 +521,11 @@ const ProjectEditableInputSchema = z.object({
   owner: OwnerSchema.default(''),
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
 }).strict()
+
+const ProjectCreateEditableInputSchema = ProjectEditableInputSchema.omit({ cwd: true }).extend({
+  cwd: z.string().trim().min(1).max(4_096).optional(),
+  source: ProjectSourceSchema.optional(),
+})
 
 export const ProjectInputSchema = ProjectEditableInputSchema.superRefine((value, context) => {
   if (value.prd === '') context.addIssue({ code: z.ZodIssueCode.custom, path: ['prd'], message: 'A delivery brief is required for AI planning.' })
@@ -494,11 +541,13 @@ export const ProjectUpdateInputSchema = ProjectEditableInputSchema.transform((va
 }))
 
 export const ProjectCreateRequestSchema = z.union([
-  ProjectEditableInputSchema.extend({ mode: z.literal('empty') }).superRefine((value, context) => {
+  ProjectCreateEditableInputSchema.extend({ mode: z.literal('empty') }).superRefine((value, context) => {
     if (value.name === '') context.addIssue({ code: z.ZodIssueCode.custom, path: ['name'], message: 'A project name is required for an empty project.' })
+    if (value.cwd === undefined && value.source === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['source'], message: 'A local directory or GitHub repository source is required.' })
   }),
-  ProjectEditableInputSchema.extend({ mode: z.literal('ai').default('ai') }).superRefine((value, context) => {
-    if (value.prd === '') context.addIssue({ code: z.ZodIssueCode.custom, path: ['prd'], message: 'A delivery brief is required for AI planning.' })
+  ProjectCreateEditableInputSchema.extend({ mode: z.literal('ai').default('ai') }).superRefine((value, context) => {
+    if (value.prd === '' && !(value.source?.kind === 'github_repo' && value.source.issueNumbers.length > 0)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['prd'], message: 'A delivery brief or selected GitHub Issue is required for AI planning.' })
+    if (value.cwd === undefined && value.source === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['source'], message: 'A local directory or GitHub repository source is required.' })
   }).transform((value) => ({
     ...value,
     name: value.name || 'Untitled project',
@@ -728,6 +777,9 @@ export type AgentBuilderResponse = z.infer<typeof AgentBuilderResponseSchema>
 export type ProjectInput = z.infer<typeof ProjectInputSchema>
 export type ProjectUpdateInput = z.infer<typeof ProjectUpdateInputSchema>
 export type ProjectCreateRequest = z.infer<typeof ProjectCreateRequestSchema>
+export type ProjectSource = z.infer<typeof ProjectSourceSchema>
+export type RepositoryInspection = z.infer<typeof RepositoryInspectionSchema>
+export type RepositoryIssue = z.infer<typeof RepositoryIssueSchema>
 export type TaskLanguage = z.infer<typeof TaskLanguageSchema>
 export type ProjectReplanRequest = z.infer<typeof ProjectReplanRequestSchema>
 export type ProjectApprovalRequest = z.infer<typeof ProjectApprovalRequestSchema>

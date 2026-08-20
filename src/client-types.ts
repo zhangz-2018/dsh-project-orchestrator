@@ -57,6 +57,28 @@ export interface AgentRecord {
   updatedAt: string
 }
 
+export interface RepositoryBranch {
+  name: string
+  protected: boolean
+}
+
+export interface RepositoryIssue {
+  number: number
+  title: string
+  body: string
+  url: string
+  labels: string[]
+}
+
+export interface RepositoryInspection {
+  repositoryUrl: string
+  owner: string
+  name: string
+  defaultBranch: string
+  branches: RepositoryBranch[]
+  issues: RepositoryIssue[]
+}
+
 export interface ProjectRecord {
   id: string
   name: string
@@ -152,6 +174,7 @@ export interface ProjectResource {
   kind: ResourceKind
   location: string
   ref?: string
+  sourcePath?: string
   executionMode: ResourceExecutionMode
   runtimeId?: string
   createdAt: string
