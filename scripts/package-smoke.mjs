@@ -18,7 +18,7 @@ try {
   const [entry] = JSON.parse(packed.stdout)
   if (entry?.filename === undefined || !Array.isArray(entry.files)) throw new Error('npm pack did not return one inspectable artifact.')
   const files = new Map(entry.files.map((file) => [file.path, file]))
-  for (const required of ['package.json', 'README.md', 'LICENSE', 'CHANGELOG.md', 'lib/index.js', 'lib/client.js', 'lib/cli.js', 'lib/types/index.d.ts']) {
+  for (const required of ['package.json', 'README.md', 'README.zh-CN.md', 'LICENSE', 'CHANGELOG.md', 'lib/index.js', 'lib/client.js', 'lib/cli.js', 'lib/types/index.d.ts']) {
     if (!files.has(required)) throw new Error(`Packed package is missing ${required}.`)
   }
   for (const file of files.keys()) {

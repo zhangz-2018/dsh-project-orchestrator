@@ -1,5 +1,7 @@
 # dsh-project-orchestrator
 
+English | [简体中文](README.zh-CN.md)
+
 A durable, approval-gated project orchestration workbench for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness).
 
 `dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It keeps Projects, Issues, TaskRuns, human Decisions, Agent capacity, Git worktree evidence, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
