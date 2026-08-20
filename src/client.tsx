@@ -869,7 +869,9 @@ interface StoredAgentBuilderDraft {
 }
 const EMPTY_AGENT: AgentFormValue = { name: '', role: '', description: '', persona: '', provider: '', model: '', preset: 'standard', toolPolicy: 'full', skillsText: '', runtimeId: '', access: 'only_me', maxConcurrency: 1 }
 const AGENT_BUILDER_STORAGE_KEY = 'project-orchestrator:agent-builder-draft:v2'
-const PROJECT_INTAKE_STORAGE_KEY = 'project-orchestrator:project-intake-draft:v1'
+const PROJECT_INTAKE_STORAGE_KEY = 'project-orchestrator:project-intake-draft:v2'
+const PROJECT_INTAKE_LEGACY_STORAGE_KEY = 'project-orchestrator:project-intake-draft:v1'
+const PROJECT_INTAKE_DRAFT_TTL_MS = 30 * 60 * 1_000
 const AGENT_PROMPT_TEMPLATES = [
   { label: '代码审查', prompt: '创建一个代码审查智能体。它需要识别业务回归、边界条件和缺失测试，引用具体证据，并给出按严重程度排序的结论。' },
   { label: '任务拆解', prompt: '创建一个工程任务规划智能体。它需要把 PRD 和技术方案拆成依赖清晰的代码任务与测试任务，并为每项任务定义可执行的验收门禁。' },
@@ -1129,6 +1131,12 @@ interface ProjectIntakeValue {
   taskLanguage: TaskLanguage
 }
 
+type StoredProjectIntakeValue = Pick<ProjectIntakeValue, 'mode' | 'sourceKind' | 'repositoryRef' | 'issueNumbers' | 'name' | 'summary' | 'priority' | 'owner' | 'taskLanguage'>
+interface StoredProjectIntakeDraft {
+  value: StoredProjectIntakeValue
+  updatedAt: number
+}
+
 function ProjectDialog({ state, model, project }: { state: WorkbenchState; model: WorkbenchModel; project?: ProjectRecord | undefined }) {
   const stored = project === undefined ? loadProjectIntakeDraft() : undefined
   const [value, setValue] = useState<ProjectIntakeValue>(() => project ? {
@@ -1139,10 +1147,13 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
   const [repositoryBusy, setRepositoryBusy] = useState(false)
   const [importError, setImportError] = useState<string>()
   const importInput = useRef<HTMLInputElement>(null)
+  const repositoryRequest = useRef<{ id: number; controller: AbortController } | undefined>(undefined)
+  const repositoryRequestVersion = useRef(0)
   const [importTarget, setImportTarget] = useState<'prd' | 'technicalDesign'>('prd')
   useEffect(() => {
-    if (project === undefined) window.localStorage.setItem(PROJECT_INTAKE_STORAGE_KEY, JSON.stringify(value))
+    if (project === undefined) persistProjectIntakeDraft(value)
   }, [project, value])
+  useEffect(() => () => repositoryRequest.current?.controller.abort(), [])
   const setBrief = (prd: string) => setValue((current) => ({ ...current, prd, name: nameLocked ? current.name : suggestProjectName(prd) }))
   const readFile = async (file: File | undefined) => {
     if (!file) return
@@ -1157,7 +1168,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
     }
   }
   const saveAndClose = () => {
-    if (project === undefined) window.localStorage.setItem(PROJECT_INTAKE_STORAGE_KEY, JSON.stringify(value))
+    if (project === undefined) persistProjectIntakeDraft(value)
     model.closePanel()
   }
   const chooseDirectory = async () => {
@@ -1169,18 +1180,28 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
     }
   }
   const inspectRepository = async () => {
-    if (!value.repositoryUrl.trim()) return
+    const repositoryUrl = value.repositoryUrl.trim()
+    if (!repositoryUrl) return
+    repositoryRequest.current?.controller.abort()
+    const requestId = ++repositoryRequestVersion.current
+    const controller = new AbortController()
+    repositoryRequest.current = { id: requestId, controller }
     setRepositoryBusy(true)
     setImportError(undefined)
     try {
-      const inspected = await mutate<RepositoryInspection>('/repositories/inspect', 'POST', { repositoryUrl: value.repositoryUrl })
+      const inspected = await mutate<RepositoryInspection>('/repositories/inspect', 'POST', { repositoryUrl }, controller.signal)
+      if (repositoryRequestVersion.current !== requestId || controller.signal.aborted) return
       setRepository(inspected)
       setValue((current) => ({ ...current, repositoryUrl: inspected.repositoryUrl, repositoryRef: inspected.defaultBranch, name: current.name || inspected.name, issueNumbers: [] }))
     } catch (error) {
+      if (controller.signal.aborted || repositoryRequestVersion.current !== requestId) return
       setRepository(undefined)
       setImportError(error instanceof Error ? error.message : '无法读取 GitHub 仓库。')
     } finally {
-      setRepositoryBusy(false)
+      if (repositoryRequestVersion.current === requestId) {
+        repositoryRequest.current = undefined
+        setRepositoryBusy(false)
+      }
     }
   }
   const submit = async (planWithAi = value.mode === 'ai') => {
@@ -1197,7 +1218,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
       ? mode === 'empty' ? '空项目已创建，没有调用 AI 或生成任务。' : '项目已创建，AI 正在生成执行计划。'
       : planWithAi ? '项目已更新并重新规划，原审批已失效。' : '项目资料已保存，没有调用 AI。')
     if (result) {
-      if (project === undefined) window.localStorage.removeItem(PROJECT_INTAKE_STORAGE_KEY)
+      if (project === undefined) clearProjectIntakeDraft()
       model.closePanel()
       model.openProject(result.id)
     }
@@ -1214,7 +1235,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
     <ModalShell title={project ? '编辑项目' : '创建项目'} subtitle={project ? '保存资料不会自动调用 AI；只有选择重新规划时才会生成并替换任务计划。' : '先选择创建方式。空项目不会调用 AI，也不会自动生成任务。'} close={saveAndClose} wide footer={footer}>
       <div className="po-project-intake">
         {project === undefined ? <><fieldset className="po-project-mode"><legend>创建方式</legend><label className={value.mode === 'empty' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-mode" value="empty" checked={value.mode === 'empty'} onChange={() => setValue({ ...value, mode: 'empty' })} /><span><strong>空项目</strong><small>保存仓库与项目资料，不调用 AI。可以从 GitHub Issues 导入长期事项。</small></span></label><label className={value.mode === 'ai' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-mode" value="ai" checked={value.mode === 'ai'} onChange={() => setValue({ ...value, mode: 'ai' })} /><span><strong>AI 智能拆解</strong><small>克隆或读取仓库，基于需求与所选 Issues 生成代码和测试任务。</small></span></label></fieldset><fieldset className="po-project-mode po-project-source-mode"><legend>代码来源</legend><label className={value.sourceKind === 'local_directory' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-source" value="local_directory" checked={value.sourceKind === 'local_directory'} onChange={() => setValue({ ...value, sourceKind: 'local_directory' })} /><span><strong>本地代码仓库</strong><small>从本机选择已有目录，路径仍会由 Host 重新校验。</small></span></label><label className={value.sourceKind === 'github_repo' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-source" value="github_repo" checked={value.sourceKind === 'github_repo'} onChange={() => setValue({ ...value, sourceKind: 'github_repo' })} /><span><strong>GitHub 仓库</strong><small>读取分支与开放 Issues，创建时浅克隆到 Harness 受管目录。</small></span></label></fieldset></> : null}
-        <div className="po-form-grid"><Field label="项目名称" hint={value.mode === 'empty' ? '空项目必须填写名称。' : '可留空，系统会根据需求或仓库生成。'}><input className="po-input" autoFocus={!project} required={value.mode === 'empty'} value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="例如：支付网关重构" /></Field>{project !== undefined || value.sourceKind === 'local_directory' ? <Field label="本地代码仓库" hint={value.mode === 'ai' ? 'AI 会只读检查该目录；执行仍需人工批准。' : '创建时只记录目录，不读取代码。'}><div className="po-directory-control"><input className="po-input" required readOnly={project === undefined} value={value.cwd} onChange={(event) => setValue({ ...value, cwd: event.target.value })} placeholder="点击右侧按钮选择目录" /><ActionButton type="button" variant="outline" icon={<IconFolderOpenOutline16 />} onClick={() => void chooseDirectory()}>选择目录</ActionButton></div></Field> : <Field label="GitHub 仓库地址" hint="首版仅支持不含凭据的 https://github.com/owner/repo 地址。"><div className="po-directory-control"><input className="po-input" type="url" required value={value.repositoryUrl} onChange={(event) => { setRepository(undefined); setValue({ ...value, repositoryUrl: event.target.value, repositoryRef: '', issueNumbers: [] }) }} placeholder="https://github.com/owner/repository" /><ActionButton type="button" variant="outline" disabled={repositoryBusy || !value.repositoryUrl.trim()} onClick={() => void inspectRepository()}>{repositoryBusy ? '读取中…' : '读取仓库'}</ActionButton></div></Field>}</div>
+        <div className="po-form-grid"><Field label="项目名称" hint={value.mode === 'empty' ? '空项目必须填写名称。' : '可留空，系统会根据需求或仓库生成。'}><input className="po-input" autoFocus={!project} required={value.mode === 'empty'} value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="例如：支付网关重构" /></Field>{project !== undefined || value.sourceKind === 'local_directory' ? <Field label="本地代码仓库" hint={value.mode === 'ai' ? 'AI 会只读检查该目录；执行仍需人工批准。' : '创建时只记录目录，不读取代码。'}><div className="po-directory-control"><input className="po-input" required readOnly={project === undefined} value={value.cwd} onChange={(event) => setValue({ ...value, cwd: event.target.value })} placeholder="点击右侧按钮选择目录" /><ActionButton type="button" variant="outline" icon={<IconFolderOpenOutline16 />} onClick={() => void chooseDirectory()}>选择目录</ActionButton></div></Field> : <Field label="GitHub 仓库地址" hint="首版仅支持不含凭据的 https://github.com/owner/repo 地址。"><div className="po-directory-control"><input className="po-input" type="url" required value={value.repositoryUrl} onChange={(event) => { repositoryRequestVersion.current += 1; repositoryRequest.current?.controller.abort(); repositoryRequest.current = undefined; setRepositoryBusy(false); setRepository(undefined); setValue({ ...value, repositoryUrl: event.target.value, repositoryRef: '', issueNumbers: [] }) }} placeholder="https://github.com/owner/repository" /><ActionButton type="button" variant="outline" disabled={repositoryBusy || !value.repositoryUrl.trim()} onClick={() => void inspectRepository()}>{repositoryBusy ? '读取中…' : '读取仓库'}</ActionButton></div></Field>}</div>
         {project === undefined && value.sourceKind === 'github_repo' && repository ? <section className="po-repository-import" aria-label="GitHub 仓库导入设置"><div className="po-form-grid"><Field label="拉取分支" hint={`默认分支：${repository.defaultBranch}`}><select className="po-select" value={value.repositoryRef} onChange={(event) => setValue({ ...value, repositoryRef: event.target.value })}>{repository.branches.map((branch) => <option key={branch.name} value={branch.name}>{branch.name}{branch.protected ? '（受保护）' : ''}</option>)}</select></Field><div className="po-repository-summary"><strong>{repository.owner}/{repository.name}</strong><span>{repository.branches.length} 个分支 · {repository.issues.length} 个开放 Issue</span></div></div><fieldset className="po-issue-picker"><legend>从 Issues 自动创建事项（可选）</legend>{repository.issues.length === 0 ? <p>该仓库没有可导入的开放 Issue。</p> : <div>{repository.issues.map((issue) => <label key={issue.number}><input type="checkbox" checked={value.issueNumbers.includes(issue.number)} onChange={(event) => setValue((current) => ({ ...current, issueNumbers: event.target.checked ? [...current.issueNumbers, issue.number] : current.issueNumbers.filter((number) => number !== issue.number) }))} /><span><strong>#{issue.number} {issue.title}</strong><small>{issue.labels.join(', ') || '无标签'}</small></span></label>)}</div>}</fieldset></section> : null}
         {value.mode === 'ai' || project !== undefined ? <><Field label="交付目标与约束" hint="只有点击“让 AI 规划”时才会提交给 Planner。"><textarea className="po-textarea po-brief-editor" required={value.mode === 'ai'} value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="描述结果、范围、规则和验收标准；支持 Markdown。" /></Field><div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><button type="button" onClick={() => { setImportTarget('prd'); importInput.current?.click() }}>导入需求文件</button><button type="button" onClick={() => { setImportTarget('technicalDesign'); importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text" hidden aria-label="导入 Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></div></> : <div className="po-empty-project-note"><IconFolderOpenOutline16 /><div><strong>不会自动拆任务</strong><p>创建后项目状态为“待规划”，任务数量为 0。你可以直接添加手动任务，或编辑项目补充需求后再启动 AI。</p></div></div>}
         {importError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{importError}</div> : null}
@@ -1435,28 +1456,63 @@ function suggestProjectName(brief: string): string {
   const candidate = brief.split('\n').map((line) => line.replace(/^\s*#+\s*/, '').trim()).find((line) => line.length > 0) ?? ''
   return candidate.replace(/[。.!！?？].*$/, '').slice(0, 80)
 }
+function persistProjectIntakeDraft(value: ProjectIntakeValue): void {
+  const storedValue: StoredProjectIntakeValue = {
+    mode: value.mode,
+    sourceKind: value.sourceKind,
+    repositoryRef: value.repositoryRef,
+    issueNumbers: [...new Set(value.issueNumbers)].slice(0, 100),
+    name: value.name,
+    summary: value.summary,
+    priority: value.priority,
+    owner: value.owner,
+    taskLanguage: value.taskLanguage,
+  }
+  try {
+    window.localStorage.removeItem(PROJECT_INTAKE_LEGACY_STORAGE_KEY)
+    window.localStorage.setItem(PROJECT_INTAKE_STORAGE_KEY, JSON.stringify({ value: storedValue, updatedAt: Date.now() } satisfies StoredProjectIntakeDraft))
+  } catch {
+    // Draft persistence is best effort and must not interrupt project creation.
+  }
+}
+function clearProjectIntakeDraft(): void {
+  try {
+    window.localStorage.removeItem(PROJECT_INTAKE_STORAGE_KEY)
+    window.localStorage.removeItem(PROJECT_INTAKE_LEGACY_STORAGE_KEY)
+  } catch {
+    // Storage may be disabled by the browser profile.
+  }
+}
 function loadProjectIntakeDraft(): ProjectIntakeValue | undefined {
   try {
+    window.localStorage.removeItem(PROJECT_INTAKE_LEGACY_STORAGE_KEY)
     const raw = window.localStorage.getItem(PROJECT_INTAKE_STORAGE_KEY)
     if (!raw) return undefined
-    const draft = JSON.parse(raw) as Partial<ProjectIntakeValue>
-    if (typeof draft.prd !== 'string' || typeof draft.cwd !== 'string') return undefined
+    const draft = JSON.parse(raw) as Partial<StoredProjectIntakeDraft>
+    const stored = draft.value
+    if (typeof draft.updatedAt !== 'number' || !Number.isFinite(draft.updatedAt) || Date.now() - draft.updatedAt > PROJECT_INTAKE_DRAFT_TTL_MS || stored === null || typeof stored !== 'object') {
+      clearProjectIntakeDraft()
+      return undefined
+    }
+    if (stored.mode !== 'empty' && stored.mode !== 'ai') return undefined
+    if (stored.sourceKind !== 'local_directory' && stored.sourceKind !== 'github_repo') return undefined
     return {
-      mode: draft.mode === 'empty' || draft.mode === 'ai' ? draft.mode : draft.prd.trim() === '' ? 'empty' : 'ai',
-      sourceKind: draft.sourceKind === 'github_repo' ? 'github_repo' : 'local_directory',
-      repositoryUrl: typeof draft.repositoryUrl === 'string' ? draft.repositoryUrl : '',
-      repositoryRef: typeof draft.repositoryRef === 'string' ? draft.repositoryRef : '',
-      issueNumbers: Array.isArray(draft.issueNumbers) ? draft.issueNumbers.filter((number): number is number => typeof number === 'number' && Number.isSafeInteger(number) && number > 0).slice(0, 100) : [],
-      name: typeof draft.name === 'string' ? draft.name : '',
-      summary: typeof draft.summary === 'string' ? draft.summary : '',
-      priority: draft.priority === 'low' || draft.priority === 'medium' || draft.priority === 'high' || draft.priority === 'urgent' ? draft.priority : 'medium',
-      owner: typeof draft.owner === 'string' ? draft.owner : '',
-      cwd: draft.cwd,
-      prd: draft.prd,
-      technicalDesign: typeof draft.technicalDesign === 'string' ? draft.technicalDesign : '',
-      taskLanguage: draft.taskLanguage === 'en' ? 'en' : 'zh-CN',
+      mode: stored.mode,
+      sourceKind: stored.sourceKind,
+      repositoryUrl: '',
+      repositoryRef: typeof stored.repositoryRef === 'string' ? stored.repositoryRef : '',
+      issueNumbers: Array.isArray(stored.issueNumbers) ? [...new Set(stored.issueNumbers.filter((number): number is number => typeof number === 'number' && Number.isSafeInteger(number) && number > 0))].slice(0, 100) : [],
+      name: typeof stored.name === 'string' ? stored.name : '',
+      summary: typeof stored.summary === 'string' ? stored.summary : '',
+      priority: stored.priority === 'low' || stored.priority === 'medium' || stored.priority === 'high' || stored.priority === 'urgent' ? stored.priority : 'medium',
+      owner: typeof stored.owner === 'string' ? stored.owner : '',
+      cwd: '',
+      prd: '',
+      technicalDesign: '',
+      taskLanguage: stored.taskLanguage === 'en' ? 'en' : 'zh-CN',
     }
   } catch {
+    clearProjectIntakeDraft()
     return undefined
   }
 }

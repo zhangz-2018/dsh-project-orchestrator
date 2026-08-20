@@ -507,8 +507,8 @@ export const RepositoryInspectionSchema = z.object({
   owner: z.string().min(1).max(100),
   name: z.string().min(1).max(100),
   defaultBranch: z.string().min(1).max(500),
-  branches: z.array(RepositoryBranchSchema).min(1).max(100),
-  issues: z.array(RepositoryIssueSchema).max(100),
+  branches: z.array(RepositoryBranchSchema).min(1).max(5_000),
+  issues: z.array(RepositoryIssueSchema).max(5_000),
 }).strict()
 
 const ProjectEditableInputSchema = z.object({

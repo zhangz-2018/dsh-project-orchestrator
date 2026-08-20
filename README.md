@@ -17,7 +17,7 @@ The Web client defaults to **Empty Project**. It records the Project name and ex
 Project creation supports two code-source modes:
 
 - **Local repository:** click **Choose directory** to use the Harness Host directory picker. The browser cannot submit an arbitrary local path; the Host revalidates that the selected path is an existing absolute directory when saving.
-- **GitHub repository:** enter a credential-free `https://github.com/owner/repository` URL, inspect its branches and open Issues, and choose the branch to pull. Creation shallow-clones that branch into a Harness-managed directory and imports selected Issues into the Project. Set `GITHUB_TOKEN` or `GH_TOKEN` to increase GitHub API access limits.
+- **GitHub repository:** enter a credential-free `https://github.com/owner/repository` URL, page through its branches and open Issues, and choose the branch to pull. Creation shallow-clones that branch into a Harness-managed directory and imports selected Issues into the Project; collections beyond the safety limit fail explicitly instead of being silently truncated. Set `GITHUB_TOKEN` or `GH_TOKEN` to increase GitHub API access limits.
 
 Selected Issues are stored as durable Project Issues. In AI mode, their content is used as the Planner brief when no separate delivery brief is supplied. Empty Projects still do not invoke AI.
 

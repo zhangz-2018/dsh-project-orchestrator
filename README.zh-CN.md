@@ -40,7 +40,7 @@
 创建项目时可以选择两类代码来源：
 
 - **本地代码仓库：** 点击“选择目录”调用 Harness Host 的目录选择器，浏览器不会提交任意本机路径。Host 会在保存时重新校验目录必须是已存在的绝对目录。
-- **GitHub 仓库：** 输入不含凭据的 `https://github.com/owner/repository` 地址，读取分支和开放 Issues，选择要拉取的分支。创建时会将该分支浅克隆到 Harness 受管目录，并把选中的 Issue 导入当前 Project。配置 `GITHUB_TOKEN` 或 `GH_TOKEN` 可提高 GitHub API 的访问额度。
+- **GitHub 仓库：** 输入不含凭据的 `https://github.com/owner/repository` 地址，分页读取分支和开放 Issues，选择要拉取的分支。创建时会将该分支浅克隆到 Harness 受管目录，并把选中的 Issue 导入当前 Project；超过安全结果上限时会明确失败，不会静默截断。配置 `GITHUB_TOKEN` 或 `GH_TOKEN` 可提高 GitHub API 的访问额度。
 
 选中的 Issue 会作为 Project 的长期事项保存；在 AI 模式下，如果没有另外填写交付简报，Issue 内容会作为 Planner 的输入。空项目仍不会调用 AI。
 

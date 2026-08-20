@@ -6,11 +6,12 @@ export async function loadSnapshot(signal?: AbortSignal): Promise<Snapshot> {
   return request<Snapshot>('/snapshot', signal === undefined ? undefined : { signal })
 }
 
-export async function mutate<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
+export async function mutate<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown, signal?: AbortSignal): Promise<T> {
   return request<T>(path, {
     method,
     headers: { 'content-type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+    ...(signal === undefined ? {} : { signal }),
   })
 }
 
