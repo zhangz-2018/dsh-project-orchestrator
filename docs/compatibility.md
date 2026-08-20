@@ -4,7 +4,7 @@
 
 | Plugin | DeepSeek Harness | Cordis | Node.js | Git | Platforms |
 |---|---|---|---|---|---|
-| 1.0.x | 0.1.0-rc.6 | 4.0.1 | >=22 | required for worktrees | Linux and macOS CI; Windows not certified |
+| 1.x | 0.1.0-rc.6 | 4.0.1 | >=22 | required for worktrees | Linux and macOS CI; Windows not certified |
 
 Harness prerelease SemVer does not imply compatibility across release candidates. Every future Harness RC or stable release must be validated before the peer range is changed. Harness packages are optional peers because the profile Host supplies them; a generic npm install that auto-resolves peers can construct an invalid mixed-RC tree from upstream prerelease ranges. Use the Harness `dsh plugin` manager and pnpm-backed profile rather than treating the package as a standalone Node application.
 

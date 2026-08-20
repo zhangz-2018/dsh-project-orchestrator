@@ -6,7 +6,7 @@
 
 `dsh-project-orchestrator` 为现有 Harness 安装提供 Host 服务、响应式 Web 工作台和仅限本机回环地址访问的 CLI。它把项目（Project）、事项（Issue）、任务运行（TaskRun）、人工决策（Decision）、Agent 容量、Git worktree 证据、执行记录（Transcript）、产物（Artifact）和自动化回执统一到一个可审计的本地工作流中。
 
-> **兼容性说明：** v1.0.0 仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成兼容性验证。后续 Harness 候选版本需要经过测试后才会纳入支持范围。
+> **兼容性说明：** v1.1.0 仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成兼容性验证。后续 Harness 候选版本需要经过测试后才会纳入支持范围。
 
 ## 核心特性
 
@@ -26,7 +26,7 @@ Harness Profile 插件管理器负责提供所需的 Host peer 依赖，因此�
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.0.0
+dsh plugin --profile web add dsh-project-orchestrator@1.1.0
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -76,7 +76,7 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 7. 工作区清理和证据归档完成后，TaskRun 才会进入终态。
 8. 只有人工评审通过，Issue 才能完成。
 
-Runtime 记录代表本地 Harness Host 内的运行事实。v1.0.0 **不提供**远程 Agent 执行、双活 Host、分布式锁、远程分支推送或经过代码托管平台认证的 Pull Request 创建能力。
+Runtime 记录代表本地 Harness Host 内的运行事实。v1.1.0 **不提供**远程 Agent 执行、双活 Host、分布式锁、远程分支推送或经过代码托管平台认证的 Pull Request 创建能力。
 
 ## 安全模型
 

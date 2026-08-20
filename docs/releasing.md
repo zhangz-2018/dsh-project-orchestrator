@@ -30,8 +30,8 @@ Only maintainers publish releases.
 6. Create and push an annotated tag matching the manifest exactly:
 
    ```bash
-   git tag -a v1.0.0 -m "dsh-project-orchestrator v1.0.0"
-   git push origin v1.0.0
+   git tag -a "v${VERSION}" -m "dsh-project-orchestrator v${VERSION}"
+   git push origin "v${VERSION}"
    ```
 
 7. The release workflow re-runs verification, publishes with npm provenance, and creates GitHub release notes.
