@@ -14,7 +14,7 @@ await rm(smoke, { recursive: true, force: true })
 await mkdir(packDirectory, { recursive: true })
 try {
   await execFileAsync(process.execPath, [join(root, 'scripts/build.mjs')], { cwd: root, maxBuffer: 10_000_000 })
-  const packed = await execFileAsync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', packDirectory], { cwd: root, maxBuffer: 10_000_000 })
+  const packed = await execFileAsync('npm', ['pack', '--dry-run=false', '--ignore-scripts', '--json', '--pack-destination', packDirectory], { cwd: root, maxBuffer: 10_000_000 })
   const [entry] = JSON.parse(packed.stdout)
   if (entry?.filename === undefined || !Array.isArray(entry.files)) throw new Error('npm pack did not return one inspectable artifact.')
   const files = new Map(entry.files.map((file) => [file.path, file]))
@@ -26,7 +26,8 @@ try {
     if (/^(?:\.env|\.npmrc)$/.test(file)) throw new Error(`Packed package unexpectedly contains ${file}.`)
   }
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-  if (manifest.name !== 'dsh-project-orchestrator' || manifest.version !== '1.0.0' || manifest.private === true || manifest.engines?.node !== '>=22') throw new Error('Source manifest identity or engine contract is invalid.')
+  if (manifest.name !== 'dsh-project-orchestrator' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(manifest.version) || manifest.private === true || manifest.engines?.node !== '>=22') throw new Error('Source manifest identity, version, or engine contract is invalid.')
+  if (entry.name !== manifest.name || entry.version !== manifest.version) throw new Error('Packed artifact identity does not match the source manifest.')
   const exportedTargets = new Set([manifest.main, manifest.types, ...Object.values(manifest.bin ?? {}), ...collectExportTargets(manifest.exports)])
   for (const target of exportedTargets) {
     const packedPath = String(target).replace(/^\.\//, '')
@@ -46,13 +47,13 @@ try {
   const tarball = resolve(packDirectory, entry.filename)
   await execFileAsync('pnpm', ['--config.auto-install-peers=false', 'add', '--ignore-scripts', tarball], { cwd: appDirectory, maxBuffer: 10_000_000 })
   const installedManifest = JSON.parse(await readFile(join(appDirectory, 'node_modules/dsh-project-orchestrator/package.json'), 'utf8'))
-  if (installedManifest.name !== 'dsh-project-orchestrator' || installedManifest.version !== '1.0.0' || installedManifest.private === true) throw new Error('Installed manifest identity is not publishable v1.0.0.')
+  if (installedManifest.name !== manifest.name || installedManifest.version !== manifest.version || installedManifest.private === true) throw new Error(`Installed manifest identity is not publishable ${manifest.name}@${manifest.version}.`)
   const installedCli = join(appDirectory, 'node_modules/dsh-project-orchestrator/lib/cli.js')
   await access(installedCli, constants.X_OK)
   if ((await stat(installedCli)).mode & 0o111 ? false : true) throw new Error('Installed CLI lost executable mode.')
   const help = await execFileAsync(installedCli, ['--help'], { cwd: appDirectory })
   const version = await execFileAsync(installedCli, ['--version'], { cwd: appDirectory })
-  if (!help.stdout.includes('Usage:') || version.stdout.trim() !== '1.0.0') throw new Error('Installed CLI help/version contract failed.')
+  if (!help.stdout.includes('Usage:') || version.stdout.trim() !== manifest.version) throw new Error('Installed CLI help/version contract failed.')
 
   for (const artifact of ['lib/index.js.map', 'lib/client.js.map']) {
     const sourceMap = await readFile(join(root, artifact), 'utf8')
