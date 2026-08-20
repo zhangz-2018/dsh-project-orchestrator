@@ -4,6 +4,24 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.3.0] - 2026-08-21
+
+### 新增
+
+- 支持通过 Harness Host 目录选择器创建本地代码仓库项目。
+- 支持创建 GitHub 远程仓库项目，可选择分支浅克隆，并分页读取分支和开放 Issues 后导入选中事项。
+- Planner 和执行 Prompt 增加边界，将 GitHub Issue 与项目资料视为不可信数据。
+
+### 变更
+
+- GitHub Resource 持久化本地克隆路径，后续执行和 Worktree 选择使用实际工作目录。
+- 创建项目草稿只保留非敏感元数据，30 分钟后过期，并清理旧版敏感草稿。
+- Repository inspect 请求会取消旧请求，并忽略过期响应。
+
+### 安全
+
+- 项目创建失败时补偿清理半成品记录，并校验 clone 根目录和本地 API 访问边界。
+
 ## [1.2.1] - 2026-08-20
 
 ### 新增

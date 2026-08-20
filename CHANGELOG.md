@@ -4,6 +4,24 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-21
+
+### Added
+
+- Local repository project creation through the Harness Host directory picker.
+- GitHub repository project creation with branch selection, shallow clone, paginated branch and Issue inspection, and selected Issue import.
+- Planner and execution prompt boundaries that treat GitHub Issue and project evidence as untrusted data.
+
+### Changed
+
+- GitHub Resources persist their local clone path for later execution and Worktree selection.
+- Project intake drafts keep only non-sensitive metadata, expire after 30 minutes, and discard legacy sensitive drafts.
+- Repository inspection requests cancel stale requests and ignore out-of-date responses.
+
+### Security
+
+- Project creation compensates partial persistence failures and validates clone roots and local API access boundaries.
+
 ## [1.2.1] - 2026-08-20
 
 ### Added

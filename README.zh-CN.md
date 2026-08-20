@@ -77,7 +77,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.2.1
+dsh plugin --profile web add dsh-project-orchestrator@1.3.0
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
