@@ -25,6 +25,24 @@ test('client bundle registers with the Harness module loader', async () => {
   assert.ok(!manifest.dsh.client.inject.includes('workspaces'))
 })
 
+test('client styles follow Harness theme tokens', async () => {
+  const source = await readFile(new URL('../src/styles.ts', import.meta.url), 'utf8')
+  assert.match(source, /body\[data-ds-dark-theme\] \.po-workbench/)
+  for (const token of [
+    '--dsw-alias-bg-base',
+    '--dsw-alias-label-primary',
+    '--dsw-alias-border-l2',
+    '--dsw-alias-button-primary-fill',
+    '--dsw-alias-state-business-primary',
+    '--dsw-alias-state-success-primary',
+    '--dsw-alias-state-warn-primary',
+    '--dsw-alias-state-error-primary',
+  ]) assert.match(source, new RegExp(token))
+  assert.doesNotMatch(source, /--dsw-alias-border-focus/)
+  assert.doesNotMatch(source, /(?:^|[;{]\s*)(?:color|background(?:-color)?|border-color|accent-color):\s*#[0-9a-f]{3,8}/im)
+  assert.doesNotMatch(source, /border(?:-(?:top|right|bottom|left))?:\s*[^;{}]*\bsolid\s+#[0-9a-f]{3,8}/im)
+})
+
 test('client exposes explicit empty and AI creation actions', async () => {
   const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
   const bundle = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')

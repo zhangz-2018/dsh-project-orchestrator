@@ -4,6 +4,17 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4] - 2026-08-21
+
+### Added
+
+- A client style contract test that prevents direct light-only colors and nonexistent Harness theme tokens from returning.
+
+### Fixed
+
+- Every Project Orchestrator view now follows the Harness global light and dark themes, including the task board, semantic status and priority badges, dialogs, project details, Agent Builder, feedback surfaces, and mobile navigation.
+- Focus, hover, active, selected, and disabled states now use supported Harness tokens and remain legible across both themes.
+
 ## [1.3.3] - 2026-08-21
 
 ### Fixed

@@ -4,6 +4,17 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.3.4] - 2026-08-21
+
+### 新增
+
+- 新增客户端样式契约测试，防止重新引入仅适用于亮色主题的固定颜色或不存在的 Harness 主题 token。
+
+### 修复
+
+- Project Orchestrator 的全部页面现在跟随 Harness 全局亮色与暗色主题，包括任务看板、语义状态与优先级徽章、弹窗、项目详情、Agent Builder、反馈提示和移动端导航。
+- 焦点、悬浮、按下、选中和禁用状态现在使用受支持的 Harness token，并在两种主题下保持清晰可辨。
+
 ## [1.3.3] - 2026-08-21
 
 ### 修复
