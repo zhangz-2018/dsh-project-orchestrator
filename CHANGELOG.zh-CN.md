@@ -4,6 +4,12 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.3.3] - 2026-08-21
+
+### 修复
+
+- Cordis 客户端插件现在按服务名注入 `workspaces`；package manifest 仍单独声明 runtime 软件包依赖，避免混淆两层注入语义。
+
 ## [1.3.2] - 2026-08-21
 
 ### 新增

@@ -47,7 +47,7 @@ import type {
 } from './client-types.js'
 import { styles } from './styles.js'
 
-export const inject = ['slots', '@deepseek-ai/dsh-client-runtime']
+export const inject = ['slots', 'workspaces']
 
 type View = 'tasks' | 'projects' | 'agents' | 'inbox' | 'issues' | 'squads' | 'runtimes' | 'skills'
 type Panel = 'task-new' | 'task-detail' | 'project-form' | 'issue-detail' | 'agent-start' | 'agent-manual' | 'agent-ai' | 'agent-edit' | null

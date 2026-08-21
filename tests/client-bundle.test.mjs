@@ -5,6 +5,7 @@ import vm from 'node:vm'
 
 test('client bundle registers with the Harness module loader', async () => {
   const source = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   let registration
   const context = {
     window: {
@@ -19,7 +20,9 @@ test('client bundle registers with the Harness module loader', async () => {
   const dependency = new Proxy({}, { get: () => () => null })
   const exported = registration.factory(() => dependency)
   assert.equal(typeof exported.apply, 'function')
-  assert.deepEqual(Array.from(exported.inject), ['slots', '@deepseek-ai/dsh-client-runtime'])
+  assert.deepEqual(Array.from(exported.inject), ['slots', 'workspaces'])
+  assert.ok(manifest.dsh.client.inject.includes('@deepseek-ai/dsh-client-runtime'))
+  assert.ok(!manifest.dsh.client.inject.includes('workspaces'))
 })
 
 test('client exposes explicit empty and AI creation actions', async () => {

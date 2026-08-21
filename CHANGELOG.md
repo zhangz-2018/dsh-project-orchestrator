@@ -4,6 +4,12 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.3] - 2026-08-21
+
+### Fixed
+
+- The Cordis client plugin now injects the `workspaces` service by service name, while the package manifest continues to declare the runtime package dependency separately.
+
 ## [1.3.2] - 2026-08-21
 
 ### Added

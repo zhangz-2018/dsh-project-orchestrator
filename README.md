@@ -6,7 +6,7 @@ A durable, approval-gated project orchestration workbench for [DeepSeek Harness]
 
 `dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It keeps Projects, Issues, TaskRuns, human Decisions, Agent capacity, Git worktree evidence, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
 
-> **Compatibility:** v1.3.2 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.3.3 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
 ## Project creation is not an AI side effect
 
@@ -44,7 +44,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.3.2
+dsh plugin --profile web add dsh-project-orchestrator@1.3.3
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -94,7 +94,7 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 7. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
 8. Human review approval is the only Issue completion path.
 
-Runtime records are local Harness Host facts. v1.3.2 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
+Runtime records are local Harness Host facts. v1.3.3 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
 
 ## Security model
 
