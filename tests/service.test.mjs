@@ -1191,6 +1191,98 @@ test('legacy approvals migrate idempotently to Decisions and project deletion re
   assert.equal(service.snapshot().inbox.some((item) => item.projectId === project.id), false)
 })
 
+test('project deletion cascades every owned record while preserving shared and unrelated data', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = { id: 'delete-project', name: 'Delete project', summary: '', cwd: '/tmp', prd: '', technicalDesign: '', status: 'draft', revision: 1, taskIds: ['listed-task'], workspaceId: 'shared-workspace', createdAt: now, updatedAt: now }
+  const otherProject = { ...project, id: 'keep-project', name: 'Keep project', taskIds: ['keep-task'] }
+  await store.projects.put(project.id, project)
+  await store.projects.put(otherProject.id, otherProject)
+
+  await store.tasks.put('listed-task', { id: 'listed-task', projectId: project.id })
+  await store.tasks.put('orphan-task', { id: 'orphan-task', projectId: project.id })
+  await store.tasks.put('keep-task', { id: 'keep-task', projectId: otherProject.id })
+  await store.approvals.put('delete-approval', { id: 'delete-approval', projectId: project.id })
+  await store.runs.put('delete-run', { id: 'delete-run', projectId: project.id })
+  await store.resources.put('delete-resource', { id: 'delete-resource', projectId: project.id })
+  await store.issues.put('delete-issue', { id: 'delete-issue', projectId: project.id })
+  await store.issues.put('keep-issue', { id: 'keep-issue', projectId: otherProject.id })
+  await store.taskRuns.put('delete-task-run', { id: 'delete-task-run', projectId: project.id, issueId: 'delete-issue', commandId: 'run-command' })
+  await store.taskRuns.put('keep-task-run', { id: 'keep-task-run', projectId: otherProject.id, issueId: 'keep-issue', commandId: 'keep-command' })
+  await store.activity.put('delete-activity', { id: 'delete-activity', issueId: 'delete-issue' })
+  await store.comments.put('delete-comment', { id: 'delete-comment', issueId: 'delete-issue' })
+  await store.decisions.put('delete-decision', { id: 'delete-decision', taskRunId: 'delete-task-run' })
+  await store.delegations.put('delete-delegation', { id: 'delete-delegation', projectId: project.id, parentIssueId: 'delete-issue', childIssueId: 'delete-issue' })
+  await store.transcripts.put('delete-transcript', { id: 'delete-transcript', taskRunId: 'delete-task-run' })
+  await store.artifacts.put('delete-artifact', { id: 'delete-artifact', projectId: project.id, taskRunId: 'delete-task-run' })
+  await store.commands.put('issue-command', { id: 'issue-command', issueId: 'delete-issue' })
+  await store.commands.put('run-command', { id: 'run-command' })
+  await store.commands.put('keep-command', { id: 'keep-command', projectId: otherProject.id, issueId: 'keep-issue' })
+  await store.externalTriggers.put('issue-trigger', { id: 'issue-trigger', commandId: 'issue-command' })
+  await store.externalTriggers.put('run-trigger', { id: 'run-trigger', commandId: 'run-command' })
+  await store.externalTriggers.put('keep-trigger', { id: 'keep-trigger', commandId: 'keep-command' })
+  await store.workspaceLeases.put('delete-lease', { id: 'delete-lease', projectId: project.id, taskRunId: 'delete-task-run' })
+  await store.workspaceLeases.put('keep-lease', { id: 'keep-lease', projectId: otherProject.id, taskRunId: 'keep-task-run' })
+  await store.localDirectoryLocks.put('delete-lock', { id: 'delete-lock', projectId: project.id, taskRunId: 'delete-task-run' })
+  await store.localDirectoryLocks.put('keep-lock', { id: 'keep-lock', projectId: otherProject.id, taskRunId: 'keep-task-run' })
+  await store.agents.put('shared-agent', { id: 'shared-agent' })
+  await store.runtimes.put('shared-runtime', { id: 'shared-runtime' })
+  await store.squads.put('shared-squad', { id: 'shared-squad' })
+  await store.skills.put('shared-skill', { id: 'shared-skill' })
+
+  await service.deleteProject(project.id)
+
+  for (const [table, ids] of [
+    [store.projects, ['delete-project']],
+    [store.tasks, ['listed-task', 'orphan-task']],
+    [store.approvals, ['delete-approval']],
+    [store.runs, ['delete-run']],
+    [store.resources, ['delete-resource']],
+    [store.issues, ['delete-issue']],
+    [store.taskRuns, ['delete-task-run']],
+    [store.activity, ['delete-activity']],
+    [store.comments, ['delete-comment']],
+    [store.decisions, ['delete-decision']],
+    [store.delegations, ['delete-delegation']],
+    [store.transcripts, ['delete-transcript']],
+    [store.artifacts, ['delete-artifact']],
+    [store.commands, ['issue-command', 'run-command']],
+    [store.externalTriggers, ['issue-trigger', 'run-trigger']],
+    [store.workspaceLeases, ['delete-lease']],
+    [store.localDirectoryLocks, ['delete-lock']],
+  ]) for (const id of ids) assert.equal(table.get(id), undefined, `${id} should be deleted`)
+
+  for (const [table, id] of [
+    [store.projects, 'keep-project'], [store.tasks, 'keep-task'], [store.issues, 'keep-issue'], [store.taskRuns, 'keep-task-run'],
+    [store.commands, 'keep-command'], [store.externalTriggers, 'keep-trigger'], [store.workspaceLeases, 'keep-lease'], [store.localDirectoryLocks, 'keep-lock'],
+    [store.agents, 'shared-agent'], [store.runtimes, 'shared-runtime'], [store.squads, 'shared-squad'], [store.skills, 'shared-skill'],
+  ]) assert.ok(table.get(id), `${id} should be preserved`)
+})
+
+test('project deletion keeps the Project when a child cleanup fails and can be retried', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = { id: 'retry-delete', name: 'Retry delete', summary: '', cwd: '/tmp', prd: '', technicalDesign: '', status: 'draft', revision: 1, taskIds: ['retry-task'], createdAt: now, updatedAt: now }
+  await store.projects.put(project.id, project)
+  await store.tasks.put('retry-task', { id: 'retry-task', projectId: project.id })
+  await store.issues.put('retry-issue', { id: 'retry-issue', projectId: project.id })
+  await store.comments.put('retry-comment', { id: 'retry-comment', issueId: 'retry-issue' })
+  const deleteIssue = store.issues.delete.bind(store.issues)
+  store.issues.delete = async () => { throw new Error('simulated cleanup failure') }
+
+  await assert.rejects(() => service.deleteProject(project.id), /simulated cleanup failure/)
+  assert.ok(store.projects.get(project.id))
+  assert.ok(store.tasks.get('retry-task'))
+  assert.ok(store.issues.get('retry-issue'))
+  assert.equal(store.comments.get('retry-comment'), undefined)
+
+  store.issues.delete = deleteIssue
+  await service.deleteProject(project.id)
+  assert.equal(store.projects.get(project.id), undefined)
+  assert.equal(store.tasks.get('retry-task'), undefined)
+  assert.equal(store.issues.get('retry-issue'), undefined)
+})
+
 test('unified commands own assignment, idempotency, stop, continue, and review gates', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)

@@ -1453,7 +1453,7 @@ async function cancelProject(model: WorkbenchModel, project: ProjectRecord) {
   await model.action(() => mutate(`/projects/${project.id}/cancel`, 'POST'), '停止请求已提交。')
 }
 async function deleteProject(model: WorkbenchModel, project: ProjectRecord) {
-  if (!window.confirm(`删除项目“${project.name}”及其任务和运行记录？`)) return
+  if (!window.confirm(`删除项目“${project.name}”及其任务、Issues、运行记录、审批和相关执行数据？共享的智能体、Squad、Runtime 与 Harness Workspace 不会删除。`)) return
   const result = await model.action(() => mutate(`/projects/${project.id}`, 'DELETE'), '项目已删除。')
   if (result) model.clearSelection()
 }
