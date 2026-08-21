@@ -47,7 +47,7 @@ import type {
 } from './client-types.js'
 import { styles } from './styles.js'
 
-export const inject = ['slots']
+export const inject = ['slots', '@deepseek-ai/dsh-client-runtime']
 
 type View = 'tasks' | 'projects' | 'agents' | 'inbox' | 'issues' | 'squads' | 'runtimes' | 'skills'
 type Panel = 'task-new' | 'task-detail' | 'project-form' | 'issue-detail' | 'agent-start' | 'agent-manual' | 'agent-ai' | 'agent-edit' | null
@@ -775,6 +775,8 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const canApprove = project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent
   const canRetry = approvalCurrent && ['approved', 'failed', 'cancelled'].includes(project.status)
   const canReplan = project.prd.trim() !== '' && ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
+  const canAppendDecomposition = ['draft', 'awaiting_approval'].includes(project.status) && latestRun === undefined && !active
+  const [appendDialogOpen, setAppendDialogOpen] = useState(false)
   const openDirectory = () => model.action(() => mutate<{ ok: true }>(`/projects/${project.id}/open-directory`, 'POST'), '已在本机文件管理器中打开项目目录。')
   const completed = tasks.filter((task) => task.status === 'completed' && task.testExitCode === 0).length
   const currentTask = latestRun?.currentTaskId ? tasks.find((task) => task.id === latestRun.currentTaskId) : undefined
@@ -815,23 +817,47 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div className="po-gate-actions">
           {canApprove ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={() => void approveAndExecuteProject(model, project, planHash)}>批准计划并开始实施</ActionButton> : null}
           {project.status === 'draft' && tasks.length === 0 ? <ActionButton variant="primary" icon={<IconEditOutline16 />} disabled={state.loading} onClick={() => model.openProjectForm(project.id)}>补充需求并让 AI 拆解</ActionButton> : null}
-          {canReplan && tasks.length > 0 ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>重新生成中文计划</ActionButton> : null}
+          {canAppendDecomposition && tasks.length > 0 ? <ActionButton variant="primary" icon={<IconChecklistOutline14 />} disabled={state.loading} onClick={() => setAppendDialogOpen(true)}>新增需求并拆分任务</ActionButton> : null}
+          {canReplan && tasks.length > 0 ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>替换当前计划</ActionButton> : null}
           {project.status === 'failed' && canRetry ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>让 AI 修复并继续</ActionButton> : null}
           {project.status === 'cancelled' && canRetry ? <ActionButton variant="primary" icon={<IconPlayOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>继续自动实施</ActionButton> : null}
           {active ? <ActionButton variant="outline" icon={<IconStopFill16 />} disabled={state.loading} onClick={() => void cancelProject(model, project)}>停止运行</ActionButton> : null}
         </div>
       </section>
       <div className="po-project-artifacts">
-        <details className="po-artifact-disclosure" open><summary>需求简报</summary><div className="po-document-text">{project.prd || '尚未填写。空项目可以先手动管理任务，之后再补充需求并启动 AI 拆解。'}</div></details>
-        <details className="po-artifact-disclosure"><summary>技术方案上下文</summary><div className="po-document-text">{project.technicalDesign || '尚未填写。'}</div></details>
+        <details className="po-artifact-disclosure" open><summary>初始需求简报</summary><div className="po-document-text">{project.prd || '尚未填写。空项目可以先手动管理任务，之后再补充需求并启动 AI 拆解。'}</div></details>
+        <details className="po-artifact-disclosure"><summary>初始技术方案上下文</summary><div className="po-document-text">{project.technicalDesign || '尚未填写。'}</div></details>
+        {(project.decompositionBatches ?? []).length > 0 ? <details className="po-artifact-disclosure"><summary>需求拆分批次（{project.decompositionBatches!.length}）</summary><div className="po-requirement-batches">{project.decompositionBatches!.map((batch, index) => <details key={batch.id}><summary><strong>{index + 1}. {batch.title}</strong><span>{batch.taskIds.length} 个任务</span></summary><div className="po-document-text">{batch.prd}</div>{batch.technicalDesign ? <div className="po-document-text po-document-secondary">{batch.technicalDesign}</div> : null}</details>)}</div></details> : null}
       </div>
       <section className="po-project-task-section">
         <div className="po-section-heading"><div><h2>项目任务</h2><p>{completed}/{tasks.length} 个任务测试通过</p></div>{['draft', 'failed', 'cancelled'].includes(project.status) ? <ActionButton variant="outline" size="sm" icon={<IconPlusOutline16 />} disabled={active || state.loading} onClick={() => model.openPanel('task-new')}>添加任务</ActionButton> : null}</div>
         {tasks.length === 0 ? <EmptyState title="这是一个空项目" body="现在还没有任务。你可以手动添加任务，或补充需求后明确选择让 AI 拆解。" /> : tasks.map((task) => <button key={task.id} type="button" className="po-project-task-row" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{agentName(state.snapshot, task.agentId)} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button>)}
       </section>
       {latestRun ? <RunSummary run={latestRun} snapshot={state.snapshot} /> : null}
+      {appendDialogOpen ? <AdditionalDecompositionDialog project={project} model={model} loading={state.loading} onClose={() => setAppendDialogOpen(false)} /> : null}
     </section>
   )
+}
+
+function AdditionalDecompositionDialog({ project, model, loading, onClose }: { project: ProjectRecord; model: WorkbenchModel; loading: boolean; onClose: () => void }) {
+  const [title, setTitle] = useState('')
+  const [prd, setPrd] = useState('')
+  const [technicalDesign, setTechnicalDesign] = useState('')
+  const [taskLanguage, setTaskLanguage] = useState<TaskLanguage>(project.taskLanguage ?? 'zh-CN')
+  const [error, setError] = useState<string>()
+  const submit = async () => {
+    if (!title.trim() || !prd.trim()) { setError('请填写需求标题和需求文档。'); return }
+    const result = await model.action(() => mutate<ProjectRecord>(`/projects/${project.id}/decompositions`, 'POST', { title, prd, technicalDesign, taskLanguage }), '新增需求已提交，AI 正在追加任务拆分。')
+    if (result) onClose()
+  }
+  return <div className="po-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+    <section className="po-modal po-modal-wide" role="dialog" aria-modal="true" aria-labelledby="po-add-decomposition-title">
+      <header><div><h2 id="po-add-decomposition-title">新增需求并拆分任务</h2><p>这次拆分会追加到当前 Project，已有任务和需求批次不会被删除。</p></div><button type="button" className="po-icon-button" aria-label="关闭" onClick={onClose}><IconCloseOutline16 /></button></header>
+      {error ? <div className="po-inline-error"><IconWarningOutline16 />{error}</div> : null}
+      <div className="po-modal-body"><label className="po-field"><span className="po-label">需求标题</span><input className="po-input" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例如：增加权限审计" /></label><label className="po-field"><span className="po-label">需求文档</span><textarea className="po-textarea po-textarea-tall" value={prd} onChange={(event) => setPrd(event.target.value)} placeholder="描述这一批需求、边界和验收目标" /></label><label className="po-field"><span className="po-label">技术方案上下文（可选）</span><textarea className="po-textarea" value={technicalDesign} onChange={(event) => setTechnicalDesign(event.target.value)} placeholder="补充实现约束、接口或测试要求" /></label><label className="po-field"><span className="po-label">任务语言</span><select className="po-select" value={taskLanguage} onChange={(event) => setTaskLanguage(event.target.value as TaskLanguage)}><option value="zh-CN">简体中文</option><option value="en">English</option></select></label></div>
+      <footer><ActionButton variant="ghost" onClick={onClose}>取消</ActionButton><ActionButton variant="primary" disabled={loading} onClick={() => void submit()}>提交并追加拆分</ActionButton></footer>
+    </section>
+  </div>
 }
 
 function AgentsPage({ state, model }: { state: WorkbenchState; model: WorkbenchModel }) {

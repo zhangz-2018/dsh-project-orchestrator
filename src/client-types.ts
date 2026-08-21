@@ -79,6 +79,17 @@ export interface RepositoryInspection {
   issues: RepositoryIssue[]
 }
 
+export interface DecompositionBatch {
+  id: string
+  title: string
+  prd: string
+  technicalDesign: string
+  taskIds: string[]
+  sessionId?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface ProjectRecord {
   id: string
   name: string
@@ -93,6 +104,7 @@ export interface ProjectRecord {
   revision: number
   approvedRevision?: number
   taskIds: string[]
+  decompositionBatches?: DecompositionBatch[]
   resourceIds?: string[]
   issueIds?: string[]
   workspaceId?: string

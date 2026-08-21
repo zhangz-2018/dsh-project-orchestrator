@@ -4,6 +4,17 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-08-21
+
+### Added
+
+- Multiple requirement documents and append-only decomposition batches per Project, preserving prior plans and task evidence.
+- A Project detail action to submit another requirement document and append its generated code and test tasks.
+
+### Fixed
+
+- The directory browser now injects the Harness workspace runtime it uses, so Web Hosts with the `browse` capability no longer fail with a missing `workspaces` service.
+
 ## [1.3.1] - 2026-08-21
 
 ### Added

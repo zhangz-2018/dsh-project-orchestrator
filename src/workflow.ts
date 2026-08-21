@@ -203,6 +203,7 @@ export function materializeTasks(
   plan: GeneratedPlan,
   agents: Array<{ id: string; role: string }>,
   now = new Date().toISOString(),
+  ordinalOffset = 0,
 ): TaskRecord[] {
   const ids = new Map(plan.tasks.map((task) => [task.id, randomUUID()]))
   return plan.tasks.map((task, ordinal) => {
@@ -214,7 +215,7 @@ export function materializeTasks(
     return {
       id: ids.get(task.id) ?? randomUUID(),
       projectId,
-      ordinal,
+      ordinal: ordinal + ordinalOffset,
       title: task.title,
       kind: task.kind,
       description: task.description,

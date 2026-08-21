@@ -15,7 +15,7 @@ This preserves local data when the loader package name changes.
 
 1. Stop the existing Harness Host.
 2. Back up `~/.dsh/storages/project_orchestrator.json`.
-3. Install `dsh-project-orchestrator@1.3.1` through the same Web profile.
+3. Install `dsh-project-orchestrator@1.3.2` through the same Web profile.
 4. Replace the loader row package name; do not add a second row:
 
    ```yaml

@@ -145,6 +145,10 @@ export function createHttpHandler(service: OrchestratorService) {
         if (decompose !== undefined && method === 'POST') {
           return json(res, 202, await service.startDecomposition(decompose))
         }
+        const appendDecomposition = matchOne(path, /^\/projects\/([^/]+)\/decompositions$/)
+        if (appendDecomposition !== undefined && method === 'POST') {
+          return json(res, 202, await service.appendDecomposition(appendDecomposition, await readJson(req)))
+        }
         const openDirectory = matchOne(path, /^\/projects\/([^/]+)\/open-directory$/)
         if (openDirectory !== undefined && method === 'POST') {
           return json(res, 200, await service.openProjectDirectory(openDirectory))

@@ -298,6 +298,11 @@ export const styles = `
 .po-artifact-disclosure summary { min-height: 48px; display: flex; align-items: center; cursor: pointer; color: var(--dsw-alias-label-primary, #27272a); font-weight: 650; }
 .po-artifact-disclosure .po-document-text { margin: 0 0 18px; }
 .po-document-text { max-width: 75ch; margin-top: 14px; color: var(--dsw-alias-label-secondary, #3f3f46); line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.po-document-secondary { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); }
+.po-requirement-batches { display: grid; gap: 8px; }
+.po-requirement-batches details { border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); }
+.po-requirement-batches summary { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+.po-requirement-batches summary span { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
 .po-project-task-row { width: 100%; min-height: 62px; border: 0; border-top: 1px solid var(--dsw-alias-border-l3, #ededee); padding: 10px 4px; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto 20px; align-items: center; gap: 12px; background: transparent; cursor: pointer; text-align: left; }
 .po-project-task-row:hover { background: var(--dsw-alias-interactive-bg-hover, #f7f7f8); }
 .po-task-kind-mark { color: var(--dsw-alias-label-caption, #6b7280); font-size: 10px; font-weight: 700; text-transform: uppercase; }

@@ -352,6 +352,17 @@ export const AgentRecordSchema = z.object({
   updatedAt: z.string().min(1),
 })
 
+export const DecompositionBatchSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(160),
+  prd: z.string().min(1).max(500_000),
+  technicalDesign: z.string().max(500_000),
+  taskIds: z.array(z.string().min(1)).max(1_000),
+  sessionId: z.string().min(1).optional(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+}).strict()
+
 export const ProjectRecordSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(160),
@@ -366,6 +377,7 @@ export const ProjectRecordSchema = z.object({
   revision: z.number().int().positive(),
   approvedRevision: z.number().int().positive().optional(),
   taskIds: z.array(z.string().min(1)).max(1_000),
+  decompositionBatches: z.array(DecompositionBatchSchema).max(100).optional(),
   resourceIds: z.array(z.string().min(1)).max(100).optional(),
   issueIds: z.array(z.string().min(1)).max(1_000).optional(),
   workspaceId: z.string().min(1).max(240).optional(),
@@ -563,6 +575,13 @@ export const ProjectReplanRequestSchema = z.object({
 
 export const ProjectWorkspaceLinkRequestSchema = z.object({
   workspaceId: z.string().trim().min(1).max(240),
+}).strict()
+
+export const ProjectDecompositionRequestSchema = z.object({
+  title: z.string().trim().min(1).max(160),
+  prd: z.string().trim().min(1).max(500_000),
+  technicalDesign: z.string().trim().max(500_000).default(''),
+  taskLanguage: TaskLanguageSchema.default('zh-CN'),
 }).strict()
 
 export const ProjectApprovalRequestSchema = z.object({
@@ -788,6 +807,8 @@ export type RepositoryIssue = z.infer<typeof RepositoryIssueSchema>
 export type TaskLanguage = z.infer<typeof TaskLanguageSchema>
 export type ProjectReplanRequest = z.infer<typeof ProjectReplanRequestSchema>
 export type ProjectWorkspaceLinkRequest = z.infer<typeof ProjectWorkspaceLinkRequestSchema>
+export type ProjectDecompositionRequest = z.infer<typeof ProjectDecompositionRequestSchema>
+export type DecompositionBatch = z.infer<typeof DecompositionBatchSchema>
 export type ProjectApprovalRequest = z.infer<typeof ProjectApprovalRequestSchema>
 export type TaskInput = z.infer<typeof TaskInputSchema>
 export type TaskUpdate = z.infer<typeof TaskUpdateSchema>

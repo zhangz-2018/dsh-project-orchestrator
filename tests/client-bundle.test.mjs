@@ -19,7 +19,7 @@ test('client bundle registers with the Harness module loader', async () => {
   const dependency = new Proxy({}, { get: () => () => null })
   const exported = registration.factory(() => dependency)
   assert.equal(typeof exported.apply, 'function')
-  assert.deepEqual(Array.from(exported.inject), ['slots'])
+  assert.deepEqual(Array.from(exported.inject), ['slots', '@deepseek-ai/dsh-client-runtime'])
 })
 
 test('client exposes explicit empty and AI creation actions', async () => {

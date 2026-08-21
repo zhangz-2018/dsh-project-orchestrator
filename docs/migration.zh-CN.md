@@ -15,7 +15,7 @@
 
 1. 停止现有的 Harness Host。
 2. 备份 `~/.dsh/storages/project_orchestrator.json`。
-3. 通过同一个 Web profile 安装 `dsh-project-orchestrator@1.3.1`。
+3. 通过同一个 Web profile 安装 `dsh-project-orchestrator@1.3.2`。
 4. 替换加载器行中的软件包名称；不要添加第二行：
 
    ```yaml

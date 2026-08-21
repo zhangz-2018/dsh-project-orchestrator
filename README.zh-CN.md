@@ -48,7 +48,7 @@
 
 适合已经有 PRD、验收目标或较完整交付说明的场景。需要提供工作目录和非空交付简报；技术方案可选。
 
-Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代码任务、测试任务、依赖关系和验证命令。新项目默认生成简体中文任务，也可以切换为英文。生成后仍需人工批准，AI 不会直接开始实施。
+Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代码任务、测试任务、依赖关系和验证命令。新项目默认生成简体中文任务，也可以切换为英文。生成后仍需人工批准，AI 不会直接开始实施。计划生成后，可以点击“新增需求并拆分任务”提交另一份需求文档。每个批次保留独立需求和 Planner 会话，并把新任务追加到同一个需要审批的 Project 计划中。已有执行记录的 Project 不允许再追加拆分。
 
 ### 打开项目目录
 
@@ -77,7 +77,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.3.1
+dsh plugin --profile web add dsh-project-orchestrator@1.3.2
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：

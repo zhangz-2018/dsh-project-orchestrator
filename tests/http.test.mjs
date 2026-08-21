@@ -56,6 +56,7 @@ function service() {
     async linkProjectWorkspace(id, body) { return { id, ...body } },
     async openProjectDirectory() { return { ok: true } },
     async replanProject(id, body) { return { id, status: 'decomposing', ...body } },
+    async appendDecomposition(id, body) { return { id, status: 'decomposing', ...body } },
     async approveAndStartExecution(id, body) { return { project: { id, status: 'running' }, run: { id: 'run', projectId: id, status: 'queued', approvalRevision: body.revision, approvalPlanHash: body.planHash, createdAt: 'now' } } },
     async retryExecution(id) { return { project: { id, status: 'running' }, run: { id: 'retry-run', projectId: id, status: 'queued', createdAt: 'now' } } },
     async createTask(projectId, body) { return { id: 'task', projectId, ...body } },
@@ -134,6 +135,23 @@ test('project Workspace linking is same-origin and serialized', async () => {
   }), res)
   assert.equal(res.statusCode, 200)
   assert.deepEqual(linked, { id: 'project-1', body: { workspaceId: 'workspace-123' } })
+  assert.equal(lockCalls, 1)
+})
+
+test('additional requirement decomposition route is same-origin and serialized', async () => {
+  const fake = service()
+  let received
+  let lockCalls = 0
+  fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
+  fake.appendDecomposition = async (id, body) => { received = { id, body }; return { id, status: 'decomposing' } }
+  const res = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects/project-1/decompositions',
+    headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
+    body: JSON.stringify({ title: '权限审计', prd: '记录权限变更。', technicalDesign: '', taskLanguage: 'zh-CN' }),
+  }), res)
+  assert.equal(res.statusCode, 202)
+  assert.deepEqual(received, { id: 'project-1', body: { title: '权限审计', prd: '记录权限变更。', technicalDesign: '', taskLanguage: 'zh-CN' } })
   assert.equal(lockCalls, 1)
 })
 

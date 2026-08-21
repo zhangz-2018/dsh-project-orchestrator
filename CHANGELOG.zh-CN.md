@@ -4,6 +4,17 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.3.2] - 2026-08-21
+
+### 新增
+
+- Project 支持多个需求文档和追加式拆分批次，保留之前的计划与任务证据。
+- 项目详情增加提交新需求文档并追加生成代码任务和测试任务的入口。
+
+### 修复
+
+- 目录浏览器现在正确注入所使用的 Harness Workspace runtime，Web Host 使用 `browse` 能力时不再报 `workspaces` 服务缺失。
+
 ## [1.3.1] - 2026-08-21
 
 ### 新增

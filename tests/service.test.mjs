@@ -914,6 +914,35 @@ test('an empty project can add a brief and explicitly start AI decomposition lat
   }
 })
 
+test('a Project can append multiple requirement decomposition batches without deleting prior tasks', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-multi-decomposition-'))
+  try {
+    const store = memoryStore()
+    const response = (summary, codeTitle, testTitle) => JSON.stringify({ summary, tasks: [
+      { id: 'implement', title: codeTitle, kind: 'code', description: `${codeTitle}实现。`, acceptanceCriteria: ['功能可验证'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'true' },
+      { id: 'verify', title: testTitle, kind: 'test', description: `${testTitle}实现。`, acceptanceCriteria: ['测试通过'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: 'true' },
+    ] })
+    const service = new OrchestratorService(agentContext(response('计划', '代码任务', '测试任务')), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: '多需求项目', cwd: root, prd: '初始需求。' })
+    await service.startDecomposition(project.id)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    const first = store.projects.get(project.id)
+    assert.equal(first.status, 'awaiting_approval')
+    assert.equal(first.taskIds.length, 2)
+    const second = await service.appendDecomposition(project.id, { title: '第二批需求', prd: '新增权限审计需求。', technicalDesign: '', taskLanguage: 'zh-CN' })
+    assert.equal(second.status, 'decomposing')
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    assert.equal(settled.status, 'awaiting_approval')
+    assert.equal(settled.taskIds.length, 4)
+    assert.equal(settled.decompositionBatches.length, 2)
+    assert.deepEqual(settled.decompositionBatches.map((batch) => batch.title), ['多需求项目', '第二批需求'])
+    assert.equal(store.projectTasks(settled).length, 4)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 test('omitted creation mode preserves AI planning compatibility', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-compatible-project-'))
   try {
