@@ -930,6 +930,22 @@ test('omitted creation mode preserves AI planning compatibility', async () => {
   }
 })
 
+test('a Project can persist its DeepSeek Harness Workspace association', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-workspace-link-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Workspace 项目', cwd: root })
+    const linked = await service.linkProjectWorkspace(project.id, { workspaceId: 'workspace-123' })
+    assert.equal(linked.workspaceId, 'workspace-123')
+    assert.equal(store.projects.get(project.id).workspaceId, 'workspace-123')
+    assert.equal([...store.activity.records.values()].some((event) => event.type === 'project.workspace_linked' && event.metadata.workspaceId === 'workspace-123'), true)
+    assert.equal((await service.linkProjectWorkspace(project.id, { workspaceId: 'workspace-123' })).updatedAt, linked.updatedAt)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 test('project directory opening uses the persisted canonical path and rejects broad roots', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-open-project-'))
   const opened = []

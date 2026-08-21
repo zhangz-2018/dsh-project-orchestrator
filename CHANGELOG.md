@@ -4,6 +4,17 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-08-21
+
+### Added
+
+- In-app directory browsing when the Harness Host provides the `browse` picker capability instead of a native operating-system chooser.
+- Durable Project-to-Harness Workspace association, with automatic same-path Workspace reuse and a Project action to open it.
+
+### Fixed
+
+- Local repository selection no longer fails on Web Hosts without the native directory-picker capability.
+
 ## [1.3.0] - 2026-08-21
 
 ### Added

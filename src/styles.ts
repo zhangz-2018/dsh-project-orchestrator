@@ -503,6 +503,22 @@ export const styles = `
 .po-status-running, .po-status-decomposing, .po-status-verifying { color: #855900; background: #fbf0cf; }
 .po-status-awaiting_approval, .po-status-approved { color: #0e6098; background: #e5f1f8; }
 .po-status-failed, .po-status-blocked, .po-status-cancelled { color: #a12929; background: #fbe8e8; }
+.po-directory-browser-backdrop { position: fixed; inset: 0; z-index: 80; padding: 24px; display: grid; place-items: center; background: rgba(24, 24, 27, 0.5); }
+.po-directory-browser { width: min(680px, 100%); max-height: min(680px, calc(100vh - 48px)); border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 8px; display: grid; grid-template-rows: auto auto minmax(220px, 1fr) auto; overflow: hidden; color: var(--dsw-alias-label-primary, #18181b); background: var(--dsw-alias-bg-base, #fff); box-shadow: 0 24px 64px rgba(0, 0, 0, 0.24); }
+.po-directory-browser > header { padding: 16px 18px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.po-directory-browser h3 { margin: 0; font-size: 16px; }
+.po-directory-browser header p { margin: 4px 0 0; color: var(--dsw-alias-label-secondary, #52525b); font-size: 12px; }
+.po-directory-crumbs { min-height: 42px; padding: 7px 12px; border-bottom: 1px solid var(--dsw-alias-border-l3, #eeeeef); display: flex; align-items: center; gap: 2px; overflow-x: auto; }
+.po-directory-crumbs button { min-height: 28px; border: 0; border-radius: 4px; padding: 0 7px; color: var(--dsw-alias-label-secondary, #52525b); background: transparent; cursor: pointer; white-space: nowrap; }
+.po-directory-crumbs button:hover { color: var(--dsw-alias-label-primary, #18181b); background: var(--dsw-alias-interactive-bg-hover, #f1f1f2); }
+.po-directory-list { min-height: 220px; padding: 6px; overflow-y: auto; }
+.po-directory-list > button { width: 100%; min-height: 42px; border: 0; border-radius: 5px; padding: 0 10px; display: grid; grid-template-columns: 18px minmax(0, 1fr) 14px; align-items: center; gap: 9px; color: inherit; background: transparent; cursor: pointer; text-align: left; }
+.po-directory-list > button:hover { background: var(--dsw-alias-interactive-bg-hover, #f4f4f5); }
+.po-directory-list > button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-directory-message { min-height: 220px; display: grid; place-items: center; color: var(--dsw-alias-label-secondary, #52525b); }
+.po-directory-warning { margin: 0; padding: 8px 16px; color: #713f12; background: #fffbeb; font-size: 12px; }
+.po-directory-browser > footer { min-height: 58px; padding: 10px 14px; border-top: 1px solid var(--dsw-alias-border-l2, #e5e7eb); display: flex; align-items: center; gap: 8px; }
+.po-directory-current { min-width: 0; margin-right: auto; overflow: hidden; color: var(--dsw-alias-label-secondary, #52525b); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }
 .po-inline-error { margin: 14px 24px 0; border: 1px solid #efb3b3; border-radius: 6px; padding: 10px 12px; display: flex; align-items: flex-start; gap: 8px; color: #8c2525; background: #fdf2f2; line-height: 1.45; }
 .po-modal .po-inline-error, .po-agent-chat .po-inline-error { margin: 0 0 12px; }
 .po-empty { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--dsw-alias-label-caption, #6b7280); text-align: center; }
@@ -652,6 +668,11 @@ export const styles = `
   .po-studio-footer .po-button, .po-agent-manual-form .po-config-footer .po-button { min-height: 44px; flex: 1 1 0; }
   .po-agent-manual-form .po-config-footer { padding: 9px 12px; }
   .po-modal-backdrop { padding: 0; align-items: end; }
+  .po-directory-browser-backdrop { padding: 0; align-items: end; }
+  .po-directory-browser { width: 100%; max-height: calc(100vh - 20px); border-radius: 8px 8px 0 0; }
+  .po-directory-browser > footer { flex-wrap: wrap; }
+  .po-directory-current { width: 100%; flex: 1 0 100%; }
+  .po-directory-browser > footer .po-button { min-height: 44px; flex: 1 1 140px; }
   .po-modal, .po-modal-wide { width: 100%; max-height: calc(100vh - 20px); border-radius: 8px 8px 0 0; }
   .po-modal-body { padding: 16px 14px; }
   .po-form-grid, .po-field-pair, .po-project-mode { grid-template-columns: 1fr; }

@@ -39,7 +39,7 @@
 
 创建项目时可以选择两类代码来源：
 
-- **本地代码仓库：** 点击“选择目录”调用 Harness Host 的目录选择器，浏览器不会提交任意本机路径。Host 会在保存时重新校验目录必须是已存在的绝对目录。
+- **本地代码仓库：** 点击“选择目录”后使用 Host 原生选择器或站内目录浏览器。Host 会重新校验所选目录是已存在的绝对目录；创建成功后，Project 会自动创建或复用同路径的 DeepSeek Harness Workspace，并持久化关联。
 - **GitHub 仓库：** 输入不含凭据的 `https://github.com/owner/repository` 地址，分页读取分支和开放 Issues，选择要拉取的分支。创建时会将该分支浅克隆到 Harness 受管目录，并把选中的 Issue 导入当前 Project；超过安全结果上限时会明确失败，不会静默截断。配置 `GITHUB_TOKEN` 或 `GH_TOKEN` 可提高 GitHub API 的访问额度。
 
 选中的 Issue 会作为 Project 的长期事项保存；在 AI 模式下，如果没有另外填写交付简报，Issue 内容会作为 Planner 的输入。空项目仍不会调用 AI。
@@ -58,7 +58,7 @@ Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代
 - Linux：系统 `xdg-open` 对应的文件管理器；
 - Windows：当前未认证，不承诺可用。
 
-这个操作只接受 Project ID。Host 会从持久化 Project 读取工作目录并在操作时重新校验；浏览器不能提交任意本机路径。
+项目详情还可以打开关联的 DeepSeek Harness Workspace。对于 GitHub 项目，Workspace 对应指定分支实际浅克隆后的本地目录，不是 GitHub URL。Harness 会尽量复用该 Workspace 下已有会话，只有没有可复用会话时才创建空会话；反复打开 Project 不会反复创建新会话。上述操作只接受 Project ID。Host 会从持久化 Project 读取工作目录并在操作时重新校验；浏览器不能提交任意本机路径。
 
 ## 核心能力
 
@@ -77,7 +77,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.3.0
+dsh plugin --profile web add dsh-project-orchestrator@1.3.1
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：

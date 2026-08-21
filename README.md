@@ -6,7 +6,7 @@ A durable, approval-gated project orchestration workbench for [DeepSeek Harness]
 
 `dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It keeps Projects, Issues, TaskRuns, human Decisions, Agent capacity, Git worktree evidence, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
 
-> **Compatibility:** v1.3.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.3.1 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
 ## Project creation is not an AI side effect
 
@@ -16,14 +16,14 @@ The Web client defaults to **Empty Project**. It records the Project name and ex
 
 Project creation supports two code-source modes:
 
-- **Local repository:** click **Choose directory** to use the Harness Host directory picker. The browser cannot submit an arbitrary local path; the Host revalidates that the selected path is an existing absolute directory when saving.
+- **Local repository:** click **Choose directory** to use the Host's native chooser or in-app directory browser. The Host revalidates the selected existing absolute directory. After creation, the Project automatically creates or reuses the same-path DeepSeek Harness Workspace and persists that association.
 - **GitHub repository:** enter a credential-free `https://github.com/owner/repository` URL, page through its branches and open Issues, and choose the branch to pull. Creation shallow-clones that branch into a Harness-managed directory and imports selected Issues into the Project; collections beyond the safety limit fail explicitly instead of being silently truncated. Set `GITHUB_TOKEN` or `GH_TOKEN` to increase GitHub API access limits.
 
 Selected Issues are stored as durable Project Issues. In AI mode, their content is used as the Planner brief when no separate delivery brief is supplied. Empty Projects still do not invoke AI.
 
 Choose **AI decomposition** only when a delivery brief is ready. Planning inspects the repository read-only, generates code and test Tasks, and still requires explicit human approval before execution.
 
-The Project detail view can open the persisted working directory in Finder on macOS or the system file manager through `xdg-open` on Linux. The Host accepts only a Project ID for this action; Windows is not certified.
+The Project detail view can open the persisted working directory in Finder on macOS or the system file manager through `xdg-open` on Linux. It can also open the associated DeepSeek Harness Workspace. For GitHub sources, that Workspace points to the actual shallow-clone directory for the selected branch, not the GitHub URL. Harness reuses an existing session in that Workspace when possible and creates a blank session only when needed; opening a Project does not create a new session every time. The Host accepts only a Project ID for these actions; Windows is not certified.
 
 ## Highlights
 
@@ -44,7 +44,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.3.0
+dsh plugin --profile web add dsh-project-orchestrator@1.3.1
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -94,7 +94,7 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 7. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
 8. Human review approval is the only Issue completion path.
 
-Runtime records are local Harness Host facts. v1.3.0 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
+Runtime records are local Harness Host facts. v1.3.1 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
 
 ## Security model
 

@@ -125,6 +125,10 @@ export function createHttpHandler(service: OrchestratorService) {
         if (projectResources !== undefined && method === 'POST') {
           return json(res, 201, await service.createProjectResource(projectResources, await readJson(req)))
         }
+        const projectWorkspace = matchOne(path, /^\/projects\/([^/]+)\/workspace$/)
+        if (projectWorkspace !== undefined && method === 'POST') {
+          return json(res, 200, await service.linkProjectWorkspace(projectWorkspace, await readJson(req)))
+        }
         const project = matchOne(path, /^\/projects\/([^/]+)$/)
         if (project !== undefined && method === 'PUT') {
           return json(res, 200, await service.updateProject(project, await readJson(req)))

@@ -29,6 +29,7 @@ import {
   ProjectCreateRequestSchema,
   ProjectInputSchema,
   ProjectReplanRequestSchema,
+  ProjectWorkspaceLinkRequestSchema,
   ProjectUpdateInputSchema,
   ProjectResourceInputSchema,
   RepositoryInspectRequestSchema,
@@ -1191,6 +1192,16 @@ export class OrchestratorService {
     await this.store.projects.put(id, next)
     await this.recordActivity({ projectId: id, actorType: 'human', type: 'project.replanning_requested', message: taskLanguage === 'zh-CN' ? '已请求重新生成中文任务计划。' : 'English task-plan regeneration requested.', metadata: { taskLanguage } })
     return this.startDecomposition(id)
+  }
+
+  async linkProjectWorkspace(id: string, input: unknown): Promise<ProjectRecord> {
+    const project = this.requireProject(id)
+    const { workspaceId } = ProjectWorkspaceLinkRequestSchema.parse(input)
+    if (project.workspaceId === workspaceId) return project
+    const next = { ...project, workspaceId, updatedAt: new Date().toISOString() }
+    await this.store.projects.put(id, next)
+    await this.recordActivity({ projectId: id, actorType: 'system', type: 'project.workspace_linked', message: 'Project linked to a DeepSeek Harness Workspace.', metadata: { workspaceId } })
+    return next
   }
 
   async updateProject(id: string, input: unknown): Promise<ProjectRecord> {

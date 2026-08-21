@@ -4,6 +4,17 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.3.1] - 2026-08-21
+
+### 新增
+
+- 当 Harness Host 提供 `browse` 目录能力而非系统原生选择器时，使用站内目录浏览器完成选择。
+- Project 与 Harness Workspace 建立持久关联，同路径 Workspace 会自动复用，并可从项目详情直接打开。
+
+### 修复
+
+- Web Host 未提供 native 目录选择能力时，本地代码仓库选择不再失败。
+
 ## [1.3.0] - 2026-08-21
 
 ### 新增

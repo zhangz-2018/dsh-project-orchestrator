@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ClientContext, WorkspaceId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { SidebarFooterActionOwnerProps } from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import {
@@ -69,10 +69,22 @@ interface WorkbenchState {
 
 const EMPTY_SNAPSHOT: Snapshot = { agents: [], projects: [], tasks: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], inbox: [], agentWorkloads: [], runStatistics: [] }
 
+interface DirectoryEntry { name: string; path: string; hidden: boolean }
+interface DirectoryListing { path: string; home: string; crumbs: DirectoryEntry[]; entries: DirectoryEntry[]; truncated: boolean }
+interface WorkspaceLink { workspaceId: string; path: string; title: string }
+
 class WorkbenchModel {
-  constructor(private readonly directoryPicker: () => Promise<string | null>) {}
+  constructor(
+    private readonly directoryPicker: () => Promise<string | null>,
+    private readonly directoryLister: (path?: string, signal?: AbortSignal) => Promise<DirectoryListing>,
+    private readonly workspaceCreator: (path: string) => Promise<WorkspaceLink>,
+    private readonly workspaceStarter: (workspaceId: string) => void,
+  ) {}
 
   pickDirectory = (): Promise<string | null> => this.directoryPicker()
+  listDirectory = (path?: string, signal?: AbortSignal): Promise<DirectoryListing> => this.directoryLister(path, signal)
+  ensureWorkspace = (path: string): Promise<WorkspaceLink> => this.workspaceCreator(path)
+  startWorkspace = (workspaceId: string): void => this.workspaceStarter(workspaceId)
 
   private state: WorkbenchState = {
     open: false,
@@ -231,7 +243,15 @@ class WorkbenchModel {
 }
 
 export function apply(ctx: ClientContext): void {
-  const model = new WorkbenchModel(() => ctx.workspaces.pickDirectory())
+  const model = new WorkbenchModel(
+    () => ctx.workspaces.pickDirectory(),
+    (path, signal) => ctx.workspaces.listDirectory(path, signal),
+    async (path) => {
+      const workspace = await ctx.workspaces.create({ path })
+      return { workspaceId: String(workspace.workspaceId), path: workspace.path, title: workspace.title }
+    },
+    (workspaceId) => ctx.workspaces.startSession(workspaceId as WorkspaceId),
+  )
   ctx.effect(() => {
     const style = document.createElement('style')
     style.dataset.plugin = 'dsh-project-orchestrator'
@@ -778,7 +798,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div><span>任务语言</span><strong>{(project.taskLanguage ?? 'zh-CN') === 'zh-CN' ? '简体中文' : 'English'}</strong></div>
         <div><span>当前版本</span><strong>Revision {project.revision}</strong></div>
         <div><span>测试进度</span><strong>{completed}/{tasks.length}</strong></div>
-        <div className="po-project-directory"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong><ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div>
+        <div className="po-project-directory"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong>{project.workspaceId ? <ActionButton size="sm" variant="outline" icon={<IconPlayOutline16 />} onClick={() => model.startWorkspace(project.workspaceId!)}>打开 Workspace</ActionButton> : null}<ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div>
       </div>
       <section className="po-project-context-grid" aria-label="项目协作上下文">
          <div className="po-context-panel"><div className="po-section-heading"><div><h2>Issues</h2><p>{issues.length} 个长期工作事项 · {taskRuns.length} 次执行</p></div></div>{issues.length === 0 ? <p className="po-context-empty">自动交付计划会逐步关联到 Issue。</p> : issues.slice(0, 4).map((issue) => <button key={issue.id} type="button" className="po-context-row po-context-row-button" onClick={() => model.openIssue(issue.id)}><strong>{issue.title}</strong><span>{issue.status} · {issue.priority}</span></button>)}</div>
@@ -1145,6 +1165,10 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
   const [nameLocked, setNameLocked] = useState(Boolean(project?.name || stored?.name))
   const [repository, setRepository] = useState<RepositoryInspection>()
   const [repositoryBusy, setRepositoryBusy] = useState(false)
+  const [directoryBrowserOpen, setDirectoryBrowserOpen] = useState(false)
+  const [directoryListing, setDirectoryListing] = useState<DirectoryListing>()
+  const [directoryBusy, setDirectoryBusy] = useState(false)
+  const [directoryError, setDirectoryError] = useState<string>()
   const [importError, setImportError] = useState<string>()
   const importInput = useRef<HTMLInputElement>(null)
   const repositoryRequest = useRef<{ id: number; controller: AbortController } | undefined>(undefined)
@@ -1171,13 +1195,32 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
     if (project === undefined) persistProjectIntakeDraft(value)
     model.closePanel()
   }
+  const browseDirectory = async (path?: string) => {
+    setDirectoryBrowserOpen(true)
+    setDirectoryBusy(true)
+    setDirectoryError(undefined)
+    try {
+      setDirectoryListing(await model.listDirectory(path))
+    } catch (error) {
+      setDirectoryError(error instanceof Error ? error.message : '无法读取目录。')
+    } finally {
+      setDirectoryBusy(false)
+    }
+  }
   const chooseDirectory = async () => {
+    setImportError(undefined)
     try {
       const path = await model.pickDirectory()
-      if (path !== null) { setImportError(undefined); setValue((current) => ({ ...current, cwd: path })) }
+      if (path !== null) setValue((current) => ({ ...current, cwd: path }))
     } catch {
-      setImportError('无法打开目录选择器，请确认 Harness 已启用本机目录选择能力。')
+      await browseDirectory()
     }
+  }
+  const selectBrowsedDirectory = () => {
+    if (!directoryListing) return
+    setValue((current) => ({ ...current, cwd: directoryListing.path }))
+    setDirectoryBrowserOpen(false)
+    setDirectoryListing(undefined)
   }
   const inspectRepository = async () => {
     const repositoryUrl = value.repositoryUrl.trim()
@@ -1218,9 +1261,13 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
       ? mode === 'empty' ? '空项目已创建，没有调用 AI 或生成任务。' : '项目已创建，AI 正在生成执行计划。'
       : planWithAi ? '项目已更新并重新规划，原审批已失效。' : '项目资料已保存，没有调用 AI。')
     if (result) {
+      const linked = await model.action(async () => {
+        const workspace = await model.ensureWorkspace(result.cwd)
+        return mutate<ProjectRecord>(`/projects/${result.id}/workspace`, 'POST', { workspaceId: workspace.workspaceId })
+      }, '项目已关联 DeepSeek Harness Workspace。')
       if (project === undefined) clearProjectIntakeDraft()
       model.closePanel()
-      model.openProject(result.id)
+      model.openProject((linked ?? result).id)
     }
   }
   const footer = project === undefined ? <>
@@ -1239,10 +1286,29 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
         {project === undefined && value.sourceKind === 'github_repo' && repository ? <section className="po-repository-import" aria-label="GitHub 仓库导入设置"><div className="po-form-grid"><Field label="拉取分支" hint={`默认分支：${repository.defaultBranch}`}><select className="po-select" value={value.repositoryRef} onChange={(event) => setValue({ ...value, repositoryRef: event.target.value })}>{repository.branches.map((branch) => <option key={branch.name} value={branch.name}>{branch.name}{branch.protected ? '（受保护）' : ''}</option>)}</select></Field><div className="po-repository-summary"><strong>{repository.owner}/{repository.name}</strong><span>{repository.branches.length} 个分支 · {repository.issues.length} 个开放 Issue</span></div></div><fieldset className="po-issue-picker"><legend>从 Issues 自动创建事项（可选）</legend>{repository.issues.length === 0 ? <p>该仓库没有可导入的开放 Issue。</p> : <div>{repository.issues.map((issue) => <label key={issue.number}><input type="checkbox" checked={value.issueNumbers.includes(issue.number)} onChange={(event) => setValue((current) => ({ ...current, issueNumbers: event.target.checked ? [...current.issueNumbers, issue.number] : current.issueNumbers.filter((number) => number !== issue.number) }))} /><span><strong>#{issue.number} {issue.title}</strong><small>{issue.labels.join(', ') || '无标签'}</small></span></label>)}</div>}</fieldset></section> : null}
         {value.mode === 'ai' || project !== undefined ? <><Field label="交付目标与约束" hint="只有点击“让 AI 规划”时才会提交给 Planner。"><textarea className="po-textarea po-brief-editor" required={value.mode === 'ai'} value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="描述结果、范围、规则和验收标准；支持 Markdown。" /></Field><div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><button type="button" onClick={() => { setImportTarget('prd'); importInput.current?.click() }}>导入需求文件</button><button type="button" onClick={() => { setImportTarget('technicalDesign'); importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text" hidden aria-label="导入 Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></div></> : <div className="po-empty-project-note"><IconFolderOpenOutline16 /><div><strong>不会自动拆任务</strong><p>创建后项目状态为“待规划”，任务数量为 0。你可以直接添加手动任务，或编辑项目补充需求后再启动 AI。</p></div></div>}
         {importError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{importError}</div> : null}
+        {directoryBrowserOpen ? <DirectoryBrowser listing={directoryListing} busy={directoryBusy} error={directoryError} navigate={browseDirectory} select={selectBrowsedDirectory} close={() => { setDirectoryBrowserOpen(false); setDirectoryListing(undefined) }} /> : null}
         <details className="po-project-constraints"><summary>补充项目资料（可选）</summary><div className="po-project-constraints-body"><Field label="项目摘要"><textarea className="po-textarea" value={value.summary} onChange={(event) => setValue({ ...value, summary: event.target.value })} placeholder="用于项目列表和详情页的简短说明。" /></Field>{value.mode === 'ai' || project !== undefined ? <Field label="技术方案上下文" hint="可以留空，AI 会根据需求和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="已有模块、接口、数据、测试和发布约束。" /></Field> : null}<div className="po-field-pair"><Field label="任务语言" hint="仅在 AI 生成任务时生效；命令和代码标识不会翻译。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>
       </div>
     </ModalShell>
   )
+}
+
+function DirectoryBrowser({ listing, busy, error, navigate, select, close }: { listing: DirectoryListing | undefined; busy: boolean; error: string | undefined; navigate: (path?: string) => Promise<void>; select: () => void; close: () => void }) {
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => { if (event.key === 'Escape') close() }
+    document.addEventListener('keydown', keydown)
+    return () => document.removeEventListener('keydown', keydown)
+  }, [close])
+  const entries = listing?.entries.filter((entry) => !entry.hidden) ?? []
+  return <div className="po-directory-browser-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close() }}>
+    <section className="po-directory-browser" role="dialog" aria-modal="true" aria-labelledby="po-directory-browser-title">
+      <header><div><h3 id="po-directory-browser-title">选择项目目录</h3><p>选择后会自动创建或复用同路径的 DeepSeek Harness Workspace。</p></div><button type="button" className="po-icon-button" aria-label="关闭目录选择器" onClick={close}><IconCloseOutline16 /></button></header>
+      <nav className="po-directory-crumbs" aria-label="目录路径">{listing?.crumbs.map((crumb) => <button type="button" key={crumb.path} disabled={busy} onClick={() => void navigate(crumb.path)}>{crumb.name}</button>)}</nav>
+      <div className="po-directory-list" aria-busy={busy}>{busy && !listing ? <div className="po-directory-message">正在读取目录…</div> : error ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{error}</div> : entries.length === 0 ? <div className="po-directory-message">当前目录没有可进入的子目录。</div> : entries.map((entry) => <button type="button" key={entry.path} disabled={busy} onClick={() => void navigate(entry.path)}><IconFolderOpenOutline16 /><span>{entry.name}</span><IconChevronRightOutline14 /></button>)}</div>
+      {listing?.truncated ? <p className="po-directory-warning">目录内容过多，仅显示前一部分。可通过面包屑缩小范围。</p> : null}
+      <footer><span className="po-directory-current" title={listing?.path}>{listing?.path ?? '正在读取主目录…'}</span><ActionButton variant="ghost" onClick={close}>取消</ActionButton><ActionButton variant="primary" disabled={!listing || busy} onClick={select}>选择当前目录</ActionButton></footer>
+    </section>
+  </div>
 }
 
 function IssueDialog({ state, model, issue }: { state: WorkbenchState; model: WorkbenchModel; issue: import('./client-types.js').IssueRecord }) {

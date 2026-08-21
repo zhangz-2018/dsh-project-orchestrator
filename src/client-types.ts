@@ -95,6 +95,7 @@ export interface ProjectRecord {
   taskIds: string[]
   resourceIds?: string[]
   issueIds?: string[]
+  workspaceId?: string
   leadAgentId?: string
   decompositionSessionId?: string
   activeRunId?: string

@@ -368,6 +368,7 @@ export const ProjectRecordSchema = z.object({
   taskIds: z.array(z.string().min(1)).max(1_000),
   resourceIds: z.array(z.string().min(1)).max(100).optional(),
   issueIds: z.array(z.string().min(1)).max(1_000).optional(),
+  workspaceId: z.string().min(1).max(240).optional(),
   leadAgentId: z.string().min(1).optional(),
   decompositionSessionId: z.string().optional(),
   activeRunId: z.string().optional(),
@@ -558,6 +559,10 @@ export const ProjectCreateRequestSchema = z.union([
 export const ProjectReplanRequestSchema = z.object({
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
   project: ProjectUpdateInputSchema.optional(),
+}).strict()
+
+export const ProjectWorkspaceLinkRequestSchema = z.object({
+  workspaceId: z.string().trim().min(1).max(240),
 }).strict()
 
 export const ProjectApprovalRequestSchema = z.object({
@@ -782,6 +787,7 @@ export type RepositoryInspection = z.infer<typeof RepositoryInspectionSchema>
 export type RepositoryIssue = z.infer<typeof RepositoryIssueSchema>
 export type TaskLanguage = z.infer<typeof TaskLanguageSchema>
 export type ProjectReplanRequest = z.infer<typeof ProjectReplanRequestSchema>
+export type ProjectWorkspaceLinkRequest = z.infer<typeof ProjectWorkspaceLinkRequestSchema>
 export type ProjectApprovalRequest = z.infer<typeof ProjectApprovalRequestSchema>
 export type TaskInput = z.infer<typeof TaskInputSchema>
 export type TaskUpdate = z.infer<typeof TaskUpdateSchema>
