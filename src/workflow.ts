@@ -201,17 +201,18 @@ export function parseGeneratedPlan(raw: string): GeneratedPlan {
 export function materializeTasks(
   projectId: string,
   plan: GeneratedPlan,
-  agents: Array<{ id: string; role: string }>,
+  agents: Array<{ id: string; role: string; projectRole?: string; autoAssignable?: boolean; status?: 'active' | 'removed' }>,
   now = new Date().toISOString(),
   ordinalOffset = 0,
 ): TaskRecord[] {
   const ids = new Map(plan.tasks.map((task) => [task.id, randomUUID()]))
   return plan.tasks.map((task, ordinal) => {
     const suggestedRole = task.suggestedAgentRole.toLocaleLowerCase()
-    const assigned = agents.find((agent) =>
-      agent.role.toLocaleLowerCase().includes(suggestedRole)
-      || suggestedRole.includes(agent.role.toLocaleLowerCase()),
-    )
+    const assigned = agents.find((agent) => {
+      if (agent.autoAssignable === false || agent.status === 'removed') return false
+      const role = (agent.projectRole?.trim() || agent.role).toLocaleLowerCase()
+      return role.includes(suggestedRole) || suggestedRole.includes(role)
+    })
     return {
       id: ids.get(task.id) ?? randomUUID(),
       projectId,
@@ -236,6 +237,7 @@ export function assertExecutable(
   project: ProjectRecord,
   tasks: TaskRecord[],
   approval: { revision: number; planHash: string } | undefined,
+  memberships?: Array<{ agentId: string; active: boolean }>,
 ): void {
   if (project.status !== 'approved' && project.status !== 'failed' && project.status !== 'cancelled') {
     throw new WorkflowError('project-not-approved', 'Project must be approved before execution.')
@@ -249,6 +251,12 @@ export function assertExecutable(
   topologicalTasks(tasks)
   if (tasks.some((task) => task.testCommand.trim() === '')) {
     throw new WorkflowError('missing-test-command', 'Every task requires a test command.')
+  }
+  if (memberships !== undefined) {
+    if (tasks.some((task) => task.agentId === undefined)) throw new WorkflowError('project-task-unassigned', 'Every task requires an assigned project Agent before execution.')
+    const activeAgentIds = new Set(memberships.filter((membership) => membership.active).map((membership) => membership.agentId))
+    const invalid = tasks.find((task) => !activeAgentIds.has(task.agentId!))
+    if (invalid !== undefined) throw new WorkflowError('project-agent-not-member', `Task "${invalid.id}" Agent is not an active project member.`)
   }
   if (project.approvedRevision !== project.revision || approval === undefined || approval.revision !== project.revision) {
     throw new WorkflowError('stale-approval', 'The current project revision has not been approved.')

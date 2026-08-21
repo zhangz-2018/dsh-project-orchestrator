@@ -6,7 +6,7 @@ A durable, approval-gated project orchestration workbench for [DeepSeek Harness]
 
 `dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It keeps Projects, Issues, TaskRuns, human Decisions, Agent capacity, Git worktree evidence, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
 
-> **Compatibility:** v1.3.3 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.5.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
 ## Project creation is not an AI side effect
 
@@ -29,12 +29,13 @@ The Project detail view can open the persisted working directory in Finder on ma
 
 - **Explicit AI planning:** Project creation and AI decomposition are separate actions; an empty Project is the Web default.
 - **Approval-gated delivery:** AI planning produces a revision/hash-bound plan; execution starts only after explicit approval.
+- **Project Agent membership:** reusable workspace Agents explicitly join a Project with a local role and planning eligibility before they can be assigned to its Tasks or Issues.
 - **Durable Issue execution:** assignment, reassign, stop, continue, review, and Decision requests converge on idempotent Command records.
-- **Runtime and capacity controls:** Runtime heartbeat, Agent `maxConcurrency`, queue retention, restart recovery, directory locks, and workspace leases.
+- **Runtime and capacity controls:** a visible default Host, managed local Runtime lifecycle and bindings, heartbeat health, Agent `maxConcurrency`, queue retention, restart recovery, directory locks, and workspace leases.
 - **Real Git isolation:** fail-closed worktree creation, deterministic branches, base/head commits, bounded diffs, Artifacts, and cleanup evidence.
-- **Human collaboration:** Inbox, review gates, comments, Activity, Squads, delegated child Issues, and Leader continuation.
+- **Human collaboration:** Inbox, review gates, comments, Activity, reusable Squads, project eligibility, delegated child Issues, global delegation capacity, and Leader continuation.
 - **Auditable automation:** bounded Autopilot, external-trigger deduplication, loopback CLI, Transcript redaction, and explicit unknown token/cost facts.
-- **Responsive workbench:** Inbox, Issues, Projects, Agents, Squads, Runtimes, Skills, and Autonomous Delivery inside the existing Harness Web shell.
+- **Responsive workbench:** Inbox, Issues, Projects, Delivery Board, Agents, Skills, full Squad/Runtime management, binding impact review, and local-data visibility inside the existing Harness Web shell.
 - **Project environment discovery:** approved commands use `<project>/.venv` when present and record the resolved execution environment.
 - **Chinese-first planning:** new Projects default to Simplified Chinese human-facing tasks, can opt into English, and can regenerate an unexecuted plan in Chinese with fresh approval required.
 
@@ -44,7 +45,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.3.3
+dsh plugin --profile web add dsh-project-orchestrator@1.5.0
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -85,16 +86,17 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 
 ## Execution model
 
-1. A Project owns the approved plan and Resources.
-2. An Issue owns assignment, lifecycle, review state, and its active TaskRun pointer.
-3. A TaskRun owns one queue/execution attempt and its evidence.
-4. A Runtime controls local dispatch eligibility; an Agent contributes capacity.
-5. A worktree or in-place lease is acquired before execution.
-6. Harness Session events are projected into bounded redacted Transcript entries.
-7. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
-8. Human review approval is the only Issue completion path.
+1. A Project owns the approved plan, Resources, lead Agent, and eligible Project Agent memberships.
+2. Every approved Task binds an explicit active Project Agent; membership alone never implies execution assignment.
+3. An Issue owns assignment, lifecycle, review state, and its active TaskRun pointer.
+4. A TaskRun owns one queue/execution attempt and its evidence.
+5. A Runtime controls local dispatch eligibility; an Agent contributes capacity.
+6. A worktree or in-place lease is acquired before execution.
+7. Harness Session events are projected into bounded redacted Transcript entries.
+8. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
+9. Human review approval is the only Issue completion path.
 
-Runtime records are local Harness Host facts. v1.3.3 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
+Runtime records are local Harness Host facts. v1.5.0 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
 
 ## Security model
 
@@ -152,7 +154,6 @@ The package smoke test builds the exact npm artifact, checks its file allowlist 
 If this project helps you, you can support its continued maintenance with WeChat Pay or Alipay. Thank you for your support.
 
 <p align="center">
-  <img src="docs/assets/donate-wechat.jpg" alt="WeChat Pay QR code" width="280">
   <img src="docs/assets/donate-alipay.jpg" alt="Alipay QR code" width="280">
 </p>
 

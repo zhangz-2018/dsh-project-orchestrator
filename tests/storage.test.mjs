@@ -16,13 +16,15 @@ class MemoryTable {
   entries() { return this.records.entries() }
 }
 
-function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [] } = {}) {
+function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [], projectAgentMemberships = [], featureUsageDaily = [] } = {}) {
   const tables = {
     agents: new MemoryTable(agents),
     projects: new MemoryTable(projects),
     tasks: new MemoryTable(tasks),
     approvals: new MemoryTable(approvals),
     runs: new MemoryTable(runs),
+    project_agent_memberships: new MemoryTable(projectAgentMemberships),
+    feature_usage_daily: new MemoryTable(featureUsageDaily),
   }
   return new OrchestratorStore({ table: (name) => tables[name] })
 }
@@ -88,6 +90,14 @@ test('service snapshot exposes the current authoritative plan digest', () => {
   const snapshot = service.snapshot()
   assert.equal(snapshot.planHashes[currentProject.id], expected)
   assert.equal(snapshot.planHashes[currentProject.id], snapshot.approvals[0].planHash)
+})
+
+test('snapshot includes durable memberships and local feature usage aggregates', () => {
+  const membership = { id: 'p1:a1', projectId: 'p1', agentId: 'a1', projectRole: 'Backend', autoAssignable: true, status: 'active', joinedBy: 'tester', joinedAt: now, updatedAt: now }
+  const usage = { id: '2026-08-17:projects', date: '2026-08-17', feature: 'projects', opens: 2, meaningfulActions: 1, errorRecoveries: 0, lastUsedAt: now }
+  const snapshot = createStore({ projects: [project('p1', [])], projectAgentMemberships: [membership], featureUsageDaily: [usage] }).snapshot()
+  assert.deepEqual(snapshot.projectAgentMemberships, [membership])
+  assert.deepEqual(snapshot.featureUsageDaily, [usage])
 })
 
 test('snapshot omits hashes for corrupt plans while authoritative reads remain fail-closed', () => {

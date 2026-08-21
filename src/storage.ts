@@ -26,6 +26,8 @@ import {
   RuntimeRecordSchema,
   TaskRecordSchema,
   TaskRunRecordSchema,
+  ProjectAgentMembershipRecordSchema,
+  FeatureUsageDailyRecordSchema,
   type ActivityEvent,
   type CommentRecord,
   type DecisionRecord,
@@ -48,6 +50,8 @@ import {
   type Snapshot,
   type TaskRecord,
   type TaskRunRecord,
+  type ProjectAgentMembershipRecord,
+  type FeatureUsageDailyRecord,
 } from './types.js'
 import { WorkflowError, planDigest } from './workflow.js'
 
@@ -80,6 +84,8 @@ export const orchestratorDomain = defineDomain({
     skills: domainTable<string, SkillRecord>(SkillRecordSchema),
     local_directory_locks: domainTable<string, LocalDirectoryLockRecord>(LocalDirectoryLockRecordSchema),
     workspace_leases: domainTable<string, WorkspaceLeaseRecord>(WorkspaceLeaseRecordSchema),
+    project_agent_memberships: domainTable<string, ProjectAgentMembershipRecord>(ProjectAgentMembershipRecordSchema),
+    feature_usage_daily: domainTable<string, FeatureUsageDailyRecord>(FeatureUsageDailyRecordSchema),
   },
 })
 
@@ -105,6 +111,8 @@ export class OrchestratorStore {
   readonly skills
   readonly localDirectoryLocks
   readonly workspaceLeases
+  readonly projectAgentMemberships
+  readonly featureUsageDaily
 
   constructor(readonly domain: Domain<typeof orchestratorDomain>) {
     this.agents = domain.table('agents')
@@ -128,6 +136,8 @@ export class OrchestratorStore {
     this.skills = optionalTable<SkillRecord>(domain, 'skills')
     this.localDirectoryLocks = optionalTable<LocalDirectoryLockRecord>(domain, 'local_directory_locks')
     this.workspaceLeases = optionalTable<WorkspaceLeaseRecord>(domain, 'workspace_leases')
+    this.projectAgentMemberships = optionalTable<ProjectAgentMembershipRecord>(domain, 'project_agent_memberships')
+    this.featureUsageDaily = optionalTable<FeatureUsageDailyRecord>(domain, 'feature_usage_daily')
   }
 
   snapshot(): Snapshot {
@@ -135,6 +145,7 @@ export class OrchestratorStore {
     const projectIds = new Set(projects.map((project) => project.id))
     const issues = [...this.issues.entries()].map(([, value]) => value).sort(byUpdatedAt)
     const taskRuns = [...this.taskRuns.entries()].map(([, value]) => value).sort(byCreatedAt)
+    const runtimes = [...this.runtimes.entries()].map(([, value]) => value).sort(byUpdatedAt)
     const activity = [...this.activity.entries()].map(([, value]) => value).sort(byCreatedAt)
     const comments = [...this.comments.entries()].map(([, value]) => value).sort(byCreatedAt)
     const issueIds = new Set(issues.map((issue) => issue.id))
@@ -164,7 +175,7 @@ export class OrchestratorStore {
         .filter((run) => projectIds.has(run.projectId))
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       planHashes,
-      runtimes: [...this.runtimes.entries()].map(([, value]) => value).sort(byUpdatedAt),
+      runtimes,
       resources: [...this.resources.entries()].map(([, value]) => value).filter((resource) => projectIds.has(resource.projectId)).sort(byUpdatedAt),
       issues: issues.filter((issue) => issue.projectId === undefined || projectIds.has(issue.projectId)),
       taskRuns: taskRuns.filter((run) => projectIds.has(run.projectId)),
@@ -195,6 +206,14 @@ export class OrchestratorStore {
       skills: [...this.skills.entries()].map(([, value]) => value).sort(byUpdatedAt),
       workspaceLeases: [...this.workspaceLeases.entries()].map(([, value]) => value).filter((lease) => projectIds.has(lease.projectId)).sort((left, right) => right.acquiredAt.localeCompare(left.acquiredAt)),
       localDirectoryLocks: [...this.localDirectoryLocks.entries()].map(([, value]) => value).filter((lock) => projectIds.has(lock.projectId)).sort((left, right) => right.acquiredAt.localeCompare(left.acquiredAt)),
+      projectAgentMemberships: [...this.projectAgentMemberships.entries()].map(([, value]) => value).filter((membership) => projectIds.has(membership.projectId)).sort(byUpdatedAt),
+      featureUsageDaily: [...this.featureUsageDaily.entries()].map(([, value]) => value).sort((left, right) => right.date.localeCompare(left.date) || left.feature.localeCompare(right.feature)),
+      runtimeOverview: {
+        defaultHost: { id: 'default-host', name: '本机默认环境', status: 'unstable', capabilities: [], boundAgentCount: [...this.agents.entries()].filter(([, agent]) => agent.status === 'active' && agent.runtimeId === undefined).length },
+        customCount: runtimes.filter((runtime) => runtime.lifecycle === 'active').length,
+        abnormalCount: runtimes.filter((runtime) => runtime.lifecycle === 'active' && runtime.status !== 'online').length,
+        archivedCount: runtimes.filter((runtime) => runtime.lifecycle === 'archived').length,
+      },
       inbox: [],
       agentWorkloads: [],
       runStatistics: [],

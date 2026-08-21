@@ -26,10 +26,13 @@ Do not copy the JSON file while active mutations are being persisted.
 3. Upgrade the profile plugin with the Harness plugin manager.
 4. Restart the existing Host; do not start a second server.
 5. Verify health, snapshot parsing, queued/recovered runs, and Web navigation.
+6. Verify every currently assigned Task has an active Project Agent membership before approving or retrying delivery.
+
+On the first compatible startup, membership backfill is idempotent: active current Task Agents, the active persisted lead Agent, and active non-terminal project Issue Agent assignees become active Project members. Missing or archived references stay visible but fail closed until reassigned; they do not prevent Host startup. Historical-only TaskRun Agents do not expand the active member pool.
 
 ## Rollback
 
-Disable or remove the loader row and restart Harness to restore the original Web UI. Reinstall the prior 1.x package only after checking its storage compatibility. A downgrade after a future schema migration may require restoring the backup.
+Disable or remove the loader row and restart Harness to restore the original Web UI. Before reinstalling an older 1.x package, pause executable queues and restore the matching pre-upgrade storage backup; do not rely on schema readability to preserve membership or no-fallback safeguards.
 
 ## Queue recovery
 
@@ -50,6 +53,8 @@ If `<project cwd>/.venv/bin` (or `.venv/Scripts` on Windows) exists, approved te
 
 ## Troubleshooting
 
+- `project-agent-not-member`: add the assigned Agent to the Project or reassign the Task to an active Project member.
+- `project-task-unassigned`: assign every planned Task before approval.
 - `runtime_offline`: heartbeat the bound Runtime or correct the Agent binding.
 - `resource-selection-required`: select one Project Resource explicitly.
 - `verification_failed`: inspect TaskRun output and the recorded execution environment.

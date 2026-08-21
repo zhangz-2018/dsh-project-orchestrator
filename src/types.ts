@@ -5,6 +5,7 @@ export const AgentStatusSchema = z.enum(['active', 'archived'])
 export const PrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'])
 export const TaskLanguageSchema = z.enum(['zh-CN', 'en'])
 export const RuntimeStatusSchema = z.enum(['online', 'offline', 'unstable'])
+export const RuntimeLifecycleSchema = z.enum(['active', 'archived'])
 export const ResourceKindSchema = z.enum(['github_repo', 'local_directory'])
 export const ResourceExecutionModeSchema = z.enum(['in_place', 'worktree'])
 export const IssueStatusSchema = z.enum(['backlog', 'todo', 'in_progress', 'in_review', 'done', 'blocked', 'cancelled'])
@@ -22,6 +23,37 @@ export const CommandTypeSchema = z.enum(['assign_issue', 'reassign_issue', 'stop
 export const CommandStatusSchema = z.enum(['pending', 'running', 'completed', 'failed', 'cancelled'])
 export const ExternalTriggerStatusSchema = z.enum(['received', 'processed', 'rejected', 'duplicate'])
 export const InboxKindSchema = z.enum(['needs_decision', 'blocked', 'review_ready', 'runtime_offline', 'permission_denied', 'test_failed_after_retry', 'stale_approval'])
+export const ProjectAgentMembershipStatusSchema = z.enum(['active', 'removed'])
+export const FeatureUsageFeatureSchema = z.enum(['inbox', 'issues', 'projects', 'delivery', 'agents', 'skills', 'squads', 'runtimes', 'local_data'])
+
+export const ProjectAgentMembershipRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  agentId: z.string().min(1),
+  projectRole: z.string().trim().max(200),
+  autoAssignable: z.boolean(),
+  status: ProjectAgentMembershipStatusSchema,
+  joinedBy: z.string().trim().min(1).max(240),
+  joinedAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  removedAt: z.string().min(1).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.id !== `${value.projectId}:${value.agentId}`) context.addIssue({ code: z.ZodIssueCode.custom, path: ['id'], message: 'Membership id must match projectId:agentId.' })
+  if (value.status === 'active' && value.removedAt !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Active memberships cannot have removedAt.' })
+  if (value.status === 'removed' && value.removedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Removed memberships require removedAt.' })
+})
+
+export const FeatureUsageDailyRecordSchema = z.object({
+  id: z.string().min(1),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  feature: FeatureUsageFeatureSchema,
+  opens: z.number().int().nonnegative(),
+  meaningfulActions: z.number().int().nonnegative(),
+  errorRecoveries: z.number().int().nonnegative(),
+  lastUsedAt: z.string().min(1),
+}).strict().superRefine((value, context) => {
+  if (value.id !== `${value.date}:${value.feature}`) context.addIssue({ code: z.ZodIssueCode.custom, path: ['id'], message: 'Usage id must match date:feature.' })
+})
 export const DecisionRecordSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1).optional(),
@@ -95,6 +127,7 @@ export const DelegationRecordSchema = z.object({
   leaderAgentId: z.string().min(1),
   memberAgentId: z.string().min(1),
   taskRunId: z.string().min(1).optional(),
+  commandId: z.string().min(1).optional(),
   status: DelegationStatusSchema,
   instruction: z.string().trim().min(1).max(20_000),
   resultSummary: z.string().max(20_000).optional(),
@@ -235,13 +268,18 @@ export const RuntimeRecordSchema = z.object({
   name: z.string().min(1).max(160),
   machineId: z.string().min(1).max(240),
   status: RuntimeStatusSchema,
+  lifecycle: RuntimeLifecycleSchema.default('active'),
   capabilities: z.array(z.string().trim().min(1).max(160)).max(100),
   agentCli: z.string().max(160).optional(),
   workspaceRoot: z.string().max(4_096).optional(),
   lastHeartbeatAt: z.string().min(1),
+  archivedAt: z.string().min(1).optional(),
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
-}).strict()
+}).strict().superRefine((value, context) => {
+  if (value.lifecycle === 'active' && value.archivedAt !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['archivedAt'], message: 'Active Runtime cannot have archivedAt.' })
+  if (value.lifecycle === 'archived' && value.archivedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['archivedAt'], message: 'Archived Runtime requires archivedAt.' })
+})
 
 export const ProjectResourceSchema = z.object({
   id: z.string().min(1),
@@ -284,6 +322,7 @@ export const TaskRunRecordSchema = z.object({
   taskId: z.string().min(1).optional(),
   agentId: z.string().min(1).optional(),
   runtimeId: z.string().min(1).optional(),
+  runtimeNameSnapshot: z.string().min(1).max(160).optional(),
   status: TaskRunStatusSchema,
   trigger: z.enum(['assignment', 'mention', 'approval', 'retry', 'autopilot', 'system']),
   attempt: z.number().int().positive(),
@@ -653,8 +692,33 @@ export const RuntimeInputSchema = z.object({
   name: z.string().trim().min(1).max(160),
   machineId: z.string().trim().min(1).max(240),
   capabilities: z.array(z.string().trim().min(1).max(160)).max(100).default([]),
-  agentCli: z.string().trim().max(160).optional(),
-  workspaceRoot: z.string().trim().max(4_096).optional(),
+  agentCli: z.string().trim().min(1).max(160).optional(),
+  workspaceRoot: z.string().trim().min(1).max(4_096).optional(),
+}).strict()
+
+export const RuntimeUpdateInputSchema = z.object({
+  name: z.string().trim().min(1).max(160).optional(),
+  machineId: z.string().trim().min(1).max(240).optional(),
+  capabilities: z.array(z.string().trim().min(1).max(160)).max(100).optional(),
+  agentCli: z.string().trim().min(1).max(160).nullable().optional(),
+  workspaceRoot: z.string().trim().min(1).max(4_096).nullable().optional(),
+  expectedUpdatedAt: z.string().min(1),
+}).strict()
+
+export const RuntimeArchiveInputSchema = z.object({
+  expectedUpdatedAt: z.string().min(1),
+}).strict()
+
+export const AgentRuntimeBindingInputSchema = z.object({
+  runtimeId: z.string().min(1).nullable(),
+  expectedTargetUpdatedAt: z.string().min(1),
+  expectedProjectRevisions: z.record(z.string(), z.number().int().positive()).default({}),
+  acknowledgeApprovalInvalidation: z.boolean().default(false),
+}).strict()
+
+export const ResourceRuntimeBindingInputSchema = z.object({
+  runtimeId: z.string().min(1).nullable(),
+  expectedTargetUpdatedAt: z.string().min(1),
 }).strict()
 
 export const ProjectResourceInputSchema = z.object({
@@ -670,8 +734,6 @@ export const IssueUpdateSchema = z.object({
   description: z.string().trim().max(100_000).optional(),
   status: IssueStatusSchema.optional(),
   priority: PrioritySchema.optional(),
-  assigneeType: IssueAssigneeTypeSchema.nullable().optional(),
-  assigneeId: z.string().min(1).nullable().optional(),
   labels: z.array(z.string().trim().min(1).max(64)).max(50).optional(),
 }).strict()
 
@@ -697,11 +759,29 @@ export const SquadInputSchema = z.object({
   name: z.string().trim().min(1).max(160),
   description: z.string().trim().max(1_000).default(''),
   leaderAgentId: z.string().min(1),
-  memberAgentIds: z.array(z.string().min(1)).min(1).max(100),
+  memberAgentIds: z.array(z.string().min(1)).min(2).max(100),
   memberRoles: z.record(z.string(), z.string().trim().min(1).max(200)).default({}),
   instructions: z.string().trim().min(1).max(20_000),
   escalationPolicy: z.string().trim().min(1).max(10_000),
   maxParallelDelegations: z.number().int().positive().max(32).default(1),
+}).strict()
+
+export const SquadCreateInputSchema = SquadInputSchema.extend({
+  sourceProjectId: z.string().min(1).optional(),
+}).strict()
+
+export const SquadUpdateInputSchema = SquadInputSchema.extend({
+  expectedUpdatedAt: z.string().min(1),
+}).strict()
+
+export const SquadCloneInputSchema = z.object({
+  name: z.string().trim().min(1).max(160).optional(),
+  sourceProjectId: z.string().min(1).optional(),
+  expectedSourceUpdatedAt: z.string().min(1).optional(),
+}).strict()
+
+export const SquadArchiveInputSchema = z.object({
+  expectedUpdatedAt: z.string().min(1),
 }).strict()
 
 export const CommandInputSchema = z.object({
@@ -745,6 +825,51 @@ export const TaskInputSchema = z.object({
   testCommand: z.string().trim().min(1).max(10_000),
 })
 
+export const ProjectAgentMembershipInputSchema = z.object({
+  agentId: z.string().min(1),
+  projectRole: z.string().trim().max(200).default(''),
+  autoAssignable: z.boolean().default(true),
+  setAsLead: z.boolean().default(false),
+  joinedBy: z.string().trim().min(1).max(240).default('Harness user'),
+  expectedProjectRevision: z.number().int().positive().optional(),
+}).strict()
+
+export const ProjectAgentMembershipUpdateSchema = z.object({
+  projectRole: z.string().trim().max(200).optional(),
+  autoAssignable: z.boolean().optional(),
+  setAsLead: z.boolean().optional(),
+  expectedMemberUpdatedAt: z.string().min(1).optional(),
+}).strict()
+
+export const ProjectAgentMembershipBatchInputSchema = z.object({
+  members: z.array(ProjectAgentMembershipInputSchema.omit({ setAsLead: true, joinedBy: true, expectedProjectRevision: true })).min(1).max(100),
+  joinedBy: z.string().trim().min(1).max(240).default('Harness user'),
+  expectedProjectRevision: z.number().int().positive().optional(),
+}).strict()
+
+export const ProjectAgentMembershipRemoveSchema = z.object({
+  expectedMemberUpdatedAt: z.string().min(1).optional(),
+  expectedProjectRevision: z.number().int().positive().optional(),
+  assignedTaskPolicy: z.enum(['reject', 'reassign']).default('reject'),
+  replacementAgentId: z.string().min(1).optional(),
+  clearLead: z.boolean().default(false),
+}).strict().superRefine((value, context) => {
+  if (value.assignedTaskPolicy === 'reassign' && value.replacementAgentId === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['replacementAgentId'], message: 'Task reassignment requires a replacement Agent.' })
+  if (value.assignedTaskPolicy === 'reassign' && value.expectedProjectRevision === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['expectedProjectRevision'], message: 'Task reassignment requires the expected Project revision.' })
+})
+
+export const ProjectTaskAssignmentsSchema = z.object({
+  expectedRevision: z.number().int().positive(),
+  assignments: z.array(z.object({ taskId: z.string().min(1), agentId: z.string().min(1) }).strict()).min(1).max(1_000),
+}).strict()
+
+export const FeatureUsageInputSchema = z.object({
+  feature: FeatureUsageFeatureSchema,
+  opens: z.number().int().nonnegative().max(10_000).default(0),
+  meaningfulActions: z.number().int().nonnegative().max(10_000).default(0),
+  errorRecoveries: z.number().int().nonnegative().max(10_000).default(0),
+}).strict().refine((value) => value.opens + value.meaningfulActions + value.errorRecoveries > 0, 'At least one usage counter must increase.')
+
 export const TaskBoardStageRequestSchema = z.object({
   boardStage: BoardStageSchema,
 }).strict()
@@ -760,8 +885,25 @@ export const TaskUpdateSchema = z.object({
   testCommand: z.string().trim().min(1).max(10_000).optional(),
 })
 
+export type ProjectAgentMembershipRecord = z.infer<typeof ProjectAgentMembershipRecordSchema>
+export type ProjectAgentMembershipInput = z.infer<typeof ProjectAgentMembershipInputSchema>
+export type ProjectAgentMembershipUpdate = z.infer<typeof ProjectAgentMembershipUpdateSchema>
+export type ProjectAgentMembershipBatchInput = z.infer<typeof ProjectAgentMembershipBatchInputSchema>
+export type ProjectAgentMembershipRemove = z.infer<typeof ProjectAgentMembershipRemoveSchema>
+export type ProjectTaskAssignments = z.infer<typeof ProjectTaskAssignmentsSchema>
+export type FeatureUsageDailyRecord = z.infer<typeof FeatureUsageDailyRecordSchema>
+export type FeatureUsageInput = z.infer<typeof FeatureUsageInputSchema>
 export type SquadRecord = z.infer<typeof SquadRecordSchema>
 export type SquadInput = z.infer<typeof SquadInputSchema>
+export type SquadCreateInput = z.infer<typeof SquadCreateInputSchema>
+export type SquadUpdateInput = z.infer<typeof SquadUpdateInputSchema>
+export type SquadCloneInput = z.infer<typeof SquadCloneInputSchema>
+export type SquadArchiveInput = z.infer<typeof SquadArchiveInputSchema>
+export type RuntimeInput = z.infer<typeof RuntimeInputSchema>
+export type RuntimeUpdateInput = z.infer<typeof RuntimeUpdateInputSchema>
+export type RuntimeArchiveInput = z.infer<typeof RuntimeArchiveInputSchema>
+export type AgentRuntimeBindingInput = z.infer<typeof AgentRuntimeBindingInputSchema>
+export type ResourceRuntimeBindingInput = z.infer<typeof ResourceRuntimeBindingInputSchema>
 export type DelegationRecord = z.infer<typeof DelegationRecordSchema>
 export type TranscriptEntry = z.infer<typeof TranscriptEntrySchema>
 export type ArtifactRecord = z.infer<typeof ArtifactRecordSchema>
@@ -786,6 +928,53 @@ export type DecisionInput = z.infer<typeof DecisionInputSchema>
 export type DecisionResolution = z.infer<typeof DecisionResolutionSchema>
 export type InboxQuery = z.infer<typeof InboxQuerySchema>
 export type InboxAction = z.infer<typeof InboxActionSchema>
+export type SquadAvailabilityReason = 'legacy_member_count' | 'archived' | 'agent_inactive' | 'member_outside_project' | 'capacity_exhausted'
+export type SquadAvailabilityWarning = 'leader_runtime_offline' | 'leader_runtime_unstable'
+export interface SquadAvailability {
+  squadId: string
+  projectId: string
+  eligible: boolean
+  reasons: SquadAvailabilityReason[]
+  dispatchReady: boolean
+  warnings: SquadAvailabilityWarning[]
+  missingAgentIds: string[]
+  activeDelegations: number
+  availableSlots: number
+}
+export interface RuntimeOverview {
+  defaultHost: {
+    id: 'default-host'
+    name: '本机默认环境'
+    status: 'online' | 'unstable'
+    capabilities: string[]
+    boundAgentCount: number
+  }
+  customCount: number
+  abnormalCount: number
+  archivedCount: number
+}
+export interface RuntimeDetail {
+  runtime: RuntimeRecord
+  agents: AgentRecord[]
+  resources: ProjectResource[]
+  queuedTaskRuns: TaskRunRecord[]
+  activeTaskRuns: TaskRunRecord[]
+  affectedProjectIds: string[]
+  historyCount: number
+}
+export interface AgentRuntimeImpact {
+  agentId: string
+  currentRuntimeId?: string
+  nextRuntimeId?: string
+  executableTaskRunIds: string[]
+  affectedProjects: Array<{
+    projectId: string
+    revision: number
+    status: z.infer<typeof ProjectRecordSchema>['status']
+    assignedTaskIds: string[]
+    approvalWillInvalidate: boolean
+  }>
+}
 export interface InboxItem {
   id: string
   kind: z.infer<typeof InboxKindSchema>
@@ -795,6 +984,9 @@ export interface InboxItem {
   issueId?: string
   taskRunId?: string
   decisionId?: string
+  runtimeId?: string
+  resourceId?: string
+  agentId?: string
   actions: Array<'approve' | 'reject' | 'defer' | 'retry'>
   createdAt: string
 }
@@ -875,6 +1067,9 @@ export interface Snapshot {
   skills: SkillRecord[]
   workspaceLeases: WorkspaceLeaseRecord[]
   localDirectoryLocks: LocalDirectoryLockRecord[]
+  projectAgentMemberships: ProjectAgentMembershipRecord[]
+  featureUsageDaily: FeatureUsageDailyRecord[]
+  runtimeOverview: RuntimeOverview
   inbox: InboxItem[]
   agentWorkloads: AgentWorkload[]
   runStatistics: RunStatistics[]

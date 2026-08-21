@@ -73,6 +73,47 @@ test('client exposes explicit empty and AI creation actions', async () => {
   assert.match(bundle, /pdf-worker\.mjs/)
 })
 
+test('client bundle exposes project membership and local usage workflows', async () => {
+  const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
+  const bundle = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
+  for (const contract of [
+    '交付看板',
+    '团队编排',
+    '运行环境',
+    '项目智能体',
+    '运行与证据',
+    '批量分配未分配任务',
+    '加入智能体并指派',
+    '/usage',
+    '/task-assignments',
+    '/agents/batch',
+  ]) assert.match(source, new RegExp(contract.replaceAll('/', '\\/')))
+  assert.match(bundle, /projectAgentMemberships/)
+  assert.match(bundle, /meaningfulActions/)
+})
+
+test('client exposes P0 Squad and Runtime management with context binding flows', async () => {
+  const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
+  const styles = await readFile(new URL('../src/styles.ts', import.meta.url), 'utf8')
+  for (const contract of [
+    '/eligible-squads',
+    '/runtime-impact',
+    '/resources/${resource.id}/runtime',
+    '本机默认环境',
+    '创建 Squad',
+    '克隆 Squad',
+    '归档 Runtime',
+    '本地数据',
+    'acknowledgeApprovalInvalidation',
+    '第 ${step}/3 步',
+    '清除使用统计',
+  ]) assert.match(source, new RegExp(contract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  assert.match(styles, /po-drawer-backdrop/)
+  assert.match(styles, /@media \(max-width: 760px\)/)
+  assert.match(styles, /prefers-reduced-motion: reduce/)
+  assert.equal(source.match(/清除使用统计/g)?.length, 1)
+})
+
 test('PDF.js worker and attachment runtime are included in the plugin package contract', async () => {
   const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   const worker = await readFile(new URL('../lib/pdf.worker.mjs', import.meta.url), 'utf8')

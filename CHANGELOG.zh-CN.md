@@ -4,6 +4,37 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.5.0] - 2026-08-21
+
+### 新增
+
+- 新增完整 Squad 管理：项目资格投影、写入时至少两名成员、全局委派容量、乐观并发、克隆/归档保护，以及 Web 工作台中的 Agent/Squad Issue 分派。
+- 新增完整本机 Runtime 管理：派生默认 Host、独立生命周期与健康状态、Agent/Project Resource 绑定、影响预览、不可变 TaskRun Runtime 名称快照，以及 Runtime 异常 Inbox 证据。
+- 新增响应式管理抽屉、项目上下文入口、本地数据视图、移动端全屏 Sheet，并支持焦点、减少动态效果和 200% 缩放。
+
+### 变更
+
+- Issue 执行会在创建 TaskRun 前解析 Agent 与 Project Resource Runtime 绑定，并拒绝显式绑定不一致的上下文。
+- Runtime 工作区根目录必须是已存在、可写、安全且非符号链接的绝对目录，并在创建 worktree 前再次校验。
+- 启动派发前会协调 pending/running Command 以及损坏的 TaskRun、Issue 和 Delegation 指针。
+
+### 安全
+
+- 所有 JSON 变更请求现在都要求 `application/json`，并继续执行 2 MiB 有界解析、同源校验、回环读取与串行变更。
+
+## [1.4.0] - 2026-08-21
+
+### 新增
+
+- 新增可持久化的项目智能体成员关系，支持项目内职责、显式 AI 规划匹配资格、负责人、软删除历史和旧任务指派的幂等回填。
+- 新增原子项目成员与任务分配 API、本地隐私友好的功能使用聚合，以及关联计划、Issue、TaskRun、Agent 和 Runtime 事实的项目编排状态。
+- 在响应式 Web 工作台中增加项目智能体管理与任务分配流程。
+
+### 变更
+
+- 规划、Task 与项目范围 Issue 指派、审批、重试和执行现在要求 active 项目成员资格；每个已批准 Task 都必须有明确 Agent，执行时不再使用工作区全局回退 Agent。
+- Squads 和 Runtimes 移入渐进式导航，同时通过上下文入口保持异常执行状态可直接到达。
+
 ## [1.3.5] - 2026-08-21
 
 ### 新增

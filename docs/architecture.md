@@ -16,7 +16,9 @@ The Web shell is not replaced and no second application server is required.
 
 | Record | Ownership |
 |---|---|
-| Project | Plan revision, approval, Resources, legacy autonomous delivery run pointer |
+| Project | Plan revision, approval, Resources, human-facing owner text, lead Agent, legacy autonomous delivery run pointer |
+| ProjectAgentMembership | Project-scoped Agent eligibility, planning role, auto-assignment permission, and join/removal history |
+| Task | Approved plan dependency, assigned Agent, and independent verification gate |
 | Issue | Collaboration lifecycle, assignment revision, review status, active TaskRun pointer |
 | TaskRun | One queue/execution attempt, workspace lease, Session and delivery evidence |
 | Command | Idempotency key, mutation result or durable failure receipt |
@@ -25,7 +27,9 @@ The Web shell is not replaced and no second application server is required.
 | Harness Session | Raw conversation authority; the plugin stores bounded redacted projections |
 | Artifact | Durable document, test, commit, diff, or PR-reference evidence |
 
-Inbox, Agent workload, Skills, and statistics are read projections. They must not become alternative write owners.
+Inbox, Agent workload, Skills, feature-usage aggregates, and statistics are read projections. They must not become alternative write owners.
+
+Project Agent membership is an eligibility boundary, not the execution assignment itself. Every executable Task remains bound to an explicit `Task.agentId`, and every Issue execution remains bound to its assignment revision and TaskRun. Membership changes that do not alter an assigned Task do not invalidate approval; changing a Task Agent still changes the plan digest and requires fresh approval.
 
 ## TaskRun lifecycle
 

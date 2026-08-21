@@ -11,6 +11,8 @@ import {
   AgentRecordSchema,
   OrchestratorService,
   ProjectRecordSchema,
+  RuntimeRecordSchema,
+  SquadRecordSchema,
   TaskRecordSchema,
   assertExecutable,
   planDigest,
@@ -33,7 +35,7 @@ class MemoryTable {
 
 function memoryStore() {
   const store = {
-    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(),
+    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), projectAgentMemberships: new MemoryTable(), featureUsageDaily: new MemoryTable(),
     projectTasks(project) {
       if (new Set(project.taskIds).size !== project.taskIds.length) throw new Error('duplicate task pointers')
       return project.taskIds.map((id) => {
@@ -44,7 +46,7 @@ function memoryStore() {
       }).sort((a, b) => a.ordinal - b.ordinal)
     },
     approvalFor(project) { return store.approvals.get(`${project.id}:${project.revision}`) },
-    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
   }
   return store
 }
@@ -209,6 +211,7 @@ test('new agent, project, and task records persist metadata defaults and explici
   assert.equal(defaultTask.priority, 'medium')
   assert.deepEqual(defaultTask.tags, [])
 
+  await service.addProjectAgent(explicitProject.id, { agentId: skilledAgent.id, projectRole: 'Reviewer', autoAssignable: true, joinedBy: 'tester' })
   const explicitTask = await service.createTask(explicitProject.id, {
     title: 'Urgent Task', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], testCommand: 'true',
     priority: 'urgent', tags: ['release', 'regression'], agentId: skilledAgent.id,
@@ -245,8 +248,10 @@ test('editing an approved task invalidates approval and increments revision', as
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
   const project = await service.createProject({ name: 'Test project', summary: '', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
-  const codeTask = { id: 'code', projectId: project.id, ordinal: 0, title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], testCommand: 'true', status: 'completed', testExitCode: 0, testOutput: 'passed', createdAt: now, updatedAt: now }
-  const testTask = { id: 'test', projectId: project.id, ordinal: 1, title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], testCommand: 'true', status: 'completed', testExitCode: 0, testOutput: 'passed', createdAt: now, updatedAt: now }
+  const agent = await service.createAgent({ name: 'Approval agent', role: 'Engineer', persona: 'Work safely.' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true, joinedBy: 'tester' })
+  const codeTask = { id: 'code', projectId: project.id, ordinal: 0, title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], agentId: agent.id, testCommand: 'true', status: 'completed', testExitCode: 0, testOutput: 'passed', createdAt: now, updatedAt: now }
+  const testTask = { id: 'test', projectId: project.id, ordinal: 1, title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], agentId: agent.id, testCommand: 'true', status: 'completed', testExitCode: 0, testOutput: 'passed', createdAt: now, updatedAt: now }
   await store.tasks.put(codeTask.id, codeTask)
   await store.tasks.put(testTask.id, testTask)
   await store.projects.put(project.id, { ...project, status: 'awaiting_approval', revision: 2, taskIds: ['code', 'test'] })
@@ -533,6 +538,142 @@ test('agent builder rejects out-of-bounds generated skills without persistence',
   const service = new OrchestratorService(agentContext(response), store)
   await assert.rejects(() => service.draftAgent({ requirement: 'Create an agent.' }), /invalid agent draft/)
   assert.equal(store.agents.size, 0)
+})
+
+test('project memberships are idempotent, revision neutral, soft-deleted, and protect references', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Membership project', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const agent = await service.createAgent({ name: 'Member', role: 'Backend', persona: 'Work safely.' })
+  const added = await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Backend', autoAssignable: true, joinedBy: 'tester', expectedProjectRevision: project.revision })
+  assert.equal(added.id, `${project.id}:${agent.id}`)
+  assert.equal(store.projects.get(project.id).revision, project.revision)
+  assert.deepEqual(await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Backend', autoAssignable: true, joinedBy: 'tester', expectedProjectRevision: project.revision }), added)
+  await assert.rejects(() => service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Different', autoAssignable: false }), (error) => error.code === 'project-agent-already-member')
+
+  const task = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' })
+  await assert.rejects(() => service.removeProjectAgent(project.id, agent.id, { expectedMemberUpdatedAt: added.updatedAt, assignedTaskPolicy: 'reject' }), (error) => error.code === 'project-agent-in-use')
+  await service.deleteTask(task.id)
+  const removed = await service.removeProjectAgent(project.id, agent.id, { expectedMemberUpdatedAt: added.updatedAt, assignedTaskPolicy: 'reject' })
+  assert.equal(removed.status, 'removed')
+  assert.ok(removed.removedAt)
+  await assert.rejects(() => service.createTask(project.id, { title: 'Rejected', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' }), (error) => error.code === 'project-agent-not-member')
+})
+
+test('feature usage stays local, aggregates daily, and prunes records older than 30 days', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  await store.featureUsageDaily.put('2000-01-01:projects', { id: '2000-01-01:projects', date: '2000-01-01', feature: 'projects', opens: 1, meaningfulActions: 0, errorRecoveries: 0, lastUsedAt: '2000-01-01T00:00:00.000Z' })
+  const first = await service.recordFeatureUsage({ feature: 'projects', opens: 1 })
+  const second = await service.recordFeatureUsage({ feature: 'projects', meaningfulActions: 1 })
+  assert.equal(second.id, first.id)
+  assert.deepEqual({ opens: second.opens, meaningfulActions: second.meaningfulActions, errorRecoveries: second.errorRecoveries }, { opens: 1, meaningfulActions: 1, errorRecoveries: 0 })
+  assert.equal(store.featureUsageDaily.get('2000-01-01:projects'), undefined)
+  await service.clearFeatureUsage()
+  assert.equal(store.featureUsageDaily.size, 0)
+})
+
+test('batch task assignment is atomic and increments project revision once', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Assignment project', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const first = await service.createAgent({ name: 'First', role: 'Engineer', persona: 'Work safely.' })
+  const second = await service.createAgent({ name: 'Second', role: 'Tester', persona: 'Work safely.' })
+  await service.addProjectAgents(project.id, { members: [{ agentId: first.id, projectRole: 'Code', autoAssignable: true }, { agentId: second.id, projectRole: 'QA', autoAssignable: true }], joinedBy: 'tester', expectedProjectRevision: project.revision })
+  const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], testCommand: 'true' })
+  const verify = await service.createTask(project.id, { title: 'Verify', kind: 'test', description: 'Test', acceptanceCriteria: ['passes'], dependencies: [code.id], testCommand: 'true' })
+  const before = store.projects.get(project.id)
+  const result = await service.assignProjectTasks(project.id, { expectedRevision: before.revision, assignments: [{ taskId: code.id, agentId: first.id }, { taskId: verify.id, agentId: second.id }] })
+  assert.equal(result.project.revision, before.revision + 1)
+  assert.deepEqual(result.tasks.map((task) => task.agentId), [first.id, second.id])
+  const state = structuredClone([...store.tasks.records.entries()])
+  await assert.rejects(() => service.assignProjectTasks(project.id, { expectedRevision: result.project.revision, assignments: [{ taskId: code.id, agentId: second.id }, { taskId: 'foreign', agentId: first.id }] }), (error) => error.code === 'task-not-found')
+  assert.deepEqual([...store.tasks.records.entries()], state)
+})
+
+test('batch membership and task assignment compensate storage failures without partial state', async () => {
+  {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const project = await service.createProject({ name: 'Atomic members', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+    const first = await service.createAgent({ name: 'First member', role: 'Engineer', persona: 'Work safely.' })
+    const second = await service.createAgent({ name: 'Second member', role: 'Tester', persona: 'Work safely.' })
+    const activityCount = store.activity.size
+    const put = store.projectAgentMemberships.put.bind(store.projectAgentMemberships)
+    let calls = 0
+    store.projectAgentMemberships.put = async (...args) => { calls += 1; if (calls === 2) throw new Error('membership write failed'); return put(...args) }
+    await assert.rejects(() => service.addProjectAgents(project.id, { members: [{ agentId: first.id, projectRole: 'Code' }, { agentId: second.id, projectRole: 'QA' }] }), /membership write failed/)
+    assert.equal(store.projectAgentMemberships.size, 0)
+    assert.equal(store.activity.size, activityCount)
+  }
+  {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const project = await service.createProject({ name: 'Atomic assignments', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+    const first = await service.createAgent({ name: 'First assignee', role: 'Engineer', persona: 'Work safely.' })
+    const second = await service.createAgent({ name: 'Second assignee', role: 'Tester', persona: 'Work safely.' })
+    await service.addProjectAgents(project.id, { members: [{ agentId: first.id, projectRole: 'Code' }, { agentId: second.id, projectRole: 'QA' }] })
+    const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], testCommand: 'true' })
+    const verify = await service.createTask(project.id, { title: 'Verify', kind: 'test', description: 'Test', acceptanceCriteria: ['passes'], dependencies: [code.id], testCommand: 'true' })
+    const beforeProject = structuredClone(store.projects.get(project.id))
+    const beforeTasks = structuredClone([...store.tasks.records.entries()])
+    const put = store.tasks.put.bind(store.tasks)
+    let calls = 0
+    store.tasks.put = async (...args) => { calls += 1; if (calls === 2) throw new Error('task write failed'); return put(...args) }
+    await assert.rejects(() => service.assignProjectTasks(project.id, { expectedRevision: beforeProject.revision, assignments: [{ taskId: code.id, agentId: first.id }, { taskId: verify.id, agentId: second.id }] }), /task write failed/)
+    assert.deepEqual(store.projects.get(project.id), beforeProject)
+    assert.deepEqual([...store.tasks.records.entries()], beforeTasks)
+  }
+})
+
+test('member removal protects every current-plan task and restores lead when persistence fails', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Safe removal', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const agent = await service.createAgent({ name: 'Lead', role: 'Engineer', persona: 'Work safely.' })
+  const membership = await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Lead', setAsLead: true })
+  const task = await service.createTask(project.id, { title: 'Completed fact', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' })
+  await store.tasks.put(task.id, { ...task, status: 'completed', testExitCode: 0 })
+  await assert.rejects(() => service.removeProjectAgent(project.id, agent.id, { clearLead: true }), (error) => error.code === 'project-agent-in-use')
+  await service.deleteTask(task.id)
+  const put = store.projectAgentMemberships.put.bind(store.projectAgentMemberships)
+  let fail = true
+  store.projectAgentMemberships.put = async (...args) => { if (fail) { fail = false; throw new Error('membership removal failed') } return put(...args) }
+  await assert.rejects(() => service.removeProjectAgent(project.id, agent.id, { expectedMemberUpdatedAt: membership.updatedAt, clearLead: true }), /membership removal failed/)
+  assert.equal(store.projectAgentMemberships.get(membership.id).status, 'active')
+  assert.equal(store.projects.get(project.id).leadAgentId, agent.id)
+})
+
+test('member removal can atomically reassign the current plan and transfer lead ownership', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Reassign on removal', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const departing = await service.createAgent({ name: 'Departing', role: 'Engineer', persona: 'Work safely.' })
+  const replacement = await service.createAgent({ name: 'Replacement', role: 'Engineer', persona: 'Work safely.' })
+  const membership = await service.addProjectAgent(project.id, { agentId: departing.id, projectRole: 'Lead', setAsLead: true })
+  await service.addProjectAgent(project.id, { agentId: replacement.id, projectRole: 'Backup' })
+  const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: departing.id, testCommand: 'true' })
+  await service.createTask(project.id, { title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: departing.id, testCommand: 'true' })
+  const before = store.projects.get(project.id)
+  const removed = await service.removeProjectAgent(project.id, departing.id, { expectedMemberUpdatedAt: membership.updatedAt, expectedProjectRevision: before.revision, assignedTaskPolicy: 'reassign', replacementAgentId: replacement.id })
+  const after = store.projects.get(project.id)
+  assert.equal(removed.status, 'removed')
+  assert.equal(after.revision, before.revision + 1)
+  assert.equal(after.status, 'awaiting_approval')
+  assert.equal(after.leadAgentId, replacement.id)
+  assert.equal(after.approvedRevision, undefined)
+  assert.deepEqual(store.projectTasks(after).map((task) => task.agentId), [replacement.id, replacement.id])
+})
+
+test('approval rejects unassigned tasks and ordinary Issue update rejects assignee fields', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Guarded project', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], testCommand: 'true' })
+  await service.createTask(project.id, { title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: [code.id], testCommand: 'true' })
+  await assert.rejects(() => service.approveProject(project.id, 'tester'), (error) => error.code === 'project-task-unassigned')
+  const issue = await service.createIssue({ projectId: project.id, title: 'Issue' })
+  await assert.rejects(() => service.updateIssue(issue.id, { assigneeType: 'agent', assigneeId: 'agent' }))
 })
 
 test('agent deletion is rejected while tasks reference it', async () => {
@@ -1247,6 +1388,41 @@ test('legacy approvals migrate idempotently to Decisions and project deletion re
   assert.equal(service.snapshot().inbox.some((item) => item.projectId === project.id), false)
 })
 
+test('initialization leaves approved projects waiting when membership needs repair or Runtime is offline', async () => {
+  {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const project = await service.createProject({ name: 'Missing legacy Agent', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+    const agent = await service.createAgent({ name: 'Legacy assignee', role: 'Engineer', persona: 'Work safely.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer' })
+    const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' })
+    await service.createTask(project.id, { title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, testCommand: 'true' })
+    const current = store.projects.get(project.id)
+    await store.projects.put(project.id, { ...current, status: 'approved', approvedRevision: current.revision })
+    await store.agents.delete(agent.id)
+    await store.projectAgentMemberships.delete(`${project.id}:${agent.id}`)
+    await service.initialize()
+    assert.equal(store.projects.get(project.id).status, 'approved')
+    assert.ok(service.snapshot().inbox.some((item) => item.id.startsWith(`project-assignment:${project.id}:`)))
+  }
+  {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    const runtime = await service.createRuntime({ name: 'Offline executor', machineId: 'offline-executor' })
+    await service.heartbeatRuntime(runtime.id, 'offline')
+    const project = await service.createProject({ name: 'Offline approved project', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+    const agent = await service.createAgent({ name: 'Offline assignee', role: 'Engineer', persona: 'Work safely.', runtimeId: runtime.id })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer' })
+    const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' })
+    await service.createTask(project.id, { title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, testCommand: 'true' })
+    const current = store.projects.get(project.id)
+    await store.projects.put(project.id, { ...current, status: 'approved', approvedRevision: current.revision })
+    await service.initialize()
+    assert.equal(store.projects.get(project.id).status, 'approved')
+    assert.equal([...store.runs.records.values()].some((run) => run.projectId === project.id), false)
+  }
+})
+
 test('project deletion cascades every owned record while preserving shared and unrelated data', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
@@ -1345,6 +1521,7 @@ test('unified commands own assignment, idempotency, stop, continue, and review g
   const runtime = await service.createRuntime({ name: 'Command Runtime', machineId: 'command-local', capabilities: ['agent'] })
   const agent = await service.createAgent({ name: 'Command Agent', role: 'Engineer', description: '', persona: 'Execute Issue work.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id, access: 'workspace', maxConcurrency: 2 })
   const project = await service.createProject({ name: 'Command project', summary: '', cwd: '/tmp', prd: 'Command workflow', technicalDesign: 'Issue-owned execution.' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true, joinedBy: 'tester' })
   const issue = await service.createIssue({ projectId: project.id, title: 'Issue command owner', description: 'Test command transitions.' })
 
   const assigned = await service.executeCommand({ idempotencyKey: 'assign-once', type: 'assign_issue', projectId: project.id, issueId: issue.id, actorType: 'human', actorId: 'tester', payload: { assigneeType: 'agent', assigneeId: agent.id } })
@@ -1390,6 +1567,7 @@ test('Issue TaskRun dispatcher enforces Runtime availability and enters review w
     const runtime = await service.createRuntime({ name: 'Queue Runtime', machineId: 'queue-local', capabilities: ['agent'] })
     const agent = await service.createAgent({ name: 'Queue Agent', role: 'Engineer', description: '', persona: 'Execute.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id, access: 'workspace', maxConcurrency: 1 })
     const project = await service.createProject({ name: 'Queue project', summary: '', cwd: root, prd: 'Queue workflow', technicalDesign: 'Lease guarded.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true, joinedBy: 'tester' })
     const issue = await service.createIssue({ projectId: project.id, title: 'Dispatched Issue', description: 'Execute through queue.' })
     await service.heartbeatRuntime(runtime.id, 'offline')
     const command = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id } })
@@ -1420,7 +1598,7 @@ test('worktree TaskRun creates isolated branch, captures Git evidence, and clean
   const repo = join(root, 'repo')
   const worktrees = join(root, 'worktrees')
   try {
-    await import('node:fs/promises').then(({ mkdir }) => mkdir(repo))
+    await import('node:fs/promises').then(async ({ mkdir }) => { await mkdir(repo); await mkdir(worktrees) })
     await execFileAsync('git', ['init'], { cwd: repo })
     await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
     await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
@@ -1433,6 +1611,7 @@ test('worktree TaskRun creates isolated branch, captures Git evidence, and clean
     const runtime = await service.createRuntime({ name: 'Worktree Runtime', machineId: 'worktree-local', capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
     const agent = await service.createAgent({ name: 'Worktree Agent', role: 'Engineer', description: '', persona: 'Execute.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id, access: 'workspace', maxConcurrency: 1 })
     const project = await service.createProject({ name: 'Worktree project', cwd: repo, prd: 'Isolate execution.', technicalDesign: 'Use a Git worktree.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true, joinedBy: 'tester' })
     await service.createProjectResource(project.id, { kind: 'local_directory', location: repo, executionMode: 'worktree', runtimeId: runtime.id })
     const issue = await service.createIssue({ projectId: project.id, title: 'Isolated Issue', description: 'Run in worktree.' })
     const command = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id } })
@@ -1456,7 +1635,7 @@ test('Squad membership and Artifact context fail closed while valid records pers
   const service = new OrchestratorService({}, store)
   const leader = await service.createAgent({ name: 'Leader', role: 'Lead', description: '', persona: 'Lead.', preset: 'standard', toolPolicy: 'full' })
   const member = await service.createAgent({ name: 'Member', role: 'Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
-  await assert.rejects(() => service.createSquad({ name: 'Invalid', description: '', leaderAgentId: leader.id, memberAgentIds: [member.id], instructions: 'Delegate safely.', escalationPolicy: 'Ask a human.' }), (error) => error.code === 'squad-leader-not-member')
+  await assert.rejects(() => service.createSquad({ name: 'Invalid', description: '', leaderAgentId: leader.id, memberAgentIds: [member.id, member.id], instructions: 'Delegate safely.', escalationPolicy: 'Ask a human.' }), (error) => error.code === 'squad-min-members')
   const squad = await service.createSquad({ name: 'Delivery Squad', description: '', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], memberRoles: { [leader.id]: 'Leader', [member.id]: 'Implementer' }, instructions: 'Delegate safely.', escalationPolicy: 'Ask a human.' })
   assert.equal(squad.status, 'active')
 
@@ -1474,6 +1653,7 @@ test('Squad delegation creates a child run and approved review wakes the leader 
   const member = await service.createAgent({ name: 'Squad Member', role: 'Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
   const squad = await service.createSquad({ name: 'Command Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
   const project = await service.createProject({ name: 'Delegation project', cwd: '/tmp', prd: 'Delegate work.', technicalDesign: 'Child Issue protocol.' })
+  await service.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead', autoAssignable: true }, { agentId: member.id, projectRole: 'Engineer', autoAssignable: true }], joinedBy: 'tester' })
   const parent = await service.createIssue({ projectId: project.id, title: 'Parent delivery', description: 'Coordinate.', assigneeType: 'squad', assigneeId: squad.id })
   const assigned = await service.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
   const leaderRunId = assigned.result.taskRunId
@@ -1498,6 +1678,7 @@ test('Autopilot and external triggers are bounded and idempotent through unified
   const service = new OrchestratorService({}, store)
   const agent = await service.createAgent({ name: 'Autopilot Agent', role: 'Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
   const project = await service.createProject({ name: 'Autopilot project', cwd: '/tmp', prd: 'Automate.', technicalDesign: 'Bounded command tick.' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true, joinedBy: 'tester' })
   const issues = []
   for (let index = 0; index < 3; index += 1) issues.push(await service.createIssue({ projectId: project.id, title: `Auto ${index}`, description: '' }))
   const tick = await service.executeCommand({ idempotencyKey: 'autopilot-once', type: 'autopilot_tick', projectId: project.id, actorType: 'system', payload: { agentId: agent.id, limit: 2 } })
@@ -1514,9 +1695,141 @@ test('Autopilot and external triggers are bounded and idempotent through unified
   assert.equal(service.snapshot().runStatistics.every((stat) => stat.usageKnown === false), true)
 })
 
+test('Runtime lifecycle and legacy Squad records preserve compatible read contracts', () => {
+  const legacyRuntime = RuntimeRecordSchema.parse({ id: 'runtime', name: 'Legacy', machineId: 'machine', status: 'offline', capabilities: [], lastHeartbeatAt: now, createdAt: now, updatedAt: now })
+  assert.equal(legacyRuntime.lifecycle, 'active')
+  assert.throws(() => RuntimeRecordSchema.parse({ ...legacyRuntime, lifecycle: 'archived' }))
+  const legacySquad = SquadRecordSchema.parse({ id: 'squad', name: 'Legacy one-member Squad', description: '', leaderAgentId: 'agent', memberAgentIds: ['agent'], instructions: 'Legacy instructions.', escalationPolicy: 'Escalate.', status: 'active', createdAt: now, updatedAt: now })
+  assert.deepEqual(legacySquad.memberAgentIds, ['agent'])
+})
+
+test('Runtime management validates roots, uniqueness, lifecycle, history, and name snapshots', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-runtime-'))
+  const workspaceRoot = join(root, 'worktrees')
+  const linkedRoot = join(root, 'linked')
+  await mkdir(workspaceRoot)
+  await symlink(workspaceRoot, linkedRoot)
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService({}, store)
+    await assert.rejects(() => service.createRuntime({ name: 'Bad', machineId: 'bad', capabilities: [], workspaceRoot: linkedRoot }), (error) => error.code === 'runtime-workspace-root-invalid')
+    const runtime = await service.createRuntime({ name: 'Local A', machineId: 'machine-a', capabilities: ['agent'], workspaceRoot })
+    await assert.rejects(() => service.createRuntime({ name: 'Duplicate', machineId: 'machine-a', capabilities: [] }), (error) => error.code === 'runtime-machine-id-conflict')
+    const agent = await service.createAgent({ name: 'Bound', role: 'Engineer', description: '', persona: 'Work.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id })
+    const renamed = await service.updateRuntime(runtime.id, { name: 'Local A renamed', expectedUpdatedAt: runtime.updatedAt })
+    await assert.rejects(() => service.updateRuntime(runtime.id, { machineId: 'machine-b', expectedUpdatedAt: renamed.updatedAt }), (error) => error.code === 'runtime-config-in-use')
+    await assert.rejects(() => service.archiveRuntime(runtime.id, { expectedUpdatedAt: renamed.updatedAt }), (error) => error.code === 'runtime-active-bindings')
+    await service.bindAgentRuntime(agent.id, { runtimeId: null, expectedTargetUpdatedAt: agent.updatedAt, expectedProjectRevisions: {}, acknowledgeApprovalInvalidation: false })
+    const archived = await service.archiveRuntime(runtime.id, { expectedUpdatedAt: renamed.updatedAt })
+    assert.equal(archived.lifecycle, 'archived')
+    await assert.rejects(() => service.heartbeatRuntime(runtime.id), (error) => error.code === 'runtime-archived')
+    await assert.rejects(() => service.deleteRuntime(runtime.id), (error) => error.code === 'runtime-in-use')
+    const disposable = await service.createRuntime({ name: 'Disposable', machineId: 'disposable-machine', capabilities: [] })
+    const disposableArchive = await service.archiveRuntime(disposable.id, { expectedUpdatedAt: disposable.updatedAt })
+    await service.deleteRuntime(disposableArchive.id)
+    assert.equal(store.runtimes.get(disposable.id), undefined)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('Issue assignment resolves Agent and Resource Runtime bindings before capturing immutable evidence', async () => {
+  const cwd = await mkdtemp(join(tmpdir(), 'po-runtime-resolution-'))
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const first = await service.createRuntime({ name: 'First Runtime', machineId: 'first-machine', capabilities: ['agent'] })
+  const second = await service.createRuntime({ name: 'Second Runtime', machineId: 'second-machine', capabilities: ['agent'] })
+  const agent = await service.createAgent({ name: 'Runner', role: 'Engineer', description: '', persona: 'Run.', preset: 'standard', toolPolicy: 'full', runtimeId: first.id })
+  const project = await service.createProject({ name: 'Runtime resolution', cwd, prd: 'Resolve.', technicalDesign: 'Capture evidence.' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, joinedBy: 'tester' })
+  const resource = await service.createProjectResource(project.id, { kind: 'local_directory', location: cwd, executionMode: 'in_place', runtimeId: second.id })
+  const issue = await service.createIssue({ projectId: project.id, title: 'Mismatch', description: '' })
+  await assert.rejects(() => service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id, resourceId: resource.id } }), (error) => error.code === 'runtime-binding-context-mismatch')
+  assert.equal([...store.taskRuns.records.values()].length, 0)
+  const aligned = await service.bindResourceRuntime(resource.id, { runtimeId: first.id, expectedTargetUpdatedAt: resource.updatedAt })
+  const assigned = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id, resourceId: aligned.id } })
+  const run = store.taskRuns.get(assigned.result.taskRunId)
+  assert.equal(run.runtimeId, first.id)
+  assert.equal(run.runtimeNameSnapshot, 'First Runtime')
+  const renamed = await service.updateRuntime(first.id, { name: 'Renamed Runtime', expectedUpdatedAt: first.updatedAt })
+  assert.equal(renamed.name, 'Renamed Runtime')
+  assert.equal(store.taskRuns.get(run.id).runtimeNameSnapshot, 'First Runtime')
+  await rm(cwd, { recursive: true, force: true })
+})
+
+test('Squad availability is unified across project membership, global capacity, and Runtime warnings', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const runtime = await service.createRuntime({ name: 'Leader Runtime', machineId: 'leader-machine', capabilities: ['agent'] })
+  await service.heartbeatRuntime(runtime.id, 'offline')
+  const leader = await service.createAgent({ name: 'Leader', role: 'Lead', description: '', persona: 'Lead.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id })
+  const member = await service.createAgent({ name: 'Member', role: 'Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
+  const squad = await service.createSquad({ name: 'Bounded Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.', maxParallelDelegations: 1 })
+  const projectA = await service.createProject({ name: 'A', cwd: '/tmp', prd: 'A', technicalDesign: 'A' })
+  const projectB = await service.createProject({ name: 'B', cwd: '/tmp', prd: 'B', technicalDesign: 'B' })
+  for (const project of [projectA, projectB]) await service.addProjectAgents(project.id, { members: [{ agentId: leader.id }, { agentId: member.id }], joinedBy: 'tester' })
+  let availability = service.listEligibleSquads(projectA.id)[0]
+  assert.equal(availability.eligible, true)
+  assert.equal(availability.dispatchReady, false)
+  assert.deepEqual(availability.warnings, ['leader_runtime_offline'])
+  await store.delegations.put('busy', { id: 'busy', squadId: squad.id, projectId: projectA.id, parentIssueId: 'parent', childIssueId: 'child', leaderAgentId: leader.id, memberAgentId: member.id, status: 'running', instruction: 'Busy', createdAt: now, updatedAt: now })
+  availability = service.listEligibleSquads(projectB.id)[0]
+  assert.equal(availability.eligible, false)
+  assert.deepEqual(availability.reasons, ['capacity_exhausted'])
+  assert.equal(availability.activeDelegations, 1)
+})
+
+test('Agent Runtime binding previews Project revisions, invalidates approval, and treats deferred as historical', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const runtime = await service.createRuntime({ name: 'Target', machineId: 'target-machine', capabilities: ['agent'] })
+  const agent = await service.createAgent({ name: 'Plan Agent', role: 'Engineer', description: '', persona: 'Plan.', preset: 'standard', toolPolicy: 'full' })
+  let project = await service.createProject({ name: 'Plan', cwd: '/tmp', prd: 'Plan', technicalDesign: 'Plan' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, joinedBy: 'tester' })
+  await service.createTask(project.id, { title: 'Assigned', kind: 'code', description: 'Work', acceptanceCriteria: ['done'], dependencies: [], agentId: agent.id, testCommand: 'true' })
+  project = store.projects.get(project.id)
+  await store.projects.put(project.id, { ...project, status: 'approved', approvedRevision: project.revision })
+  await assert.rejects(() => service.updateAgent(agent.id, { name: agent.name, role: agent.role, description: agent.description, persona: agent.persona, preset: agent.preset, toolPolicy: agent.toolPolicy, runtimeId: runtime.id }), (error) => error.code === 'runtime-binding-route-required')
+  const impact = service.getAgentRuntimeImpact(agent.id, runtime.id)
+  assert.equal(impact.affectedProjects[0].approvalWillInvalidate, true)
+  const expectedProjectRevisions = { [project.id]: project.revision }
+  await assert.rejects(() => service.bindAgentRuntime(agent.id, { runtimeId: runtime.id, expectedTargetUpdatedAt: agent.updatedAt, expectedProjectRevisions, acknowledgeApprovalInvalidation: false }), (error) => error.code === 'runtime-binding-approval-required')
+  await store.taskRuns.put('deferred', { id: 'deferred', projectId: project.id, agentId: agent.id, runtimeNameSnapshot: '本机默认环境', status: 'deferred', trigger: 'assignment', attempt: 1, assignmentRevision: 1, cwd: '/tmp', createdAt: now, completedAt: now })
+  const bound = await service.bindAgentRuntime(agent.id, { runtimeId: runtime.id, expectedTargetUpdatedAt: agent.updatedAt, expectedProjectRevisions, acknowledgeApprovalInvalidation: true })
+  assert.equal(bound.runtimeId, runtime.id)
+  const changedProject = store.projects.get(project.id)
+  assert.equal(changedProject.status, 'awaiting_approval')
+  assert.equal(changedProject.revision, project.revision + 1)
+
+  const other = await service.createAgent({ name: 'Busy Agent', role: 'Engineer', description: '', persona: 'Busy.', preset: 'standard', toolPolicy: 'full' })
+  for (const status of ['queued', 'waiting_local_directory', 'dispatched', 'running']) await store.taskRuns.put(`busy-${status}`, { id: `busy-${status}`, projectId: project.id, agentId: other.id, status, trigger: 'assignment', attempt: 1, assignmentRevision: 1, cwd: '/tmp', createdAt: now })
+  const busyImpact = service.getAgentRuntimeImpact(other.id, runtime.id)
+  assert.equal(busyImpact.executableTaskRunIds.length, 4)
+  await assert.rejects(() => service.bindAgentRuntime(other.id, { runtimeId: runtime.id, expectedTargetUpdatedAt: other.updatedAt, expectedProjectRevisions: {}, acknowledgeApprovalInvalidation: false }), (error) => error.code === 'runtime-nonterminal-task-runs')
+})
+
+test('startup reconciles pending Commands, orphan TaskRuns, and broken Issue pointers before dispatch', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Recovery', cwd: '/tmp', prd: 'Recover', technicalDesign: 'Recover' })
+  const issue = await service.createIssue({ projectId: project.id, title: 'Broken pointer', description: '' })
+  await store.commands.put('pending', { id: 'pending', type: 'assign_issue', projectId: project.id, issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: 'missing' }, status: 'pending', createdAt: now })
+  await store.taskRuns.put('orphan', { id: 'orphan', projectId: project.id, issueId: issue.id, agentId: 'missing', status: 'queued', trigger: 'assignment', attempt: 1, assignmentRevision: 1, commandId: 'pending', cwd: '/tmp', createdAt: now })
+  await store.issues.put(issue.id, { ...issue, status: 'in_progress', activeTaskRunId: 'missing-pointer', assignmentRevision: 2 })
+
+  await service.initialize()
+
+  assert.equal(store.commands.get('pending').status, 'failed')
+  assert.equal(store.taskRuns.get('orphan').status, 'cancelled')
+  assert.equal(store.issues.get(issue.id).status, 'blocked')
+  assert.equal(store.issues.get(issue.id).activeTaskRunId, undefined)
+  assert.equal([...store.commands.records.values()].some((command) => ['pending', 'running'].includes(command.status)), false)
+})
+
 async function approvedProject(service, store, commands, agentOverrides = {}, cwd = '/tmp') {
   const agent = await service.createAgent({ name: 'Engineer', role: 'Software Engineer', description: '', persona: 'Implement.', preset: 'standard', toolPolicy: 'full', ...agentOverrides })
   const project = await service.createProject({ name: 'Execution project', summary: '', cwd, prd: 'PRD', technicalDesign: 'Design' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: agent.role, autoAssignable: true, joinedBy: 'test-helper' })
   const tasks = [
     { id: 'code', projectId: project.id, ordinal: 0, title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], agentId: agent.id, testCommand: commands[0], status: 'draft', createdAt: now, updatedAt: now },
     { id: 'test', projectId: project.id, ordinal: 1, title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], agentId: agent.id, testCommand: commands[1], status: 'draft', createdAt: now, updatedAt: now },

@@ -4,6 +4,37 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-08-21
+
+### Added
+
+- Full Squad management with project eligibility projections, strict two-member writes, global delegation capacity, optimistic concurrency, clone/archive protections, and Agent/Squad Issue assignment in the Web workbench.
+- Full local Runtime management with a derived default Host, separate lifecycle and health, Agent/Project Resource binding flows, impact previews, immutable TaskRun Runtime name snapshots, and abnormal Runtime Inbox evidence.
+- Responsive management drawers, project context entries, local-data visibility, mobile sheets, and accessible reduced-motion/zoom behavior.
+
+### Changed
+
+- Issue execution resolves Agent and Project Resource Runtime bindings before creating a TaskRun and rejects mismatched explicit bindings.
+- Runtime workspace roots must already exist as writable, safe, non-symlink absolute directories and are revalidated immediately before worktree creation.
+- Pending/running Commands and broken TaskRun/Issue/Delegation pointers are reconciled before startup dispatch.
+
+### Security
+
+- Every JSON mutation now requires `application/json`, retains the 2 MiB bounded parser, same-origin enforcement, loopback reads, and serialized mutation handling.
+
+## [1.4.0] - 2026-08-21
+
+### Added
+
+- Durable Project Agent memberships with Project-specific roles, explicit AI planning eligibility, lead selection, soft-removal history, and idempotent legacy assignment backfill.
+- Atomic Project membership and Task assignment APIs, local privacy-preserving feature usage aggregates, and Project orchestration status linking plan, Issue, TaskRun, Agent, and Runtime facts.
+- Project Agent management and assignment workflows in the responsive Web workbench.
+
+### Changed
+
+- Planning, Task and project-scoped Issue assignment, approval, retry, and execution now require active Project membership; every approved Task has an explicit Agent and execution no longer uses a workspace-global fallback Agent.
+- Squads and Runtimes move into progressive navigation while contextual links keep abnormal execution states directly reachable.
+
 ## [1.3.5] - 2026-08-21
 
 ### Added

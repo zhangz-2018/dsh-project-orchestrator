@@ -26,10 +26,13 @@ dsh-project-orchestrator stats
 3. 使用 Harness plugin 管理器升级 profile plugin。
 4. 重启现有 Host；不要启动第二个服务器。
 5. 验证健康状态、snapshot 解析、排队/恢复的 run，以及 Web 导航。
+6. 在批准或重试交付前，确认每个当前已分配 Task 都具有 active 项目智能体成员关系。
+
+首次兼容启动时会幂等回填成员关系：仍为 active 的当前 Task Agent、负责人 Agent，以及项目下非终态 Issue 的 Agent assignee 会成为 active 项目成员。缺失或已归档引用仍保持可见，但在重新分配前会失败关闭，且不会阻止 Host 启动。仅存在于历史 TaskRun 的 Agent 不会扩大 active 成员池。
 
 ## 回滚
 
-禁用或删除 loader row，然后重启 Harness，即可恢复原始 Web UI。只有在检查存储兼容性后，才能重新安装之前的 1.x 软件包。未来 schema 迁移后的降级可能需要恢复备份。
+禁用或删除 loader row，然后重启 Harness，即可恢复原始 Web UI。重新安装旧 1.x 软件包前，必须暂停可执行队列并恢复与其匹配的升级前存储备份；不要依赖 schema 可读性来保留成员资格或禁止回退的安全约束。
 
 ## 队列恢复
 
@@ -50,6 +53,8 @@ dsh-project-orchestrator stats
 
 ## 故障排查
 
+- `project-agent-not-member`：把任务 Agent 加入 Project，或把 Task 重新分配给 active 项目成员。
+- `project-task-unassigned`：审批前为每个计划 Task 分配执行智能体。
 - `runtime_offline`：为绑定的 Runtime 发送 heartbeat，或修正 Agent 绑定。
 - `resource-selection-required`：显式选择一个 Project Resource。
 - `verification_failed`：检查 TaskRun 输出和已记录的执行环境。

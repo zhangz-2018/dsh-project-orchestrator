@@ -39,13 +39,31 @@ For 1.x backward compatibility, omitting `mode` retains the pre-existing AI beha
 
 Additional routes:
 
-- `PUT /projects/:id` saves Project metadata without invoking AI or invalidating the current plan. When Tasks already exist, changes to plan-affecting fields (`cwd`, PRD, technical design, priority, owner, or task language) are rejected with `project-replan-required`; name and summary remain safe metadata-only edits. A taskless draft may keep or add an empty PRD.
+- `PUT /projects/:id` saves Project metadata without invoking AI or invalidating the current plan. When Tasks already exist, changes to plan-affecting fields (`cwd`, PRD, technical design, priority, the human-facing `owner` text, or task language) are rejected with `project-replan-required`; name and summary remain safe metadata-only edits. `owner` is not `leadAgentId`: changing the lead Agent through Project membership does not alter Task assignment or invalidate approval. A taskless draft may keep or add an empty PRD.
 - `POST /projects/:id/replan` accepts `{ "taskLanguage": "zh-CN" }` or `en` and may atomically include a full validated `project` edit payload. It rejects Projects with execution history before persisting edits, replaces only an unexecuted plan, increments the Project revision, clears current approval, and starts decomposition.
 - `POST /projects/:id/decompose` explicitly starts planning for a draft Project using its stored language and rejects an empty PRD with `project-brief-required`.
 - `POST /projects/:id/approve` remains revision/hash-bound; a regenerated plan always requires fresh approval.
 - `POST /projects/:id/open-directory` accepts no path body. It resolves the authoritative persisted `project.cwd`, revalidates it, invokes the certified operating-system opener without a shell, and returns `{ "ok": true }`. macOS and Linux are certified; Windows is not.
 
 Chinese mode validates that summary, titles, descriptions, and acceptance criteria contain Chinese text. JSON keys, task IDs, code symbols, paths, Agent roles, and commands are never translated.
+
+## Project Agent membership and assignment routes
+
+- `GET /projects/:id/agents` returns active and removed Project Agent memberships.
+- `POST /projects/:id/agents` adds or reactivates one active Agent without invoking AI or invalidating an unrelated approval. An identical repeat is idempotent; different role or auto-assignment settings on an existing active member return `project-agent-already-member` and must use `PUT`.
+- `POST /projects/:id/agents/batch` atomically adds or reactivates multiple Agents.
+- `PUT /projects/:id/agents/:agentId` updates the Project role, automatic-planning eligibility, or lead designation.
+- `DELETE /projects/:id/agents/:agentId` soft-removes membership. The default `assignedTaskPolicy: "reject"` requires current-plan Tasks, non-terminal Issues, active delegation, and lead ownership to be resolved first. `assignedTaskPolicy: "reassign"` requires `replacementAgentId` and `expectedProjectRevision`; it atomically reassigns the current Task plan, increments revision once, clears approval, transfers lead ownership unless explicitly cleared, then removes the membership. Issue and delegation references still use their audited lifecycle commands.
+- `POST /projects/:id/task-assignments` atomically changes multiple Task Agents, increments the Project revision once, clears approval, and returns the refreshed plan facts.
+
+Task create/update, planning, approval, retry, execution, and project-scoped Issue/Squad assignment all validate active Project membership. Physical Agent deletion is blocked once retained Project membership history exists; archive the Agent instead so historical names and references remain resolvable. Approval requires every Task to have an explicit eligible Agent. Execution never selects an unapproved workspace-global fallback Agent.
+
+## Local feature-usage routes
+
+- `POST /usage` increments bounded `opens`, `meaningfulActions`, or `errorRecoveries` counters for one known feature in the server's current UTC day.
+- `DELETE /usage` clears local feature-usage aggregates.
+
+Usage records contain a UTC date, feature key, three aggregate counters, and `lastUsedAt`. Records older than 30 days are removed on the next usage write. They do not contain Project names, paths, requirements, task content, Agent instructions, comments, or transcripts, and they are not uploaded.
 
 ## Unified command route
 

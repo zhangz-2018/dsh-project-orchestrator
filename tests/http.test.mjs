@@ -8,7 +8,9 @@ class Request extends Readable {
     super()
     this.method = method
     this.url = url
-    this.headers = headers
+    this.headers = { ...headers }
+    if ((method === 'POST' || method === 'PUT' || body !== '') && !Object.hasOwn(this.headers, 'content-type')) this.headers['content-type'] = 'application/json'
+    if (body !== '' && !Object.hasOwn(this.headers, 'content-length')) this.headers['content-length'] = String(Buffer.byteLength(body))
     this.socket = { remoteAddress }
     this.body = body
   }
@@ -34,14 +36,25 @@ function response() {
 
 function service() {
   return {
-    snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [] } },
      async getInbox(query) { return query?.kind ? [{ id: 'filtered', kind: query.kind }] : [] },
      async getAgentWorkloads() { return [] },
+     listProjectAgents(projectId) { return [{ id: `${projectId}:agent`, projectId, agentId: 'agent', status: 'active' }] },
+     async addProjectAgent(projectId, body) { return { id: `${projectId}:${body.agentId}`, projectId, status: 'active', ...body } },
+     async updateProjectAgent(projectId, agentId, body) { return { id: `${projectId}:${agentId}`, projectId, agentId, status: 'active', ...body } },
+     async removeProjectAgent(projectId, agentId) { return { id: `${projectId}:${agentId}`, projectId, agentId, status: 'removed' } },
+     async addProjectAgents(projectId, body) { return body.members.map((member) => ({ id: `${projectId}:${member.agentId}`, projectId, status: 'active', ...member })) },
+     async assignProjectTasks(projectId, body) { return { project: { id: projectId, revision: body.expectedRevision + 1 }, tasks: body.assignments, planHash: 'a'.repeat(64) } },
+     async recordFeatureUsage(body) { return { id: `${body.date ?? 'today'}:${body.feature}`, opens: 0, meaningfulActions: 0, errorRecoveries: 0, ...body } },
+     async clearFeatureUsage() {},
      async createDecision(body) { return { id: 'decision', status: 'pending', ...body } },
      async executeCommand(body) { return { id: 'command', status: 'completed', result: body } },
      async receiveExternalTrigger(body) { return { id: 'trigger', status: 'processed', ...body } },
+     getSquad(id) { return { id, status: 'active' } },
+     listEligibleSquads(projectId) { return [{ projectId, squadId: 'squad', eligible: true }] },
      async createSquad(body) { return { id: 'squad', status: 'active', ...body } },
      async updateSquad(id, body) { return { id, status: 'active', ...body } },
+     async cloneSquad(id, body) { return { id: `${id}-clone`, status: 'active', ...body } },
      async archiveSquad(id) { return { id, status: 'archived' } },
      async deleteSquad() {},
      async attachArtifact(body) { return { id: 'artifact', ...body } },
@@ -49,8 +62,14 @@ function service() {
      async handleInboxItem(id, body) { return { itemId: id, result: body } },
     async serializedMutation(operation) { return await operation() },
     async createAgent(body) { return { id: 'agent', ...body } },
-     async createRuntime(body) { return { id: 'runtime', status: 'online', ...body } },
+     getRuntimeDetail(id) { return { runtime: { id }, agents: [], resources: [], queuedTaskRuns: [], activeTaskRuns: [], affectedProjectIds: [], historyCount: 0 } },
+     getAgentRuntimeImpact(agentId, runtimeId) { return { agentId, nextRuntimeId: runtimeId, executableTaskRunIds: [], affectedProjects: [] } },
+     async createRuntime(body) { return { id: 'runtime', status: 'online', lifecycle: 'active', ...body } },
+     async updateRuntime(id, body) { return { id, status: 'online', lifecycle: 'active', ...body } },
+     async archiveRuntime(id) { return { id, status: 'offline', lifecycle: 'archived' } },
      async heartbeatRuntime(id, status) { return { id, status } },
+     async bindAgentRuntime(id, body) { return { id, ...body } },
+     async bindResourceRuntime(id, body) { return { id, ...body } },
      async deleteRuntime() {},
      async createIssue(body) { return { id: 'issue', ...body } },
      async inspectRepository(body) { return { repositoryUrl: body.repositoryUrl, owner: 'owner', name: 'repo', defaultBranch: 'main', branches: [{ name: 'main', protected: true }], issues: [] } },
@@ -76,7 +95,7 @@ test('snapshot endpoint returns no-store JSON', async () => {
   assert.equal(res.statusCode, 200)
   assert.equal(res.headers.get('cache-control'), 'no-store')
   assert.deepEqual(JSON.parse(res.body), {
-     runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], inbox: [], agentWorkloads: [], runStatistics: [],
+     runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [],
     projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {},
   })
 })
@@ -325,6 +344,34 @@ test('command, Squad, Artifact, trigger, and operational read routes stay same-o
   }
 })
 
+test('project membership, task assignment, and usage routes are same-origin and serialized', async () => {
+  const fake = service()
+  let lockCalls = 0
+  fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
+  const origin = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const read = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/agents', headers: { host: '127.0.0.1:3080' } }), read)
+  assert.equal(JSON.parse(read.body)[0].agentId, 'agent')
+  for (const [method, url, body, status] of [
+    ['POST', '/project-orchestrator/api/projects/project-1/agents', { agentId: 'a1', projectRole: 'Backend', autoAssignable: true }, 201],
+    ['PUT', '/project-orchestrator/api/projects/project-1/agents/a1', { projectRole: 'API', autoAssignable: false }, 200],
+    ['DELETE', '/project-orchestrator/api/projects/project-1/agents/a1', { assignedTaskPolicy: 'reject' }, 200],
+    ['POST', '/project-orchestrator/api/projects/project-1/agents/batch', { members: [{ agentId: 'a1', projectRole: 'Backend', autoAssignable: true }] }, 201],
+    ['POST', '/project-orchestrator/api/projects/project-1/task-assignments', { expectedRevision: 2, assignments: [{ taskId: 't1', agentId: 'a1' }] }, 200],
+    ['POST', '/project-orchestrator/api/usage', { feature: 'projects', opens: 1 }, 200],
+    ['DELETE', '/project-orchestrator/api/usage', {}, 200],
+  ]) {
+    const res = response()
+    await createHttpHandler(fake)(new Request({ method, url, headers: origin, body: JSON.stringify(body) }), res)
+    assert.equal(res.statusCode, status)
+  }
+  assert.equal(lockCalls, 7)
+
+  const blocked = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/agents', headers: { ...origin, origin: 'https://attacker.example', 'sec-fetch-site': 'cross-site' }, body: '{}' }), blocked)
+  assert.equal(blocked.statusCode, 403)
+})
+
 test('same-origin mutation is accepted', async () => {
   const res = response()
   await createHttpHandler(service())(new Request({
@@ -444,6 +491,47 @@ test('agent draft route waits outside the serialized mutation lock', async () =>
   assert.deepEqual(receivedBody.messages, [{ role: 'user', content: 'Create a reviewer.' }])
   assert.equal(receivedBody.existingDraft.name, 'Draft')
   assert.equal(lockCalls, 0)
+})
+
+test('Squad and Runtime management routes decode ids and expose narrow read projections', async () => {
+  const handler = createHttpHandler(service())
+  for (const [url, expected] of [
+    ['/project-orchestrator/api/projects/project%20one/eligible-squads', 'project one'],
+    ['/project-orchestrator/api/squads/squad%20one', 'squad one'],
+    ['/project-orchestrator/api/runtimes/runtime%20one', 'runtime one'],
+    ['/project-orchestrator/api/agents/agent%20one/runtime-impact?runtimeId=default', 'agent one'],
+  ]) {
+    const res = response()
+    await handler(new Request({ url, headers: { host: '127.0.0.1:3080' } }), res)
+    assert.equal(res.statusCode, 200)
+    assert.match(res.body, new RegExp(expected))
+  }
+  const mutations = [
+    ['POST', '/project-orchestrator/api/squads/squad%20one/clone', '{}', 201],
+    ['POST', '/project-orchestrator/api/squads/squad%20one/archive', '{"expectedUpdatedAt":"now"}', 200],
+    ['PUT', '/project-orchestrator/api/runtimes/runtime%20one', '{"name":"Renamed","expectedUpdatedAt":"now"}', 200],
+    ['POST', '/project-orchestrator/api/runtimes/runtime%20one/archive', '{"expectedUpdatedAt":"now"}', 200],
+    ['PUT', '/project-orchestrator/api/agents/agent%20one/runtime', '{"runtimeId":null}', 200],
+    ['PUT', '/project-orchestrator/api/resources/resource%20one/runtime', '{"runtimeId":null}', 200],
+  ]
+  for (const [method, url, body, expectedStatus] of mutations) {
+    const res = response()
+    await handler(new Request({ method, url, headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080' }, body }), res)
+    assert.equal(res.statusCode, expectedStatus)
+  }
+})
+
+test('all JSON mutations reject missing media type and retain the 2 MiB body limit', async () => {
+  const handler = createHttpHandler(service())
+  const missing = response()
+  await handler(new Request({ method: 'POST', url: '/project-orchestrator/api/commands', headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'content-type': undefined }, body: '{}' }), missing)
+  assert.equal(missing.statusCode, 415)
+  assert.equal(JSON.parse(missing.body).error.code, 'unsupported-media-type')
+
+  const oversized = response()
+  await handler(new Request({ method: 'POST', url: '/project-orchestrator/api/commands', headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080' }, body: JSON.stringify({ payload: 'x'.repeat(2 * 1024 * 1024) }) }), oversized)
+  assert.equal(oversized.statusCode, 413)
+  assert.equal(JSON.parse(oversized.body).error.code, 'payload-too-large')
 })
 
 test('cross-origin mutation is rejected before service invocation', async () => {

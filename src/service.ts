@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { lstat, mkdir, realpath, rm, stat } from 'node:fs/promises'
-import { delimiter, isAbsolute, join } from 'node:path'
+import { access, lstat, mkdir, realpath, rm, stat } from 'node:fs/promises'
+import { constants } from 'node:fs'
+import { delimiter, isAbsolute, join, relative } from 'node:path'
 import { spawn } from 'node:child_process'
 import type { Context } from '@deepseek-ai/cordis'
 import type { AgentHandle } from '@deepseek-ai/dsh-agent'
@@ -14,7 +15,10 @@ import {
   ActivityEventSchema,
   CommentInputSchema,
   CommandInputSchema,
-  SquadInputSchema,
+  SquadCreateInputSchema,
+  SquadUpdateInputSchema,
+  SquadCloneInputSchema,
+  SquadArchiveInputSchema,
   ArtifactInputSchema,
   ExternalTriggerInputSchema,
   DecisionInputSchema,
@@ -39,9 +43,19 @@ import {
   RequirementDocumentImportSchema,
   RequirementDocumentImportResultSchema,
   RuntimeInputSchema,
+  RuntimeUpdateInputSchema,
+  RuntimeArchiveInputSchema,
+  AgentRuntimeBindingInputSchema,
+  ResourceRuntimeBindingInputSchema,
   TaskBoardStageRequestSchema,
   TaskInputSchema,
   TaskUpdateSchema,
+  ProjectAgentMembershipInputSchema,
+  ProjectAgentMembershipUpdateSchema,
+  ProjectAgentMembershipBatchInputSchema,
+  ProjectAgentMembershipRemoveSchema,
+  ProjectTaskAssignmentsSchema,
+  FeatureUsageInputSchema,
   type AgentBuilderResponse,
   type AgentDraftRequest,
   type AgentInput,
@@ -53,6 +67,10 @@ import {
   type CommandRecord,
   type SquadInput,
   type SquadRecord,
+  type SquadAvailability,
+  type RuntimeDetail,
+  type RuntimeOverview,
+  type AgentRuntimeImpact,
   type ArtifactInput,
   type ArtifactRecord,
   type ExternalTriggerInput,
@@ -83,6 +101,8 @@ import {
   type TaskRunRecord,
   type TaskRecord,
   type TaskUpdate,
+  type ProjectAgentMembershipRecord,
+  type FeatureUsageDailyRecord,
 } from './types.js'
 import { OrchestratorStore } from './storage.js'
 import {
@@ -243,6 +263,7 @@ export class OrchestratorService {
   async initialize(): Promise<void> {
     await this.seedAgents()
     await this.migrateLegacyRecords()
+    await this.recoverCommandConsistency()
     await this.recoverInterruptedWork()
     await this.recoverTaskRunDispatch()
     this.requestDispatch()
@@ -251,12 +272,30 @@ export class OrchestratorService {
 
   snapshot(): Snapshot {
     const snapshot = this.store.snapshot()
+    const runtimeOverview = this.deriveRuntimeOverview(snapshot)
     return {
       ...snapshot,
       skills: this.deriveSkills(snapshot),
       inbox: this.deriveInbox(snapshot),
-      agentWorkloads: this.deriveAgentWorkloads(snapshot),
+      runtimeOverview,
+      agentWorkloads: this.deriveAgentWorkloads(snapshot, runtimeOverview),
       runStatistics: snapshot.taskRuns.map((run) => ({ taskRunId: run.id, projectId: run.projectId, ...(run.issueId === undefined ? {} : { issueId: run.issueId }), ...(run.agentId === undefined ? {} : { agentId: run.agentId }), ...(run.durationMs === undefined ? {} : { durationMs: run.durationMs }), ...(run.inputTokens === undefined ? {} : { inputTokens: run.inputTokens }), ...(run.outputTokens === undefined ? {} : { outputTokens: run.outputTokens }), ...(run.costUsd === undefined ? {} : { costUsd: run.costUsd }), usageKnown: run.inputTokens !== undefined || run.outputTokens !== undefined || run.costUsd !== undefined })),
+    }
+  }
+
+  private deriveRuntimeOverview(snapshot: Snapshot): RuntimeOverview {
+    const active = snapshot.runtimes.filter((runtime) => runtime.lifecycle === 'active')
+    return {
+      defaultHost: {
+        id: 'default-host',
+        name: '本机默认环境',
+        status: (this.ctx as any).agents?.create === undefined ? 'unstable' : 'online',
+        capabilities: ['agent', 'local_directory', 'in_place', 'worktree'],
+        boundAgentCount: snapshot.agents.filter((agent) => agent.status === 'active' && agent.runtimeId === undefined).length,
+      },
+      customCount: active.length,
+      abnormalCount: active.filter((runtime) => runtime.status !== 'online').length,
+      archivedCount: snapshot.runtimes.filter((runtime) => runtime.lifecycle === 'archived').length,
     }
   }
 
@@ -275,11 +314,39 @@ export class OrchestratorService {
       if (issue.status === 'blocked') items.push({ id: `issue-blocked:${issue.id}`, kind: 'blocked', title: issue.title, summary: issue.description || 'Issue is blocked.', ...(issue.projectId === undefined ? {} : { projectId: issue.projectId }), issueId: issue.id, actions: issue.projectId === undefined ? [] : ['retry'], createdAt: issue.updatedAt })
       if (issue.status === 'in_review') items.push({ id: `issue-review:${issue.id}`, kind: 'review_ready', title: issue.title, summary: 'Issue is ready for human review.', ...(issue.projectId === undefined ? {} : { projectId: issue.projectId }), issueId: issue.id, actions: ['approve', 'reject'], createdAt: issue.updatedAt })
     }
+    const runtimeItems = new Map<string, InboxItem>()
+    const upsertRuntimeItem = (runtime: RuntimeRecord, projectId: string | undefined, context: { resourceId?: string; agentId?: string; taskRunId?: string; issueId?: string; detail: string }) => {
+      const key = `${runtime.id}:${projectId ?? 'workspace'}`
+      const existing = runtimeItems.get(key)
+      if (existing !== undefined) {
+        existing.summary = `${existing.summary} ${context.detail}`
+        if (existing.resourceId === undefined && context.resourceId !== undefined) existing.resourceId = context.resourceId
+        if (existing.agentId === undefined && context.agentId !== undefined) existing.agentId = context.agentId
+        if (existing.taskRunId === undefined && context.taskRunId !== undefined) existing.taskRunId = context.taskRunId
+        if (existing.issueId === undefined && context.issueId !== undefined) existing.issueId = context.issueId
+        return
+      }
+      runtimeItems.set(key, { id: `runtime-offline:${key}`, kind: 'runtime_offline', title: runtime.lifecycle === 'archived' ? 'Runtime is archived' : runtime.status === 'unstable' ? 'Runtime is unstable' : 'Runtime is offline', summary: context.detail, ...(projectId === undefined ? {} : { projectId }), ...(context.issueId === undefined ? {} : { issueId: context.issueId }), ...(context.taskRunId === undefined ? {} : { taskRunId: context.taskRunId }), ...(context.resourceId === undefined ? {} : { resourceId: context.resourceId }), ...(context.agentId === undefined ? {} : { agentId: context.agentId }), runtimeId: runtime.id, actions: [], createdAt: runtime.updatedAt })
+    }
     for (const resource of snapshot.resources) {
       if (resource.runtimeId === undefined) continue
       const runtime = snapshot.runtimes.find((candidate) => candidate.id === resource.runtimeId)
-      if (runtime !== undefined && runtime.status === 'offline') items.push({ id: `runtime-offline:${resource.id}`, kind: 'runtime_offline', title: 'Runtime is offline', summary: `${resource.location} cannot dispatch work until ${runtime.name} is online.`, projectId: resource.projectId, actions: [], createdAt: runtime.updatedAt })
+      if (runtime !== undefined && (runtime.lifecycle !== 'active' || runtime.status !== 'online')) upsertRuntimeItem(runtime, resource.projectId, { resourceId: resource.id, detail: `${resource.location} is waiting for ${runtime.name}.` })
     }
+    for (const agent of snapshot.agents) {
+      if (agent.runtimeId === undefined) continue
+      const runtime = snapshot.runtimes.find((candidate) => candidate.id === agent.runtimeId)
+      if (runtime === undefined || (runtime.lifecycle === 'active' && runtime.status === 'online')) continue
+      const memberships = snapshot.projectAgentMemberships.filter((membership) => membership.agentId === agent.id && membership.status === 'active')
+      if (memberships.length === 0) upsertRuntimeItem(runtime, undefined, { agentId: agent.id, detail: `${agent.name} is bound to ${runtime.name}.` })
+      else for (const membership of memberships) upsertRuntimeItem(runtime, membership.projectId, { agentId: agent.id, detail: `${agent.name} is waiting for ${runtime.name}.` })
+    }
+    for (const run of snapshot.taskRuns) {
+      if (run.runtimeId === undefined || !['queued', 'waiting_local_directory'].includes(run.status)) continue
+      const runtime = snapshot.runtimes.find((candidate) => candidate.id === run.runtimeId)
+      if (runtime !== undefined && (runtime.lifecycle !== 'active' || runtime.status !== 'online')) upsertRuntimeItem(runtime, run.projectId, { taskRunId: run.id, ...(run.issueId === undefined ? {} : { issueId: run.issueId }), ...(run.agentId === undefined ? {} : { agentId: run.agentId }), detail: `TaskRun ${run.id} remains queued.` })
+    }
+    items.push(...runtimeItems.values())
     for (const run of snapshot.taskRuns) {
       if (run.status !== 'failed') continue
       const permissionDenied = run.errorCode === 'permission_denied'
@@ -287,6 +354,10 @@ export class OrchestratorService {
       else if (run.attempt >= MAX_AUTOMATIC_TASK_ATTEMPTS) items.push({ id: `task-run-failed:${run.id}`, kind: 'test_failed_after_retry', title: 'TaskRun failed after retry', summary: run.error ?? 'The task run failed after the bounded retry budget.', projectId: run.projectId, ...(run.issueId === undefined ? {} : { issueId: run.issueId }), taskRunId: run.id, actions: run.issueId === undefined ? [] : ['retry'], createdAt: run.completedAt ?? run.createdAt })
     }
     for (const project of snapshot.projects) {
+      const invalidTask = project.taskIds.map((taskId) => snapshot.tasks.find((task) => task.id === taskId)).find((task) => task !== undefined && (task.agentId === undefined || !snapshot.projectAgentMemberships.some((membership) => membership.projectId === project.id && membership.agentId === task.agentId && membership.status === 'active') || !snapshot.agents.some((agent) => agent.id === task.agentId && agent.status === 'active')))
+      if (invalidTask !== undefined && ['awaiting_approval', 'approved', 'failed'].includes(project.status)) {
+        items.push({ id: `project-assignment:${project.id}:${invalidTask.id}`, kind: 'blocked', title: `${project.name} assignment needs repair`, summary: invalidTask.agentId === undefined ? `Task "${invalidTask.title}" has no assigned Project Agent.` : `Task "${invalidTask.title}" references a missing, archived, or removed Project Agent.`, projectId: project.id, actions: [], createdAt: invalidTask.updatedAt })
+      }
       const priorApproval = snapshot.approvals.find((approval) => approval.projectId === project.id)
       const currentHash = snapshot.planHashes[project.id]
       const currentApproval = snapshot.approvals.find((approval) => approval.projectId === project.id && approval.revision === project.revision && approval.planHash === currentHash)
@@ -297,7 +368,7 @@ export class OrchestratorService {
     return items.sort((left, right) => right.createdAt.localeCompare(left.createdAt))
   }
 
-  private deriveAgentWorkloads(snapshot: Snapshot): AgentWorkload[] {
+  private deriveAgentWorkloads(snapshot: Snapshot, runtimeOverview: RuntimeOverview): AgentWorkload[] {
     return snapshot.agents.map((agent) => {
       const activeRuns = snapshot.taskRuns.filter((run) => run.agentId === agent.id && !['completed', 'failed', 'cancelled', 'deferred'].includes(run.status))
       const queued = activeRuns.filter((run) => ['queued', 'waiting_local_directory'].includes(run.status)).length
@@ -307,7 +378,7 @@ export class OrchestratorService {
       const runtime = agent.runtimeId === undefined ? undefined : snapshot.runtimes.find((candidate) => candidate.id === agent.runtimeId)
       return {
         agentId: agent.id,
-        availability: runtime?.status ?? 'unknown',
+        availability: agent.runtimeId === undefined ? runtimeOverview.defaultHost.status : runtime?.lifecycle === 'active' ? runtime.status : 'offline',
         workload: occupied > 0 ? 'working' : queued > 0 ? 'queued' : 'idle',
         lifecycle: agent.status,
         queued,
@@ -366,6 +437,7 @@ export class OrchestratorService {
   async updateAgent(id: string, input: unknown): Promise<AgentRecord> {
     const current = this.requireAgent(id)
     const parsed = AgentInputSchema.parse(input)
+    if (parsed.runtimeId !== current.runtimeId) throw new WorkflowError('runtime-binding-route-required', 'Use the dedicated Agent Runtime binding flow to change Runtime.', 409)
     this.validateAgentRuntime(parsed.runtimeId)
     const now = new Date().toISOString()
     const next = this.toAgentRecord(id, parsed, current.createdAt, now)
@@ -383,15 +455,302 @@ export class OrchestratorService {
     return next
   }
 
+  getAgentRuntimeImpact(id: string, nextRuntimeId?: string): AgentRuntimeImpact {
+    const agent = this.requireAgent(id)
+    if (nextRuntimeId !== undefined) {
+      const runtime = this.requireRuntime(nextRuntimeId)
+      if (runtime.lifecycle !== 'active') throw new WorkflowError('runtime-archived', 'Archived Runtime cannot be bound.', 409)
+    }
+    const executableTaskRunIds = [...this.store.taskRuns.entries()].map(([, run]) => run).filter((run) => run.agentId === id && ['queued', 'waiting_local_directory', 'dispatched', 'running'].includes(run.status)).map((run) => run.id)
+    const affectedProjects = [...this.store.projects.entries()].map(([, project]) => project).filter((project) => !['completed', 'cancelled'].includes(project.status)).map((project) => {
+      const assignedTaskIds = this.store.projectTasks(project).filter((task) => task.agentId === id).map((task) => task.id)
+      return { project, assignedTaskIds }
+    }).filter((entry) => entry.assignedTaskIds.length > 0).map(({ project, assignedTaskIds }) => ({ projectId: project.id, revision: project.revision, status: project.status, assignedTaskIds, approvalWillInvalidate: project.approvedRevision !== undefined || project.status === 'approved' }))
+    return { agentId: id, ...(agent.runtimeId === undefined ? {} : { currentRuntimeId: agent.runtimeId }), ...(nextRuntimeId === undefined ? {} : { nextRuntimeId }), executableTaskRunIds, affectedProjects }
+  }
+
+  async bindAgentRuntime(id: string, input: unknown): Promise<AgentRecord> {
+    const parsed = AgentRuntimeBindingInputSchema.parse(input)
+    const current = this.requireAgent(id)
+    if (parsed.expectedTargetUpdatedAt !== current.updatedAt) throw new WorkflowError('runtime-binding-impact-stale', 'Agent changed; refresh Runtime impact and retry.', 409)
+    const nextRuntimeId = parsed.runtimeId ?? undefined
+    if (nextRuntimeId === current.runtimeId) return current
+    const impact = this.getAgentRuntimeImpact(id, nextRuntimeId)
+    if (impact.executableTaskRunIds.length > 0) throw new WorkflowError('runtime-nonterminal-task-runs', 'Agent has executable TaskRuns; finish or stop them before rebinding.', 409)
+    const expectedEntries = Object.entries(parsed.expectedProjectRevisions).sort(([left], [right]) => left.localeCompare(right))
+    const actualEntries = impact.affectedProjects.map((project) => [project.projectId, project.revision] as const).sort(([left], [right]) => left.localeCompare(right))
+    if (JSON.stringify(expectedEntries) !== JSON.stringify(actualEntries)) throw new WorkflowError('runtime-binding-impact-stale', 'Affected Project revisions changed; refresh Runtime impact and retry.', 409)
+    if (impact.affectedProjects.some((project) => project.approvalWillInvalidate) && !parsed.acknowledgeApprovalInvalidation) throw new WorkflowError('runtime-binding-approval-required', 'Runtime binding changes require approval invalidation acknowledgement.', 409)
+    const now = new Date().toISOString()
+    for (const affected of impact.affectedProjects) {
+      const project = this.requireProject(affected.projectId)
+      this.assertProjectRuntimeMutationSafe(project.id)
+      for (const task of this.store.projectTasks(project)) await this.store.tasks.put(task.id, resetTaskEvidence(task, now))
+      await this.invalidateApproval(project, 'awaiting_approval')
+    }
+    const next: AgentRecord = { ...current, updatedAt: now }
+    if (nextRuntimeId === undefined) delete next.runtimeId
+    else next.runtimeId = nextRuntimeId
+    await this.store.agents.put(id, next)
+    await this.recordActivity({ actorType: 'human', type: 'agent.runtime_bound', message: `Agent Runtime changed: ${next.name}`, metadata: { agentId: id, oldRuntimeId: current.runtimeId, newRuntimeId: nextRuntimeId, affectedProjectIds: impact.affectedProjects.map((project) => project.projectId) } })
+    return next
+  }
+
+  async bindResourceRuntime(id: string, input: unknown): Promise<ProjectResource> {
+    const parsed = ResourceRuntimeBindingInputSchema.parse(input)
+    const current = this.store.resources.get(id)
+    if (current === undefined) throw new WorkflowError('resource-not-found', `ProjectResource "${id}" was not found.`, 404)
+    if (parsed.expectedTargetUpdatedAt !== current.updatedAt) throw new WorkflowError('runtime-binding-impact-stale', 'ProjectResource changed; refresh and retry.', 409)
+    const nextRuntimeId = parsed.runtimeId ?? undefined
+    if (nextRuntimeId === current.runtimeId) return current
+    if (nextRuntimeId !== undefined) {
+      const runtime = this.requireRuntime(nextRuntimeId)
+      if (runtime.lifecycle !== 'active') throw new WorkflowError('runtime-archived', 'Archived Runtime cannot be bound.', 409)
+    }
+    this.assertProjectRuntimeMutationSafe(current.projectId)
+    const activeLease = [...this.store.workspaceLeases.entries()].some(([, lease]) => lease.resourceId === id && ['preparing', 'active', 'releasing'].includes(lease.state))
+    if (activeLease) throw new WorkflowError('runtime-resource-active-lease', 'ProjectResource has an active WorkspaceLease.', 409)
+    const activeRun = [...this.store.taskRuns.entries()].some(([, run]) => run.resourceId === id && ['queued', 'waiting_local_directory', 'dispatched', 'running'].includes(run.status))
+    if (activeRun) throw new WorkflowError('runtime-nonterminal-task-runs', 'ProjectResource has executable TaskRuns.', 409)
+    const next: ProjectResource = { ...current, updatedAt: new Date().toISOString() }
+    if (nextRuntimeId === undefined) delete next.runtimeId
+    else next.runtimeId = nextRuntimeId
+    await this.store.resources.put(id, next)
+    await this.recordActivity({ projectId: current.projectId, actorType: 'human', type: 'resource.runtime_bound', message: 'Project Resource Runtime changed.', metadata: { resourceId: id, oldRuntimeId: current.runtimeId, newRuntimeId: nextRuntimeId } })
+    return next
+  }
+
   async deleteAgent(id: string): Promise<void> {
     this.requireAgent(id)
+    const membershipHistory = [...this.store.projectAgentMemberships.entries()].some(([, membership]) => membership.agentId === id)
+    if (membershipHistory) throw new WorkflowError('agent-membership-history', 'Agent has retained Project membership history and cannot be physically deleted; archive it instead.', 409)
     const referenced = [...this.store.tasks.entries()].some(([, task]) => task.agentId === id)
       || [...this.store.issues.entries()].some(([, issue]) => issue.assigneeType === 'agent' && issue.assigneeId === id && !['done', 'cancelled'].includes(issue.status))
       || [...this.store.squads.entries()].some(([, squad]) => squad.status === 'active' && (squad.leaderAgentId === id || squad.memberAgentIds.includes(id)))
-    if (referenced) {
-      throw new WorkflowError('agent-in-use', 'Agent is assigned to or referenced by an active Task, Issue, or Squad and cannot be deleted.')
-    }
+    if (referenced) throw new WorkflowError('agent-in-use', 'Agent is assigned to an active Task, Issue, or Squad and cannot be deleted.', 409)
     await this.store.agents.delete(id)
+  }
+
+  listProjectAgents(projectId: string): ProjectAgentMembershipRecord[] {
+    this.requireProject(projectId)
+    return [...this.store.projectAgentMemberships.entries()].map(([, membership]) => membership).filter((membership) => membership.projectId === projectId).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+  }
+
+  async addProjectAgent(projectId: string, input: unknown): Promise<ProjectAgentMembershipRecord> {
+    const parsed = ProjectAgentMembershipInputSchema.parse(input)
+    const project = this.requireProject(projectId)
+    this.assertNotActive(projectId)
+    this.assertExpectedProjectRevision(project, parsed.expectedProjectRevision)
+    const agent = this.requireAgent(parsed.agentId)
+    if (agent.status !== 'active') throw new WorkflowError('project-agent-inactive', `Agent "${agent.id}" is archived.`, 409)
+    const id = `${projectId}:${agent.id}`
+    const current = this.store.projectAgentMemberships.get(id)
+    if (current?.status === 'active') {
+      if (current.projectRole !== parsed.projectRole || current.autoAssignable !== parsed.autoAssignable) throw new WorkflowError('project-agent-already-member', 'Agent is already an active project member with different membership settings; use PUT to update it.', 409)
+      if (parsed.setAsLead && project.leadAgentId !== agent.id) await this.store.projects.put(projectId, { ...project, leadAgentId: agent.id, updatedAt: new Date().toISOString() })
+      return current
+    }
+    const activeCount = this.listProjectAgents(projectId).filter((membership) => membership.status === 'active').length
+    if (activeCount >= 100) throw new WorkflowError('project-agent-limit', 'A project cannot contain more than 100 active Agents.', 409)
+    const now = new Date().toISOString()
+    const membership: ProjectAgentMembershipRecord = { id, projectId, agentId: agent.id, projectRole: parsed.projectRole, autoAssignable: parsed.autoAssignable, status: 'active', joinedBy: parsed.joinedBy, joinedAt: current?.joinedAt ?? now, updatedAt: now }
+    let membershipWritten = false
+    let projectWritten = false
+    try {
+      await this.store.projectAgentMemberships.put(id, membership)
+      membershipWritten = true
+      if (parsed.setAsLead) {
+        await this.store.projects.put(projectId, { ...project, leadAgentId: agent.id, updatedAt: now })
+        projectWritten = true
+      }
+      await this.recordActivity({ projectId, actorType: 'human', actorId: parsed.joinedBy, type: 'project.agent_joined', message: `Agent joined project: ${agent.name}`, metadata: { agentId: agent.id, projectRole: membership.projectRole, autoAssignable: membership.autoAssignable } })
+      return membership
+    } catch (error) {
+      if (projectWritten) await Promise.allSettled([this.store.projects.put(project.id, project)])
+      if (membershipWritten) await Promise.allSettled([current === undefined ? this.store.projectAgentMemberships.delete(id) : this.store.projectAgentMemberships.put(current.id, current)])
+      throw error
+    }
+  }
+
+  async addProjectAgents(projectId: string, input: unknown): Promise<ProjectAgentMembershipRecord[]> {
+    const parsed = ProjectAgentMembershipBatchInputSchema.parse(input)
+    const project = this.requireProject(projectId)
+    this.assertNotActive(projectId)
+    this.assertExpectedProjectRevision(project, parsed.expectedProjectRevision)
+    const ids = parsed.members.map((member) => member.agentId)
+    if (new Set(ids).size !== ids.length) throw new WorkflowError('project-agent-already-member', 'Batch members must be unique.', 409)
+    const currentActive = this.listProjectAgents(projectId).filter((membership) => membership.status === 'active')
+    const newCount = ids.filter((agentId) => !currentActive.some((membership) => membership.agentId === agentId)).length
+    if (currentActive.length + newCount > 100) throw new WorkflowError('project-agent-limit', 'A project cannot contain more than 100 active Agents.', 409)
+    for (const agentId of ids) if (this.requireAgent(agentId).status !== 'active') throw new WorkflowError('project-agent-inactive', `Agent "${agentId}" is archived.`, 409)
+    const now = new Date().toISOString()
+    const changes = parsed.members.map((member) => {
+      const current = this.store.projectAgentMemberships.get(`${projectId}:${member.agentId}`)
+      if (current?.status === 'active') {
+        if (current.projectRole !== member.projectRole || current.autoAssignable !== member.autoAssignable) throw new WorkflowError('project-agent-already-member', `Agent "${member.agentId}" is already an active member with different settings; use PUT to update it.`, 409)
+        return { current, next: current, write: false }
+      }
+      const next: ProjectAgentMembershipRecord = { id: `${projectId}:${member.agentId}`, projectId, agentId: member.agentId, projectRole: member.projectRole, autoAssignable: member.autoAssignable, status: 'active', joinedBy: parsed.joinedBy, joinedAt: current?.joinedAt ?? now, updatedAt: now }
+      return { current, next, write: true }
+    })
+    const written: typeof changes = []
+    try {
+      for (const change of changes) {
+        if (!change.write) continue
+        await this.store.projectAgentMemberships.put(change.next.id, change.next)
+        written.push(change)
+      }
+      if (written.length > 0) await this.recordActivity({ projectId, actorType: 'human', actorId: parsed.joinedBy, type: 'project.agent_joined', message: `${written.length} Agents joined project.`, metadata: { agentIds: written.map(({ next }) => next.agentId) } })
+      return changes.map(({ next }) => next)
+    } catch (error) {
+      await Promise.allSettled(written.map(({ current, next }) => current === undefined ? this.store.projectAgentMemberships.delete(next.id) : this.store.projectAgentMemberships.put(current.id, current)))
+      throw error
+    }
+  }
+
+  async updateProjectAgent(projectId: string, agentId: string, input: unknown): Promise<ProjectAgentMembershipRecord> {
+    const project = this.requireProject(projectId)
+    this.assertNotActive(projectId)
+    const parsed = ProjectAgentMembershipUpdateSchema.parse(input)
+    const current = this.requireActiveMembership(projectId, agentId)
+    if (parsed.expectedMemberUpdatedAt !== undefined && parsed.expectedMemberUpdatedAt !== current.updatedAt) throw new WorkflowError('project-membership-stale', 'Project membership changed; refresh and retry.', 409)
+    const now = new Date().toISOString()
+    const next = { ...current, ...(parsed.projectRole === undefined ? {} : { projectRole: parsed.projectRole }), ...(parsed.autoAssignable === undefined ? {} : { autoAssignable: parsed.autoAssignable }), updatedAt: now }
+    let membershipWritten = false
+    let projectWritten = false
+    try {
+      await this.store.projectAgentMemberships.put(next.id, next)
+      membershipWritten = true
+      if (parsed.setAsLead === true) {
+        await this.store.projects.put(projectId, { ...project, leadAgentId: agentId, updatedAt: now })
+        projectWritten = true
+      } else if (parsed.setAsLead === false && project.leadAgentId === agentId) {
+        const cleared = { ...project, updatedAt: now }
+        delete cleared.leadAgentId
+        await this.store.projects.put(projectId, cleared)
+        projectWritten = true
+      }
+      await this.recordActivity({ projectId, actorType: 'human', type: 'project.agent_role_updated', message: 'Project Agent membership updated.', metadata: { agentId, projectRole: next.projectRole, autoAssignable: next.autoAssignable } })
+      return next
+    } catch (error) {
+      if (projectWritten) await Promise.allSettled([this.store.projects.put(project.id, project)])
+      if (membershipWritten) await Promise.allSettled([this.store.projectAgentMemberships.put(current.id, current)])
+      throw error
+    }
+  }
+
+  async removeProjectAgent(projectId: string, agentId: string, input: unknown): Promise<ProjectAgentMembershipRecord> {
+    const project = this.requireProject(projectId)
+    this.assertNotActive(projectId)
+    const parsed = ProjectAgentMembershipRemoveSchema.parse(input)
+    const current = this.requireActiveMembership(projectId, agentId)
+    if (parsed.expectedMemberUpdatedAt !== undefined && parsed.expectedMemberUpdatedAt !== current.updatedAt) throw new WorkflowError('project-membership-stale', 'Project membership changed; refresh and retry.', 409)
+    const projectTasks = this.store.projectTasks(project)
+    const referencedTasks = projectTasks.filter((task) => task.agentId === agentId)
+    const issueReference = [...this.store.issues.entries()].some(([, issue]) => issue.projectId === projectId && issue.assigneeType === 'agent' && issue.assigneeId === agentId && !['done', 'cancelled'].includes(issue.status))
+    const delegationReference = [...this.store.delegations.entries()].some(([, delegation]) => delegation.projectId === projectId && (delegation.leaderAgentId === agentId || delegation.memberAgentId === agentId) && !['completed', 'failed', 'cancelled'].includes(delegation.status))
+    if (issueReference || delegationReference) throw new WorkflowError('project-agent-in-use', 'Project Agent is referenced by a non-terminal Issue or active delegation and cannot be removed.', 409)
+    if (referencedTasks.length > 0 && parsed.assignedTaskPolicy === 'reject') throw new WorkflowError('project-agent-in-use', 'Project Agent is referenced by the current Task plan; choose a replacement Agent or reassign the Tasks first.', 409)
+    const replacementAgentId = parsed.assignedTaskPolicy === 'reassign' ? parsed.replacementAgentId : undefined
+    if (replacementAgentId === agentId) throw new WorkflowError('project-agent-replacement-invalid', 'Replacement Agent must differ from the removed Agent.', 409)
+    if (replacementAgentId !== undefined) {
+      this.assertExpectedProjectRevision(project, parsed.expectedProjectRevision)
+      this.requireActiveProjectAgent(projectId, replacementAgentId)
+    }
+    if (project.leadAgentId === agentId && replacementAgentId === undefined && !parsed.clearLead) throw new WorkflowError('project-agent-lead-required', 'Clear or replace the project lead before removing this Agent.', 409)
+    const now = new Date().toISOString()
+    const removed = { ...current, status: 'removed' as const, updatedAt: now, removedAt: now }
+    const nextTasks = replacementAgentId === undefined ? [] : projectTasks.map((task) => resetTaskEvidence(task.agentId === agentId ? { ...task, agentId: replacementAgentId } : task, now))
+    const nextProject: ProjectRecord = replacementAgentId === undefined
+      ? { ...project, updatedAt: now }
+      : { ...project, status: 'awaiting_approval', revision: project.revision + 1, updatedAt: now }
+    if (project.leadAgentId === agentId) {
+      if (replacementAgentId === undefined || parsed.clearLead) delete nextProject.leadAgentId
+      else nextProject.leadAgentId = replacementAgentId
+    }
+    if (replacementAgentId !== undefined) {
+      delete nextProject.approvedRevision
+      delete nextProject.lastError
+    }
+    const writtenTaskIds: string[] = []
+    let projectWritten = false
+    let membershipWritten = false
+    try {
+      for (const task of nextTasks) {
+        await this.store.tasks.put(task.id, task)
+        writtenTaskIds.push(task.id)
+      }
+      if (replacementAgentId !== undefined || project.leadAgentId === agentId) {
+        await this.store.projects.put(projectId, nextProject)
+        projectWritten = true
+      }
+      await this.store.projectAgentMemberships.put(current.id, removed)
+      membershipWritten = true
+      await this.recordActivity({ projectId, actorType: 'human', type: 'project.agent_removed', message: 'Agent removed from project.', metadata: { agentId, ...(replacementAgentId === undefined ? {} : { replacementAgentId, reassignedTaskIds: referencedTasks.map((task) => task.id) }) } })
+      return removed
+    } catch (error) {
+      if (membershipWritten) await Promise.allSettled([this.store.projectAgentMemberships.put(current.id, current)])
+      if (projectWritten) await Promise.allSettled([this.store.projects.put(project.id, project)])
+      await Promise.allSettled(writtenTaskIds.map((taskId) => this.store.tasks.put(taskId, projectTasks.find((task) => task.id === taskId)!)))
+      throw error
+    }
+  }
+
+  async assignProjectTasks(projectId: string, input: unknown): Promise<{ project: ProjectRecord; tasks: TaskRecord[]; planHash: string }> {
+    const parsed = ProjectTaskAssignmentsSchema.parse(input)
+    const project = this.requireProject(projectId)
+    this.assertNotActive(projectId)
+    if (project.revision !== parsed.expectedRevision) throw new WorkflowError('project-assignment-stale', 'Project revision changed; refresh assignments and retry.', 409)
+    if (new Set(parsed.assignments.map((assignment) => assignment.taskId)).size !== parsed.assignments.length) throw new WorkflowError('duplicate-task-id', 'Task assignments must be unique.', 400)
+    const projectTasks = this.store.projectTasks(project)
+    const byId = new Map(projectTasks.map((task) => [task.id, task]))
+    for (const assignment of parsed.assignments) {
+      if (!byId.has(assignment.taskId)) throw new WorkflowError('task-not-found', `Task "${assignment.taskId}" was not found in project.`, 404)
+      this.requireActiveProjectAgent(projectId, assignment.agentId)
+    }
+    const now = new Date().toISOString()
+    const changedIds = new Set(parsed.assignments.map((assignment) => assignment.taskId))
+    const assigned = new Map(parsed.assignments.map((assignment) => [assignment.taskId, assignment.agentId]))
+    const nextTasks = projectTasks.map((task) => {
+      const agentId = assigned.get(task.id)
+      return resetTaskEvidence(agentId === undefined ? task : { ...task, agentId }, now)
+    })
+    const writtenTaskIds: string[] = []
+    let projectWritten = false
+    try {
+      for (const task of nextTasks) {
+        await this.store.tasks.put(task.id, task)
+        writtenTaskIds.push(task.id)
+      }
+      const nextProject = await this.invalidateApproval(project, 'awaiting_approval')
+      projectWritten = true
+      await this.recordActivity({ projectId, actorType: 'human', type: 'project.tasks_assigned', message: 'Project task assignments updated.', metadata: { taskIds: [...changedIds], assignmentCount: changedIds.size } })
+      const tasks = this.store.projectTasks(nextProject)
+      return { project: nextProject, tasks, planHash: planDigest(nextProject, tasks) }
+    } catch (error) {
+      await Promise.allSettled(writtenTaskIds.map((taskId) => this.store.tasks.put(taskId, byId.get(taskId)!)))
+      if (projectWritten) await Promise.allSettled([this.store.projects.put(project.id, project)])
+      throw error
+    }
+  }
+
+  async recordFeatureUsage(input: unknown): Promise<FeatureUsageDailyRecord> {
+    const parsed = FeatureUsageInputSchema.parse(input)
+    const now = new Date().toISOString()
+    const date = now.slice(0, 10)
+    const id = `${date}:${parsed.feature}`
+    const current = this.store.featureUsageDaily.get(id)
+    const next: FeatureUsageDailyRecord = { id, date, feature: parsed.feature, opens: (current?.opens ?? 0) + parsed.opens, meaningfulActions: (current?.meaningfulActions ?? 0) + parsed.meaningfulActions, errorRecoveries: (current?.errorRecoveries ?? 0) + parsed.errorRecoveries, lastUsedAt: now }
+    await this.store.featureUsageDaily.put(id, next)
+    const cutoff = new Date(now)
+    cutoff.setUTCDate(cutoff.getUTCDate() - 30)
+    const cutoffDate = cutoff.toISOString().slice(0, 10)
+    await Promise.all([...this.store.featureUsageDaily.entries()].filter(([, usage]) => usage.date < cutoffDate).map(([usageId]) => this.store.featureUsageDaily.delete(usageId)))
+    return next
+  }
+
+  async clearFeatureUsage(): Promise<void> {
+    await Promise.all([...this.store.featureUsageDaily.entries()].map(([id]) => this.store.featureUsageDaily.delete(id)))
   }
 
   async createProject(input: unknown): Promise<ProjectRecord> {
@@ -609,15 +968,75 @@ export class OrchestratorService {
 
   async createRuntime(input: unknown): Promise<RuntimeRecord> {
     const parsed = RuntimeInputSchema.parse(input)
+    this.assertRuntimeMachineIdAvailable(parsed.machineId)
+    const workspaceRoot = parsed.workspaceRoot === undefined ? undefined : await this.assertSafeRuntimeWorkspaceRoot(parsed.workspaceRoot)
     const now = new Date().toISOString()
-    const runtime: RuntimeRecord = { id: randomUUID(), ...parsed, status: 'online', lastHeartbeatAt: now, createdAt: now, updatedAt: now }
-    await this.store.runtimes.put(runtime.id, runtime)
-    return runtime
+    const runtime: RuntimeRecord = { id: randomUUID(), ...parsed, ...(workspaceRoot === undefined ? {} : { workspaceRoot }), status: 'online', lifecycle: 'active', lastHeartbeatAt: now, createdAt: now, updatedAt: now }
+    try {
+      await this.store.runtimes.put(runtime.id, runtime)
+      await this.recordActivity({ actorType: 'human', type: 'runtime.created', message: `Runtime created: ${runtime.name}`, metadata: { runtimeId: runtime.id, machineId: runtime.machineId } })
+      return runtime
+    } catch (error) {
+      await Promise.allSettled([this.store.runtimes.delete(runtime.id)])
+      throw error
+    }
+  }
+
+  getRuntimeDetail(id: string): RuntimeDetail {
+    const runtime = this.requireRuntime(id)
+    const agents = [...this.store.agents.entries()].map(([, agent]) => agent).filter((agent) => agent.runtimeId === id)
+    const resources = [...this.store.resources.entries()].map(([, resource]) => resource).filter((resource) => resource.runtimeId === id)
+    const runs = [...this.store.taskRuns.entries()].map(([, run]) => run).filter((run) => run.runtimeId === id)
+    return {
+      runtime,
+      agents,
+      resources,
+      queuedTaskRuns: runs.filter((run) => ['queued', 'waiting_local_directory'].includes(run.status)),
+      activeTaskRuns: runs.filter((run) => ['dispatched', 'running'].includes(run.status)),
+      affectedProjectIds: [...new Set([...resources.map((resource) => resource.projectId), ...runs.map((run) => run.projectId)])],
+      historyCount: runs.length,
+    }
+  }
+
+  async updateRuntime(id: string, input: unknown): Promise<RuntimeRecord> {
+    const parsed = RuntimeUpdateInputSchema.parse(input)
+    const current = this.requireRuntime(id)
+    if (current.lifecycle !== 'active') throw new WorkflowError('runtime-archived', 'Archived Runtime cannot be edited.', 409)
+    if (parsed.expectedUpdatedAt !== current.updatedAt) throw new WorkflowError('runtime-stale', 'Runtime changed; refresh and retry.', 409)
+    const configChanged = (parsed.machineId !== undefined && parsed.machineId !== current.machineId)
+      || (parsed.capabilities !== undefined && JSON.stringify(parsed.capabilities) !== JSON.stringify(current.capabilities))
+      || (parsed.agentCli !== undefined && (parsed.agentCli ?? undefined) !== current.agentCli)
+      || (parsed.workspaceRoot !== undefined && (parsed.workspaceRoot ?? undefined) !== current.workspaceRoot)
+    if (configChanged && this.runtimeHasExecutableReferences(id)) throw new WorkflowError('runtime-config-in-use', 'Runtime execution configuration is in use; create a new Runtime and migrate bindings.', 409)
+    const machineId = parsed.machineId ?? current.machineId
+    this.assertRuntimeMachineIdAvailable(machineId, id)
+    const workspaceRoot = parsed.workspaceRoot === undefined
+      ? current.workspaceRoot
+      : parsed.workspaceRoot === null ? undefined : await this.assertSafeRuntimeWorkspaceRoot(parsed.workspaceRoot)
+    const next: RuntimeRecord = {
+      ...current,
+      name: parsed.name ?? current.name,
+      machineId,
+      capabilities: parsed.capabilities ?? current.capabilities,
+      ...(parsed.agentCli === undefined ? (current.agentCli === undefined ? {} : { agentCli: current.agentCli }) : parsed.agentCli === null ? {} : { agentCli: parsed.agentCli }),
+      ...(workspaceRoot === undefined ? {} : { workspaceRoot }),
+      updatedAt: new Date().toISOString(),
+    }
+    if (parsed.agentCli === null) delete next.agentCli
+    if (workspaceRoot === undefined) delete next.workspaceRoot
+    try {
+      await this.store.runtimes.put(id, next)
+      await this.recordActivity({ actorType: 'human', type: 'runtime.updated', message: `Runtime updated: ${next.name}`, metadata: { runtimeId: id, configChanged } })
+      return next
+    } catch (error) {
+      await Promise.allSettled([this.store.runtimes.put(id, current)])
+      throw error
+    }
   }
 
   async heartbeatRuntime(id: string, status: 'online' | 'offline' | 'unstable' = 'online'): Promise<RuntimeRecord> {
-    const current = this.store.runtimes.get(id)
-    if (current === undefined) throw new WorkflowError('runtime-not-found', `Runtime "${id}" was not found.`, 404)
+    const current = this.requireRuntime(id)
+    if (current.lifecycle !== 'active') throw new WorkflowError('runtime-archived', 'Archived Runtime cannot receive heartbeat updates.', 409)
     const now = new Date().toISOString()
     const runtime = { ...current, status, lastHeartbeatAt: now, updatedAt: now }
     await this.store.runtimes.put(id, runtime)
@@ -625,11 +1044,34 @@ export class OrchestratorService {
     return runtime
   }
 
+  async archiveRuntime(id: string, input: unknown): Promise<RuntimeRecord> {
+    const parsed = RuntimeArchiveInputSchema.parse(input)
+    const current = this.requireRuntime(id)
+    if (parsed.expectedUpdatedAt !== current.updatedAt) throw new WorkflowError('runtime-stale', 'Runtime changed; refresh and retry.', 409)
+    if (current.lifecycle === 'archived') return current
+    const hasBindings = [...this.store.agents.entries()].some(([, agent]) => agent.runtimeId === id) || [...this.store.resources.entries()].some(([, resource]) => resource.runtimeId === id)
+    if (hasBindings) throw new WorkflowError('runtime-active-bindings', 'Runtime still has Agent or Project Resource bindings.', 409)
+    if (this.runtimeHasActiveTaskRuns(id)) throw new WorkflowError('runtime-active-task-runs', 'Runtime still has executable TaskRuns.', 409)
+    const now = new Date().toISOString()
+    const next: RuntimeRecord = { ...current, lifecycle: 'archived', archivedAt: now, updatedAt: now }
+    try {
+      await this.store.runtimes.put(id, next)
+      await this.recordActivity({ actorType: 'human', type: 'runtime.archived', message: `Runtime archived: ${next.name}`, metadata: { runtimeId: id } })
+      return next
+    } catch (error) {
+      await Promise.allSettled([this.store.runtimes.put(id, current)])
+      throw error
+    }
+  }
+
   async deleteRuntime(id: string): Promise<void> {
-    if (this.store.runtimes.get(id) === undefined) throw new WorkflowError('runtime-not-found', `Runtime "${id}" was not found.`, 404)
-    const assigned = [...this.store.agents.entries()].some(([, agent]) => agent.runtimeId === id)
-    const usedByResource = [...this.store.resources.entries()].some(([, resource]) => resource.runtimeId === id)
-    if (assigned || usedByResource) throw new WorkflowError('runtime-in-use', 'Runtime is still assigned to an agent or project resource.', 409)
+    this.requireRuntime(id)
+    const referenced = [...this.store.agents.entries()].some(([, agent]) => agent.runtimeId === id)
+      || [...this.store.resources.entries()].some(([, resource]) => resource.runtimeId === id)
+      || [...this.store.taskRuns.entries()].some(([, run]) => run.runtimeId === id)
+      || [...this.store.workspaceLeases.entries()].some(([, lease]) => lease.runtimeId === id)
+      || [...this.store.activity.entries()].some(([, event]) => ['agent.runtime_bound', 'resource.runtime_bound'].includes(event.type) && (event.metadata?.oldRuntimeId === id || event.metadata?.newRuntimeId === id))
+    if (referenced) throw new WorkflowError('runtime-in-use', 'Runtime has bindings or durable execution history; archive it instead.', 409)
     await this.store.runtimes.delete(id)
   }
 
@@ -641,9 +1083,7 @@ export class OrchestratorService {
     if (parsed.executionMode === 'worktree' && parsed.kind !== 'local_directory') {
       throw new WorkflowError('worktree-requires-local-directory', 'Worktree mode currently requires a local Git directory.', 400)
     }
-    if (parsed.runtimeId !== undefined && this.store.runtimes.get(parsed.runtimeId) === undefined) {
-      throw new WorkflowError('runtime-not-found', `Runtime "${parsed.runtimeId}" was not found.`, 400)
-    }
+    this.validateAgentRuntime(parsed.runtimeId)
     const now = new Date().toISOString()
     const resource: ProjectResource = { id: randomUUID(), projectId, ...parsed, createdAt: now, updatedAt: now }
     await this.store.resources.put(resource.id, resource)
@@ -654,7 +1094,11 @@ export class OrchestratorService {
 
   async createIssue(input: unknown): Promise<IssueRecord> {
     const parsed = IssueInputSchema.parse(input)
-    if (parsed.projectId !== undefined) this.requireProject(parsed.projectId)
+    if (parsed.projectId !== undefined) {
+      this.requireProject(parsed.projectId)
+      if (parsed.assigneeType === 'agent' && parsed.assigneeId !== undefined) this.requireActiveProjectAgent(parsed.projectId, parsed.assigneeId)
+      if (parsed.assigneeType === 'squad' && parsed.assigneeId !== undefined) this.assertSquadEligibleForProject(parsed.projectId, parsed.assigneeId)
+    }
     if (parsed.parentIssueId !== undefined && this.store.issues.get(parsed.parentIssueId) === undefined) throw new WorkflowError('parent-issue-not-found', 'Parent issue was not found.', 400)
     const now = new Date().toISOString()
     const issue: IssueRecord = { id: randomUUID(), ...parsed, createdAt: now, updatedAt: now }
@@ -667,58 +1111,96 @@ export class OrchestratorService {
     return issue
   }
 
+  getSquad(id: string): SquadRecord {
+    return this.requireSquad(id)
+  }
+
+  listEligibleSquads(projectId: string): SquadAvailability[] {
+    this.requireProject(projectId)
+    return [...this.store.squads.entries()].map(([, squad]) => this.evaluateSquadAvailability(projectId, squad.id)).sort((left, right) => Number(right.eligible) - Number(left.eligible) || left.squadId.localeCompare(right.squadId))
+  }
+
   async createSquad(input: unknown): Promise<SquadRecord> {
-    const parsed: SquadInput = SquadInputSchema.parse(input)
-    const memberIds = new Set(parsed.memberAgentIds)
-    if (!memberIds.has(parsed.leaderAgentId)) throw new WorkflowError('squad-leader-not-member', 'The Squad leader must be included in memberAgentIds.', 400)
-    if (memberIds.size !== parsed.memberAgentIds.length) throw new WorkflowError('duplicate-squad-member', 'Squad members must be unique.', 400)
-    for (const agentId of memberIds) {
-      const agent = this.requireAgent(agentId)
-      if (agent.status !== 'active') throw new WorkflowError('agent-inactive', `Agent "${agentId}" is archived and cannot join an active Squad.`, 400)
-    }
-    for (const agentId of Object.keys(parsed.memberRoles)) {
-      if (!memberIds.has(agentId)) throw new WorkflowError('squad-role-member-mismatch', `Role metadata references non-member Agent "${agentId}".`, 400)
+    const parsed = SquadCreateInputSchema.parse(input)
+    const { sourceProjectId, ...configuration } = parsed
+    this.validateSquadConfiguration(configuration)
+    if (sourceProjectId !== undefined) {
+      this.requireProject(sourceProjectId)
+      for (const agentId of configuration.memberAgentIds) {
+        try { this.requireActiveProjectAgent(sourceProjectId, agentId) } catch { throw new WorkflowError('squad-member-outside-project', `Squad Agent "${agentId}" is not an active project member.`, 409) }
+      }
     }
     const now = new Date().toISOString()
-    const squad: SquadRecord = { id: randomUUID(), ...parsed, status: 'active', createdAt: now, updatedAt: now }
-    await this.store.squads.put(squad.id, squad)
-    await this.recordActivity({ actorType: 'human', type: 'squad.created', message: `Squad created: ${squad.name}`, metadata: { squadId: squad.id, leaderAgentId: squad.leaderAgentId } })
-    return squad
+    const squad: SquadRecord = { id: randomUUID(), ...configuration, status: 'active', createdAt: now, updatedAt: now }
+    try {
+      await this.store.squads.put(squad.id, squad)
+      await this.recordActivity({ projectId: sourceProjectId, actorType: 'human', type: 'squad.created', message: `Squad created: ${squad.name}`, metadata: { squadId: squad.id, leaderAgentId: squad.leaderAgentId, ...(sourceProjectId === undefined ? {} : { sourceProjectId }) } })
+      return squad
+    } catch (error) {
+      await Promise.allSettled([this.store.squads.delete(squad.id)])
+      throw error
+    }
   }
 
   async updateSquad(id: string, input: unknown): Promise<SquadRecord> {
-    const current = this.store.squads.get(id)
-    if (current === undefined) throw new WorkflowError('squad-not-found', `Squad "${id}" was not found.`, 404)
-    const parsed: SquadInput = SquadInputSchema.parse(input)
-    const memberIds = new Set(parsed.memberAgentIds)
-    if (!memberIds.has(parsed.leaderAgentId) || memberIds.size !== parsed.memberAgentIds.length) throw new WorkflowError('invalid-squad-membership', 'The Squad leader must be one unique member.', 400)
-    for (const agentId of memberIds) {
-      const agent = this.requireAgent(agentId)
-      if (agent.status !== 'active') throw new WorkflowError('agent-inactive', `Agent "${agentId}" is archived and cannot join an active Squad.`, 400)
+    const current = this.requireSquad(id)
+    const parsed = SquadUpdateInputSchema.parse(input)
+    if (current.status !== 'active') throw new WorkflowError('squad-unavailable', 'Archived Squad cannot be edited.', 409)
+    if (parsed.expectedUpdatedAt !== current.updatedAt) throw new WorkflowError('squad-stale', 'Squad changed; refresh and retry.', 409)
+    const { expectedUpdatedAt: _expectedUpdatedAt, ...configuration } = parsed
+    this.validateSquadConfiguration(configuration)
+    const activeDelegations = this.activeSquadDelegations(id)
+    const nextMembers = new Set(configuration.memberAgentIds)
+    const activeAgentIds = new Set(activeDelegations.flatMap((delegation) => [delegation.leaderAgentId, delegation.memberAgentId]))
+    const removedActive = [...activeAgentIds].find((agentId) => !nextMembers.has(agentId))
+    if (removedActive !== undefined) throw new WorkflowError('squad-active-member-work', `Agent "${removedActive}" still has active Squad work.`, 409)
+    if (configuration.leaderAgentId !== current.leaderAgentId && activeDelegations.length > 0) throw new WorkflowError('squad-active-member-work', 'Squad Leader cannot change while delegations are active.', 409)
+    if (configuration.maxParallelDelegations < activeDelegations.length) throw new WorkflowError('squad-capacity-below-occupancy', 'Parallel delegation limit cannot be lower than current occupancy.', 409)
+    const next: SquadRecord = { ...current, ...configuration, updatedAt: new Date().toISOString() }
+    try {
+      await this.store.squads.put(id, next)
+      await this.recordActivity({ actorType: 'human', type: 'squad.updated', message: `Squad updated: ${next.name}`, metadata: { squadId: id } })
+      return next
+    } catch (error) {
+      await Promise.allSettled([this.store.squads.put(id, current)])
+      throw error
     }
-    const next: SquadRecord = { ...current, ...parsed, updatedAt: new Date().toISOString() }
-    await this.store.squads.put(id, next)
-    await this.recordActivity({ actorType: 'human', type: 'squad.updated', message: `Squad updated: ${next.name}`, metadata: { squadId: id } })
-    return next
+  }
+
+  async cloneSquad(id: string, input: unknown): Promise<SquadRecord> {
+    const current = this.requireSquad(id)
+    const parsed = SquadCloneInputSchema.parse(input)
+    if (parsed.expectedSourceUpdatedAt !== undefined && parsed.expectedSourceUpdatedAt !== current.updatedAt) throw new WorkflowError('squad-stale', 'Source Squad changed; refresh and retry.', 409)
+    const suffix = ' 副本'
+    const defaultName = `${current.name.slice(0, Math.max(1, 160 - suffix.length))}${suffix}`
+    return this.createSquad({ name: parsed.name ?? defaultName, description: current.description, leaderAgentId: current.leaderAgentId, memberAgentIds: current.memberAgentIds, memberRoles: current.memberRoles, instructions: current.instructions, escalationPolicy: current.escalationPolicy, maxParallelDelegations: current.maxParallelDelegations, ...(parsed.sourceProjectId === undefined ? {} : { sourceProjectId: parsed.sourceProjectId }) })
   }
 
   async deleteSquad(id: string): Promise<void> {
-    const current = this.store.squads.get(id)
-    if (current === undefined) throw new WorkflowError('squad-not-found', `Squad "${id}" was not found.`, 404)
+    this.requireSquad(id)
     const referenced = [...this.store.issues.entries()].some(([, issue]) => issue.assigneeType === 'squad' && issue.assigneeId === id)
       || [...this.store.delegations.entries()].some(([, delegation]) => delegation.squadId === id)
     if (referenced) throw new WorkflowError('squad-in-use', 'Squad has durable Issue or delegation history and cannot be deleted.', 409)
     await this.store.squads.delete(id)
   }
 
-  async archiveSquad(id: string): Promise<SquadRecord> {
-    const current = this.store.squads.get(id)
-    if (current === undefined) throw new WorkflowError('squad-not-found', `Squad "${id}" was not found.`, 404)
+  async archiveSquad(id: string, input: unknown): Promise<SquadRecord> {
+    const current = this.requireSquad(id)
+    const parsed = SquadArchiveInputSchema.parse(input)
+    if (parsed.expectedUpdatedAt !== current.updatedAt) throw new WorkflowError('squad-stale', 'Squad changed; refresh and retry.', 409)
+    if (current.status === 'archived') return current
     const ownsActiveIssue = [...this.store.issues.entries()].some(([, issue]) => issue.assigneeType === 'squad' && issue.assigneeId === id && !['done', 'cancelled'].includes(issue.status))
     if (ownsActiveIssue) throw new WorkflowError('squad-in-use', 'The Squad still owns a non-terminal Issue.', 409)
+    if (this.activeSquadDelegations(id).length > 0) throw new WorkflowError('squad-active-delegations', 'The Squad still has active delegations.', 409)
     const next: SquadRecord = { ...current, status: 'archived', updatedAt: new Date().toISOString() }
-    await this.store.squads.put(id, next)
-    return next
+    try {
+      await this.store.squads.put(id, next)
+      await this.recordActivity({ actorType: 'human', type: 'squad.archived', message: `Squad archived: ${next.name}`, metadata: { squadId: id } })
+      return next
+    } catch (error) {
+      await Promise.allSettled([this.store.squads.put(id, current)])
+      throw error
+    }
   }
 
   async attachArtifact(input: unknown): Promise<ArtifactRecord> {
@@ -739,17 +1221,28 @@ export class OrchestratorService {
   async executeCommand(input: unknown): Promise<CommandRecord> {
     const parsed: CommandInput = CommandInputSchema.parse(input)
     const replay = [...this.store.commands.entries()].map(([, command]) => command).find((command) => command.idempotencyKey !== undefined && command.idempotencyKey === parsed.idempotencyKey)
-    if (replay !== undefined) return replay
+    if (replay !== undefined) {
+      if (replay.status === 'pending' || replay.status === 'running') throw new WorkflowError('command-recovery-required', 'Command is still awaiting consistency recovery.', 409)
+      return replay
+    }
     const now = new Date().toISOString()
     const command: CommandRecord = { id: randomUUID(), ...parsed, status: 'pending', createdAt: now }
     await this.store.commands.put(command.id, command)
+    const running: CommandRecord = { ...command, status: 'running' }
+    await this.store.commands.put(command.id, running)
     try {
-      const result = await this.applyCommand(command)
-      const completed: CommandRecord = { ...command, status: 'completed', result, completedAt: new Date().toISOString() }
+      const result = await this.applyCommand(running)
+      const completed: CommandRecord = { ...running, status: 'completed', result, completedAt: new Date().toISOString() }
       await this.store.commands.put(command.id, completed)
+      if (typeof result.deferredLeaderTaskRunId === 'string') {
+        const leaderOperation = this.taskRunOperations.get(result.deferredLeaderTaskRunId)
+        leaderOperation?.controller.abort()
+        for (const handle of leaderOperation?.handles ?? []) handle.agent.cancel({ kind: 'user' })
+      }
+      if (typeof result.taskRunId === 'string' || typeof result.childTaskRunId === 'string') this.requestDispatch()
       return completed
     } catch (error) {
-      const failed: CommandRecord = { ...command, status: 'failed', error: errorMessage(error), completedAt: new Date().toISOString() }
+      const failed: CommandRecord = { ...running, status: 'failed', error: errorMessage(error), completedAt: new Date().toISOString() }
       await this.store.commands.put(command.id, failed)
       throw error
     }
@@ -786,12 +1279,14 @@ export class OrchestratorService {
       const agentId = requiredPayloadString(command.payload, 'agentId', 240)
       const agent = this.requireAgent(agentId)
       if (agent.status !== 'active') throw new WorkflowError('agent-inactive', 'Autopilot Agent is archived.', 409)
+      if (command.projectId !== undefined) this.requireActiveProjectAgent(command.projectId, agentId)
       const requestedLimit = typeof command.payload.limit === 'number' && Number.isInteger(command.payload.limit) ? command.payload.limit : 10
       const limit = Math.max(1, Math.min(20, requestedLimit))
       const candidates = [...this.store.issues.entries()].map(([, value]) => value).filter((candidate) => candidate.status === 'todo' && candidate.assigneeId === undefined && (command.projectId === undefined || candidate.projectId === command.projectId)).sort((left, right) => left.createdAt.localeCompare(right.createdAt)).slice(0, limit)
       const commandIds: string[] = []
       for (const candidate of candidates) {
         if (candidate.projectId === undefined) continue
+        this.requireActiveProjectAgent(candidate.projectId, agent.id)
         const assigned = await this.executeCommand({ idempotencyKey: `autopilot:${command.id}:${candidate.id}`, type: 'assign_issue', projectId: candidate.projectId, issueId: candidate.id, actorType: 'system', actorId: 'autopilot', payload: { assigneeType: 'agent', assigneeId: agent.id } })
         commandIds.push(assigned.id)
       }
@@ -802,26 +1297,38 @@ export class OrchestratorService {
       const squadId = command.squadId ?? (issue.assigneeType === 'squad' ? issue.assigneeId : undefined)
       const squad = squadId === undefined ? undefined : this.store.squads.get(squadId)
       if (squad === undefined || squad.status !== 'active') throw new WorkflowError('squad-unavailable', 'Delegation requires an active Squad.', 409)
+      this.assertSquadEligibleForProject(issue.projectId, squad.id)
       const memberAgentId = requiredPayloadString(command.payload, 'memberAgentId', 240)
       if (!squad.memberAgentIds.includes(memberAgentId) || memberAgentId === squad.leaderAgentId) throw new WorkflowError('squad-member-invalid', 'Delegation target must be a non-leader Squad member.', 400)
       const leaderRun = issue.activeTaskRunId === undefined ? undefined : this.store.taskRuns.get(issue.activeTaskRunId)
       if (leaderRun === undefined || leaderRun.agentId !== squad.leaderAgentId || !['dispatched', 'running'].includes(leaderRun.status)) throw new WorkflowError('leader-run-not-active', 'Only an active Squad leader run can delegate this Issue.', 409)
-      const child = await this.createIssue({ projectId: issue.projectId, parentIssueId: issue.id, title: requiredPayloadString(command.payload, 'title', 240), description: optionalPayloadString(command.payload, 'description', 100_000) ?? '', priority: issue.priority, labels: [...new Set([...issue.labels, 'delegated'])] })
+      const memberAgent = this.requireActiveProjectAgent(issue.projectId, memberAgentId)
+      const project = this.requireProject(issue.projectId)
+      const resource = this.selectExecutionResource(project, optionalPayloadString(command.payload, 'resourceId', 240))
+      const runtime = this.resolveExecutionRuntime(memberAgent, resource)
       const now = new Date().toISOString()
-      const delegation: DelegationRecord = { id: randomUUID(), squadId: squad.id, projectId: issue.projectId, parentIssueId: issue.id, childIssueId: child.id, leaderAgentId: squad.leaderAgentId, memberAgentId, status: 'queued', instruction: child.description || child.title, createdAt: now, updatedAt: now }
-      await this.store.delegations.put(delegation.id, delegation)
-      const leaderOperation = this.taskRunOperations.get(leaderRun.id)
-      leaderOperation?.controller.abort()
-      for (const handle of leaderOperation?.handles ?? []) handle.agent.cancel({ kind: 'user' })
-      await this.store.taskRuns.put(leaderRun.id, { ...leaderRun, status: 'deferred', completedAt: now })
+      const child: IssueRecord = { id: randomUUID(), projectId: issue.projectId, parentIssueId: issue.id, title: requiredPayloadString(command.payload, 'title', 240), description: optionalPayloadString(command.payload, 'description', 100_000) ?? '', status: 'in_progress', priority: issue.priority, assigneeType: 'agent', assigneeId: memberAgentId, labels: [...new Set([...issue.labels, 'delegated'])], assignmentRevision: 1, reviewStatus: 'not_requested', createdAt: now, updatedAt: now }
+      const taskRun: TaskRunRecord = { id: randomUUID(), projectId: issue.projectId, issueId: child.id, agentId: memberAgentId, ...(runtime === undefined ? {} : { runtimeId: runtime.id }), runtimeNameSnapshot: runtime?.name ?? '本机默认环境', squadId: squad.id, ...(resource === undefined ? {} : { resourceId: resource.id }), status: 'queued', trigger: 'assignment', attempt: 1, assignmentRevision: 1, commandId: command.id, cwd: project.cwd, createdAt: now }
+      child.activeTaskRunId = taskRun.id
+      const delegation: DelegationRecord = { id: randomUUID(), squadId: squad.id, projectId: issue.projectId, parentIssueId: issue.id, childIssueId: child.id, leaderAgentId: squad.leaderAgentId, memberAgentId, taskRunId: taskRun.id, commandId: command.id, status: 'queued', instruction: child.description || child.title, createdAt: now, updatedAt: now }
       const waitingParent: IssueRecord = { ...issue, status: 'blocked', updatedAt: now }
       delete waitingParent.activeTaskRunId
-      await this.store.issues.put(issue.id, waitingParent)
-      const assigned = await this.executeCommand({ idempotencyKey: `delegation:${delegation.id}`, type: 'assign_issue', projectId: issue.projectId, issueId: child.id, actorType: 'agent', actorId: squad.leaderAgentId, payload: { assigneeType: 'agent', assigneeId: memberAgentId } })
-      const runningDelegation: DelegationRecord = { ...delegation, status: 'running', taskRunId: String(assigned.result?.taskRunId), updatedAt: new Date().toISOString() }
-      await this.store.delegations.put(delegation.id, runningDelegation)
-      await this.recordActivity({ projectId: issue.projectId, issueId: issue.id, taskRunId: leaderRun.id, actorType: command.actorType, actorId: command.actorId, type: 'squad.delegated', message: `Delegated child Issue to Squad member.`, metadata: { squadId: squad.id, delegationId: delegation.id, childIssueId: child.id, memberAgentId } })
-      return { delegationId: delegation.id, childIssueId: child.id, taskRunId: assigned.result?.taskRunId }
+      const deferredLeader: TaskRunRecord = { ...leaderRun, status: 'deferred', completedAt: now }
+      try {
+        await this.store.issues.put(child.id, child)
+        await this.store.projects.put(project.id, { ...project, issueIds: [...new Set([...(project.issueIds ?? []), child.id])], updatedAt: now })
+        await this.store.delegations.put(delegation.id, delegation)
+        await this.store.taskRuns.put(taskRun.id, taskRun)
+        await this.store.issues.put(issue.id, waitingParent)
+        await this.store.taskRuns.put(leaderRun.id, deferredLeader)
+        const runningDelegation: DelegationRecord = { ...delegation, status: 'running', updatedAt: new Date().toISOString() }
+        await this.store.delegations.put(delegation.id, runningDelegation)
+        await this.recordActivity({ projectId: issue.projectId, issueId: issue.id, taskRunId: leaderRun.id, actorType: command.actorType, actorId: command.actorId, type: 'squad.delegated', message: 'Delegated child Issue to Squad member.', metadata: { commandId: command.id, squadId: squad.id, delegationId: delegation.id, childIssueId: child.id, memberAgentId, childTaskRunId: taskRun.id } })
+      } catch (error) {
+        await Promise.allSettled([this.store.delegations.delete(delegation.id), this.store.taskRuns.delete(taskRun.id), this.store.issues.delete(child.id), this.store.projects.put(project.id, project), this.store.issues.put(issue.id, issue), this.store.taskRuns.put(leaderRun.id, leaderRun)])
+        throw error
+      }
+      return { delegationId: delegation.id, childIssueId: child.id, taskRunId: taskRun.id, deferredLeaderTaskRunId: leaderRun.id }
     }
     if (command.type === 'approve_review' || command.type === 'reject_review') {
       if (issue?.status !== 'in_review') throw new WorkflowError('issue-not-in-review', 'Only an Issue in review can be resolved.', 409)
@@ -876,27 +1383,25 @@ export class OrchestratorService {
       if (assigneeType === undefined || assigneeId === undefined) throw new WorkflowError('assignee-required', 'Issue requires an Agent or Squad assignee.', 400)
       let agent: AgentRecord
       let squadId: string | undefined
-      if (assigneeType === 'agent') agent = this.requireAgent(assigneeId)
+      if (assigneeType === 'agent') agent = this.requireActiveProjectAgent(issue.projectId, assigneeId)
       else {
+        this.assertSquadEligibleForProject(issue.projectId, assigneeId)
         const squad = this.store.squads.get(assigneeId)
         if (squad === undefined || squad.status !== 'active') throw new WorkflowError('squad-unavailable', 'The selected Squad is unavailable.', 409)
         agent = this.requireAgent(squad.leaderAgentId)
         squadId = squad.id
       }
       if (agent.status !== 'active') throw new WorkflowError('agent-inactive', 'The selected Agent is archived.', 409)
-      const runtime = agent.runtimeId === undefined ? undefined : this.store.runtimes.get(agent.runtimeId)
+      const project = this.requireProject(issue.projectId)
+      const resource = this.selectExecutionResource(project, optionalPayloadString(command.payload, 'resourceId', 240))
+      const runtime = this.resolveExecutionRuntime(agent, resource)
       const revision = (issue.assignmentRevision ?? 0) + 1
       const priorRunId = issue.activeTaskRunId ?? [...this.store.taskRuns.entries()].map(([, run]) => run).filter((run) => run.issueId === issue.id).sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]?.id
       if (issue.activeTaskRunId !== undefined) {
         const prior = this.store.taskRuns.get(issue.activeTaskRunId)
-        if (prior !== undefined && !['completed', 'failed', 'cancelled'].includes(prior.status)) await this.store.taskRuns.put(prior.id, { ...prior, status: 'cancelled', finishedReason: 'reassigned', completedAt: new Date().toISOString() })
+        if (prior !== undefined && !['completed', 'failed', 'cancelled', 'deferred'].includes(prior.status)) await this.store.taskRuns.put(prior.id, { ...prior, status: 'cancelled', finishedReason: 'reassigned', completedAt: new Date().toISOString() })
       }
-      const resourceId = optionalPayloadString(command.payload, 'resourceId', 240)
-      if (resourceId !== undefined) {
-        const resource = this.store.resources.get(resourceId)
-        if (resource === undefined || resource.projectId !== issue.projectId) throw new WorkflowError('resource-context-mismatch', 'Selected ProjectResource does not belong to this Issue Project.', 400)
-      }
-      const taskRun: TaskRunRecord = { id: randomUUID(), projectId: issue.projectId, issueId: issue.id, agentId: agent.id, ...(agent.runtimeId === undefined ? {} : { runtimeId: agent.runtimeId }), ...(squadId === undefined ? {} : { squadId }), ...(resourceId === undefined ? {} : { resourceId }), status: 'queued', trigger: command.type === 'continue_issue' ? 'retry' : 'assignment', attempt: [...this.store.taskRuns.entries()].filter(([, run]) => run.issueId === issue.id).length + 1, ...(priorRunId === undefined ? {} : { retryOf: priorRunId }), assignmentRevision: revision, commandId: command.id, cwd: this.requireProject(issue.projectId).cwd, createdAt: new Date().toISOString() }
+      const taskRun: TaskRunRecord = { id: randomUUID(), projectId: issue.projectId, issueId: issue.id, agentId: agent.id, ...(runtime === undefined ? {} : { runtimeId: runtime.id }), runtimeNameSnapshot: runtime?.name ?? '本机默认环境', ...(squadId === undefined ? {} : { squadId }), ...(resource?.id === undefined ? {} : { resourceId: resource.id }), status: 'queued', trigger: command.type === 'continue_issue' ? 'retry' : 'assignment', attempt: [...this.store.taskRuns.entries()].filter(([, run]) => run.issueId === issue.id).length + 1, ...(priorRunId === undefined ? {} : { retryOf: priorRunId }), assignmentRevision: revision, commandId: command.id, cwd: project.cwd, createdAt: new Date().toISOString() }
       await this.store.taskRuns.put(taskRun.id, taskRun)
       const next: IssueRecord = { ...issue, assigneeType, assigneeId, assignmentRevision: revision, activeTaskRunId: taskRun.id, status: 'in_progress', reviewStatus: 'not_requested', updatedAt: taskRun.createdAt }
       delete next.reviewedAt
@@ -904,7 +1409,6 @@ export class OrchestratorService {
       delete next.reviewNote
       await this.store.issues.put(issue.id, next)
       await this.recordActivity({ projectId: issue.projectId, issueId: issue.id, taskRunId: taskRun.id, actorType: command.actorType, actorId: command.actorId, type: command.type === 'reassign_issue' ? 'issue.reassigned' : command.type === 'continue_issue' ? 'issue.continued' : 'issue.assigned', message: `Issue queued for ${agent.name}.`, metadata: { commandId: command.id, assignmentRevision: revision, assigneeType, assigneeId } })
-      this.requestDispatch()
       return { issueId: issue.id, taskRunId: taskRun.id, status: taskRun.status, assignmentRevision: revision }
     }
     throw new WorkflowError('command-not-implemented', `Command "${command.type}" is not implemented yet.`, 409)
@@ -956,7 +1460,7 @@ export class OrchestratorService {
     const agent = this.store.agents.get(run.agentId)
     if (issue === undefined || agent === undefined || issue.activeTaskRunId !== run.id || issue.assignmentRevision !== run.assignmentRevision || agent.status !== 'active') return undefined
     const runtime = run.runtimeId === undefined ? undefined : this.store.runtimes.get(run.runtimeId)
-    if (run.runtimeId !== undefined && runtime?.status !== 'online') return undefined
+    if (run.runtimeId !== undefined && (runtime?.lifecycle !== 'active' || runtime.status !== 'online')) return undefined
     const occupied = [...this.store.taskRuns.entries()].filter(([, candidate]) => candidate.id !== run.id && candidate.agentId === agent.id && ['dispatched', 'running'].includes(candidate.status)).length
     if (occupied >= (agent.maxConcurrency ?? 1)) return undefined
     const project = this.store.projects.get(run.projectId)
@@ -997,15 +1501,22 @@ export class OrchestratorService {
   }
 
   private async prepareWorktree(run: TaskRunRecord, resource: ProjectResource, sourcePath: string): Promise<{ workspacePath: string; branchName: string; baseCommit: string }> {
-    const root = run.runtimeId === undefined ? undefined : this.store.runtimes.get(run.runtimeId)?.workspaceRoot
-    const parent = root ?? join(sourcePath, '..', '.dsh-worktrees')
-    await mkdir(parent, { recursive: true })
-    const workspacePath = join(parent, run.id)
+    const configuredRoot = run.runtimeId === undefined ? undefined : this.store.runtimes.get(run.runtimeId)?.workspaceRoot
+    const parent = configuredRoot === undefined ? join(sourcePath, '..', '.dsh-worktrees') : await this.assertSafeRuntimeWorkspaceRoot(configuredRoot)
+    if (configuredRoot === undefined) await mkdir(parent, { recursive: true })
+    const canonicalParent = await realpath(parent)
+    const workspacePath = join(canonicalParent, run.id)
+    const relativeTarget = relative(canonicalParent, workspacePath)
+    if (relativeTarget.startsWith('..') || isAbsolute(relativeTarget)) throw new WorkflowError('runtime-workspace-root-invalid', 'TaskRun worktree path escapes Runtime workspaceRoot.', 400)
     const branchName = `dsh/taskrun/${run.id.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 80)}`
     const baseCommit = (await gitProcess(sourcePath, ['rev-parse', `${resource.ref ?? 'HEAD'}^{commit}`])).trim()
     await gitProcess(sourcePath, ['worktree', 'prune', '--expire', 'now'])
+    if (configuredRoot !== undefined) await this.assertSafeRuntimeWorkspaceRoot(configuredRoot)
     await gitProcess(sourcePath, ['worktree', 'add', '-b', branchName, workspacePath, baseCommit])
-    return { workspacePath, branchName, baseCommit }
+    const canonicalWorkspace = await realpath(workspacePath)
+    const postRelative = relative(await realpath(canonicalParent), canonicalWorkspace)
+    if (postRelative.startsWith('..') || isAbsolute(postRelative)) throw new WorkflowError('runtime-workspace-root-invalid', 'Prepared worktree escaped Runtime workspaceRoot.', 400)
+    return { workspacePath: canonicalWorkspace, branchName, baseCommit }
   }
 
   private async optionalGit(cwd: string, args: string[]): Promise<string | undefined> {
@@ -1208,12 +1719,7 @@ export class OrchestratorService {
     const current = this.store.issues.get(id)
     if (current === undefined) throw new WorkflowError('issue-not-found', `Issue "${id}" was not found.`, 404)
     const parsed = IssueUpdateSchema.parse(input)
-    if (parsed.assigneeType !== undefined && parsed.assigneeType !== null && parsed.assigneeId === undefined && current.assigneeId === undefined) {
-      throw new WorkflowError('assignee-required', 'An assignee id is required when setting an assignee type.', 400)
-    }
     const next: IssueRecord = { ...current, ...parsed, updatedAt: new Date().toISOString() }
-    if (parsed.assigneeType === null) delete next.assigneeType
-    if (parsed.assigneeId === null) delete next.assigneeId
     await this.store.issues.put(id, next)
     await this.recordActivity({ projectId: next.projectId, issueId: id, actorType: 'human', type: 'issue.updated', message: `Issue updated: ${next.title}`, metadata: { status: next.status } })
     return next
@@ -1351,6 +1857,7 @@ export class OrchestratorService {
     const lockIds = [...this.store.localDirectoryLocks.entries()]
       .filter(([, lock]) => lock.projectId === id || taskRunIdSet.has(lock.taskRunId))
       .map(([lockId]) => lockId)
+    const membershipIds = [...this.store.projectAgentMemberships.entries()].filter(([, membership]) => membership.projectId === id).map(([membershipId]) => membershipId)
 
     await Promise.all([
       ...activityIds.map((activityId) => this.store.activity.delete(activityId)),
@@ -1362,6 +1869,7 @@ export class OrchestratorService {
       ...triggerIds.map((triggerId) => this.store.externalTriggers.delete(triggerId)),
       ...leaseIds.map((leaseId) => this.store.workspaceLeases.delete(leaseId)),
       ...lockIds.map((lockId) => this.store.localDirectoryLocks.delete(lockId)),
+      ...membershipIds.map((membershipId) => this.store.projectAgentMemberships.delete(membershipId)),
     ])
     await Promise.all(commandIds.map((commandId) => this.store.commands.delete(commandId)))
     await Promise.all(taskRunIds.map((taskRunId) => this.store.taskRuns.delete(taskRunId)))
@@ -1381,7 +1889,7 @@ export class OrchestratorService {
     const parsed = TaskInputSchema.parse(input)
     const siblings = this.store.projectTasks(project)
     if (siblings.length >= 1_000) throw new WorkflowError('task-limit', 'A project cannot contain more than 1,000 tasks.', 400)
-    const agentId = this.validateTaskAgent(parsed.agentId)
+    const agentId = this.validateTaskAgent(projectId, parsed.agentId)
     const now = new Date().toISOString()
     const task: TaskRecord = {
       id: randomUUID(),
@@ -1489,7 +1997,7 @@ export class OrchestratorService {
     }
     if (parsed.agentId === null) delete next.agentId
     else if (parsed.agentId !== undefined) {
-      this.requireAgent(parsed.agentId)
+      this.requireActiveProjectAgent(project.id, parsed.agentId)
       next.agentId = parsed.agentId
     }
 
@@ -1514,6 +2022,7 @@ export class OrchestratorService {
     if (tasks.some((task) => task.testCommand.trim() === '')) {
       throw new WorkflowError('missing-test-command', 'Every task requires a test command before approval.')
     }
+    this.assertProjectTaskAgents(project.id, tasks)
     const actor = typeof actorInput === 'string' && actorInput.trim() !== '' ? actorInput.trim().slice(0, 200) : 'Harness user'
     const approvedAt = new Date().toISOString()
     await this.store.approvals.put(`${project.id}:${project.revision}`, {
@@ -1616,7 +2125,9 @@ export class OrchestratorService {
     this.assertNotActive(id)
     const tasks = this.store.projectTasks(project)
     const approval = this.store.approvalFor(project)
-    assertExecutable(project, tasks, approval)
+    assertExecutable(project, tasks, approval, this.activeMembershipEligibility(project.id))
+    this.assertProjectTaskAgents(project.id, tasks)
+    for (const task of tasks) this.assertAgentRuntimeAvailable(this.requireActiveProjectAgent(project.id, task.agentId!))
     const operation = this.reserveOperation(id)
     const now = new Date().toISOString()
     const run: RunRecord = {
@@ -1697,9 +2208,12 @@ export class OrchestratorService {
     }
     if (result === undefined || plan === undefined) throw plannerError
 
-    const activeAgents = [...this.store.agents.entries()]
-      .map(([, agent]) => agent)
-      .filter((agent) => agent.status === 'active')
+    const activeAgents = this.listProjectAgents(project.id)
+      .filter((membership) => membership.status === 'active' && membership.autoAssignable)
+      .flatMap((membership) => {
+        const agent = this.store.agents.get(membership.agentId)
+        return agent?.status === 'active' ? [{ id: agent.id, role: agent.role, projectRole: membership.projectRole, autoAssignable: membership.autoAssignable, status: membership.status }] : []
+      })
     const currentBeforeWrite = this.requireProject(project.id)
     const tasks = materializeTasks(project.id, plan, activeAgents, new Date().toISOString(), options.append ? currentBeforeWrite.taskIds.length : 0)
     const writtenTaskIds: string[] = []
@@ -1763,7 +2277,9 @@ export class OrchestratorService {
         status: 'running',
         currentTaskId: task.id,
       })
-      const agent = task.agentId === undefined ? this.defaultAgent(task.kind) : this.requireAgent(task.agentId)
+      if (task.agentId === undefined) throw new WorkflowError('project-task-unassigned', `Task "${task.id}" has no approved Agent assignment.`)
+      const agent = this.requireActiveProjectAgent(projectId, task.agentId)
+      this.assertAgentRuntimeAvailable(agent)
       let passed = false
       for (let automaticAttempt = 1; automaticAttempt <= MAX_AUTOMATIC_TASK_ATTEMPTS; automaticAttempt += 1) {
         const currentTask = this.requireTask(task.id)
@@ -1776,6 +2292,7 @@ export class OrchestratorService {
           taskId: task.id,
           ...(agent.id === undefined ? {} : { agentId: agent.id }),
           ...(agent.runtimeId === undefined ? {} : { runtimeId: agent.runtimeId }),
+          runtimeNameSnapshot: agent.runtimeId === undefined ? '本机默认环境' : this.store.runtimes.get(agent.runtimeId)?.name ?? '历史 Runtime 不可解析',
           status: 'running',
           trigger: automaticAttempt === 1 ? 'approval' : 'retry',
           attempt,
@@ -2120,6 +2637,29 @@ ${existingDraft}`
   }
 
   private async migrateLegacyRecords(): Promise<void> {
+    for (const [, project] of this.store.projects.entries()) {
+      const referencedAgentIds = new Set<string>()
+      if (project.leadAgentId !== undefined) referencedAgentIds.add(project.leadAgentId)
+      for (const task of this.store.projectTasks(project)) if (task.agentId !== undefined) referencedAgentIds.add(task.agentId)
+      for (const [, issue] of this.store.issues.entries()) if (issue.projectId === project.id && issue.assigneeType === 'agent' && issue.assigneeId !== undefined && !['done', 'cancelled'].includes(issue.status)) referencedAgentIds.add(issue.assigneeId)
+      for (const agentId of referencedAgentIds) {
+        const agent = this.store.agents.get(agentId)
+        if (agent === undefined || agent.status !== 'active') {
+          if (project.leadAgentId === agentId) { const cleared = { ...project, updatedAt: new Date().toISOString() }; delete cleared.leadAgentId; await this.store.projects.put(project.id, cleared) }
+          continue
+        }
+        const id = `${project.id}:${agentId}`
+        const current = this.store.projectAgentMemberships.get(id)
+        if (current?.status === 'active') continue
+        const now = new Date().toISOString()
+        await this.store.projectAgentMemberships.put(id, { id, projectId: project.id, agentId, projectRole: agent.role, autoAssignable: true, status: 'active', joinedBy: 'legacy-membership-migration', joinedAt: current?.joinedAt ?? now, updatedAt: now })
+      }
+    }
+    for (const [, run] of this.store.taskRuns.entries()) {
+      if (run.runtimeNameSnapshot !== undefined) continue
+      const runtimeNameSnapshot = run.runtimeId === undefined ? '本机默认环境' : this.store.runtimes.get(run.runtimeId)?.name
+      if (runtimeNameSnapshot !== undefined) await this.store.taskRuns.put(run.id, { ...run, runtimeNameSnapshot })
+    }
     for (const [, approval] of this.store.approvals.entries()) {
       const decisionId = `legacy-approval:${approval.id}`
       if (this.store.decisions.get(decisionId) !== undefined) continue
@@ -2182,6 +2722,13 @@ ${existingDraft}`
       if (project.status === 'failed' && !project.lastError?.includes('Harness restarted')) continue
       if (project.activeRunId !== undefined) continue
       try {
+        const tasks = this.store.projectTasks(project)
+        this.assertProjectTaskAgents(project.id, tasks)
+        for (const task of tasks) this.assertAgentRuntimeAvailable(this.requireActiveProjectAgent(project.id, task.agentId!))
+      } catch {
+        continue
+      }
+      try {
         await this.startExecution(project.id)
       } catch (error) {
         await this.store.projects.put(project.id, {
@@ -2191,6 +2738,47 @@ ${existingDraft}`
           updatedAt: new Date().toISOString(),
         })
       }
+    }
+  }
+
+  private async recoverCommandConsistency(): Promise<void> {
+    const now = new Date().toISOString()
+    for (const [, command] of this.store.commands.entries()) {
+      if (!['pending', 'running'].includes(command.status)) continue
+      const run = [...this.store.taskRuns.entries()].map(([, candidate]) => candidate).find((candidate) => candidate.commandId === command.id)
+      const issue = command.issueId === undefined ? undefined : this.store.issues.get(command.issueId)
+      const delegation = [...this.store.delegations.entries()].map(([, candidate]) => candidate).find((candidate) => candidate.commandId === command.id)
+      if (run !== undefined && issue?.activeTaskRunId === run.id && issue.assignmentRevision === run.assignmentRevision) {
+        await this.store.commands.put(command.id, { ...command, status: 'completed', result: { issueId: issue.id, taskRunId: run.id, assignmentRevision: run.assignmentRevision }, completedAt: now })
+        continue
+      }
+      if (delegation !== undefined && this.store.issues.get(delegation.parentIssueId) !== undefined && this.store.issues.get(delegation.childIssueId) !== undefined) {
+        await this.store.commands.put(command.id, { ...command, status: 'completed', result: { delegationId: delegation.id, childIssueId: delegation.childIssueId, taskRunId: delegation.taskRunId }, completedAt: now })
+        continue
+      }
+      await this.store.commands.put(command.id, { ...command, status: 'failed', error: 'host-restarted-during-command', completedAt: now })
+    }
+    for (const [, run] of this.store.taskRuns.entries()) {
+      if (!['queued', 'waiting_local_directory'].includes(run.status) || run.issueId === undefined) continue
+      const issue = this.store.issues.get(run.issueId)
+      if (issue?.activeTaskRunId === run.id && issue.assignmentRevision === run.assignmentRevision) continue
+      await this.store.taskRuns.put(run.id, { ...run, status: 'cancelled', finishedReason: 'stopped', error: 'Orphan TaskRun recovered after Host restart.', completedAt: now })
+    }
+    for (const [, issue] of this.store.issues.entries()) {
+      if (issue.activeTaskRunId === undefined) continue
+      const run = this.store.taskRuns.get(issue.activeTaskRunId)
+      if (run !== undefined && run.issueId === issue.id && run.assignmentRevision === issue.assignmentRevision) continue
+      const recovered: IssueRecord = { ...issue, status: 'blocked', updatedAt: now }
+      delete recovered.activeTaskRunId
+      await this.store.issues.put(issue.id, recovered)
+    }
+    for (const [, delegation] of this.store.delegations.entries()) {
+      if (!['queued', 'running', 'waiting_leader'].includes(delegation.status)) continue
+      const valid = this.store.issues.get(delegation.parentIssueId) !== undefined
+        && this.store.issues.get(delegation.childIssueId) !== undefined
+        && this.store.agents.get(delegation.leaderAgentId) !== undefined
+        && this.store.agents.get(delegation.memberAgentId) !== undefined
+      if (!valid) await this.store.delegations.put(delegation.id, { ...delegation, status: 'escalated', updatedAt: now, completedAt: now })
     }
   }
 
@@ -2299,10 +2887,66 @@ ${existingDraft}`
     return next
   }
 
-  private validateAgentRuntime(id: string | undefined): void {
-    if (id !== undefined && this.store.runtimes.get(id) === undefined) {
-      throw new WorkflowError('runtime-not-found', `Runtime "${id}" was not found.`, 400)
+  private requireRuntime(id: string): RuntimeRecord {
+    const runtime = this.store.runtimes.get(id)
+    if (runtime === undefined) throw new WorkflowError('runtime-not-found', `Runtime "${id}" was not found.`, 404)
+    return runtime
+  }
+
+  private assertRuntimeMachineIdAvailable(machineId: string, exceptId?: string): void {
+    const conflict = [...this.store.runtimes.entries()].map(([, runtime]) => runtime).find((runtime) => runtime.id !== exceptId && runtime.lifecycle === 'active' && runtime.machineId === machineId)
+    if (conflict !== undefined) throw new WorkflowError('runtime-machine-id-conflict', `Machine ID "${machineId}" is already used by an active Runtime.`, 409)
+  }
+
+  private runtimeHasActiveTaskRuns(id: string): boolean {
+    return [...this.store.taskRuns.entries()].some(([, run]) => run.runtimeId === id && ['queued', 'waiting_local_directory', 'dispatched', 'running'].includes(run.status))
+  }
+
+  private runtimeHasExecutableReferences(id: string): boolean {
+    return [...this.store.agents.entries()].some(([, agent]) => agent.runtimeId === id)
+      || [...this.store.resources.entries()].some(([, resource]) => resource.runtimeId === id)
+      || this.runtimeHasActiveTaskRuns(id)
+  }
+
+  private async assertSafeRuntimeWorkspaceRoot(path: string): Promise<string> {
+    if (!isAbsolute(path)) throw new WorkflowError('runtime-workspace-root-invalid', 'Runtime workspaceRoot must be an absolute path.', 400)
+    let info
+    try { info = await lstat(path) } catch { throw new WorkflowError('runtime-workspace-root-invalid', 'Runtime workspaceRoot must be an existing directory.', 400) }
+    if (!info.isDirectory() || info.isSymbolicLink()) throw new WorkflowError('runtime-workspace-root-invalid', 'Runtime workspaceRoot must be a real directory, not a symbolic link.', 400)
+    const canonical = await realpath(path)
+    const normalized = canonical.replace(/\\/g, '/').replace(/\/$/, '') || '/'
+    const forbidden = new Set(['/', '/tmp', '/private/tmp', '/usr', '/etc', '/var', '/opt', '/Users', '/home', '/root'])
+    if (forbidden.has(normalized)) throw new WorkflowError('runtime-workspace-root-invalid', 'Runtime workspaceRoot is too broad.', 400)
+    try { await access(canonical, constants.W_OK) } catch { throw new WorkflowError('runtime-workspace-root-invalid', 'Runtime workspaceRoot is not writable.', 400) }
+    return canonical
+  }
+
+  private selectExecutionResource(project: ProjectRecord, requestedId?: string): ProjectResource | undefined {
+    const resources = [...this.store.resources.entries()].map(([, resource]) => resource).filter((resource) => resource.projectId === project.id && (resource.kind === 'local_directory' || resource.sourcePath !== undefined))
+    if (requestedId !== undefined) {
+      const explicit = resources.find((resource) => resource.id === requestedId)
+      if (explicit === undefined) throw new WorkflowError('resource-context-mismatch', 'Selected ProjectResource does not belong to this Project.', 400)
+      return explicit
     }
+    const worktreeResources = resources.filter((resource) => resource.executionMode === 'worktree')
+    if (worktreeResources.length > 1) throw new WorkflowError('resource-selection-required', 'Multiple worktree resources are available; select resourceId when assigning the Issue.', 409)
+    return worktreeResources[0] ?? resources.find((resource) => (resource.sourcePath ?? resource.location) === project.cwd)
+  }
+
+  private resolveExecutionRuntime(agent: AgentRecord, resource?: ProjectResource): RuntimeRecord | undefined {
+    if (agent.runtimeId !== undefined && resource?.runtimeId !== undefined && agent.runtimeId !== resource.runtimeId) throw new WorkflowError('runtime-binding-context-mismatch', 'Agent and Project Resource are bound to different Runtimes.', 409)
+    const runtimeId = resource?.runtimeId ?? agent.runtimeId
+    if (runtimeId === undefined) return undefined
+    const runtime = this.requireRuntime(runtimeId)
+    if (runtime.lifecycle !== 'active') throw new WorkflowError('runtime-archived', 'Selected execution Runtime is archived.', 409)
+    return runtime
+  }
+
+  private validateAgentRuntime(id: string | undefined): void {
+    if (id === undefined) return
+    const runtime = this.store.runtimes.get(id)
+    if (runtime === undefined) throw new WorkflowError('runtime-not-found', `Runtime "${id}" was not found.`, 400)
+    if (runtime.lifecycle !== 'active') throw new WorkflowError('runtime-archived', `Runtime "${id}" is archived.`, 409)
   }
 
   private requireAgent(id: string): AgentRecord {
@@ -2311,22 +2955,99 @@ ${existingDraft}`
     return agent
   }
 
-  private validateTaskAgent(id: TaskInput['agentId']): string | undefined {
+  private validateTaskAgent(projectId: string, id: TaskInput['agentId']): string | undefined {
     if (id === undefined || id === null) return undefined
-    const agent = this.requireAgent(id)
-    if (agent.status !== 'active') {
-      throw new WorkflowError('agent-inactive', `Agent "${id}" is archived and cannot be assigned to a task.`, 400)
-    }
+    this.requireActiveProjectAgent(projectId, id)
     return id
   }
 
-  private defaultAgent(kind: TaskRecord['kind']): AgentRecord {
-    const role = kind === 'test' ? 'test' : 'software'
-    const agent = [...this.store.agents.entries()]
-      .map(([, entry]) => entry)
-      .find((entry) => entry.status === 'active' && entry.role.toLocaleLowerCase().includes(role))
-    if (agent === undefined) throw new WorkflowError('agent-not-found', `No active ${role} agent is available.`)
+  private requireActiveMembership(projectId: string, agentId: string): ProjectAgentMembershipRecord {
+    const membership = this.store.projectAgentMemberships.get(`${projectId}:${agentId}`)
+    if (membership?.status !== 'active') throw new WorkflowError('project-agent-not-member', `Agent "${agentId}" is not an active member of project "${projectId}".`, 409)
+    return membership
+  }
+
+  private requireActiveProjectAgent(projectId: string, agentId: string): AgentRecord {
+    const agent = this.requireAgent(agentId)
+    if (agent.status !== 'active') throw new WorkflowError('project-agent-inactive', `Agent "${agentId}" is archived.`, 409)
+    this.requireActiveMembership(projectId, agentId)
     return agent
+  }
+
+  private activeMembershipEligibility(projectId: string): Array<{ agentId: string; active: boolean }> {
+    return this.listProjectAgents(projectId).map((membership) => ({ agentId: membership.agentId, active: membership.status === 'active' && this.store.agents.get(membership.agentId)?.status === 'active' }))
+  }
+
+  private assertProjectTaskAgents(projectId: string, tasks: TaskRecord[]): void {
+    const unassigned = tasks.find((task) => task.agentId === undefined)
+    if (unassigned !== undefined) throw new WorkflowError('project-task-unassigned', `Task "${unassigned.id}" must be assigned before approval or execution.`, 409)
+    for (const task of tasks) this.requireActiveProjectAgent(projectId, task.agentId!)
+  }
+
+  private assertExpectedProjectRevision(project: ProjectRecord, expected: number | undefined): void {
+    if (expected !== undefined && expected !== project.revision) throw new WorkflowError('project-assignment-stale', 'Project revision changed; refresh and retry.', 409)
+  }
+
+  private assertAgentRuntimeAvailable(agent: AgentRecord): void {
+    if (agent.runtimeId === undefined) return
+    const runtime = this.store.runtimes.get(agent.runtimeId)
+    if (runtime?.lifecycle !== 'active' || runtime.status !== 'online') throw new WorkflowError('runtime-offline', `Agent "${agent.id}" Runtime is not online.`, 409)
+  }
+
+  private requireSquad(id: string): SquadRecord {
+    const squad = this.store.squads.get(id)
+    if (squad === undefined) throw new WorkflowError('squad-not-found', `Squad "${id}" was not found.`, 404)
+    return squad
+  }
+
+  private validateSquadConfiguration(input: SquadInput): void {
+    const memberIds = new Set(input.memberAgentIds)
+    if (memberIds.size < 2) throw new WorkflowError('squad-min-members', 'Squad requires at least two distinct Agents.', 400)
+    if (!memberIds.has(input.leaderAgentId)) throw new WorkflowError('squad-leader-not-member', 'The Squad leader must be included in memberAgentIds.', 400)
+    if (memberIds.size !== input.memberAgentIds.length) throw new WorkflowError('duplicate-squad-member', 'Squad members must be unique.', 400)
+    for (const agentId of memberIds) {
+      const agent = this.requireAgent(agentId)
+      if (agent.status !== 'active') throw new WorkflowError('squad-agent-inactive', `Agent "${agentId}" is archived and cannot join an active Squad.`, 409)
+    }
+    for (const agentId of Object.keys(input.memberRoles)) if (!memberIds.has(agentId)) throw new WorkflowError('squad-role-member-mismatch', `Role metadata references non-member Agent "${agentId}".`, 400)
+  }
+
+  private activeSquadDelegations(squadId: string): DelegationRecord[] {
+    return [...this.store.delegations.entries()].map(([, delegation]) => delegation).filter((delegation) => delegation.squadId === squadId && ['queued', 'running', 'waiting_leader'].includes(delegation.status))
+  }
+
+  private evaluateSquadAvailability(projectId: string, squadId: string): SquadAvailability {
+    const squad = this.requireSquad(squadId)
+    const reasons: SquadAvailability['reasons'] = []
+    const warnings: SquadAvailability['warnings'] = []
+    const uniqueMembers = new Set(squad.memberAgentIds)
+    if (uniqueMembers.size < 2 || !uniqueMembers.has(squad.leaderAgentId)) reasons.push('legacy_member_count')
+    if (squad.status !== 'active') reasons.push('archived')
+    const agentIds = [...new Set([squad.leaderAgentId, ...squad.memberAgentIds])]
+    if (agentIds.some((agentId) => this.store.agents.get(agentId)?.status !== 'active')) reasons.push('agent_inactive')
+    const missingAgentIds = agentIds.filter((agentId) => this.store.projectAgentMemberships.get(`${projectId}:${agentId}`)?.status !== 'active')
+    if (missingAgentIds.length > 0) reasons.push('member_outside_project')
+    const activeDelegations = this.activeSquadDelegations(squadId).length
+    if (activeDelegations >= squad.maxParallelDelegations) reasons.push('capacity_exhausted')
+    const leader = this.store.agents.get(squad.leaderAgentId)
+    const runtime = leader?.runtimeId === undefined ? undefined : this.store.runtimes.get(leader.runtimeId)
+    if (leader?.runtimeId !== undefined && (runtime?.lifecycle !== 'active' || runtime.status === 'offline')) warnings.push('leader_runtime_offline')
+    else if (runtime?.status === 'unstable') warnings.push('leader_runtime_unstable')
+    return { squadId, projectId, eligible: reasons.length === 0, reasons, dispatchReady: warnings.length === 0, warnings, missingAgentIds, activeDelegations, availableSlots: Math.max(0, squad.maxParallelDelegations - activeDelegations) }
+  }
+
+  private assertSquadEligibleForProject(projectId: string, squadId: string): void {
+    let availability: SquadAvailability
+    try { availability = this.evaluateSquadAvailability(projectId, squadId) } catch (error) {
+      if (error instanceof WorkflowError && error.code === 'squad-not-found') throw new WorkflowError('squad-unavailable', 'The selected Squad is unavailable.', 409)
+      throw error
+    }
+    const reason = availability.reasons[0]
+    if (reason === undefined) return
+    if (reason === 'member_outside_project') throw new WorkflowError('squad-member-outside-project', `Squad Agents ${availability.missingAgentIds.join(', ')} are not active project members.`, 409)
+    if (reason === 'capacity_exhausted') throw new WorkflowError('squad-delegation-capacity', 'Squad has reached its global active delegation limit.', 409)
+    if (reason === 'agent_inactive') throw new WorkflowError('squad-agent-inactive', 'A Squad Agent is archived.', 409)
+    throw new WorkflowError('squad-unavailable', 'The selected Squad is unavailable.', 409)
   }
 
   private requireProject(id: string): ProjectRecord {
@@ -2371,6 +3092,15 @@ ${existingDraft}`
   private assertNotActive(projectId: string): void {
     if (this.disposed) throw new WorkflowError('plugin-disposed', 'Project orchestrator is shutting down.', 503)
     if (this.operations.has(projectId)) throw new WorkflowError('project-active', 'Project already has an active operation.')
+  }
+
+  private assertProjectRuntimeMutationSafe(projectId: string): void {
+    const project = this.requireProject(projectId)
+    this.assertNotActive(projectId)
+    if (project.status === 'decomposing' || project.status === 'running') throw new WorkflowError('project-active', 'Runtime binding cannot change while Project status is active.', 409)
+    const activeRun = [...this.store.runs.entries()].some(([, run]) => run.projectId === projectId && ['queued', 'running'].includes(run.status))
+      || [...this.store.taskRuns.entries()].some(([, run]) => run.projectId === projectId && ['queued', 'waiting_local_directory', 'dispatched', 'running'].includes(run.status))
+    if (activeRun) throw new WorkflowError('project-active', 'Runtime binding cannot change while Project work is active.', 409)
   }
 
   private async ensureProjectContext(project: ProjectRecord): Promise<ProjectRecord> {

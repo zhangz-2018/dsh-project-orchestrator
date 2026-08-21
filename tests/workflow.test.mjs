@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   assertExecutable,
   boundedText,
+  materializeTasks,
   parseGeneratedPlan,
   planDigest,
   topologicalTasks,
@@ -82,6 +83,33 @@ test('legacy approval hashes remain valid until execution metadata is persisted'
     defaultPersistedTasks,
     { revision: project.revision, planHash: currentHash },
   ))
+})
+
+test('materializeTasks matches only eligible project memberships by project role', () => {
+  const plan = parseGeneratedPlan(JSON.stringify({
+    summary: 'Plan',
+    tasks: [
+      { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'Backend', testCommand: 'true' },
+      { id: 'test', title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], suggestedAgentRole: 'QA', testCommand: 'true' },
+    ],
+  }))
+  const generated = materializeTasks('p1', plan, [
+    { id: 'workspace-agent', role: 'Backend Engineer', projectRole: 'Backend', autoAssignable: false, status: 'active' },
+    { id: 'project-agent', role: 'Generalist', projectRole: 'Backend', autoAssignable: true, status: 'active' },
+    { id: 'removed-agent', role: 'QA', projectRole: 'QA', autoAssignable: true, status: 'removed' },
+  ], now)
+  assert.equal(generated[0].agentId, 'project-agent')
+  assert.equal(generated[1].agentId, undefined)
+})
+
+test('assertExecutable requires every task assignee to remain an active project member', () => {
+  const assigned = tasks.map((task, index) => ({ ...task, agentId: index === 0 ? 'engineer' : 'tester' }))
+  const digest = planDigest(project, assigned)
+  assert.throws(() => assertExecutable(project, assigned, { revision: 2, planHash: digest }, [{ agentId: 'engineer', active: true }]), (error) => error.code === 'project-agent-not-member')
+  assert.doesNotThrow(() => assertExecutable(project, assigned, { revision: 2, planHash: digest }, [{ agentId: 'engineer', active: true }, { agentId: 'tester', active: true }]))
+  const unassigned = [{ ...assigned[0] }, { ...assigned[1] }]
+  delete unassigned[1].agentId
+  assert.throws(() => assertExecutable(project, unassigned, { revision: 2, planHash: planDigest(project, unassigned) }, [{ agentId: 'engineer', active: true }]), (error) => error.code === 'project-task-unassigned')
 })
 
 test('boundedText retains the final evidence', () => {

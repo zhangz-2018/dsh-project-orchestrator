@@ -63,13 +63,14 @@ Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代
 ## 核心能力
 
 - **审批后执行：** 计划与 Revision/hash 绑定，明确批准后才执行。
+- **项目智能体成员：** 工作区可复用 Agent 必须显式加入 Project，设置项目职责和规划资格后，才能分配给该项目的 Task 或 Issue。
 - **可恢复的事项执行：** 分配、重新分配、停止、继续、评审和决策请求收敛为幂等 Command。
-- **Runtime 与容量控制：** Runtime 心跳、Agent `maxConcurrency`、队列保留、重启恢复、目录锁和工作区租约。
+- **Runtime 与容量控制：** 始终展示默认 Host，支持本机 Runtime 生命周期、Agent/Project Resource 绑定、心跳、Agent `maxConcurrency`、队列保留、重启恢复、目录锁和工作区租约。
 - **真实 Git 隔离：** 以失败关闭方式创建 worktree，记录基准/最终提交、受限差异、产物和清理证据。
-- **人工协作：** 收件箱、评审门禁、评论、Activity、Squad、委派子事项和 Leader 续作。
+- **人工协作：** 收件箱、评审门禁、评论、Activity、可复用 Squad、项目资格、全局委派容量、委派子事项和 Leader 续作。
 - **可审计自动化：** 有界 Autopilot、外部触发去重、回环 CLI、Transcript 脱敏，以及明确的未知 Token/成本状态。
 - **项目环境发现：** 已批准命令优先使用 `<project>/.venv`（如存在），并记录最终执行环境。
-- **响应式工作台：** 在原有 Harness Web Shell 中提供 Inbox、Issue、Project、Agent、Squad、Runtime、Skill 和自主交付页面。
+- **响应式工作台：** 在原有 Harness Web Shell 中提供 Inbox、Issue、Project、交付看板、Agent 和 Skill，以及完整 Squad/Runtime 管理、绑定影响复核和本地数据入口。
 
 ## 安装
 
@@ -77,7 +78,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.3.3
+dsh plugin --profile web add dsh-project-orchestrator@1.5.0
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -118,14 +119,15 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 
 ## 执行模型
 
-1. Project 保存交付简报、资源、计划版本和审批状态。
-2. Issue 保存分配关系、生命周期、评审状态和当前 TaskRun。
-3. TaskRun 表示一次排队或执行尝试，并持有对应证据。
-4. Runtime 控制本机调度资格，Agent 提供执行容量。
-5. 执行前必须获取 worktree 或原地工作区租约。
-6. Harness Session 事件会投影为有界、尽力脱敏的 Transcript。
-7. 清理工作区并归档证据后，TaskRun 才会进入终态。
-8. Issue 只有经过人工评审才可以完成。
+1. Project 保存交付简报、资源、计划版本、审批状态、负责人和具备资格的项目智能体成员。
+2. 每个已批准 Task 都绑定明确的 active 项目智能体；成员资格本身不等同于执行指派。
+3. Issue 保存分配关系、生命周期、评审状态和当前 TaskRun。
+4. TaskRun 表示一次排队或执行尝试，并持有对应证据。
+5. Runtime 控制本机调度资格，Agent 提供执行容量。
+6. 执行前必须获取 worktree 或原地工作区租约。
+7. Harness Session 事件会投影为有界、尽力脱敏的 Transcript。
+8. 清理工作区并归档证据后，TaskRun 才会进入终态。
+9. Issue 只有经过人工评审才可以完成。
 
 Runtime 记录只代表当前 Harness Host 内的本地事实。1.x **不提供**远程 Agent 执行、双活 Host、分布式锁、远程分支推送或由代码托管平台认证的 Pull Request 创建。
 
@@ -186,7 +188,6 @@ pnpm smoke:package
 如果这个项目对你有帮助，欢迎通过微信支付或支付宝请作者喝杯咖啡。感谢你的支持。
 
 <p align="center">
-  <img src="docs/assets/donate-wechat.jpg" alt="微信支付收款码" width="280">
   <img src="docs/assets/donate-alipay.jpg" alt="支付宝收款码" width="280">
 </p>
 

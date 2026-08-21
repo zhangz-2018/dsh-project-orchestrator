@@ -5,12 +5,38 @@ export type TaskLanguage = 'zh-CN' | 'en'
 export type TaskStatus = 'draft' | 'queued' | 'running' | 'verifying' | 'completed' | 'failed' | 'blocked' | 'cancelled'
 export type BoardStage = 'planned' | 'todo' | 'in_progress' | 'review'
 export type RuntimeStatus = 'online' | 'offline' | 'unstable'
+export type RuntimeLifecycle = 'active' | 'archived'
 export type ResourceKind = 'github_repo' | 'local_directory'
 export type ResourceExecutionMode = 'in_place' | 'worktree'
 export type IssueStatus = 'backlog' | 'todo' | 'in_progress' | 'in_review' | 'done' | 'blocked' | 'cancelled'
 export type TaskRunStatus = 'deferred' | 'queued' | 'dispatched' | 'waiting_local_directory' | 'running' | 'completed' | 'failed' | 'cancelled'
 export type InboxKind = 'needs_decision' | 'blocked' | 'review_ready' | 'runtime_offline' | 'permission_denied' | 'test_failed_after_retry' | 'stale_approval'
 export type AgentWorkloadState = 'idle' | 'queued' | 'working'
+export type ProjectAgentMembershipStatus = 'active' | 'removed'
+export type FeatureUsageFeature = 'inbox' | 'issues' | 'projects' | 'delivery' | 'agents' | 'skills' | 'squads' | 'runtimes' | 'local_data'
+
+export interface ProjectAgentMembership {
+  id: string
+  projectId: string
+  agentId: string
+  projectRole: string
+  autoAssignable: boolean
+  status: ProjectAgentMembershipStatus
+  joinedBy: string
+  joinedAt: string
+  updatedAt: string
+  removedAt?: string
+}
+
+export interface FeatureUsageDaily {
+  id: string
+  date: string
+  feature: FeatureUsageFeature
+  opens: number
+  meaningfulActions: number
+  errorRecoveries: number
+  lastUsedAt: string
+}
 
 export interface AgentDraft {
   name: string
@@ -173,10 +199,12 @@ export interface RuntimeRecord {
   name: string
   machineId: string
   status: RuntimeStatus
+  lifecycle: RuntimeLifecycle
   capabilities: string[]
   agentCli?: string
   workspaceRoot?: string
   lastHeartbeatAt: string
+  archivedAt?: string
   createdAt: string
   updatedAt: string
 }
@@ -222,6 +250,7 @@ export interface TaskRunRecord {
   taskId?: string
   agentId?: string
   runtimeId?: string
+  runtimeNameSnapshot?: string
   status: TaskRunStatus
   trigger: 'assignment' | 'mention' | 'approval' | 'retry' | 'autopilot' | 'system'
   attempt: number
@@ -307,6 +336,9 @@ export interface InboxItem {
   issueId?: string
   taskRunId?: string
   decisionId?: string
+  runtimeId?: string
+  resourceId?: string
+  agentId?: string
   actions: Array<'approve' | 'reject' | 'defer' | 'retry'>
   createdAt: string
 }
@@ -326,7 +358,7 @@ export interface AgentWorkload {
 }
 
 export interface SquadRecord { id: string; name: string; description: string; leaderAgentId: string; memberAgentIds: string[]; memberRoles: Record<string, string>; instructions: string; escalationPolicy: string; maxParallelDelegations: number; status: 'active' | 'archived'; createdAt: string; updatedAt: string }
-export interface DelegationRecord { id: string; squadId: string; projectId: string; parentIssueId: string; childIssueId: string; leaderAgentId: string; memberAgentId: string; taskRunId?: string; status: 'queued' | 'running' | 'waiting_leader' | 'completed' | 'failed' | 'cancelled' | 'escalated'; instruction: string; resultSummary?: string; error?: string; createdAt: string; updatedAt: string; completedAt?: string }
+export interface DelegationRecord { id: string; squadId: string; projectId: string; parentIssueId: string; childIssueId: string; leaderAgentId: string; memberAgentId: string; taskRunId?: string; commandId?: string; status: 'queued' | 'running' | 'waiting_leader' | 'completed' | 'failed' | 'cancelled' | 'escalated'; instruction: string; resultSummary?: string; error?: string; createdAt: string; updatedAt: string; completedAt?: string }
 export interface TranscriptEntry { id: string; taskRunId: string; sequence: number; role: 'user' | 'assistant' | 'tool' | 'system'; kind: string; text: string; createdAt: string }
 export interface ArtifactRecord { id: string; projectId: string; issueId?: string; taskRunId?: string; kind: 'diff' | 'test_report' | 'document' | 'log' | 'commit' | 'pull_request'; name: string; status: 'available' | 'missing' | 'failed'; uri?: string; content?: string; metadata: Record<string, unknown>; createdAt: string }
 export interface CommandRecord { id: string; idempotencyKey?: string; type: string; status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'; projectId?: string; issueId?: string; squadId?: string; actorType: 'human' | 'agent' | 'system'; actorId?: string; payload: Record<string, unknown>; result?: Record<string, unknown>; error?: string; createdAt: string; completedAt?: string }
@@ -335,6 +367,12 @@ export interface SkillRecord { id: string; name: string; description: string; so
 export interface WorkspaceLease { id: string; taskRunId: string; projectId: string; resourceId?: string; runtimeId?: string; mode: ResourceExecutionMode; sourcePath: string; workspacePath: string; branchName?: string; baseCommit?: string; state: 'preparing' | 'active' | 'releasing' | 'released' | 'orphaned'; acquiredAt: string; heartbeatAt: string; releasedAt?: string; cleanupError?: string }
 export interface LocalDirectoryLock { id: string; canonicalPath: string; taskRunId: string; projectId: string; acquiredAt: string; heartbeatAt: string }
 export interface RunStatistics { taskRunId: string; projectId: string; issueId?: string; agentId?: string; durationMs?: number; inputTokens?: number; outputTokens?: number; costUsd?: number; usageKnown: boolean }
+export type SquadAvailabilityReason = 'legacy_member_count' | 'archived' | 'agent_inactive' | 'member_outside_project' | 'capacity_exhausted'
+export type SquadAvailabilityWarning = 'leader_runtime_offline' | 'leader_runtime_unstable'
+export interface SquadAvailability { squadId: string; projectId: string; eligible: boolean; reasons: SquadAvailabilityReason[]; dispatchReady: boolean; warnings: SquadAvailabilityWarning[]; missingAgentIds: string[]; activeDelegations: number; availableSlots: number }
+export interface RuntimeOverview { defaultHost: { id: 'default-host'; name: '本机默认环境'; status: 'online' | 'unstable'; capabilities: string[]; boundAgentCount: number }; customCount: number; abnormalCount: number; archivedCount: number }
+export interface RuntimeDetail { runtime: RuntimeRecord; agents: AgentRecord[]; resources: ProjectResource[]; queuedTaskRuns: TaskRunRecord[]; activeTaskRuns: TaskRunRecord[]; affectedProjectIds: string[]; historyCount: number }
+export interface AgentRuntimeImpact { agentId: string; currentRuntimeId?: string; nextRuntimeId?: string; executableTaskRunIds: string[]; affectedProjects: Array<{ projectId: string; revision: number; status: ProjectStatus; assignedTaskIds: string[]; approvalWillInvalidate: boolean }> }
 
 export interface Snapshot {
   agents: AgentRecord[]
@@ -362,4 +400,7 @@ export interface Snapshot {
   inbox: InboxItem[]
   agentWorkloads: AgentWorkload[]
   runStatistics: RunStatistics[]
+  projectAgentMemberships: ProjectAgentMembership[]
+  featureUsageDaily: FeatureUsageDaily[]
+  runtimeOverview: RuntimeOverview
 }

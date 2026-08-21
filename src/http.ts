@@ -31,10 +31,24 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET' && taskRunTranscript !== undefined) return json(res, 200, service.snapshot().transcripts.filter((entry) => entry.taskRunId === taskRunTranscript))
       const taskRunArtifacts = matchOne(path, /^\/task-runs\/([^/]+)\/artifacts$/)
       if (method === 'GET' && taskRunArtifacts !== undefined) return json(res, 200, service.snapshot().artifacts.filter((artifact) => artifact.taskRunId === taskRunArtifacts))
+      const projectAgentsRead = matchOne(path, /^\/projects\/([^/]+)\/agents$/u)
+      if (method === 'GET' && projectAgentsRead !== undefined) return json(res, 200, service.listProjectAgents(projectAgentsRead))
+      const eligibleSquads = matchOne(path, /^\/projects\/([^/]+)\/eligible-squads$/u)
+      if (method === 'GET' && eligibleSquads !== undefined) return json(res, 200, service.listEligibleSquads(eligibleSquads))
+      const squadDetail = matchOne(path, /^\/squads\/([^/]+)$/u)
+      if (method === 'GET' && squadDetail !== undefined) return json(res, 200, service.getSquad(squadDetail))
+      const runtimeDetail = matchOne(path, /^\/runtimes\/([^/]+)$/u)
+      if (method === 'GET' && runtimeDetail !== undefined) return json(res, 200, service.getRuntimeDetail(runtimeDetail))
+      const runtimeImpact = matchOne(path, /^\/agents\/([^/]+)\/runtime-impact$/u)
+      if (method === 'GET' && runtimeImpact !== undefined) {
+        const runtimeId = url.searchParams.get('runtimeId')
+        return json(res, 200, service.getAgentRuntimeImpact(runtimeImpact, runtimeId === null || runtimeId === 'default' ? undefined : runtimeId))
+      }
       if (method === 'GET' && path === '/health') return json(res, 200, { ok: true })
       if (method === 'GET') return json(res, 404, { error: { code: 'route-not-found', message: 'Project orchestrator route was not found.' } })
 
       assertSameOrigin(req)
+      if (method === 'POST' || method === 'PUT' || requestHasBody(req)) assertJsonRequest(req)
       if (method === 'POST' && path === '/agents/draft') {
         return json(res, 200, await service.draftAgent(await readJson(req)))
       }
@@ -70,9 +84,13 @@ export function createHttpHandler(service: OrchestratorService) {
         if (method === 'POST' && path === '/artifacts') {
           return json(res, 201, await service.attachArtifact(await readJson(req)))
         }
+        const squadClone = matchOne(path, /^\/squads\/([^/]+)\/clone$/)
+        if (squadClone !== undefined && method === 'POST') {
+          return json(res, 201, await service.cloneSquad(squadClone, await readJson(req)))
+        }
         const squadArchive = matchOne(path, /^\/squads\/([^/]+)\/archive$/)
         if (squadArchive !== undefined && method === 'POST') {
-          return json(res, 200, await service.archiveSquad(squadArchive))
+          return json(res, 200, await service.archiveSquad(squadArchive, await readJson(req)))
         }
         const squad = matchOne(path, /^\/squads\/([^/]+)$/)
         if (squad !== undefined && method === 'PUT') {
@@ -90,7 +108,14 @@ export function createHttpHandler(service: OrchestratorService) {
           const body = await readJson(req) as { status?: 'online' | 'offline' | 'unstable' }
           return json(res, 200, await service.heartbeatRuntime(runtimeHeartbeat, body.status ?? 'online'))
         }
+        const runtimeArchive = matchOne(path, /^\/runtimes\/([^/]+)\/archive$/)
+        if (runtimeArchive !== undefined && method === 'POST') {
+          return json(res, 200, await service.archiveRuntime(runtimeArchive, await readJson(req)))
+        }
         const runtime = matchOne(path, /^\/runtimes\/([^/]+)$/)
+        if (runtime !== undefined && method === 'PUT') {
+          return json(res, 200, await service.updateRuntime(runtime, await readJson(req)))
+        }
         if (runtime !== undefined && method === 'DELETE') {
           await service.deleteRuntime(runtime)
           return json(res, 200, { ok: true })
@@ -121,6 +146,10 @@ export function createHttpHandler(service: OrchestratorService) {
         if (issueRetry !== undefined && method === 'POST') {
           return json(res, 202, await service.retryIssue(issueRetry))
         }
+        const agentRuntime = matchOne(path, /^\/agents\/([^/]+)\/runtime$/)
+        if (agentRuntime !== undefined && method === 'PUT') {
+          return json(res, 200, await service.bindAgentRuntime(agentRuntime, await readJson(req)))
+        }
         const agent = matchOne(path, /^\/agents\/([^/]+)$/)
         if (agent !== undefined && method === 'PUT') {
           return json(res, 200, await service.updateAgent(agent, await readJson(req)))
@@ -130,6 +159,18 @@ export function createHttpHandler(service: OrchestratorService) {
           return json(res, 200, { ok: true })
         }
 
+        const projectAgentsBatch = matchOne(path, /^\/projects\/([^/]+)\/agents\/batch$/)
+        if (projectAgentsBatch !== undefined && method === 'POST') return json(res, 201, await service.addProjectAgents(projectAgentsBatch, await readJson(req)))
+        const projectAgent = matchTwo(path, /^\/projects\/([^/]+)\/agents\/([^/]+)$/)
+        if (projectAgent !== undefined && method === 'PUT') return json(res, 200, await service.updateProjectAgent(projectAgent[0], projectAgent[1], await readJson(req)))
+        if (projectAgent !== undefined && method === 'DELETE') return json(res, 200, await service.removeProjectAgent(projectAgent[0], projectAgent[1], await readJson(req)))
+        const projectAgents = matchOne(path, /^\/projects\/([^/]+)\/agents$/)
+        if (projectAgents !== undefined && method === 'POST') return json(res, 201, await service.addProjectAgent(projectAgents, await readJson(req)))
+        const projectAssignments = matchOne(path, /^\/projects\/([^/]+)\/task-assignments$/)
+        if (projectAssignments !== undefined && method === 'POST') return json(res, 200, await service.assignProjectTasks(projectAssignments, await readJson(req)))
+        if (method === 'POST' && path === '/usage') return json(res, 200, await service.recordFeatureUsage(await readJson(req)))
+        if (method === 'DELETE' && path === '/usage') { await service.clearFeatureUsage(); return json(res, 200, { ok: true }) }
+
         const projectTasks = matchOne(path, /^\/projects\/([^/]+)\/tasks$/)
         if (projectTasks !== undefined && method === 'POST') {
           return json(res, 201, await service.createTask(projectTasks, await readJson(req)))
@@ -137,6 +178,10 @@ export function createHttpHandler(service: OrchestratorService) {
         const projectResources = matchOne(path, /^\/projects\/([^/]+)\/resources$/)
         if (projectResources !== undefined && method === 'POST') {
           return json(res, 201, await service.createProjectResource(projectResources, await readJson(req)))
+        }
+        const resourceRuntime = matchOne(path, /^\/resources\/([^/]+)\/runtime$/)
+        if (resourceRuntime !== undefined && method === 'PUT') {
+          return json(res, 200, await service.bindResourceRuntime(resourceRuntime, await readJson(req)))
         }
         const projectWorkspace = matchOne(path, /^\/projects\/([^/]+)\/workspace$/)
         if (projectWorkspace !== undefined && method === 'POST') {
@@ -212,6 +257,12 @@ function queryObject(url: URL): Record<string, string> {
 function matchOne(path: string, expression: RegExp): string | undefined {
   const value = expression.exec(path)?.[1]
   return value === undefined ? undefined : decodeURIComponent(value)
+}
+
+function matchTwo(path: string, expression: RegExp): [string, string] | undefined {
+  const match = expression.exec(path)
+  if (match?.[1] === undefined || match[2] === undefined) return undefined
+  return [decodeURIComponent(match[1]), decodeURIComponent(match[2])]
 }
 
 async function readJson(req: IncomingMessage, maxBytes = MAX_BODY_BYTES): Promise<unknown> {
@@ -292,14 +343,19 @@ function requestAbortSignal(req: IncomingMessage, res: ServerResponse): { signal
   }
 }
 
+function requestHasBody(req: IncomingMessage): boolean {
+  const length = req.headers['content-length']
+  return (length !== undefined && length !== '0') || req.headers['transfer-encoding'] !== undefined
+}
+
 function assertJsonRequest(req: IncomingMessage): void {
   const contentEncoding = req.headers['content-encoding']
   if (contentEncoding !== undefined && contentEncoding.toLocaleLowerCase() !== 'identity') {
-    throw new WorkflowError('unsupported-content-encoding', 'Compressed requirement imports are not supported.', 415)
+    throw new WorkflowError('unsupported-content-encoding', 'Compressed JSON mutations are not supported.', 415)
   }
   const contentType = req.headers['content-type']?.split(';', 1)[0]?.trim().toLocaleLowerCase()
   if (contentType !== 'application/json') {
-    throw new WorkflowError('unsupported-media-type', 'Requirement imports must use application/json.', 415)
+    throw new WorkflowError('unsupported-media-type', 'JSON mutations must use application/json.', 415)
   }
 }
 

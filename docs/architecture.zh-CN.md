@@ -16,7 +16,9 @@
 
 | 记录 | 归属事实 |
 |---|---|
-| Project | 计划 revision、审批、Resources，以及旧版自主交付 run 指针 |
+| Project | 计划 revision、审批、Resources、面向人工展示的 owner 文本、负责人智能体，以及旧版自主交付 run 指针 |
+| ProjectAgentMembership | 项目范围内的智能体资格、规划职责、自动分配许可和加入/移出历史 |
+| Task | 已批准计划依赖、执行智能体和独立验证门禁 |
 | Issue | 协作生命周期、分配 revision、评审状态、当前 TaskRun 指针 |
 | TaskRun | 一次排队/执行尝试、工作区 lease、Session 和交付证据 |
 | Command | 幂等 key、变更结果或持久化失败回执 |
@@ -25,7 +27,9 @@
 | Harness Session | 原始对话的权威来源；插件只存储有界、已脱敏的投影 |
 | Artifact | 持久化的文档、测试、commit、diff 或 PR 引用证据 |
 
-Inbox、Agent 工作负载、Skills 和统计数据都是读取投影，不能成为替代性的写入 owner。
+Inbox、Agent 工作负载、Skills、本地功能使用聚合和统计数据都是读取投影，不能成为替代性的写入 owner。
+
+项目智能体成员关系只定义参与资格，不等同于实际执行指派。每个可执行 Task 仍必须绑定明确的 `Task.agentId`；每次 Issue 执行仍由分配 revision 和 TaskRun 约束。未改变任务执行者的成员变更不会使审批失效；更换 Task Agent 仍会改变 plan digest，并要求重新审批。
 
 ## TaskRun 生命周期
 
