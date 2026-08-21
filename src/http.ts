@@ -1,10 +1,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { readFile } from 'node:fs/promises'
 import { ZodError } from 'zod'
 import { WorkflowError } from './workflow.js'
 import type { OrchestratorService } from './service.js'
 
 const API_PREFIX = '/project-orchestrator/api'
 const MAX_BODY_BYTES = 2 * 1024 * 1024
+const MAX_REQUIREMENT_IMPORT_BODY_BYTES = 32 * 1024 * 1024
+const pdfWorkerSource = readFile(new URL('./pdf.worker.mjs', import.meta.url))
 
 export function createHttpHandler(service: OrchestratorService) {
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
@@ -13,6 +16,7 @@ export function createHttpHandler(service: OrchestratorService) {
       const path = url.pathname.slice(API_PREFIX.length) || '/'
       const method = req.method ?? 'GET'
       if (method === 'GET') assertLoopbackRead(req)
+      if (method === 'GET' && path === '/pdf-worker.mjs') return javascript(res, await pdfWorkerSource)
       if (method === 'GET' && path === '/snapshot') return json(res, 200, service.snapshot())
       if (method === 'GET' && path === '/inbox') return json(res, 200, await service.getInbox(queryObject(url)))
       if (method === 'GET' && path === '/agents/workload') return json(res, 200, await service.getAgentWorkloads())
@@ -36,6 +40,15 @@ export function createHttpHandler(service: OrchestratorService) {
       }
       if (method === 'POST' && path === '/repositories/inspect') {
         return json(res, 200, await service.inspectRepository(await readJson(req)))
+      }
+      if (method === 'POST' && path === '/requirements/import') {
+        assertJsonRequest(req)
+        const request = requestAbortSignal(req, res)
+        try {
+          return json(res, 200, await service.importRequirementDocument(await readJson(req, MAX_REQUIREMENT_IMPORT_BODY_BYTES), request.signal))
+        } finally {
+          request.dispose()
+        }
       }
       if (method === 'POST' && path === '/projects') {
         const project = await service.createProjectFromRequest(await readJson(req))
@@ -201,13 +214,13 @@ function matchOne(path: string, expression: RegExp): string | undefined {
   return value === undefined ? undefined : decodeURIComponent(value)
 }
 
-async function readJson(req: IncomingMessage): Promise<unknown> {
+async function readJson(req: IncomingMessage, maxBytes = MAX_BODY_BYTES): Promise<unknown> {
   let size = 0
   const chunks: Buffer[] = []
   for await (const chunk of req) {
     const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
     size += buffer.byteLength
-    if (size > MAX_BODY_BYTES) throw new WorkflowError('payload-too-large', 'Request body exceeds 2 MiB.', 413)
+    if (size > maxBytes) throw new WorkflowError('payload-too-large', `Request body exceeds ${Math.floor(maxBytes / (1024 * 1024))} MiB.`, 413)
     chunks.push(buffer)
   }
   if (chunks.length === 0) return {}
@@ -262,6 +275,42 @@ function assertLoopbackHost(req: IncomingMessage): URL {
 
 function isLoopbackAddress(address: string): boolean {
   return address === '::1' || address === '127.0.0.1' || address.startsWith('127.') || address.startsWith('::ffff:127.')
+}
+
+function requestAbortSignal(req: IncomingMessage, res: ServerResponse): { signal: AbortSignal; dispose: () => void } {
+  const controller = new AbortController()
+  const abort = () => controller.abort(new WorkflowError('cancelled', 'PDF 解析请求已断开。', 499))
+  const close = () => { if (!res.writableEnded) abort() }
+  req.once('aborted', abort)
+  res.once('close', close)
+  return {
+    signal: controller.signal,
+    dispose: () => {
+      req.removeListener('aborted', abort)
+      res.removeListener('close', close)
+    },
+  }
+}
+
+function assertJsonRequest(req: IncomingMessage): void {
+  const contentEncoding = req.headers['content-encoding']
+  if (contentEncoding !== undefined && contentEncoding.toLocaleLowerCase() !== 'identity') {
+    throw new WorkflowError('unsupported-content-encoding', 'Compressed requirement imports are not supported.', 415)
+  }
+  const contentType = req.headers['content-type']?.split(';', 1)[0]?.trim().toLocaleLowerCase()
+  if (contentType !== 'application/json') {
+    throw new WorkflowError('unsupported-media-type', 'Requirement imports must use application/json.', 415)
+  }
+}
+
+function javascript(res: ServerResponse, body: Uint8Array): void {
+  if (res.headersSent) return
+  res.statusCode = 200
+  res.setHeader('content-type', 'text/javascript; charset=utf-8')
+  res.setHeader('cache-control', 'public, max-age=31536000, immutable')
+  res.setHeader('x-content-type-options', 'nosniff')
+  res.setHeader('cross-origin-resource-policy', 'same-origin')
+  res.end(body)
 }
 
 function json(res: ServerResponse, status: number, body: unknown): void {

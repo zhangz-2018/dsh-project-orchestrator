@@ -524,6 +524,43 @@ export const RepositoryInspectionSchema = z.object({
   issues: z.array(RepositoryIssueSchema).max(5_000),
 }).strict()
 
+const ImportedPdfPageImageSchema = z.object({
+  page: z.number().int().positive().max(1_000),
+  mediaType: z.literal('image/jpeg'),
+  dataBase64: z.string().min(4).max(3_000_000).regex(/^[A-Za-z0-9+/]+={0,2}$/, 'Image data must be valid base64.'),
+}).strict()
+
+export const RequirementDocumentImportSchema = z.object({
+  fileName: z.string().trim().min(1).max(240),
+  documentKind: z.enum(['prd', 'technical_design']),
+  pageCount: z.number().int().positive().max(1_000),
+  textPageCount: z.number().int().nonnegative().max(1_000),
+  visualPageCount: z.number().int().nonnegative().max(1_000),
+  extractedText: z.string().max(500_000),
+  images: z.array(ImportedPdfPageImageSchema).max(20),
+}).strict().superRefine((value, context) => {
+  if (value.textPageCount > value.pageCount || value.visualPageCount > value.pageCount) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['pageCount'], message: 'PDF page metadata is inconsistent.' })
+  }
+  if (value.extractedText.trim() === '' && value.images.length === 0) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['extractedText'], message: 'The PDF did not provide readable text or page images.' })
+  }
+  if (new Set(value.images.map((image) => image.page)).size !== value.images.length) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['images'], message: 'PDF image page numbers must be unique.' })
+  }
+  if (value.images.some((image) => image.page > value.pageCount)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['images'], message: 'PDF image page numbers must exist in the document.' })
+  }
+})
+
+export const RequirementDocumentImportResultSchema = z.object({
+  markdown: z.string().trim().min(1).max(500_000),
+  pageCount: z.number().int().positive(),
+  textPageCount: z.number().int().nonnegative(),
+  analyzedImagePages: z.array(z.number().int().positive()).max(20),
+  warnings: z.array(z.string().min(1).max(500)).max(10),
+}).strict()
+
 const ProjectEditableInputSchema = z.object({
   name: z.string().trim().max(160).default(''),
   summary: z.string().trim().max(1_000).default(''),
@@ -804,6 +841,8 @@ export type ProjectCreateRequest = z.infer<typeof ProjectCreateRequestSchema>
 export type ProjectSource = z.infer<typeof ProjectSourceSchema>
 export type RepositoryInspection = z.infer<typeof RepositoryInspectionSchema>
 export type RepositoryIssue = z.infer<typeof RepositoryIssueSchema>
+export type RequirementDocumentImport = z.infer<typeof RequirementDocumentImportSchema>
+export type RequirementDocumentImportResult = z.infer<typeof RequirementDocumentImportResultSchema>
 export type TaskLanguage = z.infer<typeof TaskLanguageSchema>
 export type ProjectReplanRequest = z.infer<typeof ProjectReplanRequestSchema>
 export type ProjectWorkspaceLinkRequest = z.infer<typeof ProjectWorkspaceLinkRequestSchema>

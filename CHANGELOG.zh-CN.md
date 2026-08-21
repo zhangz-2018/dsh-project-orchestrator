@@ -4,6 +4,24 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.3.5] - 2026-08-21
+
+### 新增
+
+- 支持导入 PDF 需求与技术方案，将逐页提取的文字和渲染后的页面图片一并发送给所选 Harness AI 模型，也能处理仅包含扫描图片的 PDF。
+- 新增替换或追加导入、分阶段进度、取消、抽样与截断提示，以及可编辑的 Markdown 输出；导入不会隐式保存 Project 或启动规划。
+- 在项目 README 中增加微信支付和支付宝支持入口。
+
+### 修复
+
+- 删除 Project 时完整级联清理其 Tasks、Issues、审批、Runs、TaskRuns、Decisions、Delegations、Transcripts、Artifacts、Commands、Triggers、Leases 和本地目录锁，同时保留共享 Agents、Squads、Runtimes 与 Harness Workspaces。
+- 子记录清理失败时保留 Project 本身，从而可以安全重试删除。
+
+### 安全
+
+- PDF 导入会在 AI 分析前校验规范 Base64、图片格式、尺寸、像素与字节限制、模型图片能力、同源 JSON 请求、并发上限、请求取消和三分钟超时。
+- PDF 提取文字与页面图片被明确视为不可信证据，不能启用工具或覆盖需求分析约束。
+
 ## [1.3.4] - 2026-08-21
 
 ### 新增

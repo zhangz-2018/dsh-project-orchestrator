@@ -147,6 +147,15 @@ The package smoke test builds the exact npm artifact, checks its file allowlist 
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Changelog](CHANGELOG.md)
 
+## Buy the author a coffee
+
+If this project helps you, you can support its continued maintenance with WeChat Pay or Alipay. Thank you for your support.
+
+<p align="center">
+  <img src="docs/assets/donate-wechat.jpg" alt="WeChat Pay QR code" width="280">
+  <img src="docs/assets/donate-alipay.jpg" alt="Alipay QR code" width="280">
+</p>
+
 ## Project status and affiliation
 
 This is an independent community plugin and is not an official DeepSeek or DeepSeek Harness project. DeepSeek and related names may be trademarks of their respective owners.

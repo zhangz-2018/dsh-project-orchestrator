@@ -1,5 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
+import type {} from '@deepseek-ai/dsh-attachment'
 import type {} from '@deepseek-ai/dsh-host-webserver'
+import type {} from '@deepseek-ai/dsh-llm'
 import { createHttpHandler } from './http.js'
 import { OrchestratorService } from './service.js'
 import { OrchestratorStore, orchestratorDomain } from './storage.js'
@@ -14,6 +16,8 @@ export const name = 'project-orchestrator'
 export const inject = [
   'storageDomain',
   'webServer',
+  'attachments',
+  'llm',
   'agents',
   'agentPresets',
   'agentDefaultModel',

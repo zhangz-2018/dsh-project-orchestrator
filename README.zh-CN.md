@@ -181,6 +181,15 @@ pnpm smoke:package
 - [行为准则](CODE_OF_CONDUCT.zh-CN.md)
 - [变更日志](CHANGELOG.zh-CN.md)
 
+## 请作者喝杯咖啡
+
+如果这个项目对你有帮助，欢迎通过微信支付或支付宝请作者喝杯咖啡。感谢你的支持。
+
+<p align="center">
+  <img src="docs/assets/donate-wechat.jpg" alt="微信支付收款码" width="280">
+  <img src="docs/assets/donate-alipay.jpg" alt="支付宝收款码" width="280">
+</p>
+
 ## 项目声明
 
 这是独立社区插件，并非 DeepSeek 或 DeepSeek Harness 官方项目。DeepSeek 及相关名称可能是其各自所有者的商标。

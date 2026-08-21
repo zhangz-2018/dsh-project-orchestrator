@@ -4,6 +4,24 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5] - 2026-08-21
+
+### Added
+
+- PDF requirement and technical-design imports that send extracted page text and rendered page images to the selected Harness AI model, including scanned image-only documents.
+- Replace-or-append import controls, staged progress, cancellation, sampling and truncation warnings, and editable Markdown output without implicitly saving or planning the Project.
+- WeChat Pay and Alipay support links in the project README files.
+
+### Fixed
+
+- Project deletion now cascades through every Project-owned Task, Issue, approval, run, TaskRun, Decision, delegation, transcript, Artifact, command, trigger, lease, and local-directory lock while preserving shared Agents, Squads, Runtimes, and Harness Workspaces.
+- Failed child-record cleanup leaves the Project record intact so deletion can be retried safely.
+
+### Security
+
+- PDF imports validate canonical base64, image type, dimensions, pixel and byte limits, model image capability, same-origin JSON requests, bounded concurrency, request cancellation, and a three-minute timeout before AI analysis.
+- Extracted PDF text and page images are explicitly treated as untrusted evidence and cannot enable tools or override the requirement-analysis contract.
+
 ## [1.3.4] - 2026-08-21
 
 ### Added

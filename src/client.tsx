@@ -73,6 +73,171 @@ interface DirectoryEntry { name: string; path: string; hidden: boolean }
 interface DirectoryListing { path: string; home: string; crumbs: DirectoryEntry[]; entries: DirectoryEntry[]; truncated: boolean }
 interface WorkspaceLink { workspaceId: string; path: string; title: string }
 
+interface RequirementImportResult {
+  markdown: string
+  pageCount: number
+  textPageCount: number
+  analyzedImagePages: number[]
+  warnings: string[]
+}
+
+interface ParsedPdfImport {
+  pageCount: number
+  textPageCount: number
+  visualPageCount: number
+  extractedText: string
+  images: Array<{ page: number; mediaType: 'image/jpeg'; dataBase64: string }>
+  warnings: string[]
+}
+
+const MAX_PDF_BYTES = 15 * 1024 * 1024
+const MAX_PDF_PAGES = 200
+const MAX_PDF_TEXT_CHARS = 180_000
+const MAX_PDF_IMAGE_PAGES = 20
+const MAX_PDF_IMAGE_BASE64_CHARS = 26 * 1024 * 1024
+
+async function parsePdfImport(file: File, signal: AbortSignal, progress: (message: string) => void): Promise<ParsedPdfImport> {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  pdfjs.GlobalWorkerOptions.workerSrc = `/project-orchestrator/api/pdf-worker.mjs?v=${encodeURIComponent(pdfjs.version)}`
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) })
+  const abort = () => { void loadingTask.destroy() }
+  signal.addEventListener('abort', abort, { once: true })
+  let document: Awaited<typeof loadingTask.promise> | undefined
+  try {
+    throwIfAborted(signal)
+    document = await loadingTask.promise
+    if (document.numPages > MAX_PDF_PAGES) throw new Error(`PDF 共 ${document.numPages} 页，超过 ${MAX_PDF_PAGES} 页上限。`)
+
+    const textParts: string[] = []
+    const visualCandidates: number[] = []
+    let textCharacters = 0
+    let textPageCount = 0
+    let textTruncated = false
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      throwIfAborted(signal)
+      progress(`正在提取第 ${pageNumber}/${document.numPages} 页…`)
+      const page = await document.getPage(pageNumber)
+      try {
+        const textContent = await page.getTextContent()
+        const pageText = reconstructPdfPageText(textContent.items)
+        if (pageText.length >= 40) textPageCount += 1
+        const pageSection = `## PDF 第 ${pageNumber} 页\n${pageText || '[本页没有可提取文字]'}`
+        if (textCharacters < MAX_PDF_TEXT_CHARS) {
+          const remaining = MAX_PDF_TEXT_CHARS - textCharacters
+          textParts.push(pageSection.slice(0, remaining))
+          textCharacters += Math.min(pageSection.length, remaining)
+          if (pageSection.length > remaining) textTruncated = true
+        } else {
+          textTruncated = true
+        }
+        visualCandidates.push(pageNumber)
+      } finally {
+        page.cleanup()
+      }
+    }
+
+    const selectedVisualPages = samplePageNumbers(visualCandidates, MAX_PDF_IMAGE_PAGES)
+    const images: ParsedPdfImport['images'] = []
+    for (let index = 0; index < selectedVisualPages.length; index += 1) {
+      throwIfAborted(signal)
+      const pageNumber = selectedVisualPages[index]!
+      progress(`正在渲染视觉页 ${index + 1}/${selectedVisualPages.length}（PDF 第 ${pageNumber} 页）…`)
+      const page = await document.getPage(pageNumber)
+      try {
+        const natural = page.getViewport({ scale: 1 })
+        const scale = Math.min(2, 1_500 / Math.max(natural.width, natural.height))
+        const viewport = page.getViewport({ scale })
+        const canvas = window.document.createElement('canvas')
+        canvas.width = Math.max(1, Math.ceil(viewport.width))
+        canvas.height = Math.max(1, Math.ceil(viewport.height))
+        if (canvas.getContext('2d', { alpha: false }) === null) throw new Error('浏览器无法创建 PDF 页面画布。')
+        await page.render({ canvas, viewport }).promise
+        const blob = await canvasToJpeg(canvas)
+        canvas.width = 0
+        canvas.height = 0
+        images.push({ page: pageNumber, mediaType: 'image/jpeg', dataBase64: await blobToBase64(blob) })
+        if (images.reduce((total, image) => total + image.dataBase64.length, 0) > MAX_PDF_IMAGE_BASE64_CHARS) {
+          throw new Error('PDF 页面图像转换后超过 26 MB，请压缩或拆分文档后重试。')
+        }
+      } finally {
+        page.cleanup()
+      }
+    }
+
+    const warnings: string[] = []
+    if (textTruncated) warnings.push(`PDF 可提取文字超过 ${MAX_PDF_TEXT_CHARS.toLocaleString()} 字符，已截取前部内容。`)
+    if (visualCandidates.length > selectedVisualPages.length) warnings.push(`需要视觉识别的页面较多，已抽样 ${selectedVisualPages.length}/${visualCandidates.length} 页。`)
+    return {
+      pageCount: document.numPages,
+      textPageCount,
+      visualPageCount: visualCandidates.length,
+      extractedText: textParts.join('\n\n'),
+      images,
+      warnings,
+    }
+  } finally {
+    signal.removeEventListener('abort', abort)
+    if (document !== undefined) await document.destroy()
+    else await loadingTask.destroy()
+  }
+}
+
+function reconstructPdfPageText(items: readonly unknown[]): string {
+  const lines: string[] = []
+  let line = ''
+  let previousY: number | undefined
+  for (const item of items) {
+    if (typeof item !== 'object' || item === null || !('str' in item) || typeof item.str !== 'string') continue
+    const transform = 'transform' in item && Array.isArray(item.transform) ? item.transform : undefined
+    const y = typeof transform?.[5] === 'number' ? transform[5] : previousY
+    if (previousY !== undefined && y !== undefined && Math.abs(y - previousY) > 3 && line.trim() !== '') {
+      lines.push(line.trim())
+      line = ''
+    }
+    if (item.str.trim() !== '') line += `${line === '' ? '' : ' '}${item.str.trim()}`
+    if ('hasEOL' in item && item.hasEOL === true && line.trim() !== '') {
+      lines.push(line.trim())
+      line = ''
+    }
+    previousY = y
+  }
+  if (line.trim() !== '') lines.push(line.trim())
+  return lines.join('\n').trim()
+}
+
+function samplePageNumbers(pages: number[], limit: number): number[] {
+  if (pages.length <= limit) return pages
+  if (limit <= 1) return [pages[0]!]
+  return [...new Set(Array.from({ length: limit }, (_, index) => pages[Math.round(index * (pages.length - 1) / (limit - 1))]!))]
+}
+
+async function canvasToJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
+  const encode = async (quality: number) => await new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => {
+    if (blob === null) reject(new Error('无法编码 PDF 页面图像。'))
+    else resolve(blob)
+  }, 'image/jpeg', quality))
+  let encoded = await encode(0.8)
+  for (const quality of [0.68, 0.54]) {
+    if (encoded.size <= 1_200_000) break
+    encoded = await encode(quality)
+  }
+  return encoded
+}
+
+async function blobToBase64(blob: Blob): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(reader.error ?? new Error('无法读取 PDF 页面图像。'))
+    reader.onload = () => resolve(String(reader.result))
+    reader.readAsDataURL(blob)
+  })
+  return dataUrl.slice(dataUrl.indexOf(',') + 1)
+}
+
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) throw signal.reason instanceof Error ? signal.reason : new DOMException('Aborted', 'AbortError')
+}
+
 class WorkbenchModel {
   constructor(
     private readonly directoryPicker: () => Promise<string | null>,
@@ -1196,28 +1361,88 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
   const [directoryBusy, setDirectoryBusy] = useState(false)
   const [directoryError, setDirectoryError] = useState<string>()
   const [importError, setImportError] = useState<string>()
+  const [importStatus, setImportStatus] = useState<string>()
+  const [importWarnings, setImportWarnings] = useState<string[]>([])
+  const [importBusy, setImportBusy] = useState(false)
+  const [appendImport, setAppendImport] = useState(false)
   const importInput = useRef<HTMLInputElement>(null)
+  const importTarget = useRef<'prd' | 'technicalDesign'>('prd')
+  const importRequest = useRef<AbortController>()
   const repositoryRequest = useRef<{ id: number; controller: AbortController } | undefined>(undefined)
   const repositoryRequestVersion = useRef(0)
-  const [importTarget, setImportTarget] = useState<'prd' | 'technicalDesign'>('prd')
   useEffect(() => {
     if (project === undefined) persistProjectIntakeDraft(value)
   }, [project, value])
-  useEffect(() => () => repositoryRequest.current?.controller.abort(), [])
+  useEffect(() => () => {
+    repositoryRequest.current?.controller.abort()
+    importRequest.current?.abort()
+  }, [])
   const setBrief = (prd: string) => setValue((current) => ({ ...current, prd, name: nameLocked ? current.name : suggestProjectName(prd) }))
-  const readFile = async (file: File | undefined) => {
-    if (!file) return
-    if (file.size > 1_000_000) { setImportError('文件超过 1 MB，请直接粘贴需要规划的内容。'); return }
+  const applyImportedText = (text: string, target: 'prd' | 'technicalDesign') => {
+    setValue((current) => {
+      const existing = target === 'prd' ? current.prd : current.technicalDesign
+      const imported = appendImport && existing.trim() !== '' ? `${existing.trim()}\n\n${text.trim()}` : text.trim()
+      if (target === 'technicalDesign') return { ...current, technicalDesign: imported }
+      return { ...current, prd: imported, name: nameLocked ? current.name : suggestProjectName(imported) }
+    })
+  }
+  const readFile = async (file: File | undefined, target: 'prd' | 'technicalDesign') => {
+    if (!file || importBusy) return
+    const isPdf = file.type === 'application/pdf' || file.name.toLocaleLowerCase().endsWith('.pdf')
+    if (!isPdf) {
+      if (file.size > 1_000_000) { setImportError('文本文件超过 1 MB，请直接粘贴需要规划的内容。'); return }
+      try {
+        applyImportedText(await file.text(), target)
+        setImportError(undefined)
+        setImportWarnings([])
+        setImportStatus(`已导入 ${file.name}。`)
+      } catch {
+        setImportError('无法读取文本文件，请直接粘贴内容。')
+      }
+      return
+    }
+    if (file.size > MAX_PDF_BYTES) { setImportError('PDF 超过 15 MB，请压缩或拆分后再导入。'); return }
+
+    const controller = new AbortController()
+    importRequest.current?.abort()
+    importRequest.current = controller
+    setImportBusy(true)
+    setImportError(undefined)
+    setImportWarnings([])
+    setImportStatus(`正在打开 ${file.name}…`)
     try {
-      const text = await file.text()
-      setImportError(undefined)
-      if (importTarget === 'prd') setBrief(text)
-      else setValue((current) => ({ ...current, technicalDesign: text }))
-    } catch {
-      setImportError('无法读取文件，请直接粘贴内容。')
+      const parsed = await parsePdfImport(file, controller.signal, setImportStatus)
+      throwIfAborted(controller.signal)
+      setImportStatus('正在让 AI 归纳文档内容…')
+      const result = await mutate<RequirementImportResult>('/requirements/import', 'POST', {
+        fileName: file.name,
+        documentKind: target === 'prd' ? 'prd' : 'technical_design',
+        ...parsed,
+        warnings: undefined,
+      }, controller.signal)
+      if (importRequest.current !== controller) return
+      applyImportedText(result.markdown, target)
+      setImportWarnings([...parsed.warnings, ...result.warnings])
+      setImportStatus(`已解析 ${result.pageCount} 页，并生成${target === 'prd' ? '需求文档' : '技术方案草稿'}。`)
+    } catch (error) {
+      if (importRequest.current !== controller) return
+      if (controller.signal.aborted) {
+        setImportStatus('已停止解析。')
+        return
+      }
+      const message = error instanceof Error ? error.message : 'PDF 解析失败。'
+      const passwordProtected = error instanceof Error && (error.name === 'PasswordException' || /password/i.test(error.message))
+      setImportError(passwordProtected ? 'PDF 受密码保护，请解锁后再导入。' : message)
+      setImportStatus(undefined)
+    } finally {
+      if (importRequest.current === controller) {
+        importRequest.current = undefined
+        setImportBusy(false)
+      }
     }
   }
   const saveAndClose = () => {
+    importRequest.current?.abort()
     if (project === undefined) persistProjectIntakeDraft(value)
     model.closePanel()
   }
@@ -1298,11 +1523,11 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
   }
   const footer = project === undefined ? <>
     <ActionButton variant="ghost" onClick={saveAndClose}>保存草稿并关闭</ActionButton>
-    <ActionButton variant="primary" disabled={state.loading || !validProject(value, value.mode === 'ai')} onClick={() => void submit()}>{value.mode === 'empty' ? '创建空项目' : '创建并让 AI 拆解'}</ActionButton>
+    <ActionButton variant="primary" disabled={state.loading || importBusy || !validProject(value, value.mode === 'ai')} onClick={() => void submit()}>{value.mode === 'empty' ? '创建空项目' : '创建并让 AI 拆解'}</ActionButton>
   </> : <>
     <ActionButton variant="ghost" onClick={saveAndClose}>取消</ActionButton>
-    <ActionButton variant="outline" disabled={state.loading || !validProject(value, false)} onClick={() => void submit(false)}>仅保存</ActionButton>
-    <ActionButton variant="primary" disabled={state.loading || !validProject(value, true)} onClick={() => void submit(true)}>保存并让 AI 重新规划</ActionButton>
+    <ActionButton variant="outline" disabled={state.loading || importBusy || !validProject(value, false)} onClick={() => void submit(false)}>仅保存</ActionButton>
+    <ActionButton variant="primary" disabled={state.loading || importBusy || !validProject(value, true)} onClick={() => void submit(true)}>保存并让 AI 重新规划</ActionButton>
   </>
   return (
     <ModalShell title={project ? '编辑项目' : '创建项目'} subtitle={project ? '保存资料不会自动调用 AI；只有选择重新规划时才会生成并替换任务计划。' : '先选择创建方式。空项目不会调用 AI，也不会自动生成任务。'} close={saveAndClose} wide footer={footer}>
@@ -1310,7 +1535,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
         {project === undefined ? <><fieldset className="po-project-mode"><legend>创建方式</legend><label className={value.mode === 'empty' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-mode" value="empty" checked={value.mode === 'empty'} onChange={() => setValue({ ...value, mode: 'empty' })} /><span><strong>空项目</strong><small>保存仓库与项目资料，不调用 AI。可以从 GitHub Issues 导入长期事项。</small></span></label><label className={value.mode === 'ai' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-mode" value="ai" checked={value.mode === 'ai'} onChange={() => setValue({ ...value, mode: 'ai' })} /><span><strong>AI 智能拆解</strong><small>克隆或读取仓库，基于需求与所选 Issues 生成代码和测试任务。</small></span></label></fieldset><fieldset className="po-project-mode po-project-source-mode"><legend>代码来源</legend><label className={value.sourceKind === 'local_directory' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-source" value="local_directory" checked={value.sourceKind === 'local_directory'} onChange={() => setValue({ ...value, sourceKind: 'local_directory' })} /><span><strong>本地代码仓库</strong><small>从本机选择已有目录，路径仍会由 Host 重新校验。</small></span></label><label className={value.sourceKind === 'github_repo' ? 'po-project-mode-option po-project-mode-option-selected' : 'po-project-mode-option'}><input type="radio" name="project-source" value="github_repo" checked={value.sourceKind === 'github_repo'} onChange={() => setValue({ ...value, sourceKind: 'github_repo' })} /><span><strong>GitHub 仓库</strong><small>读取分支与开放 Issues，创建时浅克隆到 Harness 受管目录。</small></span></label></fieldset></> : null}
         <div className="po-form-grid"><Field label="项目名称" hint={value.mode === 'empty' ? '空项目必须填写名称。' : '可留空，系统会根据需求或仓库生成。'}><input className="po-input" autoFocus={!project} required={value.mode === 'empty'} value={value.name} onChange={(event) => { setNameLocked(true); setValue({ ...value, name: event.target.value }) }} placeholder="例如：支付网关重构" /></Field>{project !== undefined || value.sourceKind === 'local_directory' ? <Field label="本地代码仓库" hint={value.mode === 'ai' ? 'AI 会只读检查该目录；执行仍需人工批准。' : '创建时只记录目录，不读取代码。'}><div className="po-directory-control"><input className="po-input" required readOnly={project === undefined} value={value.cwd} onChange={(event) => setValue({ ...value, cwd: event.target.value })} placeholder="点击右侧按钮选择目录" /><ActionButton type="button" variant="outline" icon={<IconFolderOpenOutline16 />} onClick={() => void chooseDirectory()}>选择目录</ActionButton></div></Field> : <Field label="GitHub 仓库地址" hint="首版仅支持不含凭据的 https://github.com/owner/repo 地址。"><div className="po-directory-control"><input className="po-input" type="url" required value={value.repositoryUrl} onChange={(event) => { repositoryRequestVersion.current += 1; repositoryRequest.current?.controller.abort(); repositoryRequest.current = undefined; setRepositoryBusy(false); setRepository(undefined); setValue({ ...value, repositoryUrl: event.target.value, repositoryRef: '', issueNumbers: [] }) }} placeholder="https://github.com/owner/repository" /><ActionButton type="button" variant="outline" disabled={repositoryBusy || !value.repositoryUrl.trim()} onClick={() => void inspectRepository()}>{repositoryBusy ? '读取中…' : '读取仓库'}</ActionButton></div></Field>}</div>
         {project === undefined && value.sourceKind === 'github_repo' && repository ? <section className="po-repository-import" aria-label="GitHub 仓库导入设置"><div className="po-form-grid"><Field label="拉取分支" hint={`默认分支：${repository.defaultBranch}`}><select className="po-select" value={value.repositoryRef} onChange={(event) => setValue({ ...value, repositoryRef: event.target.value })}>{repository.branches.map((branch) => <option key={branch.name} value={branch.name}>{branch.name}{branch.protected ? '（受保护）' : ''}</option>)}</select></Field><div className="po-repository-summary"><strong>{repository.owner}/{repository.name}</strong><span>{repository.branches.length} 个分支 · {repository.issues.length} 个开放 Issue</span></div></div><fieldset className="po-issue-picker"><legend>从 Issues 自动创建事项（可选）</legend>{repository.issues.length === 0 ? <p>该仓库没有可导入的开放 Issue。</p> : <div>{repository.issues.map((issue) => <label key={issue.number}><input type="checkbox" checked={value.issueNumbers.includes(issue.number)} onChange={(event) => setValue((current) => ({ ...current, issueNumbers: event.target.checked ? [...current.issueNumbers, issue.number] : current.issueNumbers.filter((number) => number !== issue.number) }))} /><span><strong>#{issue.number} {issue.title}</strong><small>{issue.labels.join(', ') || '无标签'}</small></span></label>)}</div>}</fieldset></section> : null}
-        {value.mode === 'ai' || project !== undefined ? <><Field label="交付目标与约束" hint="只有点击“让 AI 规划”时才会提交给 Planner。"><textarea className="po-textarea po-brief-editor" required={value.mode === 'ai'} value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="描述结果、范围、规则和验收标准；支持 Markdown。" /></Field><div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><button type="button" onClick={() => { setImportTarget('prd'); importInput.current?.click() }}>导入需求文件</button><button type="button" onClick={() => { setImportTarget('technicalDesign'); importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text" hidden aria-label="导入 Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0]); event.currentTarget.value = '' }} /></div></> : <div className="po-empty-project-note"><IconFolderOpenOutline16 /><div><strong>不会自动拆任务</strong><p>创建后项目状态为“待规划”，任务数量为 0。你可以直接添加手动任务，或编辑项目补充需求后再启动 AI。</p></div></div>}
+        {value.mode === 'ai' || project !== undefined ? <><Field label="交付目标与约束" hint="只有点击“让 AI 规划”时才会提交给 Planner。"><textarea className="po-textarea po-brief-editor" required={value.mode === 'ai'} value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="描述结果、范围、规则和验收标准；支持 Markdown。" /></Field><div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><label className="po-import-append"><input type="checkbox" checked={appendImport} onChange={(event) => setAppendImport(event.target.checked)} />追加到现有内容</label><button type="button" disabled={importBusy} onClick={() => { importTarget.current = 'prd'; importInput.current?.click() }}>导入需求文件</button><button type="button" disabled={importBusy} onClick={() => { importTarget.current = 'technicalDesign'; importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text,.pdf,application/pdf" hidden aria-label="导入 PDF、Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0], importTarget.current); event.currentTarget.value = '' }} /></div><p className="po-import-disclosure">PDF 会在浏览器中转换为文字和页面图像，再发送给当前 AI 模型归纳；导入本身不会保存项目或启动规划。</p>{importStatus ? <div className="po-import-status" role="status" aria-live="polite">{importBusy ? <IconRefreshOutline16 /> : <IconCheckOutline16 />}<span>{importStatus}</span>{importBusy ? <button type="button" onClick={() => importRequest.current?.abort()}>停止解析</button> : null}</div> : null}{importWarnings.length > 0 ? <div className="po-import-warnings" role="note">{importWarnings.map((warning) => <span key={warning}><IconWarningOutline16 />{warning}</span>)}</div> : null}</> : <div className="po-empty-project-note"><IconFolderOpenOutline16 /><div><strong>不会自动拆任务</strong><p>创建后项目状态为“待规划”，任务数量为 0。你可以直接添加手动任务，或编辑项目补充需求后再启动 AI。</p></div></div>}
         {importError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{importError}</div> : null}
         {directoryBrowserOpen ? <DirectoryBrowser listing={directoryListing} busy={directoryBusy} error={directoryError} navigate={browseDirectory} select={selectBrowsedDirectory} close={() => { setDirectoryBrowserOpen(false); setDirectoryListing(undefined) }} /> : null}
         <details className="po-project-constraints"><summary>补充项目资料（可选）</summary><div className="po-project-constraints-body"><Field label="项目摘要"><textarea className="po-textarea" value={value.summary} onChange={(event) => setValue({ ...value, summary: event.target.value })} placeholder="用于项目列表和详情页的简短说明。" /></Field>{value.mode === 'ai' || project !== undefined ? <Field label="技术方案上下文" hint="可以留空，AI 会根据需求和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="已有模块、接口、数据、测试和发布约束。" /></Field> : null}<div className="po-field-pair"><Field label="任务语言" hint="仅在 AI 生成任务时生效；命令和代码标识不会翻译。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>

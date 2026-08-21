@@ -24,7 +24,10 @@ function response() {
     headersSent: false,
     headers: new Map(),
     body: '',
+    get writableEnded() { return this.headersSent },
     setHeader(name, value) { this.headers.set(name, value) },
+    once() { return this },
+    removeListener() { return this },
     end(value = '') { this.body += value; this.headersSent = true },
   }
 }
@@ -51,6 +54,7 @@ function service() {
      async deleteRuntime() {},
      async createIssue(body) { return { id: 'issue', ...body } },
      async inspectRepository(body) { return { repositoryUrl: body.repositoryUrl, owner: 'owner', name: 'repo', defaultBranch: 'main', branches: [{ name: 'main', protected: true }], issues: [] } },
+     async importRequirementDocument(body) { return { markdown: '# PRD', pageCount: body.pageCount, textPageCount: body.textPageCount, analyzedImagePages: body.images.map((image) => image.page), warnings: [] } },
     async draftAgent() { return { name: 'Draft', role: 'Reviewer', description: '', persona: 'Review.', preset: 'standard', toolPolicy: 'read_only' } },
     async createProjectFromRequest(body) { return { id: 'project', status: body.mode === 'empty' ? 'draft' : 'decomposing', ...body } },
     async linkProjectWorkspace(id, body) { return { id, ...body } },
@@ -169,6 +173,42 @@ test('repository inspection and project cloning routes run outside the HTTP muta
   await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects', headers, body: JSON.stringify({ mode: 'empty', name: 'Repo', source: { kind: 'github_repo', repositoryUrl: 'https://github.com/owner/repo', ref: 'main', issueNumbers: [] } }) }), createResponse)
   assert.equal(createResponse.statusCode, 201)
   assert.equal(lockCalls, 0)
+})
+
+test('PDF worker is served as a same-origin immutable JavaScript asset', async () => {
+  const res = response()
+  await createHttpHandler(service())(new Request({
+    url: '/project-orchestrator/api/pdf-worker.mjs?v=test',
+    headers: { host: '127.0.0.1:3080' },
+  }), res)
+  assert.equal(res.statusCode, 200)
+  assert.equal(res.headers.get('content-type'), 'text/javascript; charset=utf-8')
+  assert.equal(res.headers.get('x-content-type-options'), 'nosniff')
+  assert.match(res.headers.get('cache-control'), /immutable/)
+})
+
+test('PDF requirement import is same-origin, JSON-only, and does not hold the mutation lock', async () => {
+  const fake = service()
+  let lockCalls = 0
+  let importSignal
+  fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
+  fake.importRequirementDocument = async (document, signal) => {
+    importSignal = signal
+    return { markdown: '# PRD', pageCount: document.pageCount, textPageCount: document.textPageCount, analyzedImagePages: [], warnings: [] }
+  }
+  const body = JSON.stringify({ fileName: 'requirements.pdf', documentKind: 'prd', pageCount: 1, textPageCount: 1, visualPageCount: 0, extractedText: 'Requirement', images: [] })
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin', 'content-type': 'application/json; charset=utf-8' }
+  const res = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/requirements/import', headers, body }), res)
+  assert.equal(res.statusCode, 200)
+  assert.equal(JSON.parse(res.body).markdown, '# PRD')
+  assert.equal(importSignal instanceof AbortSignal, true)
+  assert.equal(lockCalls, 0)
+
+  const wrongType = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/requirements/import', headers: { ...headers, 'content-type': 'text/plain' }, body }), wrongType)
+  assert.equal(wrongType.statusCode, 415)
+  assert.equal(JSON.parse(wrongType.body).error.code, 'unsupported-media-type')
 })
 
 test('project directory open route is same-origin, project-id scoped, and ignores arbitrary path bodies', async () => {

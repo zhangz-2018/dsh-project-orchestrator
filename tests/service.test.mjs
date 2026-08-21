@@ -661,6 +661,15 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
   return {
     agentDefaultModel: { currentSelection: () => ({ provider: 'test', model: 'test' }) },
     agentPresets: { mount: async () => {} },
+    llm: { resolveModelInfo: async () => ({ provider: 'test', id: 'test', name: 'Test model', inputModalities: ['text', 'image'] }) },
+    attachments: {
+      imageLimits: { maxImageBytes: 5_000_000, maxImagesPerMessage: 20, maxMessageImageBytes: 20_000_000, maxImagePixels: 4_000_000, mediaTypes: ['image/jpeg'] },
+      validateImage: async (image) => { observation.validatedImages = [...(observation.validatedImages ?? []), image] },
+      saveImage: async (image) => {
+        observation.savedImages = [...(observation.savedImages ?? []), image]
+        return { attachmentId: `attachment-${observation.savedImages.length}`, mediaType: image.mediaType, bytes: image.data.byteLength, width: 100, height: 100, name: image.name }
+      },
+    },
     sessions: { flush: async () => {} },
     agents: {
       create: async (options) => {
@@ -680,7 +689,7 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
         return {
           agent: {
             session,
-            followup: (message) => { observation.prompt = message.content?.[0]?.text },
+            followup: (message) => { observation.message = message; observation.prompt = message.content?.[0]?.text },
             whenIdle: async () => {},
             cancel: () => {},
           },
@@ -690,6 +699,53 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
     },
   }
 }
+
+test('PDF requirement import sends extracted text and ordered page images to the AI model', async () => {
+  const observation = {}
+  const context = agentContext('```markdown\n# 产品需求文档\n\n## 背景与目标\n统一审批流程。\n```', observation)
+  const service = new OrchestratorService(context, memoryStore())
+  const firstImage = Buffer.from('first-jpeg').toString('base64')
+  const secondImage = Buffer.from('second-jpeg').toString('base64')
+
+  const result = await service.importRequirementDocument({
+    fileName: '审批需求.pdf',
+    documentKind: 'prd',
+    pageCount: 2,
+    textPageCount: 1,
+    visualPageCount: 2,
+    extractedText: '## PDF 第 1 页\n审批人可以批准或拒绝。',
+    images: [
+      { page: 1, mediaType: 'image/jpeg', dataBase64: firstImage },
+      { page: 2, mediaType: 'image/jpeg', dataBase64: secondImage },
+    ],
+  })
+
+  assert.match(result.markdown, /^# 产品需求文档/)
+  assert.deepEqual(result.analyzedImagePages, [1, 2])
+  assert.equal(observation.validatedImages.length, 2)
+  assert.equal(observation.savedImages.length, 2)
+  assert.match(observation.prompt, /BEGIN UNTRUSTED EXTRACTED PDF TEXT/)
+  assert.deepEqual(observation.message.content.map((block) => block.type), ['text', 'text', 'image', 'text', 'image'])
+  assert.equal(observation.message.content[1].text, '以下图片是 PDF 第 1 页。')
+  assert.equal(observation.message.content[3].text, '以下图片是 PDF 第 2 页。')
+})
+
+test('PDF requirement import rejects an explicitly text-only model before saving images', async () => {
+  const observation = {}
+  const context = agentContext('unused', observation)
+  context.llm.resolveModelInfo = async () => ({ provider: 'test', id: 'text-only', name: 'Text only', inputModalities: ['text'] })
+  const service = new OrchestratorService(context, memoryStore())
+  await assert.rejects(() => service.importRequirementDocument({
+    fileName: 'scan.pdf',
+    documentKind: 'prd',
+    pageCount: 1,
+    textPageCount: 0,
+    visualPageCount: 1,
+    extractedText: '',
+    images: [{ page: 1, mediaType: 'image/jpeg', dataBase64: Buffer.from('scan').toString('base64') }],
+  }), (error) => error.code === 'model-image-input-unsupported' && error.status === 422)
+  assert.equal(observation.savedImages, undefined)
+})
 
 test('runtime, resource, issue, and task run records form the collaboration foundation', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-foundation-'))

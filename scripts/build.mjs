@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { mkdir, readFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile } from 'node:fs/promises'
 import { build } from 'esbuild'
 
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
@@ -7,6 +7,10 @@ const packageId = packageJson.name
 const externals = [...Object.keys(packageJson.dependencies ?? {}), ...Object.keys(packageJson.peerDependencies ?? {})]
 
 await mkdir(new URL('../lib/', import.meta.url), { recursive: true })
+await copyFile(
+  new URL('../node_modules/pdfjs-dist/legacy/build/pdf.worker.min.mjs', import.meta.url),
+  new URL('../lib/pdf.worker.mjs', import.meta.url),
+)
 
 await build({
   entryPoints: [new URL('../src/index.ts', import.meta.url).pathname],
@@ -38,7 +42,7 @@ await build({
   format: 'cjs',
   target: ['chrome120'],
   sourcemap: true,
-  external: externals,
+  external: externals.filter((dependency) => dependency !== 'pdfjs-dist'),
   banner: {
     js: `window.__ModuleLoader__.load({ id: ${JSON.stringify(packageId)}, factory: (require) => { var module = { exports: {} }; var exports = module.exports;`,
   },

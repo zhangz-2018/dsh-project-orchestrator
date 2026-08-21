@@ -509,7 +509,20 @@ body[data-ds-dark-theme] .po-workbench {
 .po-intake-file-actions { display: flex; align-items: center; gap: 12px; color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
 .po-intake-file-actions span { margin-right: auto; }
 .po-intake-file-actions button { min-height: 36px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 6px; padding: 0 10px; color: var(--dsw-alias-label-secondary, #3f3f46); background: transparent; cursor: pointer; }
-.po-intake-file-actions button:hover { background: var(--dsw-alias-interactive-bg-hover, #f4f4f5); }
+.po-intake-file-actions button:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover, #f4f4f5); }
+.po-intake-file-actions button:disabled { color: var(--dsw-alias-label-tertiary, #8b8d94); background: var(--dsw-alias-bg-layer-1, #f7f7f8); cursor: not-allowed; }
+.po-import-append { min-height: 36px; display: inline-flex; align-items: center; gap: 6px; color: var(--dsw-alias-label-secondary, #52525b); cursor: pointer; }
+.po-import-append input { accent-color: var(--po-accent); }
+.po-import-disclosure { max-width: 72ch; margin: -10px 0 0; color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; line-height: 1.5; }
+.po-import-status { min-height: 42px; border: 1px solid color-mix(in srgb, var(--po-accent) 30%, var(--dsw-alias-border-l2, #d4d4d8)); border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; color: var(--po-accent-ink); background: var(--po-accent-surface); font-size: 12px; }
+.po-import-status > svg { flex: 0 0 auto; }
+.po-import-status:has(button) > svg { animation: po-spin 1s linear infinite; }
+.po-import-status span { min-width: 0; flex: 1; }
+.po-import-status button { min-height: 30px; border: 0; border-radius: 5px; padding: 0 8px; color: var(--dsw-alias-label-primary, #18181b); background: var(--dsw-alias-bg-base, #fff); cursor: pointer; }
+.po-import-status button:hover { background: var(--dsw-alias-interactive-bg-hover, #f4f4f5); }
+.po-import-warnings { display: grid; gap: 6px; color: var(--po-warn-ink); font-size: 11px; line-height: 1.45; }
+.po-import-warnings span { display: flex; align-items: flex-start; gap: 7px; }
+.po-import-warnings svg { flex: 0 0 auto; margin-top: 1px; }
 .po-project-constraints { border-top: 1px solid var(--dsw-alias-border-l2, #e5e7eb); padding-top: 14px; }
 .po-project-constraints summary { cursor: pointer; color: var(--dsw-alias-label-secondary, #3f3f46); font-weight: 650; }
 .po-project-constraints-body { display: grid; gap: 14px; padding-top: 16px; }
