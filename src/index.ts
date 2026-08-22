@@ -8,6 +8,7 @@ import { OrchestratorStore, orchestratorDomain } from './storage.js'
 
 export * from './types.js'
 export * from './workflow.js'
+export * from './prompts.js'
 export { OrchestratorStore, orchestratorDomain }
 export { OrchestratorService } from './service.js'
 export { createHttpHandler } from './http.js'
@@ -23,6 +24,7 @@ export const inject = [
   'agentDefaultModel',
   'sessions',
   'tools',
+  'skills',
 ]
 
 export async function apply(ctx: Context): Promise<void> {

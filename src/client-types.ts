@@ -14,6 +14,31 @@ export type InboxKind = 'needs_decision' | 'blocked' | 'review_ready' | 'runtime
 export type AgentWorkloadState = 'idle' | 'queued' | 'working'
 export type ProjectAgentMembershipStatus = 'active' | 'removed'
 export type FeatureUsageFeature = 'inbox' | 'issues' | 'projects' | 'delivery' | 'agents' | 'skills' | 'squads' | 'runtimes' | 'local_data'
+export type EscalationTrigger = 'requirement_conflict' | 'contract_conflict' | 'destructive_change' | 'production_data_change' | 'permission_required' | 'credential_required' | 'verification_unavailable' | 'repeated_failure' | 'scope_expansion' | 'delegation_conflict' | 'source_of_truth_unknown'
+
+export interface SquadEscalationPolicy {
+  triggers: EscalationTrigger[]
+  maxFocusedRepairAttempts: number
+  onTrigger: 'request_decision'
+  pauseParentIssue: boolean
+  cancelSiblingDelegations: boolean
+  customInstructions: string
+}
+
+export interface DelegationContract {
+  objective: string
+  scope: string[]
+  forbiddenScope: string[]
+  deliverables: string[]
+  acceptanceCriteria: string[]
+  verification: string[]
+  escalationConditions: string[]
+}
+
+export interface PromptDiagnostic {
+  code: string
+  severity: 'info' | 'warning'
+}
 
 export interface ProjectAgentMembership {
   id: string
@@ -59,6 +84,8 @@ export interface AgentBuilderMessage {
 }
 
 export interface AgentBuilderResponse extends AgentDraft {
+  reuseRecommendation?: { agentId: string; reason: string }
+  warnings: string[]
   feedback: string
   assumptions: string[]
   openQuestions: string[]
@@ -259,7 +286,14 @@ export interface TaskRunRecord {
   commandId?: string
   squadId?: string
   delegatedByTaskRunId?: string
-  finishedReason?: 'completed' | 'stopped' | 'reassigned' | 'review_rejected' | 'failed'
+  resumeDelegationId?: string
+  resumeDecisionId?: string
+  finishedReason?: 'completed' | 'stopped' | 'reassigned' | 'review_rejected' | 'failed' | 'decision_requested'
+  promptVersion?: string
+  promptDigest?: string
+  promptContextDigest?: string
+  collaborationPolicyVersion?: string
+  promptDiagnostics?: PromptDiagnostic[]
   sessionId?: string
   cwd?: string
   resourceId?: string
@@ -357,8 +391,8 @@ export interface AgentWorkload {
   runtimeId?: string
 }
 
-export interface SquadRecord { id: string; name: string; description: string; leaderAgentId: string; memberAgentIds: string[]; memberRoles: Record<string, string>; instructions: string; escalationPolicy: string; maxParallelDelegations: number; status: 'active' | 'archived'; createdAt: string; updatedAt: string }
-export interface DelegationRecord { id: string; squadId: string; projectId: string; parentIssueId: string; childIssueId: string; leaderAgentId: string; memberAgentId: string; taskRunId?: string; commandId?: string; status: 'queued' | 'running' | 'waiting_leader' | 'completed' | 'failed' | 'cancelled' | 'escalated'; instruction: string; resultSummary?: string; error?: string; createdAt: string; updatedAt: string; completedAt?: string }
+export interface SquadRecord { id: string; name: string; description: string; leaderAgentId: string; memberAgentIds: string[]; memberRoles: Record<string, string>; instructions: string; escalationPolicy: string; escalationConfig?: SquadEscalationPolicy; collaborationPolicyVersion?: string; maxParallelDelegations: number; status: 'active' | 'archived'; createdAt: string; updatedAt: string }
+export interface DelegationRecord { id: string; squadId: string; projectId: string; parentIssueId: string; childIssueId: string; leaderAgentId: string; memberAgentId: string; taskRunId?: string; commandId?: string; status: 'queued' | 'running' | 'waiting_leader' | 'completed' | 'failed' | 'cancelled' | 'escalated'; instruction: string; contract?: DelegationContract; resultSummary?: string; error?: string; createdAt: string; updatedAt: string; completedAt?: string }
 export interface TranscriptEntry { id: string; taskRunId: string; sequence: number; role: 'user' | 'assistant' | 'tool' | 'system'; kind: string; text: string; createdAt: string }
 export interface ArtifactRecord { id: string; projectId: string; issueId?: string; taskRunId?: string; kind: 'diff' | 'test_report' | 'document' | 'log' | 'commit' | 'pull_request'; name: string; status: 'available' | 'missing' | 'failed'; uri?: string; content?: string; metadata: Record<string, unknown>; createdAt: string }
 export interface CommandRecord { id: string; idempotencyKey?: string; type: string; status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'; projectId?: string; issueId?: string; squadId?: string; actorType: 'human' | 'agent' | 'system'; actorId?: string; payload: Record<string, unknown>; result?: Record<string, unknown>; error?: string; createdAt: string; completedAt?: string }

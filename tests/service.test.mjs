@@ -410,7 +410,7 @@ test('manual task deletion refuses orphan task records', async () => {
 
 test('agent builder returns a validated editable draft without persistence or tools', async () => {
   const store = memoryStore()
-  const observation = {}
+  const observation = { availableSkills: [{ name: 'API contract review', description: 'Review API contracts.' }, { name: 'test evidence', description: 'Review test evidence.' }] }
   const response = JSON.stringify({
     name: 'API Reviewer',
     role: 'Backend API Reviewer',
@@ -436,14 +436,15 @@ test('agent builder returns a validated editable draft without persistence or to
   assert.equal(observation.guardCalls, 1)
   assert.equal(observation.sections.some((section) => section.name === 'deployment:assigned-skills'), false)
   assert.match(observation.prompt, /read-only backend API reviewer/)
-  assert.match(observation.prompt, /at most 50 items/)
+  assert.match(observation.prompt, /exact names/)
+  assert.match(observation.prompt, /Available Skill catalog/)
   assert.match(observation.prompt, /structured Markdown/)
   assert.match(observation.prompt, /complete editable agent configuration on every turn/)
 })
 
 test('agent builder includes conversation and existing draft context while preserving root response fields', async () => {
   const store = memoryStore()
-  const observation = {}
+  const observation = { availableSkills: [{ name: 'API review', description: 'Review APIs.' }] }
   const existingDraft = {
     name: 'API Reviewer', role: 'Backend Reviewer', description: 'Reviews APIs.',
     persona: '## Responsibilities\nReview APIs.', preset: 'standard', toolPolicy: 'read_only', skills: ['API review'],
@@ -476,7 +477,7 @@ test('agent builder includes conversation and existing draft context while prese
   assert.equal(store.agents.size, 0)
 
   const partialStore = memoryStore()
-  const partialObservation = {}
+  const partialObservation = { availableSkills: observation.availableSkills }
   await new OrchestratorService(agentContext(response, partialObservation), partialStore).draftAgent({
     requirement: 'Complete this unfinished draft.',
     existingDraft: { description: 'A manually entered partial description.' },
@@ -799,7 +800,16 @@ test('a non-zero test command fails the project and blocks dependents', async ()
 })
 
 function agentContext(responseText = 'Agent work completed.', observation = {}) {
+  let normalizedResponse = responseText
+  try {
+    const parsed = JSON.parse(responseText)
+    if (Array.isArray(parsed.tasks) && parsed.status === undefined) {
+      const verifiedCommands = [...new Set(parsed.tasks.map((task) => task.testCommand))]
+      normalizedResponse = JSON.stringify({ status: 'ready', ...parsed, repositoryEvidence: { inspectedPaths: ['package.json'], manifests: ['package.json'], verifiedCommands, relevantModules: ['src'], assumptions: [] }, tasks: parsed.tasks.map((task) => ({ ...task, evidenceRefs: ['package.json'] })) })
+    }
+  } catch {}
   return {
+    skills: { list: async () => observation.availableSkills ?? [] },
     agentDefaultModel: { currentSelection: () => ({ provider: 'test', model: 'test' }) },
     agentPresets: { mount: async () => {} },
     llm: { resolveModelInfo: async () => ({ provider: 'test', id: 'test', name: 'Test model', inputModalities: ['text', 'image'] }) },
@@ -825,7 +835,7 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
           tools: { guard: () => { observation.guardCalls = (observation.guardCalls ?? 0) + 1; return () => {} } },
         })
         const session = {
-          events: [{ type: 'assistant/message', data: { message: { content: [{ type: 'text', text: responseText }] } } }],
+          events: [{ type: 'assistant/message', data: { message: { content: [{ type: 'text', text: normalizedResponse }] } } }],
         }
         return {
           agent: {
@@ -1636,8 +1646,14 @@ test('Squad membership and Artifact context fail closed while valid records pers
   const leader = await service.createAgent({ name: 'Leader', role: 'Lead', description: '', persona: 'Lead.', preset: 'standard', toolPolicy: 'full' })
   const member = await service.createAgent({ name: 'Member', role: 'Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
   await assert.rejects(() => service.createSquad({ name: 'Invalid', description: '', leaderAgentId: leader.id, memberAgentIds: [member.id, member.id], instructions: 'Delegate safely.', escalationPolicy: 'Ask a human.' }), (error) => error.code === 'squad-min-members')
-  const squad = await service.createSquad({ name: 'Delivery Squad', description: '', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], memberRoles: { [leader.id]: 'Leader', [member.id]: 'Implementer' }, instructions: 'Delegate safely.', escalationPolicy: 'Ask a human.' })
+  const escalationConfig = { triggers: ['requirement_conflict', 'repeated_failure'], maxFocusedRepairAttempts: 2, onTrigger: 'request_decision', pauseParentIssue: true, cancelSiblingDelegations: false, customInstructions: 'Attach evidence before asking for a decision.' }
+  const squad = await service.createSquad({ name: 'Delivery Squad', description: '', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], memberRoles: { [leader.id]: 'Leader', [member.id]: 'Implementer' }, instructions: 'Delegate safely.', escalationPolicy: 'Ask a human.', escalationConfig, collaborationPolicyVersion: 'squad-collaboration-v1' })
   assert.equal(squad.status, 'active')
+  assert.deepEqual(squad.escalationConfig, escalationConfig)
+  assert.equal(squad.collaborationPolicyVersion, 'squad-collaboration-v1')
+  const updatedSquad = await service.updateSquad(squad.id, { name: squad.name, description: squad.description, leaderAgentId: squad.leaderAgentId, memberAgentIds: squad.memberAgentIds, memberRoles: squad.memberRoles, instructions: squad.instructions, escalationPolicy: squad.escalationPolicy, escalationConfig: { ...escalationConfig, maxFocusedRepairAttempts: 3 }, collaborationPolicyVersion: 'squad-collaboration-v2', maxParallelDelegations: squad.maxParallelDelegations, expectedUpdatedAt: squad.updatedAt })
+  assert.equal(updatedSquad.escalationConfig.maxFocusedRepairAttempts, 3)
+  assert.equal(updatedSquad.collaborationPolicyVersion, 'squad-collaboration-v2')
 
   const project = await service.createProject({ name: 'Artifacts', summary: '', cwd: '/tmp', prd: 'Evidence', technicalDesign: 'Bounded evidence.' })
   const issue = await service.createIssue({ projectId: project.id, title: 'Evidence Issue', description: '' })
@@ -1658,9 +1674,15 @@ test('Squad delegation creates a child run and approved review wakes the leader 
   const assigned = await service.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
   const leaderRunId = assigned.result.taskRunId
   await store.taskRuns.put(leaderRunId, { ...store.taskRuns.get(leaderRunId), status: 'running', startedAt: now })
-  const delegated = await service.executeCommand({ type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: member.id, title: 'Child implementation', description: 'Implement delegated work.' } })
+  const assignedParent = store.issues.get(parent.id)
+  const contract = { objective: 'Implement delegated work.', scope: ['delegated module'], forbiddenScope: ['parent requirement decisions'], deliverables: ['Implementation and evidence'], acceptanceCriteria: ['Delegated behavior works'], verification: ['Run focused tests'], escalationConditions: ['Requirement conflict'] }
+  await assert.rejects(() => service.executeCommand({ type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: member.id, payload: { memberAgentId: member.id, title: 'Invalid actor', expectedAssignmentRevision: assignedParent.assignmentRevision, contract } }), (error) => error.code === 'leader-actor-mismatch')
+  await assert.rejects(() => service.executeCommand({ type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: member.id, title: 'Stale', expectedAssignmentRevision: assignedParent.assignmentRevision - 1, contract } }), (error) => error.code === 'issue-assignment-stale')
+  const delegated = await service.executeCommand({ type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: member.id, title: 'Child implementation', description: 'Implement delegated work.', expectedAssignmentRevision: assignedParent.assignmentRevision, contract } })
   const childId = delegated.result.childIssueId
   assert.equal(store.issues.get(childId).assigneeId, member.id)
+  assert.equal(store.taskRuns.get(delegated.result.taskRunId).delegatedByTaskRunId, leaderRunId)
+  assert.equal(store.delegations.get(delegated.result.delegationId).contract.objective, 'Implement delegated work.')
   assert.equal(store.taskRuns.get(leaderRunId).status, 'deferred')
   const child = { ...store.issues.get(childId), status: 'in_review', reviewStatus: 'pending', updatedAt: new Date().toISOString() }
   delete child.activeTaskRunId
@@ -1671,6 +1693,33 @@ test('Squad delegation creates a child run and approved review wakes the leader 
   assert.equal([...store.delegations.records.values()][0].status, 'completed')
   await service.executeCommand({ idempotencyKey: 'review-child-once', type: 'approve_review', issueId: childId, actorType: 'human', actorId: 'reviewer', payload: { note: 'Child verified.' } })
   assert.equal([...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.trigger === 'retry').length, 1)
+})
+
+test('request_decision atomically defers an active run and resumes exactly once after resolution', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const agent = await service.createAgent({ name: 'Decision Agent', role: 'Lead', description: '', persona: 'Lead safely.', preset: 'standard', toolPolicy: 'full' })
+  const project = await service.createProject({ name: 'Decision project', cwd: '/tmp', prd: 'Decide safely.', technicalDesign: 'Use durable Decisions.' })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Lead', autoAssignable: true, joinedBy: 'tester' })
+  const issue = await service.createIssue({ projectId: project.id, title: 'Risky work', description: 'Requires a decision.' })
+  const assigned = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id } })
+  const runId = assigned.result.taskRunId
+  await store.taskRuns.put(runId, { ...store.taskRuns.get(runId), status: 'running', startedAt: now })
+  const activeIssue = store.issues.get(issue.id)
+  const requested = await service.executeCommand({ idempotencyKey: 'decision-once', type: 'request_decision', projectId: project.id, issueId: issue.id, actorType: 'agent', actorId: agent.id, payload: { title: 'Choose safe option', prompt: 'Which compatible option should be used?', expectedAssignmentRevision: activeIssue.assignmentRevision, facts: ['Current contract conflicts'], missingEvidence: ['Owner choice'], options: [{ id: 'a', description: 'Option A', impact: 'Preserves compatibility' }] } })
+  const decisionId = requested.result.decisionId
+  assert.equal(store.decisions.get(decisionId).status, 'pending')
+  assert.equal(store.issues.get(issue.id).status, 'blocked')
+  assert.equal(store.issues.get(issue.id).activeTaskRunId, undefined)
+  assert.equal(store.taskRuns.get(runId).status, 'deferred')
+  assert.equal(store.taskRuns.get(runId).finishedReason, 'decision_requested')
+
+  await service.resolveDecision(decisionId, { status: 'approved', resolution: 'Use option A.', resolvedBy: 'reviewer' })
+  const continuation = [...store.taskRuns.records.values()].find((run) => run.resumeDecisionId === decisionId)
+  assert.ok(continuation)
+  assert.equal(store.issues.get(issue.id).activeTaskRunId, continuation.id)
+  await assert.rejects(() => service.resolveDecision(decisionId, { status: 'approved', resolution: 'Repeat.', resolvedBy: 'reviewer' }), (error) => error.code === 'decision-already-resolved')
+  assert.equal([...store.taskRuns.records.values()].filter((run) => run.resumeDecisionId === decisionId).length, 1)
 })
 
 test('Autopilot and external triggers are bounded and idempotent through unified commands', async () => {

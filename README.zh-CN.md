@@ -2,13 +2,24 @@
 
 [English](README.md) | 简体中文
 
-面向 [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) 的本地项目编排工作台：先建立项目事实，再按需使用 AI，最后由人工批准执行。
+面向 [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) 的 **AI 编程项目管理与任务编排插件**：本地优先，支持 GitHub Issues、Git worktree 隔离执行、人工审批和审计证据。
 
 它为现有 Harness Profile 增加 Host 服务、响应式 Web 工作台和仅限本机回环地址的 CLI。项目、事项、任务、Agent、运行证据、人工决策和自动化回执都会持久化到同一套可审计工作流中。
 
+**适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
+
 > **兼容性：** 当前 1.x 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
 
-## 先了解三个原则
+## DeepSeek Harness 插件能力
+
+- **AI 编程任务编排：**把交付简报拆成有依赖关系的代码任务和测试任务，并追踪 TaskRun 与验证证据。
+- **人工审批驱动执行：**计划生成后必须由人明确批准，才会开始执行或修改仓库。
+- **GitHub Issues 与本地仓库：**导入选定的 Issue，或直接使用已有本地代码仓库。
+- **Git worktree 隔离：**记录受限差异、提交证据、清理结果和工作区租约。
+- **人在回路中的交付：**通过 Inbox、Decision、Review、Squad 委派、Transcript 和 Artifact 协作与审计。
+- **Web 工作台与 CLI：**在 Harness Web 中管理项目，也可以使用仅限回环地址的 CLI 访问同一个本地服务。
+
+## AI 项目规划与任务编排
 
 1. **创建项目不等于调用 AI。** 新建窗口默认选择“空项目”，只保存名称和目录，不读取代码，不创建任务，也不会启动 Planner。
 2. **AI 拆解是显式操作。** 只有选择“AI 智能拆解”，或者稍后点击“补充需求并让 AI 拆解”，才会读取需求并生成计划。

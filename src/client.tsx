@@ -45,13 +45,24 @@ import type {
   RuntimeDetail,
   AgentRuntimeImpact,
   SquadAvailability,
+  SquadEscalationPolicy,
   SquadRecord,
+  EscalationTrigger,
   ProjectResource,
   Snapshot,
   TaskLanguage,
   TaskRecord,
   TaskStatus,
 } from './client-types.js'
+import {
+  DEFAULT_COLLABORATION_POLICY_VERSION,
+  ESCALATION_TRIGGER_OPTIONS,
+  RECOMMENDED_LEADER_INSTRUCTIONS,
+  effectiveSquadEscalationPolicy,
+  escalationTriggerSummary,
+  legacyEscalationPolicySummary,
+  squadUiDiagnostics,
+} from './squad-ui.js'
 import { styles } from './styles.js'
 
 export const inject = ['slots', 'workspaces']
@@ -610,31 +621,87 @@ function SquadDrawer({ state, model, squad }: { state: WorkbenchState; model: Wo
   const [leaderAgentId, setLeaderAgentId] = useState(squad?.leaderAgentId ?? '')
   const [memberAgentIds, setMemberAgentIds] = useState<string[]>(squad?.memberAgentIds ?? [])
   const [memberRoles, setMemberRoles] = useState<Record<string, string>>(squad?.memberRoles ?? {})
-  const [instructions, setInstructions] = useState(squad?.instructions ?? '')
-  const [escalationPolicy, setEscalationPolicy] = useState(squad?.escalationPolicy ?? '')
+  const [instructions, setInstructions] = useState(squad?.instructions ?? RECOMMENDED_LEADER_INSTRUCTIONS)
+  const [escalationConfig, setEscalationConfig] = useState<SquadEscalationPolicy>(() => effectiveSquadEscalationPolicy(squad))
   const [maxParallelDelegations, setMaxParallelDelegations] = useState(squad?.maxParallelDelegations ?? 1)
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const stepHeadingRef = useRef<HTMLDivElement>(null)
   useEffect(() => { if (step > 1) window.requestAnimationFrame(() => stepHeadingRef.current?.focus()) }, [step])
   const activeAgents = state.snapshot.agents.filter((agent) => agent.status === 'active')
   const toggleMember = (id: string) => setMemberAgentIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])
+  const toggleTrigger = (trigger: EscalationTrigger) => setEscalationConfig((current) => ({ ...current, triggers: current.triggers.includes(trigger) ? current.triggers.filter((item) => item !== trigger) : [...current.triggers, trigger] }))
+  const diagnostics = squadUiDiagnostics({ instructions, customInstructions: escalationConfig.customInstructions, memberAgentIds, memberRoles, leaderAgentId, maxParallelDelegations, agents: activeAgents })
   const identityValid = name.trim() !== ''
   const membershipValid = memberAgentIds.length >= 2 && memberAgentIds.includes(leaderAgentId)
-  const strategyValid = instructions.trim() !== '' && escalationPolicy.trim() !== ''
+  const strategyValid = instructions.trim() !== '' && escalationConfig.triggers.length > 0
   const valid = identityValid && membershipValid && strategyValid
   const stepValid = step === 1 ? identityValid : step === 2 ? membershipValid : strategyValid
-  const save = async () => { const payload = { name, description, leaderAgentId, memberAgentIds, memberRoles: Object.fromEntries(memberAgentIds.map((id) => [id, memberRoles[id]?.trim() || state.snapshot.agents.find((agent) => agent.id === id)?.role || '成员'])), instructions, escalationPolicy, maxParallelDelegations, ...(squad ? { expectedUpdatedAt: squad.updatedAt } : {}) }; const result = await model.action(() => squad ? mutate<SquadRecord>(`/squads/${squad.id}`, 'PUT', payload) : mutate<SquadRecord>('/squads', 'POST', payload), squad ? 'Squad 已更新。' : 'Squad 已创建。'); if (result) model.closePanel() }
-  return <ManagementDrawer title={squad ? '编辑 Squad' : '创建 Squad'} subtitle={`第 ${step}/3 步 · ${step === 1 ? '团队信息' : step === 2 ? '成员与职责' : '协作策略'}`} close={model.closePanel} footer={<><ActionButton variant="ghost" onClick={model.closePanel}>取消</ActionButton>{step > 1 ? <ActionButton variant="outline" onClick={() => setStep((step - 1) as 1 | 2)}>上一步</ActionButton> : null}{step < 3 ? <ActionButton variant="primary" disabled={!stepValid} onClick={() => setStep((step + 1) as 2 | 3)}>下一步</ActionButton> : <ActionButton variant="primary" disabled={!valid || state.loading} onClick={() => void save()}>{squad ? '保存 Squad' : '创建 Squad'}</ActionButton>}</>}><div ref={stepHeadingRef} className="po-drawer-steps" tabIndex={-1} aria-live="polite" aria-label={`步骤 ${step}/3`}><span aria-current={step === 1 ? 'step' : undefined}>1 团队信息</span><span aria-current={step === 2 ? 'step' : undefined}>2 成员职责</span><span aria-current={step === 3 ? 'step' : undefined}>3 协作策略</span></div><div className="po-form-grid">{step === 1 ? <><Field label="名称" wide><input className="po-input" autoFocus value={name} maxLength={160} onChange={(event) => setName(event.target.value)} /></Field><Field label="描述" wide><textarea className="po-textarea" value={description} maxLength={1000} onChange={(event) => setDescription(event.target.value)} /></Field></> : null}{step === 2 ? <><Field label="Leader"><select className="po-select" autoFocus value={leaderAgentId} onChange={(event) => { setLeaderAgentId(event.target.value); if (!memberAgentIds.includes(event.target.value)) setMemberAgentIds([...memberAgentIds, event.target.value]) }}><option value="">选择 Leader</option>{activeAgents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select></Field><Field label="并行委派上限"><input className="po-input" type="number" min={1} max={32} value={maxParallelDelegations} onChange={(event) => setMaxParallelDelegations(Math.min(32, Math.max(1, Number(event.target.value) || 1)))} /></Field><fieldset className="po-member-picker po-field-wide"><legend>成员与职责</legend>{activeAgents.map((agent) => <div key={agent.id}><label><input type="checkbox" checked={memberAgentIds.includes(agent.id)} onChange={() => toggleMember(agent.id)} /><span>{agent.name}</span></label>{memberAgentIds.includes(agent.id) ? <input className="po-input" aria-label={`${agent.name} 的职责`} value={memberRoles[agent.id] ?? agent.role} onChange={(event) => setMemberRoles({ ...memberRoles, [agent.id]: event.target.value })} /> : null}</div>)}</fieldset></> : null}{step === 3 ? <><Field label="委派说明" wide><textarea className="po-textarea po-textarea-tall" value={instructions} onChange={(event) => setInstructions(event.target.value)} /></Field><Field label="升级策略" wide><textarea className="po-textarea" value={escalationPolicy} onChange={(event) => setEscalationPolicy(event.target.value)} /></Field></> : null}</div></ManagementDrawer>
+  const save = async () => { const payload = { name, description, leaderAgentId, memberAgentIds, memberRoles: Object.fromEntries(memberAgentIds.map((id) => [id, memberRoles[id]?.trim() || state.snapshot.agents.find((agent) => agent.id === id)?.role || '成员'])), instructions, escalationPolicy: legacyEscalationPolicySummary(escalationConfig), escalationConfig, collaborationPolicyVersion: squad?.collaborationPolicyVersion ?? DEFAULT_COLLABORATION_POLICY_VERSION, maxParallelDelegations, ...(squad ? { expectedUpdatedAt: squad.updatedAt } : {}) }; const result = await model.action(() => squad ? mutate<SquadRecord>(`/squads/${squad.id}`, 'PUT', payload) : mutate<SquadRecord>('/squads', 'POST', payload), squad ? 'Squad 已更新。' : 'Squad 已创建。'); if (result) model.closePanel() }
+  return <ManagementDrawer title={squad ? '编辑 Squad' : '创建 Squad'} subtitle={`第 ${step}/3 步 · ${step === 1 ? '团队信息' : step === 2 ? '成员与职责' : '协作策略'}`} close={model.closePanel} footer={<>
+<ActionButton variant="ghost" onClick={model.closePanel}>取消</ActionButton>{step > 1 ? <ActionButton variant="outline" onClick={() => setStep((step - 1) as 1 | 2)}>上一步</ActionButton> : null}{step < 3 ? <ActionButton variant="primary" disabled={!stepValid} onClick={() => setStep((step + 1) as 2 | 3)}>下一步</ActionButton> : <ActionButton variant="primary" disabled={!valid || state.loading} onClick={() => void save()}>{squad ? '保存 Squad' : '创建 Squad'}</ActionButton>}</>}>
+<div ref={stepHeadingRef} className="po-drawer-steps" tabIndex={-1} aria-live="polite" aria-label={`步骤 ${step}/3`}>
+<span aria-current={step === 1 ? 'step' : undefined}>1 团队信息</span>
+<span aria-current={step === 2 ? 'step' : undefined}>2 成员职责</span>
+<span aria-current={step === 3 ? 'step' : undefined}>3 协作策略</span>
+</div>
+<div className="po-form-grid">{step === 1 ? <>
+<Field label="名称" wide>
+<input className="po-input" autoFocus value={name} maxLength={160} onChange={(event) => setName(event.target.value)} />
+</Field>
+<Field label="描述" wide>
+<textarea className="po-textarea" value={description} maxLength={1000} onChange={(event) => setDescription(event.target.value)} />
+</Field>
+</> : null}{step === 2 ? <>
+<Field label="Leader">
+<select className="po-select" autoFocus value={leaderAgentId} onChange={(event) => { setLeaderAgentId(event.target.value); if (!memberAgentIds.includes(event.target.value)) setMemberAgentIds([...memberAgentIds, event.target.value]) }}>
+<option value="">选择 Leader</option>{activeAgents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select>
+</Field>
+<Field label="并行委派上限">
+<input className="po-input" type="number" min={1} max={32} value={maxParallelDelegations} onChange={(event) => setMaxParallelDelegations(Math.min(32, Math.max(1, Number(event.target.value) || 1)))} />
+</Field>
+<fieldset className="po-member-picker po-field-wide">
+<legend>成员与职责</legend>{activeAgents.map((agent) => <div key={agent.id}>
+<label>
+<input type="checkbox" checked={memberAgentIds.includes(agent.id)} onChange={() => toggleMember(agent.id)} />
+<span>{agent.name}</span>
+</label>{memberAgentIds.includes(agent.id) ? <input className="po-input" aria-label={`${agent.name} 的职责`} value={memberRoles[agent.id] ?? agent.role} onChange={(event) => setMemberRoles({ ...memberRoles, [agent.id]: event.target.value })} /> : null}</div>)}</fieldset>
+</> : null}{step === 3 ? <>
+<Field label="Leader 协作协议" hint="生效范围：Leader TaskRun。系统会把本字段加入 Leader 运行指令。" wide>
+<div className="po-field-toolbar"><span>{instructions.length.toLocaleString()} / 20,000 字符</span><ActionButton size="sm" variant="outline" onClick={() => setInstructions(RECOMMENDED_LEADER_INSTRUCTIONS)}>恢复推荐模板</ActionButton></div>
+<textarea className="po-textarea po-squad-instructions" autoFocus value={instructions} maxLength={20_000} onChange={(event) => setInstructions(event.target.value)} />
+</Field>
+<Field label="最大并行委派" hint="生效范围：整个 Squad 的 active Delegation。"><input className="po-input" type="number" min={1} max={32} value={maxParallelDelegations} onChange={(event) => setMaxParallelDelegations(Math.min(32, Math.max(1, Number(event.target.value) || 1)))} /></Field>
+<Field label="同类验证失败后升级" hint="允许的针对性修复次数，0–10。"><input className="po-input" type="number" min={0} max={10} value={escalationConfig.maxFocusedRepairAttempts} onChange={(event) => setEscalationConfig({ ...escalationConfig, maxFocusedRepairAttempts: Math.min(10, Math.max(0, Number(event.target.value) || 0)) })} /></Field>
+<fieldset className="po-trigger-picker po-field-wide"><legend>必须升级的情况</legend><p>生效范围：Leader 和成员 TaskRun。触发器由系统执行并请求人工 Decision。</p><div>{ESCALATION_TRIGGER_OPTIONS.map((option) => <label key={option.value}><input type="checkbox" checked={escalationConfig.triggers.includes(option.value)} onChange={() => toggleTrigger(option.value)} /><span><strong>{option.label}</strong><small>{option.description}</small></span></label>)}</div>{escalationConfig.triggers.length === 0 ? <span className="po-field-error">至少选择一个系统升级触发器。</span> : null}</fieldset>
+<Field label="自定义升级说明（可选）" hint="作为补充进入协作 Prompt，不能扩大权限、改变系统动作或绕过 Review。" wide><textarea className="po-textarea" value={escalationConfig.customInstructions} maxLength={10_000} onChange={(event) => setEscalationConfig({ ...escalationConfig, customInstructions: event.target.value })} placeholder="补充团队特定的升级事实、证据或沟通要求" /></Field>
+<div className="po-fixed-policy po-field-wide"><strong>成员失败时</strong><span>保留其他成员工作并请求 Leader 或人工处理。</span></div>
+{diagnostics.length > 0 ? <section className="po-squad-diagnostics po-field-wide" aria-live="polite"><h3><IconWarningOutline16 />配置诊断（不阻止保存）</h3><ul>{diagnostics.map((item) => <li key={item.code}><strong>{item.scope}</strong><span>{item.message}</span></li>)}</ul></section> : <div className="po-squad-diagnostics po-squad-diagnostics-clear po-field-wide" role="status">未发现明显的配置质量问题。</div>}
+</> : null}</div>
+</ManagementDrawer>
 }
 
 function SquadDetailDrawer({ state, model, squadId }: { state: WorkbenchState; model: WorkbenchModel; squadId: string }) {
   const squad = state.snapshot.squads.find((item) => item.id === squadId)
   if (!squad) return null
   const activeIssues = state.snapshot.issues.filter((issue) => issue.assigneeType === 'squad' && issue.assigneeId === squad.id && !['done','cancelled'].includes(issue.status))
+  const delegations = state.snapshot.delegations.filter((item) => item.squadId === squad.id).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+  const activeDelegations = delegations.filter((item) => ['queued', 'running', 'waiting_leader'].includes(item.status))
+  const squadRuns = state.snapshot.taskRuns.filter((run) => run.squadId === squad.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const evidenceRun = squadRuns.find((run) => run.promptVersion || run.collaborationPolicyVersion) ?? squadRuns[0]
+  const escalationConfig = effectiveSquadEscalationPolicy(squad)
+  const roleDiagnostics = squadUiDiagnostics({ instructions: squad.instructions, customInstructions: escalationConfig.customInstructions, memberAgentIds: squad.memberAgentIds, memberRoles: squad.memberRoles, leaderAgentId: squad.leaderAgentId, maxParallelDelegations: squad.maxParallelDelegations, agents: state.snapshot.agents }).filter((item) => item.scope === '成员职责')
+  const latestDecision = state.snapshot.decisions.filter((decision) => decision.metadata.squadId === squad.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
   const clone = async () => { const result = await model.action(() => mutate<SquadRecord>(`/squads/${squad.id}/clone`, 'POST', { expectedSourceUpdatedAt: squad.updatedAt }), 'Squad 副本已创建。'); if (result) model.openSquad(result.id, true) }
   const archive = async () => { if (!window.confirm(`归档 Squad“${squad.name}”？归档后不能再分派新 Issue。`)) return; const result = await model.action(() => mutate(`/squads/${squad.id}/archive`, 'POST', { expectedUpdatedAt: squad.updatedAt }), 'Squad 已归档。'); if (result) model.closePanel() }
   const remove = async () => { if (!window.confirm(`永久删除 Squad“${squad.name}”？仅无历史引用的 Squad 可以删除。`)) return; const result = await model.action(() => mutate(`/squads/${squad.id}`, 'DELETE'), 'Squad 已删除。'); if (result) model.closePanel() }
-  return <ManagementDrawer title={squad.name} subtitle={`${squad.status === 'active' ? '活跃' : '已归档'} · 更新于 ${formatDate(squad.updatedAt)}`} close={model.closePanel} footer={<><ActionButton variant="ghost" onClick={() => void clone()}>克隆 Squad</ActionButton>{squad.status === 'active' ? <ActionButton variant="outline" onClick={() => model.openSquad(squad.id, true)}>编辑 Squad</ActionButton> : null}{squad.status === 'active' ? <ActionButton variant="outline" onClick={() => void archive()}>归档 Squad</ActionButton> : <ActionButton variant="outline" icon={<IconTrashOutline16 />} onClick={() => void remove()}>删除 Squad</ActionButton>}</>}><dl className="po-detail-facts"><dt>Leader</dt><dd>{agentName(state.snapshot, squad.leaderAgentId)}</dd><dt>成员</dt><dd>{squad.memberAgentIds.map((id) => `${agentName(state.snapshot,id)}（${squad.memberRoles[id] ?? '成员'}）`).join('、')}</dd><dt>并行上限</dt><dd>{squad.maxParallelDelegations}</dd><dt>委派说明</dt><dd>{squad.instructions}</dd><dt>升级策略</dt><dd>{squad.escalationPolicy}</dd></dl>{activeIssues.length > 0 ? <section className="po-drawer-section"><h3>活跃 Issues</h3>{activeIssues.map((issue) => <button type="button" className="po-context-row po-context-row-button" key={issue.id} onClick={() => model.openIssue(issue.id)}><strong>{issue.title}</strong><span>{issue.status}</span></button>)}</section> : null}</ManagementDrawer>
+  return <ManagementDrawer title={squad.name} subtitle={`${squad.status === 'active' ? '活跃' : '已归档'} · 更新于 ${formatDate(squad.updatedAt)}`} close={model.closePanel} footer={<><ActionButton variant="ghost" onClick={() => void clone()}>克隆 Squad</ActionButton>{squad.status === 'active' ? <ActionButton variant="outline" onClick={() => model.openSquad(squad.id, true)}>编辑 Squad</ActionButton> : null}{squad.status === 'active' ? <ActionButton variant="outline" onClick={() => void archive()}>归档 Squad</ActionButton> : <ActionButton variant="outline" icon={<IconTrashOutline16 />} onClick={() => void remove()}>删除 Squad</ActionButton>}</>}>
+    <dl className="po-detail-facts"><dt>Leader</dt><dd>{agentName(state.snapshot, squad.leaderAgentId)}</dd><dt>成员职责</dt><dd>{squad.memberAgentIds.map((id) => `${agentName(state.snapshot,id)}（${squad.memberRoles[id] ?? '成员'} · ${state.snapshot.agents.find((agent) => agent.id === id)?.toolPolicy === 'read_only' ? '只读' : '可执行'}）`).join('、')}</dd><dt>并行容量</dt><dd>{activeDelegations.length}/{squad.maxParallelDelegations} 占用</dd><dt>Leader 协作协议</dt><dd>{squad.instructions}<small className="po-scope-label">生效范围：Leader TaskRun</small></dd><dt>升级触发器</dt><dd>{escalationTriggerSummary(escalationConfig)}<small className="po-scope-label">系统执行，触发后请求人工 Decision</small></dd>{escalationConfig.customInstructions ? <><dt>自定义升级说明</dt><dd>{escalationConfig.customInstructions}</dd></> : null}</dl>
+    <section className="po-drawer-section"><h3>Prompt 与策略证据</h3><dl className="po-detail-facts"><dt>Prompt 版本</dt><dd>{evidenceRun?.promptVersion ?? 'legacy'}</dd><dt>协作策略版本</dt><dd>{evidenceRun?.collaborationPolicyVersion ?? squad.collaborationPolicyVersion ?? 'legacy'}</dd><dt>Prompt digest</dt><dd className="po-mono">{evidenceRun?.promptDigest ?? '历史运行未记录'}</dd><dt>Context digest</dt><dd className="po-mono">{evidenceRun?.promptContextDigest ?? '历史运行未记录'}</dd></dl>{evidenceRun?.promptDiagnostics?.length ? <ul className="po-evidence-diagnostics">{evidenceRun.promptDiagnostics.map((item, index) => <li key={`${item.code}:${index}`}>{item.severity} · {item.code}</li>)}</ul> : null}</section>
+    <section className="po-drawer-section"><h3>活跃委派占用</h3>{activeDelegations.length === 0 ? <p className="po-context-empty">当前没有 active Delegation。</p> : activeDelegations.map((delegation) => <button type="button" className="po-delegation-row" key={delegation.id} onClick={() => model.openIssue(delegation.childIssueId)}><span><strong>{agentName(state.snapshot, delegation.memberAgentId)}</strong><small>{delegation.contract?.objective ?? delegation.instruction}</small></span><span>{delegation.status}</span></button>)}</section>
+    <section className="po-drawer-section"><h3>职责与工具冲突</h3>{roleDiagnostics.length === 0 ? <p className="po-context-empty">未识别到职责重复或只读工具冲突。</p> : <ul className="po-conflict-list">{roleDiagnostics.map((item) => <li key={item.code}><IconWarningOutline16 /><span>{item.message}</span></li>)}</ul>}</section>
+    <section className="po-drawer-section"><h3>最近升级 Decision</h3>{latestDecision ? <article className="po-decision-evidence"><div><strong>{latestDecision.title}</strong><span className={`po-badge po-status-${latestDecision.status === 'approved' ? 'completed' : latestDecision.status === 'rejected' ? 'failed' : 'blocked'}`}>{latestDecision.status}</span></div><p>{latestDecision.prompt}</p>{latestDecision.resolution ? <small>处理结论：{latestDecision.resolution}</small> : null}<time dateTime={latestDecision.createdAt}>{formatDate(latestDecision.createdAt)} · {latestDecision.id}</time></article> : <p className="po-context-empty">没有 metadata.squadId 指向此 Squad 的 Decision。</p>}</section>
+    {activeIssues.length > 0 ? <section className="po-drawer-section"><h3>活跃 Issues</h3>{activeIssues.map((issue) => <button type="button" className="po-context-row po-context-row-button" key={issue.id} onClick={() => model.openIssue(issue.id)}><strong>{issue.title}</strong><span>{issue.status}</span></button>)}</section> : null}
+  </ManagementDrawer>
 }
 
 function RuntimeDrawer({ state, model, runtime }: { state: WorkbenchState; model: WorkbenchModel; runtime: RuntimeRecord | undefined }) {
@@ -1104,9 +1171,9 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div><span>负责人</span><strong>{project.owner?.trim() || '未分配'}</strong></div>
         <div><span>任务语言</span><strong>{(project.taskLanguage ?? 'zh-CN') === 'zh-CN' ? '简体中文' : 'English'}</strong></div>
         <div><span>当前版本</span><strong>Revision {project.revision}</strong></div>
-        <button type="button" className="po-summary-link" onClick={() => model.setProjectTab('agents')}><span>项目智能体</span><strong>{activeMemberships.length > 0 ? `${activeMemberships.slice(0, 3).map((member) => agentName(state.snapshot, member.agentId)).join('、')}${activeMemberships.length > 3 ? ` +${activeMemberships.length - 3}` : ''}` : '添加智能体'}</strong></button>
+        <button type="button" className="po-summary-link" onClick={() => model.setProjectTab('agents')}><span>项目智能体</span><strong title={activeMemberships.map((member) => agentName(state.snapshot, member.agentId)).join('、')}>{activeMemberships.length > 0 ? `${activeMemberships.length} 个 active 成员` : '添加智能体'}</strong></button>
         <div><span>测试进度</span><strong>{completed}/{tasks.length}</strong></div>
-        <div className="po-project-directory"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong>{project.workspaceId ? <ActionButton size="sm" variant="outline" icon={<IconPlayOutline16 />} onClick={() => model.startWorkspace(project.workspaceId!)}>打开 Workspace</ActionButton> : null}<ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div>
+        <div className="po-project-directory"><div className="po-directory-fact"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong></div><div className="po-directory-actions">{project.workspaceId ? <ActionButton size="sm" variant="outline" icon={<IconPlayOutline16 />} onClick={() => model.startWorkspace(project.workspaceId!)}>打开 Workspace</ActionButton> : null}<ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div></div>
       </div>
       <ProjectOrchestrationStrip project={project} state={state} model={model} />
       <ProjectSquadsPanel project={project} state={state} model={model} />
@@ -1114,7 +1181,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
          <div className="po-context-panel"><div className="po-section-heading"><div><h2>Issues</h2><p>{issues.length} 个长期工作事项 · {taskRuns.length} 次执行</p></div></div>{issues.length === 0 ? <p className="po-context-empty">自动交付计划会逐步关联到 Issue。</p> : issues.slice(0, 4).map((issue) => <button key={issue.id} type="button" className="po-context-row po-context-row-button" onClick={() => model.openIssue(issue.id)}><strong>{issue.title}</strong><span>{issue.status} · {issue.priority}</span></button>)}</div>
          <div className="po-context-panel"><div className="po-section-heading"><div><h2>Resources</h2><p>{resources.length} 个执行资源</p></div>{inbox.length > 0 ? <ActionButton size="sm" variant="outline" onClick={() => model.setView('inbox')}>查看 {inbox.length} 个待处理</ActionButton> : null}</div>{resources.length === 0 ? <p className="po-context-empty">尚未绑定项目资源。</p> : resources.map((resource) => <ResourceRuntimeBinding key={resource.id} resource={resource} state={state} model={model} />)}{activity.length > 0 ? <div className="po-context-activity"><strong>最近活动</strong>{activity.slice(0, 3).map((event) => <span key={event.id}>{event.message}</span>)}</div> : null}</div>
        </section>
-       {project.lastError ? <div className="po-inline-error"><IconWarningOutline16 />{project.lastError}</div> : null}
+       {project.lastError ? <ProjectPlanningDiagnostic project={project} state={state} model={model} /> : null}
       <section className="po-delivery-gate po-autonomous-gate">
         <div className="po-section-heading"><div><h2>AI 交付流程</h2><p>{lifecycleDescription(project, tasks, currentTask)}</p></div><span>{approvalCurrent ? `Revision ${project.revision} 已绑定当前 plan hash` : `Revision ${project.revision} 等待确认`}</span></div>
         <ol className="po-lifecycle-stepper" aria-label="项目交付阶段">
@@ -1153,6 +1220,21 @@ function ProjectTabButton({ tab, current, onClick, children }: { tab: ProjectTab
   return <button type="button" aria-current={current === tab ? 'page' : undefined} onClick={() => onClick(tab)}>{children}</button>
 }
 
+function ProjectPlanningDiagnostic({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
+  const error = project.lastError ?? ''
+  const repositoryAccessBlocked = error.includes('仓库读取工具') || error.includes('仓库只读')
+  const latestRun = state.snapshot.runs.filter((run) => run.projectId === project.id).sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
+  const canRetry = project.prd.trim() !== '' && ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
+  const title = repositoryAccessBlocked ? '规划暂未完成' : project.status === 'failed' ? '规划或执行未完成' : '项目需要处理'
+  const summary = repositoryAccessBlocked
+    ? '当前规划会话没有可用的仓库读取工具，因此没有生成可靠计划。项目资料和已有任务已保留。'
+    : project.status === 'failed'
+      ? 'AI 已暂停，已通过的任务和执行证据仍然保留。请查看详情后决定是否继续。'
+      : '项目最近一次自动化操作没有完成，请查看技术详情。'
+  const nextAction = repositoryAccessBlocked ? '请先确认当前 Harness 会话已启用仓库只读工具，再重新运行规划。' : '请查看技术详情，并根据当前项目状态选择下一步操作。'
+  return <section className="po-project-diagnostic" role="alert"><div className="po-project-diagnostic-main"><IconWarningOutline16 /><div><strong>{title}</strong><p>{summary}</p><span>{nextAction}</span></div></div><div className="po-project-diagnostic-actions">{canRetry ? <ActionButton size="sm" variant="primary" icon={<IconRefreshOutline16 />} disabled={state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>重新运行规划</ActionButton> : null}{project.status === 'failed' ? <ActionButton size="sm" variant="outline" disabled={state.loading} onClick={() => model.setProjectTab('runs')}>查看运行证据</ActionButton> : null}<details><summary>技术详情</summary><pre>{error}</pre></details></div></section>
+}
+
 function ProjectOrchestrationStrip({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
   const runs = state.snapshot.taskRuns.filter((run) => run.projectId === project.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   const current = runs.find((run) => ['queued', 'dispatched', 'running'].includes(run.status))
@@ -1170,9 +1252,10 @@ function ProjectOrchestrationStrip({ project, state, model }: { project: Project
 
 function ProjectSquadsPanel({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
   const [availability, setAvailability] = useState<SquadAvailability[]>()
-  useEffect(() => { void readApi<SquadAvailability[]>(`/projects/${project.id}/eligible-squads`).then(setAvailability).catch(() => setAvailability([])) }, [project.id, state.snapshot.squads])
+  useEffect(() => { void readApi<SquadAvailability[]>(`/projects/${project.id}/eligible-squads`).then(setAvailability).catch(() => setAvailability([])) }, [project.id, state.snapshot.squads, state.snapshot.projectAgentMemberships, state.snapshot.delegations])
   const eligible = availability?.filter((item) => item.eligible) ?? []
-  return <section className="po-project-squads"><div className="po-section-heading"><div><h2>Eligible Squads</h2><p>{availability === undefined ? '正在检查项目成员与容量…' : `${eligible.length} 个 Squad 可用于这个项目`}</p></div><ActionButton size="sm" variant="outline" onClick={() => model.setView('squads')}>管理 Squads</ActionButton></div>{availability !== undefined && eligible.length === 0 ? <p className="po-context-empty">Squad 成员必须全部是 active 项目成员，并且至少保留一个可用并发槽位。</p> : eligible.map((item) => { const squad = state.snapshot.squads.find((candidate) => candidate.id === item.squadId); return squad ? <button type="button" className="po-context-row po-context-row-button" key={item.squadId} onClick={() => { model.setView('squads'); window.setTimeout(() => model.openSquad(item.squadId), 0) }}><strong>{squad.name}</strong><span>{item.dispatchReady ? '可派发' : '可分配，Leader Runtime 需关注'} · {item.availableSlots} 空闲槽位</span></button> : null })}</section>
+  const unavailable = availability?.filter((item) => !item.eligible) ?? []
+  return <section className="po-project-squads"><div className="po-section-heading"><div><h2>可用 Squad</h2><p>{availability === undefined ? '正在检查项目成员与容量…' : eligible.length > 0 ? `${eligible.length} 个 Squad 可用于这个项目` : '当前没有满足项目条件的 Squad'}</p></div><ActionButton size="sm" variant="outline" onClick={() => model.setView('squads')}>管理 Squad</ActionButton></div>{availability !== undefined && eligible.length === 0 ? <div className="po-squad-availability-warning"><strong>暂时不能派发 Squad Issue</strong><p>需要把以下 Squad 成员全部保留为本项目的 active 成员，且并行容量不能已占满。</p>{unavailable.map((item) => { const squad = state.snapshot.squads.find((candidate) => candidate.id === item.squadId); return squad ? <div className="po-squad-availability-row" key={item.squadId}><strong>{squad.name}</strong><span>{squadAvailabilityReasonLabels(item, state.snapshot)}</span><button type="button" className="po-link-button" onClick={() => { model.setView('squads'); window.setTimeout(() => model.openSquad(item.squadId), 0) }}>检查 Squad</button></div> : null })}</div> : eligible.map((item) => { const squad = state.snapshot.squads.find((candidate) => candidate.id === item.squadId); return squad ? <button type="button" className="po-context-row po-context-row-button" key={item.squadId} onClick={() => { model.setView('squads'); window.setTimeout(() => model.openSquad(item.squadId), 0) }}><strong>{squad.name}</strong><span>可派发 · {item.availableSlots} 个空闲槽位</span></button> : null })}</section>
 }
 
 function ProjectTasksTab({ project, tasks, state, model }: { project: ProjectRecord; tasks: TaskRecord[]; state: WorkbenchState; model: WorkbenchModel }) {
@@ -1296,6 +1379,8 @@ type AgentFormField = keyof AgentFormValue
 interface BuilderTurn extends AgentBuilderMessage {
   id: string
   assumptions?: string[]
+  warnings?: string[]
+  reuseRecommendation?: { agentId: string; reason: string }
   openQuestions?: string[]
   changedFields?: string[]
   protectedFields?: AgentFormField[]
@@ -1401,6 +1486,8 @@ function AgentAiPage({ state, model }: { state: WorkbenchState; model: Workbench
         role: 'assistant',
         content: response.feedback,
         assumptions: response.assumptions,
+        warnings: response.warnings,
+        ...(response.reuseRecommendation === undefined ? {} : { reuseRecommendation: response.reuseRecommendation }),
         openQuestions: response.openQuestions,
         changedFields: changedAgentFields(value, nextValue),
         ...(protectedFields.length > 0 ? { protectedFields, proposal: generatedValue } : {}),
@@ -1481,6 +1568,8 @@ function AssistantBrief({ turn, onQuestion, onApplyProposal }: { turn: BuilderTu
       <p>{turn.content}</p>
       {(turn.changedFields?.length ?? 0) > 0 ? <div className="po-assistant-section"><span>已更新</span><p>{turn.changedFields?.join('、')}</p></div> : null}
       {(turn.protectedFields?.length ?? 0) > 0 ? <div className="po-assistant-section po-protected-changes"><span>手动修改已保留</span><p>Builder 建议同时修改 {turn.protectedFields?.map(agentFieldLabel).join('、')}，当前仍以你的版本为准。</p><button type="button" onClick={onApplyProposal}>应用 Builder 建议</button></div> : null}
+      {turn.reuseRecommendation ? <div className="po-assistant-section"><span>复用建议</span><p>{turn.reuseRecommendation.reason}</p></div> : null}
+      {(turn.warnings?.length ?? 0) > 0 ? <div className="po-assistant-section po-assistant-warnings"><span>配置诊断</span><ul>{turn.warnings?.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}
       {(turn.assumptions?.length ?? 0) > 0 ? <div className="po-assistant-section"><span>当前假设</span><ul>{turn.assumptions?.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}
       {(turn.openQuestions?.length ?? 0) > 0 ? <div className="po-assistant-section"><span>建议确认</span><div className="po-question-actions">{turn.openQuestions?.map((question) => <button key={question} type="button" onClick={() => onQuestion(question)}>{question}</button>)}</div></div> : null}
     </div>
@@ -2012,6 +2101,8 @@ function isBuilderTurn(value: unknown): value is BuilderTurn {
   const turn = value as Record<string, unknown>
   return typeof turn.id === 'string' && (turn.role === 'user' || turn.role === 'assistant') && typeof turn.content === 'string' && turn.content.length <= 20_000
     && (turn.assumptions === undefined || isStringArray(turn.assumptions, 10))
+    && (turn.warnings === undefined || isStringArray(turn.warnings, 20))
+    && (turn.reuseRecommendation === undefined || (typeof turn.reuseRecommendation === 'object' && turn.reuseRecommendation !== null && typeof (turn.reuseRecommendation as Record<string, unknown>).agentId === 'string' && typeof (turn.reuseRecommendation as Record<string, unknown>).reason === 'string'))
     && (turn.openQuestions === undefined || isStringArray(turn.openQuestions, 2))
     && (turn.changedFields === undefined || isStringArray(turn.changedFields, 20))
     && (turn.protectedFields === undefined || (Array.isArray(turn.protectedFields) && turn.protectedFields.every(isAgentFormField)))
@@ -2156,6 +2247,18 @@ function runtimeName(snapshot: Snapshot, runtimeId?: string): string { return sn
 function featureForView(view: View): FeatureUsageFeature { return view === 'tasks' ? 'delivery' : view === 'local-data' ? 'local_data' : view }
 async function recordUsage(feature: FeatureUsageFeature, event: 'open' | 'action'): Promise<void> { try { await mutate('/usage', 'POST', { feature, opens: event === 'open' ? 1 : 0, meaningfulActions: event === 'action' ? 1 : 0, errorRecoveries: 0 }) } catch { /* Usage must never interrupt project work. */ } }
 function availabilityLabel(status: AgentWorkload['availability']): string { return ({ online: '在线', offline: '离线', unstable: '不稳定', unknown: '未绑定' } as const)[status] }
+function squadAvailabilityReasonLabels(item: SquadAvailability, snapshot: Snapshot): string {
+  const labels: string[] = []
+  if (item.reasons.includes('member_outside_project')) {
+    const missing = item.missingAgentIds.map((id) => agentName(snapshot, id)).join('、')
+    labels.push(`成员未加入本项目：${missing}`)
+  }
+  if (item.reasons.includes('agent_inactive')) labels.push('包含已归档智能体')
+  if (item.reasons.includes('capacity_exhausted')) labels.push('并行容量已占满')
+  if (item.reasons.includes('archived')) labels.push('Squad 已归档')
+  if (item.reasons.includes('legacy_member_count')) labels.push('成员配置不完整')
+  return labels.join('；') || '需要检查成员资格和并行容量'
+}
 function workloadLabel(status: AgentWorkload['workload']): string { return ({ idle: '空闲', queued: '排队中', working: '工作中' } as const)[status] }
 function accessLabel(access: NonNullable<AgentRecord['access']>): string { return ({ only_me: '仅自己', workspace: '工作区', specific_people: '指定成员' } as const)[access] }
 function inboxKindLabel(kind: InboxItem['kind']): string { return ({ needs_decision: '需要决定', blocked: '已阻塞', review_ready: '待审核', runtime_offline: 'Runtime 离线', permission_denied: '权限拒绝', test_failed_after_retry: '重试后仍失败', stale_approval: '审批已过期' } as const)[kind] }

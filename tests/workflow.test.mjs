@@ -5,6 +5,7 @@ import {
   boundedText,
   materializeTasks,
   parseGeneratedPlan,
+  parsePlannerResult,
   planDigest,
   topologicalTasks,
 } from '../lib/index.js'
@@ -37,16 +38,59 @@ test('topologicalTasks rejects cycles', () => {
   assert.throws(() => topologicalTasks(cyclic), /cycle/)
 })
 
-test('parseGeneratedPlan requires code and test tasks', () => {
-  const valid = JSON.stringify({
+test('parseGeneratedPlan preserves legacy unfenced and fenced plan compatibility', () => {
+  const legacyPlan = {
     summary: 'Plan',
     tasks: [
       { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'Engineer', testCommand: 'npm test' },
       { id: 'test', title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], suggestedAgentRole: 'QA', testCommand: 'npm test' },
     ],
-  })
-  assert.equal(parseGeneratedPlan(`\`\`\`json\n${valid}\n\`\`\``).tasks.length, 2)
-  assert.throws(() => parseGeneratedPlan(JSON.stringify({ summary: 'No tests', tasks: [JSON.parse(valid).tasks[0], { ...JSON.parse(valid).tasks[0], id: 'code2' }] })), /test task/)
+  }
+  const valid = JSON.stringify(legacyPlan)
+  assert.deepEqual(parseGeneratedPlan(valid), legacyPlan)
+  assert.deepEqual(parseGeneratedPlan(`\`\`\`json\n${valid}\n\`\`\``), legacyPlan)
+  assert.throws(() => parseGeneratedPlan(JSON.stringify({ summary: 'No tests', tasks: [legacyPlan.tasks[0], { ...legacyPlan.tasks[0], id: 'code2' }] })), /test task/)
+})
+
+function readyPlannerResult(overrides = {}) {
+  return {
+    status: 'ready',
+    summary: 'Evidence-backed plan',
+    repositoryEvidence: {
+      inspectedPaths: ['package.json', 'src/workflow.ts'],
+      manifests: ['package.json'],
+      verifiedCommands: ['pnpm test'],
+      relevantModules: ['src/workflow.ts'],
+      assumptions: [],
+    },
+    tasks: [
+      { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'Engineer', evidenceRefs: ['src/workflow.ts'], testCommand: 'pnpm test' },
+      { id: 'test', title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], suggestedAgentRole: 'QA', evidenceRefs: ['package.json'], testCommand: 'pnpm test' },
+    ],
+    ...overrides,
+  }
+}
+
+test('parsePlannerResult accepts ready plans only with task evidence and verified commands', () => {
+  const ready = readyPlannerResult()
+  assert.deepEqual(parsePlannerResult(JSON.stringify(ready)), ready)
+
+  const withoutEvidence = readyPlannerResult({ tasks: ready.tasks.map((task, index) => index === 0 ? { ...task, evidenceRefs: undefined } : task) })
+  assert.throws(() => parsePlannerResult(JSON.stringify(withoutEvidence)), (error) => error.code === 'task-evidence-required')
+
+  const unverified = readyPlannerResult({ tasks: ready.tasks.map((task, index) => index === 0 ? { ...task, testCommand: 'npm test' } : task) })
+  assert.throws(() => parsePlannerResult(JSON.stringify(unverified)), (error) => error.code === 'unverified-test-command')
+})
+
+test('parsePlannerResult preserves explicit blocked planner outcomes', () => {
+  const blocked = {
+    status: 'blocked',
+    reasonCode: 'manifest_missing',
+    summary: 'No repository manifest was available.',
+    missingEvidence: ['package or build manifest'],
+    nextAction: 'Restore the repository checkout and retry planning.',
+  }
+  assert.deepEqual(parsePlannerResult(JSON.stringify(blocked)), blocked)
 })
 
 test('assertExecutable binds approval to exact plan digest', () => {
@@ -89,7 +133,7 @@ test('materializeTasks matches only eligible project memberships by project role
   const plan = parseGeneratedPlan(JSON.stringify({
     summary: 'Plan',
     tasks: [
-      { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'Backend', testCommand: 'true' },
+      { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'No role match needed', suggestedAgentId: 'project-agent', testCommand: 'true' },
       { id: 'test', title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], suggestedAgentRole: 'QA', testCommand: 'true' },
     ],
   }))

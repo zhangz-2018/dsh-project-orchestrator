@@ -16,6 +16,44 @@ export const ActivityActorTypeSchema = z.enum(['human', 'agent', 'system'])
 export const DecisionKindSchema = z.enum(['approval', 'retry', 'assignment', 'review', 'permission', 'runtime'])
 export const DecisionStatusSchema = z.enum(['pending', 'approved', 'rejected', 'deferred'])
 export const SquadStatusSchema = z.enum(['active', 'archived'])
+export const EscalationTriggerSchema = z.enum([
+  'requirement_conflict',
+  'contract_conflict',
+  'destructive_change',
+  'production_data_change',
+  'permission_required',
+  'credential_required',
+  'verification_unavailable',
+  'repeated_failure',
+  'scope_expansion',
+  'delegation_conflict',
+  'source_of_truth_unknown',
+])
+export const SquadEscalationPolicySchema = z.object({
+  triggers: z.array(EscalationTriggerSchema).min(1).max(20),
+  maxFocusedRepairAttempts: z.number().int().nonnegative().max(10),
+  onTrigger: z.literal('request_decision'),
+  pauseParentIssue: z.boolean(),
+  cancelSiblingDelegations: z.boolean(),
+  customInstructions: z.string().trim().max(10_000),
+}).strict()
+export const DEFAULT_SQUAD_ESCALATION_POLICY = {
+  triggers: ['requirement_conflict', 'destructive_change', 'production_data_change', 'permission_required', 'verification_unavailable', 'repeated_failure', 'delegation_conflict'],
+  maxFocusedRepairAttempts: 1,
+  onTrigger: 'request_decision',
+  pauseParentIssue: true,
+  cancelSiblingDelegations: false,
+  customInstructions: '',
+} as const
+export const DelegationContractSchema = z.object({
+  objective: z.string().trim().min(1).max(10_000),
+  scope: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
+  forbiddenScope: z.array(z.string().trim().min(1).max(2_000)).max(50).default([]),
+  deliverables: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
+  acceptanceCriteria: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
+  verification: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
+  escalationConditions: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
+}).strict()
 export const DelegationStatusSchema = z.enum(['queued', 'running', 'waiting_leader', 'completed', 'failed', 'cancelled', 'escalated'])
 export const ArtifactKindSchema = z.enum(['diff', 'test_report', 'document', 'log', 'commit', 'pull_request'])
 export const ArtifactStatusSchema = z.enum(['available', 'missing', 'failed'])
@@ -112,6 +150,8 @@ export const SquadRecordSchema = z.object({
   memberRoles: z.record(z.string(), z.string().trim().min(1).max(200)).default({}),
   instructions: z.string().trim().min(1).max(20_000),
   escalationPolicy: z.string().trim().min(1).max(10_000),
+  escalationConfig: SquadEscalationPolicySchema.optional(),
+  collaborationPolicyVersion: z.string().trim().min(1).max(100).optional(),
   maxParallelDelegations: z.number().int().positive().max(32).default(1),
   status: SquadStatusSchema,
   createdAt: z.string().min(1),
@@ -130,6 +170,7 @@ export const DelegationRecordSchema = z.object({
   commandId: z.string().min(1).optional(),
   status: DelegationStatusSchema,
   instruction: z.string().trim().min(1).max(20_000),
+  contract: DelegationContractSchema.optional(),
   resultSummary: z.string().max(20_000).optional(),
   error: z.string().max(20_000).optional(),
   createdAt: z.string().min(1),
@@ -331,7 +372,14 @@ export const TaskRunRecordSchema = z.object({
   commandId: z.string().min(1).optional(),
   squadId: z.string().min(1).optional(),
   delegatedByTaskRunId: z.string().min(1).optional(),
-  finishedReason: z.enum(['completed', 'stopped', 'reassigned', 'review_rejected', 'failed']).optional(),
+  resumeDelegationId: z.string().min(1).optional(),
+  resumeDecisionId: z.string().min(1).optional(),
+  finishedReason: z.enum(['completed', 'stopped', 'reassigned', 'review_rejected', 'failed', 'decision_requested']).optional(),
+  promptVersion: z.string().trim().min(1).max(100).optional(),
+  promptDigest: z.string().length(64).optional(),
+  promptContextDigest: z.string().length(64).optional(),
+  collaborationPolicyVersion: z.string().trim().min(1).max(100).optional(),
+  promptDiagnostics: z.array(z.object({ code: z.string().trim().min(1).max(100), severity: z.enum(['info', 'warning']) }).strict()).max(50).optional(),
   sessionId: z.string().min(1).optional(),
   cwd: z.string().min(1).max(4_096).optional(),
   resourceId: z.string().min(1).optional(),
@@ -497,13 +545,38 @@ export const GeneratedTaskSchema = z.object({
   acceptanceCriteria: z.array(z.string().min(1).max(2_000)).min(1).max(100),
   dependencies: z.array(z.string()).max(100),
   suggestedAgentRole: z.string().min(1).max(200),
+  suggestedAgentId: z.string().min(1).optional(),
+  evidenceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(50).optional(),
   testCommand: z.string().min(1).max(10_000),
 })
 
+export const RepositoryEvidenceSchema = z.object({
+  inspectedPaths: z.array(z.string().trim().min(1).max(4_096)).min(1).max(500),
+  manifests: z.array(z.string().trim().min(1).max(4_096)).min(1).max(100),
+  verifiedCommands: z.array(z.string().trim().min(1).max(10_000)).min(1).max(100),
+  relevantModules: z.array(z.string().trim().min(1).max(4_096)).max(500),
+  assumptions: z.array(z.string().trim().min(1).max(2_000)).max(50),
+}).strict()
+
 export const GeneratedPlanSchema = z.object({
+  status: z.literal('ready').optional(),
   summary: z.string().min(1).max(5_000),
+  repositoryEvidence: RepositoryEvidenceSchema.optional(),
   tasks: z.array(GeneratedTaskSchema).min(2).max(200),
 })
+
+export const BlockedGeneratedPlanSchema = z.object({
+  status: z.literal('blocked'),
+  reasonCode: z.enum(['repository_unavailable', 'manifest_missing', 'verification_command_unconfirmed', 'requirement_conflict']),
+  summary: z.string().trim().min(1).max(5_000),
+  missingEvidence: z.array(z.string().trim().min(1).max(2_000)).min(1).max(100),
+  nextAction: z.string().trim().min(1).max(5_000),
+}).strict()
+
+export const PlannerResultSchema = z.union([
+  GeneratedPlanSchema.extend({ status: z.literal('ready'), repositoryEvidence: RepositoryEvidenceSchema }).strict(),
+  BlockedGeneratedPlanSchema,
+])
 
 export const AgentInputSchema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -683,6 +756,8 @@ const AgentBuilderAssumptionsSchema = z.array(z.string().trim().min(1).max(2_000
 const AgentBuilderQuestionsSchema = z.array(z.string().trim().min(1).max(2_000)).max(2)
 
 export const AgentBuilderResponseSchema = AgentInputSchema.extend({
+  reuseRecommendation: z.object({ agentId: z.string().min(1), reason: z.string().trim().min(1).max(2_000) }).strict().optional(),
+  warnings: z.array(z.string().trim().min(1).max(2_000)).max(20).default([]),
   feedback: z.string().trim().min(1).max(10_000),
   assumptions: AgentBuilderAssumptionsSchema.default([]),
   openQuestions: AgentBuilderQuestionsSchema.default([]),
@@ -763,6 +838,8 @@ export const SquadInputSchema = z.object({
   memberRoles: z.record(z.string(), z.string().trim().min(1).max(200)).default({}),
   instructions: z.string().trim().min(1).max(20_000),
   escalationPolicy: z.string().trim().min(1).max(10_000),
+  escalationConfig: SquadEscalationPolicySchema.optional(),
+  collaborationPolicyVersion: z.string().trim().min(1).max(100).optional(),
   maxParallelDelegations: z.number().int().positive().max(32).default(1),
 }).strict()
 
@@ -893,6 +970,9 @@ export type ProjectAgentMembershipRemove = z.infer<typeof ProjectAgentMembership
 export type ProjectTaskAssignments = z.infer<typeof ProjectTaskAssignmentsSchema>
 export type FeatureUsageDailyRecord = z.infer<typeof FeatureUsageDailyRecordSchema>
 export type FeatureUsageInput = z.infer<typeof FeatureUsageInputSchema>
+export type EscalationTrigger = z.infer<typeof EscalationTriggerSchema>
+export type SquadEscalationPolicy = z.infer<typeof SquadEscalationPolicySchema>
+export type DelegationContract = z.infer<typeof DelegationContractSchema>
 export type SquadRecord = z.infer<typeof SquadRecordSchema>
 export type SquadInput = z.infer<typeof SquadInputSchema>
 export type SquadCreateInput = z.infer<typeof SquadCreateInputSchema>
@@ -1023,6 +1103,8 @@ export type TaskBoardStageRequest = z.infer<typeof TaskBoardStageRequestSchema>
 export type ApprovalRecord = z.infer<typeof ApprovalRecordSchema>
 export type RunRecord = z.infer<typeof RunRecordSchema>
 export type GeneratedPlan = z.infer<typeof GeneratedPlanSchema>
+export type PlannerResult = z.infer<typeof PlannerResultSchema>
+export type RepositoryEvidence = z.infer<typeof RepositoryEvidenceSchema>
 export type AgentInput = z.infer<typeof AgentInputSchema>
 export type AgentBuilderMessage = z.infer<typeof AgentBuilderMessageSchema>
 export type AgentDraftRequest = z.infer<typeof AgentDraftRequestSchema>

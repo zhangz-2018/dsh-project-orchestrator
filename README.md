@@ -2,13 +2,24 @@
 
 English | [简体中文](README.zh-CN.md)
 
-A durable, approval-gated project orchestration workbench for [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness).
+A **DeepSeek Harness plugin** for local-first AI project management and task orchestration: approval-gated planning, isolated Git worktrees, human-in-the-loop review, and auditable execution evidence.
 
-`dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It keeps Projects, Issues, TaskRuns, human Decisions, Agent capacity, Git worktree evidence, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
+`dsh-project-orchestrator` adds a Host service, responsive Web workbench, and loopback CLI to one existing Harness installation. It turns delivery briefs and GitHub Issues into reviewable Tasks, TaskRuns, and evidence while keeping Projects, Decisions, Agent capacity, Git worktree state, Transcripts, Artifacts, and automation receipts in one auditable local workflow.
+
+**Use this when** you want a local DeepSeek Harness workflow for planning coding tasks, importing GitHub Issues, executing in isolated Git worktrees, and requiring human approval before repository changes.
 
 > **Compatibility:** v1.5.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
-## Project creation is not an AI side effect
+## DeepSeek Harness plugin capabilities
+
+- **AI coding agent orchestration:** plan delivery work into dependency-aware code and test Tasks, then track TaskRuns and verification evidence.
+- **Approval-gated AI planning:** human approval is required before execution or repository changes.
+- **GitHub Issues and local repositories:** import selected Issues or work from an existing local repository.
+- **Git worktree isolation:** execute with bounded diffs, commit evidence, cleanup records, and workspace leases.
+- **Human-in-the-loop delivery:** review Issues, make Decisions, coordinate Squad delegation, and inspect Transcripts and Artifacts.
+- **CLI and Web workbench:** use the responsive Harness Web UI or the loopback-only CLI against the same local service.
+
+## AI project planning and task orchestration
 
 The Web client defaults to **Empty Project**. It records the Project name and existing working directory without reading the repository, invoking a Planner, creating Tasks, or creating an approval. Add Tasks manually, or add a delivery brief later and explicitly request AI decomposition.
 

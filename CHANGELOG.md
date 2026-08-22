@@ -4,6 +4,18 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2026-08-22
+
+### Added
+
+- Recoverable planning diagnostics in the Project overview with a direct replan action when the Harness session lacks repository read-only tools.
+- Progressive disclosure for planner technical details, preserving the original diagnostic without mixing internal English instructions into the Chinese overview.
+
+### Changed
+
+- Project directory facts and Workspace/file-manager actions now use separate visual regions with responsive mobile actions.
+- Project overview summaries now expose active Agent membership as a stable count while retaining full names as accessible context.
+
 ## [1.5.0] - 2026-08-21
 
 ### Added

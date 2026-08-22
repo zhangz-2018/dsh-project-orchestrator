@@ -1,7 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto'
 import {
   GeneratedPlanSchema,
+  PlannerResultSchema,
   type GeneratedPlan,
+  type PlannerResult,
   type ProjectRecord,
   type TaskRecord,
 } from './types.js'
@@ -165,19 +167,18 @@ function extractJsonObject(raw: string): string | undefined {
   return undefined
 }
 
-export function parseGeneratedPlan(raw: string): GeneratedPlan {
+function parsePlannerJson(raw: string): unknown {
   const unfenced = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-  let parsed: unknown
   try {
-    parsed = JSON.parse(unfenced)
+    return JSON.parse(unfenced)
   } catch {
     const candidate = extractJsonObject(unfenced)
     if (candidate === undefined) throw new WorkflowError('invalid-plan-json', 'Planner did not return a JSON plan.', 422)
     try {
-      parsed = JSON.parse(candidate)
+      return JSON.parse(candidate)
     } catch (error) {
       try {
-        parsed = JSON.parse(repairInvalidStringEscapes(candidate))
+        return JSON.parse(repairInvalidStringEscapes(candidate))
       } catch {
         throw new WorkflowError(
           'invalid-plan-json',
@@ -187,7 +188,9 @@ export function parseGeneratedPlan(raw: string): GeneratedPlan {
       }
     }
   }
-  const plan = GeneratedPlanSchema.parse(parsed)
+}
+
+function validateReadyPlan(plan: GeneratedPlan): GeneratedPlan {
   if (!plan.tasks.some((task) => task.kind === 'code')) {
     throw new WorkflowError('missing-code-task', 'Generated plan must include at least one code task.', 422)
   }
@@ -196,6 +199,22 @@ export function parseGeneratedPlan(raw: string): GeneratedPlan {
   }
   topologicalTasks(plan.tasks.map((task, ordinal) => ({ ...task, ordinal })))
   return plan
+}
+
+export function parseGeneratedPlan(raw: string): GeneratedPlan {
+  return validateReadyPlan(GeneratedPlanSchema.parse(parsePlannerJson(raw)))
+}
+
+export function parsePlannerResult(raw: string): PlannerResult {
+  const result = PlannerResultSchema.parse(parsePlannerJson(raw))
+  if (result.status === 'blocked') return result
+  validateReadyPlan(result)
+  const commandSet = new Set(result.repositoryEvidence.verifiedCommands)
+  const unverified = result.tasks.find((task) => !commandSet.has(task.testCommand))
+  if (unverified !== undefined) throw new WorkflowError('unverified-test-command', `Task "${unverified.id}" uses a verification command that is absent from repository evidence.`, 422)
+  const missingEvidence = result.tasks.find((task) => task.evidenceRefs === undefined || task.evidenceRefs.length === 0)
+  if (missingEvidence !== undefined) throw new WorkflowError('task-evidence-required', `Task "${missingEvidence.id}" requires repository evidence references.`, 422)
+  return result
 }
 
 export function materializeTasks(
@@ -208,7 +227,7 @@ export function materializeTasks(
   const ids = new Map(plan.tasks.map((task) => [task.id, randomUUID()]))
   return plan.tasks.map((task, ordinal) => {
     const suggestedRole = task.suggestedAgentRole.toLocaleLowerCase()
-    const assigned = agents.find((agent) => {
+    const assigned = agents.find((agent) => task.suggestedAgentId === agent.id && agent.autoAssignable !== false && agent.status !== 'removed') ?? agents.find((agent) => {
       if (agent.autoAssignable === false || agent.status === 'removed') return false
       const role = (agent.projectRole?.trim() || agent.role).toLocaleLowerCase()
       return role.includes(suggestedRole) || suggestedRole.includes(role)
