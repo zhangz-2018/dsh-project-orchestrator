@@ -129,10 +129,12 @@ test('client exposes P0 Squad and Runtime management with context binding flows'
 test('PDF.js worker and attachment runtime are included in the plugin package contract', async () => {
   const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   const worker = await readFile(new URL('../lib/pdf.worker.mjs', import.meta.url), 'utf8')
+  const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
   const serverSource = await readFile(new URL('../src/index.ts', import.meta.url), 'utf8')
   assert.ok(worker.length > 100_000)
   assert.ok(manifest.files.includes('lib/pdf.worker.mjs'))
-  assert.equal(manifest.dependencies['pdfjs-dist'].startsWith('^5.'), true)
+  assert.equal(manifest.dependencies['pdfjs-dist'].startsWith('^6.'), true)
+  assert.match(source, /enableScripting:\s*false/)
   assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-attachment'], '0.1.0-rc.6')
   assert.match(serverSource, /'attachments'/)
   assert.match(serverSource, /'llm'/)

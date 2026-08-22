@@ -131,7 +131,7 @@ const MAX_PDF_IMAGE_BASE64_CHARS = 26 * 1024 * 1024
 async function parsePdfImport(file: File, signal: AbortSignal, progress: (message: string) => void): Promise<ParsedPdfImport> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   pdfjs.GlobalWorkerOptions.workerSrc = `/project-orchestrator/api/pdf-worker.mjs?v=${encodeURIComponent(pdfjs.version)}`
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) })
+  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), enableScripting: false } as Parameters<typeof pdfjs.getDocument>[0])
   const abort = () => { void loadingTask.destroy() }
   signal.addEventListener('abort', abort, { once: true })
   let document: Awaited<typeof loadingTask.promise> | undefined
@@ -209,8 +209,7 @@ async function parsePdfImport(file: File, signal: AbortSignal, progress: (messag
     }
   } finally {
     signal.removeEventListener('abort', abort)
-    if (document !== undefined) await document.destroy()
-    else await loadingTask.destroy()
+    await loadingTask.destroy()
   }
 }
 

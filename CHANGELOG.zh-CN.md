@@ -4,6 +4,13 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.5.3] - 2026-08-22
+
+### 安全
+
+- 将 `pdfjs-dist` 升级到修复 CVE-2026-16633 / GHSA-hq66-cqwq-w95j 的 `6.2.108` 版本。
+- 需求 PDF 导入时显式关闭 PDF 脚本执行，避免不可信 PDF 内容在 Harness 页面上下文执行脚本。
+
 ## [1.5.2] - 2026-08-22
 
 ### 新增

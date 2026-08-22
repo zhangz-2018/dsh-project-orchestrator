@@ -4,6 +4,13 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] - 2026-08-22
+
+### Security
+
+- Upgrade `pdfjs-dist` to the patched `6.2.108` release for CVE-2026-16633 / GHSA-hq66-cqwq-w95j.
+- Disable PDF scripting explicitly during requirement imports so untrusted PDF content cannot execute document scripts in the Harness origin.
+
 ## [1.5.2] - 2026-08-22
 
 ### Added
