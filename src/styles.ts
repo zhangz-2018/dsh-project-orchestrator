@@ -295,7 +295,7 @@ body[data-ds-dark-theme] .po-workbench {
 .po-project-detail-page { padding-bottom: 48px; }
 .po-project-summary-band { min-height: 86px; padding: 14px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); background: var(--dsw-alias-bg-layer-1, #fafafa); }
 .po-project-summary-band > div, .po-project-summary-band > button { min-width: 0; display: grid; align-content: center; gap: 6px; }
-.po-project-directory { grid-column: 1 / -1; display: grid !important; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 18px; padding-top: 2px; }
+.po-project-directory { margin: 0 24px; padding: 14px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 18px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
 .po-directory-fact { min-width: 0; display: grid; gap: 6px; }
 .po-directory-fact > span { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
 .po-directory-fact > strong { min-width: 0; overflow: hidden; font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }
@@ -464,6 +464,16 @@ body[data-ds-dark-theme] .po-workbench {
 .po-modal-backdrop { position: absolute; inset: 0; z-index: 20; padding: 24px; display: grid; place-items: center; background: var(--dsw-alias-bg-mask-3, rgba(17, 24, 39, 0.42)); backdrop-filter: blur(3px); }
 .po-modal { width: min(620px, 100%); max-height: min(840px, calc(100vh - 48px)); border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; background: var(--dsw-alias-bg-base, #fff); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24); }
 .po-modal-wide { width: min(920px, 100%); }
+.po-confirm-backdrop { position: absolute; inset: 0; z-index: 70; padding: 24px; display: grid; place-items: center; background: var(--dsw-alias-bg-mask-3, rgba(17, 24, 39, 0.46)); backdrop-filter: blur(3px); }
+.po-confirm-dialog { width: min(460px, 100%); padding: 22px; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 8px; color: var(--dsw-alias-label-primary, #18181b); background: var(--dsw-alias-bg-base, #fff); box-shadow: 0 24px 70px rgba(0, 0, 0, 0.24); }
+.po-confirm-icon { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: var(--po-accent-ink); background: var(--po-accent-surface); }
+.po-confirm-warning .po-confirm-icon { color: var(--po-warn-ink); background: var(--po-warn-surface); }
+.po-confirm-danger .po-confirm-icon { color: var(--po-error-ink); background: var(--po-error-surface); }
+.po-confirm-content h2 { margin: 2px 0 0; font-size: 16px; }
+.po-confirm-content p { margin: 8px 0 0; color: var(--dsw-alias-label-secondary, #52525b); font-size: 13px; line-height: 1.55; white-space: pre-wrap; }
+.po-confirm-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 8px; }
+.po-button-danger { color: var(--po-on-solid); border-color: var(--po-error); background: var(--po-error); }
+.po-button-danger:hover { background: color-mix(in srgb, var(--po-error) 88%, #000); }
 .po-modal > header, .po-modal > footer { flex: 0 0 auto; display: flex; align-items: center; }
 .po-modal > header { min-height: 66px; padding: 12px 18px; justify-content: space-between; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
 .po-modal > header h2 { margin: 0; font-size: 16px; }
@@ -813,7 +823,7 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-project-tabs { padding: 0 8px; }
   .po-project-tabs button { min-height: 44px; padding: 0 12px; }
   .po-project-summary-band { min-height: auto; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 14px; gap: 14px 12px; }
-  .po-project-directory { grid-template-columns: 1fr; align-items: stretch; gap: 10px; }
+  .po-project-directory { margin: 0 14px; grid-template-columns: 1fr; align-items: stretch; gap: 10px; }
   .po-directory-fact > strong { white-space: normal; overflow-wrap: anywhere; }
   .po-directory-actions { display: grid; grid-template-columns: 1fr 1fr; justify-content: stretch; }
   .po-directory-actions .po-button { width: 100%; justify-content: center; }
@@ -927,13 +937,16 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-studio-footer > div { width: 100%; }
   .po-studio-footer .po-button, .po-agent-manual-form .po-config-footer .po-button { min-height: 44px; flex: 1 1 0; }
   .po-agent-manual-form .po-config-footer { padding: 9px 12px; }
-  .po-modal-backdrop { padding: 0; align-items: end; }
+  .po-modal-backdrop, .po-confirm-backdrop { padding: 0; align-items: end; }
   .po-directory-browser-backdrop { padding: 0; align-items: end; }
   .po-directory-browser { width: 100%; max-height: calc(100vh - 20px); border-radius: 8px 8px 0 0; }
   .po-directory-browser > footer { flex-wrap: wrap; }
   .po-directory-current { width: 100%; flex: 1 0 100%; }
   .po-directory-browser > footer .po-button { min-height: 44px; flex: 1 1 140px; }
   .po-modal, .po-modal-wide { width: 100%; max-height: calc(100vh - 20px); border-radius: 8px 8px 0 0; }
+  .po-confirm-dialog { width: 100%; border-radius: 8px 8px 0 0; padding: 18px 14px; }
+  .po-confirm-actions { margin-top: 16px; }
+  .po-confirm-actions .po-button { min-height: 44px; flex: 1 1 0; }
   .po-modal-body { padding: 16px 14px; }
   .po-form-grid, .po-field-pair, .po-project-mode { grid-template-columns: 1fr; }
   .po-project-mode-option { min-height: 88px; }

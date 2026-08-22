@@ -4,6 +4,17 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-08-22
+
+### Added
+
+- A unified accessible confirmation dialog for destructive, archival, membership, task, planning, and draft-discard actions, with semantic labeling, Escape cancellation, focus trapping, focus restoration, and responsive actions.
+
+### Changed
+
+- Replaced native browser confirmation prompts throughout the Web workbench.
+- Moved the project working directory into an unframed information band so long filesystem paths read as read-only facts instead of input controls.
+
 ## [1.5.1] - 2026-08-22
 
 ### Added

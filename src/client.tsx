@@ -71,10 +71,20 @@ type View = 'tasks' | 'projects' | 'agents' | 'inbox' | 'issues' | 'squads' | 'r
 type Panel = 'task-new' | 'task-detail' | 'project-form' | 'issue-detail' | 'agent-start' | 'agent-manual' | 'agent-ai' | 'agent-edit' | 'squad-form' | 'squad-detail' | 'runtime-form' | 'runtime-detail' | 'runtime-binding' | null
 type ProjectTab = 'overview' | 'tasks' | 'agents' | 'runs'
 
+type DialogTone = 'default' | 'warning' | 'danger'
+interface DialogRequest {
+  title: string
+  message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  tone?: DialogTone
+}
+
 interface WorkbenchState {
   open: boolean
   view: View
   panel: Panel
+  dialog: DialogRequest | null
   snapshot: Snapshot
   selectedProjectId: string | undefined
   selectedTaskId: string | undefined
@@ -277,6 +287,7 @@ class WorkbenchModel {
     open: false,
     view: 'tasks',
     panel: null,
+    dialog: null,
     snapshot: EMPTY_SNAPSHOT,
     selectedProjectId: undefined,
     selectedTaskId: undefined,
@@ -316,6 +327,7 @@ class WorkbenchModel {
     if (this.interval !== undefined) window.clearInterval(this.interval)
     this.interval = undefined
     this.refreshGeneration += 1
+    this.resolveDialog(false)
     this.patch({ open: false, panel: null })
     window.setTimeout(() => {
       const target = this.returnFocus?.isConnected
@@ -387,6 +399,19 @@ class WorkbenchModel {
   clearMessages = (): void => this.patch({ error: undefined, notice: undefined })
   reportError = (error: unknown): void => this.patch({ loading: false, error: messageOf(error), notice: undefined })
   reportNotice = (notice: string): void => this.patch({ notice, error: undefined })
+  confirm = (request: DialogRequest): Promise<boolean> => new Promise((resolve) => {
+    this.dialogResolver?.(false)
+    this.dialogResolver = resolve
+    this.patch({ dialog: { ...request, confirmLabel: request.confirmLabel ?? '确认', cancelLabel: request.cancelLabel ?? '取消' } })
+  })
+  resolveDialog = (confirmed: boolean): void => {
+    const resolve = this.dialogResolver
+    this.dialogResolver = undefined
+    this.patch({ dialog: null })
+    resolve?.(confirmed)
+  }
+
+  private dialogResolver: ((confirmed: boolean) => void) | undefined
 
   async refresh(silent = false): Promise<void> {
     const generation = ++this.refreshGeneration
@@ -503,7 +528,7 @@ function Workbench({ model, state }: { model: WorkbenchModel; state: WorkbenchSt
     const workbench = root.current
     if (workbench === null) return
     const focusSelector = 'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
-    const modal = workbench.querySelector<HTMLElement>('.po-modal')
+    const modal = workbench.querySelector<HTMLElement>('.po-confirm-dialog, .po-modal')
     const focusScope = modal ?? workbench
     const background = [
       workbench.querySelector<HTMLElement>('.po-sidebar'),
@@ -521,7 +546,8 @@ function Workbench({ model, state }: { model: WorkbenchModel; state: WorkbenchSt
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
-        if (state.panel !== null) model.closePanel()
+        if (state.dialog !== null) model.resolveDialog(false)
+        else if (state.panel !== null) model.closePanel()
         else model.close()
         return
       }
@@ -547,7 +573,7 @@ function Workbench({ model, state }: { model: WorkbenchModel; state: WorkbenchSt
         element.removeAttribute('aria-hidden')
       }
     }
-  }, [model, state.panel])
+  }, [model, state.panel, state.dialog])
 
   const selectedTask = state.snapshot.tasks.find((task) => task.id === state.selectedTaskId)
   const selectedIssue = state.snapshot.issues.find((issue) => issue.id === state.selectedIssueId)
@@ -584,6 +610,7 @@ function Workbench({ model, state }: { model: WorkbenchModel; state: WorkbenchSt
       {state.panel === 'squad-detail' && state.selectedSquadId ? <SquadDetailDrawer key={state.selectedSquadId} state={state} model={model} squadId={state.selectedSquadId} /> : null}
       {state.panel === 'runtime-form' ? <RuntimeDrawer key={state.selectedRuntimeId ?? 'new-runtime'} state={state} model={model} runtime={state.snapshot.runtimes.find((runtime) => runtime.id === state.selectedRuntimeId)} /> : null}
       {state.panel === 'runtime-detail' && state.selectedRuntimeId ? <RuntimeDetailDrawer key={state.selectedRuntimeId} state={state} model={model} runtimeId={state.selectedRuntimeId} /> : null}
+      {state.dialog ? <GlobalConfirmDialog request={state.dialog} onResolve={model.resolveDialog} /> : null}
     </div>
   )
 }
@@ -692,8 +719,8 @@ function SquadDetailDrawer({ state, model, squadId }: { state: WorkbenchState; m
   const roleDiagnostics = squadUiDiagnostics({ instructions: squad.instructions, customInstructions: escalationConfig.customInstructions, memberAgentIds: squad.memberAgentIds, memberRoles: squad.memberRoles, leaderAgentId: squad.leaderAgentId, maxParallelDelegations: squad.maxParallelDelegations, agents: state.snapshot.agents }).filter((item) => item.scope === '成员职责')
   const latestDecision = state.snapshot.decisions.filter((decision) => decision.metadata.squadId === squad.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
   const clone = async () => { const result = await model.action(() => mutate<SquadRecord>(`/squads/${squad.id}/clone`, 'POST', { expectedSourceUpdatedAt: squad.updatedAt }), 'Squad 副本已创建。'); if (result) model.openSquad(result.id, true) }
-  const archive = async () => { if (!window.confirm(`归档 Squad“${squad.name}”？归档后不能再分派新 Issue。`)) return; const result = await model.action(() => mutate(`/squads/${squad.id}/archive`, 'POST', { expectedUpdatedAt: squad.updatedAt }), 'Squad 已归档。'); if (result) model.closePanel() }
-  const remove = async () => { if (!window.confirm(`永久删除 Squad“${squad.name}”？仅无历史引用的 Squad 可以删除。`)) return; const result = await model.action(() => mutate(`/squads/${squad.id}`, 'DELETE'), 'Squad 已删除。'); if (result) model.closePanel() }
+  const archive = async () => { if (!await model.confirm({ title: '归档 Squad', message: `归档 Squad“${squad.name}”？归档后不能再分派新 Issue。`, confirmLabel: '归档 Squad', tone: 'warning' })) return; const result = await model.action(() => mutate(`/squads/${squad.id}/archive`, 'POST', { expectedUpdatedAt: squad.updatedAt }), 'Squad 已归档。'); if (result) model.closePanel() }
+  const remove = async () => { if (!await model.confirm({ title: '删除 Squad', message: `永久删除 Squad“${squad.name}”？仅无历史引用的 Squad 可以删除。`, confirmLabel: '永久删除', tone: 'danger' })) return; const result = await model.action(() => mutate(`/squads/${squad.id}`, 'DELETE'), 'Squad 已删除。'); if (result) model.closePanel() }
   return <ManagementDrawer title={squad.name} subtitle={`${squad.status === 'active' ? '活跃' : '已归档'} · 更新于 ${formatDate(squad.updatedAt)}`} close={model.closePanel} footer={<><ActionButton variant="ghost" onClick={() => void clone()}>克隆 Squad</ActionButton>{squad.status === 'active' ? <ActionButton variant="outline" onClick={() => model.openSquad(squad.id, true)}>编辑 Squad</ActionButton> : null}{squad.status === 'active' ? <ActionButton variant="outline" onClick={() => void archive()}>归档 Squad</ActionButton> : <ActionButton variant="outline" icon={<IconTrashOutline16 />} onClick={() => void remove()}>删除 Squad</ActionButton>}</>}>
     <dl className="po-detail-facts"><dt>Leader</dt><dd>{agentName(state.snapshot, squad.leaderAgentId)}</dd><dt>成员职责</dt><dd>{squad.memberAgentIds.map((id) => `${agentName(state.snapshot,id)}（${squad.memberRoles[id] ?? '成员'} · ${state.snapshot.agents.find((agent) => agent.id === id)?.toolPolicy === 'read_only' ? '只读' : '可执行'}）`).join('、')}</dd><dt>并行容量</dt><dd>{activeDelegations.length}/{squad.maxParallelDelegations} 占用</dd><dt>Leader 协作协议</dt><dd>{squad.instructions}<small className="po-scope-label">生效范围：Leader TaskRun</small></dd><dt>升级触发器</dt><dd>{escalationTriggerSummary(escalationConfig)}<small className="po-scope-label">系统执行，触发后请求人工 Decision</small></dd>{escalationConfig.customInstructions ? <><dt>自定义升级说明</dt><dd>{escalationConfig.customInstructions}</dd></> : null}</dl>
     <section className="po-drawer-section"><h3>Prompt 与策略证据</h3><dl className="po-detail-facts"><dt>Prompt 版本</dt><dd>{evidenceRun?.promptVersion ?? 'legacy'}</dd><dt>协作策略版本</dt><dd>{evidenceRun?.collaborationPolicyVersion ?? squad.collaborationPolicyVersion ?? 'legacy'}</dd><dt>Prompt digest</dt><dd className="po-mono">{evidenceRun?.promptDigest ?? '历史运行未记录'}</dd><dt>Context digest</dt><dd className="po-mono">{evidenceRun?.promptContextDigest ?? '历史运行未记录'}</dd></dl>{evidenceRun?.promptDiagnostics?.length ? <ul className="po-evidence-diagnostics">{evidenceRun.promptDiagnostics.map((item, index) => <li key={`${item.code}:${index}`}>{item.severity} · {item.code}</li>)}</ul> : null}</section>
@@ -722,8 +749,8 @@ function RuntimeDetailDrawer({ state, model, runtimeId }: { state: WorkbenchStat
   const runtime = detail?.runtime ?? state.snapshot.runtimes.find((item) => item.id === runtimeId)
   if (!runtime) return null
   const heartbeat = async (status: RuntimeRecord['status']) => { await model.action(() => mutate(`/runtimes/${runtime.id}/heartbeat`, 'POST', { status }), `Runtime 已标记为${availabilityLabel(status)}。`) }
-  const archive = async () => { if (!window.confirm(`归档 Runtime“${runtime.name}”？请先迁移所有 Agent 和 Resource 绑定。`)) return; const result = await model.action(() => mutate(`/runtimes/${runtime.id}/archive`, 'POST', { expectedUpdatedAt: runtime.updatedAt }), 'Runtime 已归档。'); if (result) model.closePanel() }
-  const remove = async () => { if (!window.confirm(`永久删除 Runtime“${runtime.name}”？仅无绑定和历史引用时允许删除。`)) return; const result = await model.action(() => mutate(`/runtimes/${runtime.id}`, 'DELETE'), 'Runtime 已删除。'); if (result) model.closePanel() }
+  const archive = async () => { if (!await model.confirm({ title: '归档 Runtime', message: `归档 Runtime“${runtime.name}”？请先迁移所有 Agent 和 Resource 绑定。`, confirmLabel: '归档 Runtime', tone: 'warning' })) return; const result = await model.action(() => mutate(`/runtimes/${runtime.id}/archive`, 'POST', { expectedUpdatedAt: runtime.updatedAt }), 'Runtime 已归档。'); if (result) model.closePanel() }
+  const remove = async () => { if (!await model.confirm({ title: '删除 Runtime', message: `永久删除 Runtime“${runtime.name}”？仅无绑定和历史引用时允许删除。`, confirmLabel: '永久删除', tone: 'danger' })) return; const result = await model.action(() => mutate(`/runtimes/${runtime.id}`, 'DELETE'), 'Runtime 已删除。'); if (result) model.closePanel() }
   return <ManagementDrawer title={runtime.name} subtitle={`${runtime.machineId} · ${availabilityLabel(runtime.status)}`} close={model.closePanel} footer={<>{runtime.lifecycle === 'active' ? <><ActionButton variant="ghost" onClick={() => void heartbeat(runtime.status === 'online' ? 'unstable' : 'online')}>{runtime.status === 'online' ? '标记不稳定' : '标记在线'}</ActionButton><ActionButton variant="outline" onClick={() => model.openRuntime(runtime.id, true)}>编辑 Runtime</ActionButton><ActionButton variant="outline" onClick={() => void archive()}>归档 Runtime</ActionButton></> : <ActionButton variant="outline" icon={<IconTrashOutline16 />} onClick={() => void remove()}>删除 Runtime</ActionButton>}</>}>
     {error ? <div className="po-inline-error"><IconWarningOutline16 />{error}</div> : null}<dl className="po-detail-facts"><dt>状态</dt><dd>{availabilityLabel(runtime.status)}</dd><dt>最近心跳</dt><dd>{formatDate(runtime.lastHeartbeatAt)}</dd><dt>能力</dt><dd>{runtime.capabilities.join(', ') || '未声明'}</dd><dt>工作区根目录</dt><dd>{runtime.workspaceRoot || '未限制'}</dd><dt>Agent CLI</dt><dd>{runtime.agentCli || 'Harness 默认'}</dd><dt>运行历史</dt><dd>{detail ? `${detail.historyCount} 次，${detail.activeTaskRuns.length} 个 active，${detail.queuedTaskRuns.length} 个排队` : '正在读取…'}</dd></dl>{detail && (detail.agents.length > 0 || detail.resources.length > 0) ? <section className="po-drawer-section"><h3>当前绑定</h3>{detail.agents.map((agent) => <button type="button" className="po-context-row po-context-row-button" key={agent.id} onClick={() => { model.closePanel(); model.setView('agents'); window.setTimeout(() => model.openAgent(agent.id), 0) }}><strong>{agent.name}</strong><span>Agent</span></button>)}{detail.resources.map((resource) => <div className="po-context-row" key={resource.id}><strong>{resource.location}</strong><span>Resource</span></div>)}</section> : null}</ManagementDrawer>
 }
@@ -851,7 +878,7 @@ function PageHeader({ title, subtitle, action, back, backLabel = '返回' }: { t
 }
 
 function ActionButton({ variant = 'ghost', size = 'md', icon, className, children, type, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'ghost' | 'outline'
+  variant?: 'primary' | 'ghost' | 'outline' | 'danger'
   size?: 'md' | 'sm'
   icon?: React.ReactNode
 }) {
@@ -1173,9 +1200,9 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div><span>当前版本</span><strong>Revision {project.revision}</strong></div>
         <button type="button" className="po-summary-link" onClick={() => model.setProjectTab('agents')}><span>项目智能体</span><strong title={activeMemberships.map((member) => agentName(state.snapshot, member.agentId)).join('、')}>{activeMemberships.length > 0 ? `${activeMemberships.length} 个 active 成员` : '添加智能体'}</strong></button>
         <div><span>测试进度</span><strong>{completed}/{tasks.length}</strong></div>
-        <div className="po-project-directory"><div className="po-directory-fact"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong></div><div className="po-directory-actions">{project.workspaceId ? <ActionButton size="sm" variant="outline" icon={<IconPlayOutline16 />} onClick={() => model.startWorkspace(project.workspaceId!)}>打开 Workspace</ActionButton> : null}<ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div></div>
       </div>
-      <ProjectOrchestrationStrip project={project} state={state} model={model} />
+       <section className="po-project-directory" aria-label="工作目录"><div className="po-directory-fact"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong></div><div className="po-directory-actions">{project.workspaceId ? <ActionButton size="sm" variant="outline" icon={<IconPlayOutline16 />} onClick={() => model.startWorkspace(project.workspaceId!)}>打开 Workspace</ActionButton> : null}<ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div></section>
+        <ProjectOrchestrationStrip project={project} state={state} model={model} />
       <ProjectSquadsPanel project={project} state={state} model={model} />
       <section className="po-project-context-grid" aria-label="项目协作上下文">
          <div className="po-context-panel"><div className="po-section-heading"><div><h2>Issues</h2><p>{issues.length} 个长期工作事项 · {taskRuns.length} 次执行</p></div></div>{issues.length === 0 ? <p className="po-context-empty">自动交付计划会逐步关联到 Issue。</p> : issues.slice(0, 4).map((issue) => <button key={issue.id} type="button" className="po-context-row po-context-row-button" onClick={() => model.openIssue(issue.id)}><strong>{issue.title}</strong><span>{issue.status} · {issue.priority}</span></button>)}</div>
@@ -1291,7 +1318,7 @@ function ProjectMemberRow({ member, project, state, model }: { member: ProjectAg
   const [autoAssignable, setAutoAssignable] = useState(member.autoAssignable)
   const replacements = projectMemberships(state.snapshot, project.id).filter((candidate) => candidate.agentId !== member.agentId && state.snapshot.agents.some((item) => item.id === candidate.agentId && item.status === 'active'))
   const update = async (setAsLead = false) => { const result = await model.action(() => mutate(`/projects/${project.id}/agents/${member.agentId}`, 'PUT', { projectRole: role, autoAssignable, setAsLead }), setAsLead ? '项目负责人已更新。' : '项目职责已更新。'); if (result) setEditing(false) }
-  const remove = async () => { const reassignTasks = tasks.length > 0; if (reassignTasks && !replacementAgentId) { if (replacements.length === 0) model.reportError('当前没有其他 active 项目成员可接管任务，请先添加智能体。'); else setReassigning(true); return } const clearingLead = project.leadAgentId === member.agentId && !replacementAgentId; const replacementName = replacementAgentId ? agentName(state.snapshot, replacementAgentId) : ''; if (!window.confirm(`将 ${agent?.name ?? member.agentId} 移出项目？${reassignTasks ? `${tasks.length} 个当前计划任务会原子重新分配给 ${replacementName}，审批将失效。` : clearingLead ? '项目负责人会同时清空。' : ''}历史 TaskRun 和活动会保留。`)) return; const result = await model.action(() => mutate(`/projects/${project.id}/agents/${member.agentId}`, 'DELETE', { expectedMemberUpdatedAt: member.updatedAt, expectedProjectRevision: project.revision, assignedTaskPolicy: reassignTasks ? 'reassign' : 'reject', ...(replacementAgentId ? { replacementAgentId } : {}), clearLead: clearingLead }), reassignTasks ? `任务已重新分配给 ${replacementName}，原成员已移出，项目需要重新批准。` : '智能体已移出项目，历史成员记录已保留。'); if (result) setReassigning(false) }
+  const remove = async () => { const reassignTasks = tasks.length > 0; if (reassignTasks && !replacementAgentId) { if (replacements.length === 0) model.reportError('当前没有其他 active 项目成员可接管任务，请先添加智能体。'); else setReassigning(true); return } const clearingLead = project.leadAgentId === member.agentId && !replacementAgentId; const replacementName = replacementAgentId ? agentName(state.snapshot, replacementAgentId) : ''; if (!await model.confirm({ title: '移出项目成员', message: `将 ${agent?.name ?? member.agentId} 移出项目？${reassignTasks ? `${tasks.length} 个当前计划任务会原子重新分配给 ${replacementName}，审批将失效。` : clearingLead ? '项目负责人会同时清空。' : ''}历史 TaskRun 和活动会保留。`, confirmLabel: '移出成员', tone: 'warning' })) return; const result = await model.action(() => mutate(`/projects/${project.id}/agents/${member.agentId}`, 'DELETE', { expectedMemberUpdatedAt: member.updatedAt, expectedProjectRevision: project.revision, assignedTaskPolicy: reassignTasks ? 'reassign' : 'reject', ...(replacementAgentId ? { replacementAgentId } : {}), clearLead: clearingLead }), reassignTasks ? `任务已重新分配给 ${replacementName}，原成员已移出，项目需要重新批准。` : '智能体已移出项目，历史成员记录已保留。'); if (result) setReassigning(false) }
   return <div className="po-member-row" role="row"><span><strong>{agent?.name ?? member.agentId}{project.leadAgentId === member.agentId ? ' · 负责人' : ''}</strong><small>{agent?.role || '全局角色未设置'} · {agent?.status === 'active' ? 'active' : '已归档'}</small></span><span>{editing ? <><input className="po-input" value={role} maxLength={200} onChange={(event) => setRole(event.target.value)} /><label className="po-check"><input type="checkbox" checked={autoAssignable} onChange={(event) => setAutoAssignable(event.target.checked)} />允许 AI 自动匹配</label></> : <><strong>{member.projectRole || '未设置项目职责'}</strong><small>{member.autoAssignable ? '可自动匹配' : '仅手动分配'}</small></>}</span><span><strong>{agent?.skills?.length ?? 0} Skills · {agent?.toolPolicy === 'read_only' ? '只读' : '可执行'}</strong><small>{workload ? `${availabilityLabel(workload.availability)} · ${workload.occupied}/${workload.maxConcurrency} 占用 · ${workload.queued} 排队` : '可用性未知'}</small></span><span><strong>{tasks.filter((task) => !['completed', 'cancelled'].includes(task.status)).length}/{tasks.length}</strong><small>进行中/全部</small></span><span className="po-member-actions">{editing ? <ActionButton size="sm" variant="primary" onClick={() => void update()}>保存职责</ActionButton> : <ActionButton size="sm" variant="outline" onClick={() => setEditing(true)}>编辑职责</ActionButton>}{project.leadAgentId !== member.agentId ? <ActionButton size="sm" variant="ghost" onClick={() => void update(true)}>设为负责人</ActionButton> : null}{reassigning ? <><select className="po-select po-compact-select" aria-label="任务接管智能体" value={replacementAgentId} onChange={(event) => setReplacementAgentId(event.target.value)}><option value="">选择任务接管者</option>{replacements.map((candidate) => <option key={candidate.agentId} value={candidate.agentId}>{agentName(state.snapshot, candidate.agentId)}</option>)}</select><ActionButton size="sm" variant="primary" disabled={!replacementAgentId} onClick={() => void remove()}>重新分配并移出</ActionButton><ActionButton size="sm" variant="ghost" onClick={() => { setReassigning(false); setReplacementAgentId('') }}>取消</ActionButton></> : <ActionButton size="sm" variant="ghost" onClick={() => void remove()}>移出项目</ActionButton>}</span></div>
 }
 
@@ -1522,8 +1549,8 @@ function AgentAiPage({ state, model }: { state: WorkbenchState; model: Workbench
       model.openAgent(result.id)
     }
   }
-  const discard = () => {
-    if (hasDraft && !window.confirm('放弃当前智能体草稿和对话？')) return
+  const discard = async () => {
+    if (hasDraft && !await model.confirm({ title: '放弃智能体草稿', message: '当前智能体草稿和对话尚未保存，放弃后无法恢复。', confirmLabel: '放弃草稿', tone: 'warning' })) return
     window.localStorage.removeItem(AGENT_BUILDER_STORAGE_KEY)
     model.openPanel('agent-start')
   }
@@ -1629,6 +1656,31 @@ function ResourceRuntimeBinding({ resource, state, model }: { resource: ProjectR
   const [runtimeId, setRuntimeId] = useState(resource.runtimeId ?? 'default')
   const bind = async () => { await model.action(() => mutate(`/resources/${resource.id}/runtime`, 'PUT', { runtimeId: runtimeId === 'default' ? null : runtimeId, expectedTargetUpdatedAt: resource.updatedAt }), 'Project Resource Runtime 已更新。') }
   return <div className="po-resource-binding"><strong>{resource.location}</strong><select className="po-select" aria-label={`${resource.location} 的 Runtime`} value={runtimeId} onChange={(event) => setRuntimeId(event.target.value)}><option value="default">本机默认环境</option>{state.snapshot.runtimes.filter((runtime) => runtime.lifecycle === 'active').map((runtime) => <option key={runtime.id} value={runtime.id}>{runtime.name}</option>)}</select><ActionButton size="sm" variant="outline" disabled={state.loading || runtimeId === (resource.runtimeId ?? 'default')} onClick={() => void bind()}>保存绑定</ActionButton></div>
+}
+
+function GlobalConfirmDialog({ request, onResolve }: { request: DialogRequest; onResolve: (confirmed: boolean) => void }) {
+  const dialogRef = useRef<HTMLElement>(null)
+  const resolveRef = useRef(onResolve)
+  resolveRef.current = onResolve
+  useEffect(() => {
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : undefined
+    const focusable = () => [...(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), [tabindex]:not([tabindex="-1"])') ?? [])]
+    const initial = window.setTimeout(() => focusable()[0]?.focus(), 0)
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); resolveRef.current(false); return }
+      if (event.key !== 'Tab') return
+      const candidates = focusable()
+      if (candidates.length === 0) return
+      const first = candidates[0]!
+      const last = candidates[candidates.length - 1]!
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => { window.clearTimeout(initial); window.removeEventListener('keydown', onKeyDown); if (previousFocus?.isConnected) previousFocus.focus() }
+  }, [])
+  const tone = request.tone ?? 'default'
+  return <div className="po-confirm-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onResolve(false) }}><section ref={dialogRef} className={`po-confirm-dialog po-confirm-${tone}`} role="alertdialog" aria-modal="true" aria-labelledby="po-confirm-title" aria-describedby="po-confirm-message"><div className="po-confirm-icon"><IconWarningOutline16 /></div><div className="po-confirm-content"><h2 id="po-confirm-title">{request.title}</h2><p id="po-confirm-message">{request.message}</p><div className="po-confirm-actions"><ActionButton variant="ghost" onClick={() => onResolve(false)}>{request.cancelLabel ?? '取消'}</ActionButton><ActionButton variant={tone === 'danger' ? 'danger' : 'primary'} onClick={() => onResolve(true)}>{request.confirmLabel ?? '确认'}</ActionButton></div></div></section></div>
 }
 
 function ModalShell({ title, subtitle, close, children, footer, wide = false }: { title: string; subtitle?: string; close: () => void; children: React.ReactNode; footer: React.ReactNode; wide?: boolean }) {
@@ -1969,7 +2021,7 @@ function TaskDialog({ state, model, task }: { state: WorkbenchState; model: Work
     if (result) model.closePanel()
   }
   const remove = async () => {
-    if (locked || !task || !window.confirm(`删除任务“${task.title}”？`)) return
+    if (locked || !task || !await model.confirm({ title: '删除任务', message: `删除任务“${task.title}”？删除后任务及其关联证据将不再出现在项目中。`, confirmLabel: '删除任务', tone: 'danger' })) return
     const result = await model.action(() => mutate(`/tasks/${task.id}`, 'DELETE'), '任务已删除，项目计划需要重新批准。')
     if (result) model.closePanel()
   }
@@ -2019,7 +2071,7 @@ function MessageBar({ state, model }: { state: WorkbenchState; model: WorkbenchM
 }
 
 async function regenerateProjectPlan(model: WorkbenchModel, project: ProjectRecord, taskLanguage: TaskLanguage) {
-  if (project.taskIds.length > 0 && !window.confirm('重新生成会替换当前任务计划，并使已有审批失效。生成完成后需要重新批准，是否继续？')) return
+  if (project.taskIds.length > 0 && !await model.confirm({ title: '替换当前计划', message: '重新生成会替换当前任务计划，并使已有审批失效。生成完成后需要重新批准。', confirmLabel: '替换并重新规划', tone: 'warning' })) return
   await model.action(() => mutate(`/projects/${project.id}/replan`, 'POST', { taskLanguage }), taskLanguage === 'zh-CN' ? '中文任务计划正在重新生成，完成后需要重新批准。' : 'English task plan regeneration started; approval will be required again.')
 }
 async function approveAndExecuteProject(model: WorkbenchModel, project: ProjectRecord, planHash: string | undefined) {
@@ -2033,12 +2085,12 @@ async function cancelProject(model: WorkbenchModel, project: ProjectRecord) {
   await model.action(() => mutate(`/projects/${project.id}/cancel`, 'POST'), '停止请求已提交。')
 }
 async function deleteProject(model: WorkbenchModel, project: ProjectRecord) {
-  if (!window.confirm(`删除项目“${project.name}”及其任务、Issues、运行记录、审批和相关执行数据？共享的智能体、Squad、Runtime 与 Harness Workspace 不会删除。`)) return
+  if (!await model.confirm({ title: '删除项目', message: `删除项目“${project.name}”及其任务、Issues、运行记录、审批和相关执行数据？共享的智能体、Squad、Runtime 与 Harness Workspace 不会删除。`, confirmLabel: '删除项目', tone: 'danger' })) return
   const result = await model.action(() => mutate(`/projects/${project.id}`, 'DELETE'), '项目已删除。')
   if (result) model.clearSelection()
 }
 async function deleteAgent(model: WorkbenchModel, agent: AgentRecord) {
-  if (!window.confirm(`删除智能体“${agent.name}”？`)) return
+  if (!await model.confirm({ title: '删除智能体', message: `删除智能体“${agent.name}”？删除后该智能体的全局配置将无法恢复。`, confirmLabel: '删除智能体', tone: 'danger' })) return
   const result = await model.action(() => mutate(`/agents/${agent.id}`, 'DELETE'), '智能体已删除。')
   if (result) model.clearSelection()
 }
