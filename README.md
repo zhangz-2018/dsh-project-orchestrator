@@ -12,25 +12,25 @@ A **DeepSeek Harness plugin** for local-first AI project management and task orc
 
 ## See it in action
 
-The plugin lives inside the existing Harness Web shell. The main workflow is visible in three places: a project list for approval and progress scanning, a project detail view for the working directory and collaboration context, and a task board for execution work.
+The plugin lives inside the existing Harness Web shell. The following neutral UI illustrations show the main workflow without exposing any repository, project, path, URL, or user workspace data: approval and progress scanning, execution context, and task delivery stages.
 
 <p align="center">
   <img src="docs/assets/screenshots/project-overview-desktop.png" alt="DeepSeek Harness Project Orchestrator project list showing approval and progress columns" width="100%">
 </p>
 
-<p align="center"><em>Projects are easy to scan by status, approval revision, progress, owner, and working directory.</em></p>
+<p align="center"><em>Illustration: scan status, approval revision, progress, owner, and workspace association in one list.</em></p>
 
 <p align="center">
   <img src="docs/assets/screenshots/project-detail-desktop.png" alt="DeepSeek Harness Project Orchestrator project detail showing working directory, Squad readiness, Issues, Resources, and AI delivery flow" width="100%">
 </p>
 
-<p align="center"><em>Project detail keeps the working directory, Issues, Resources, Squad readiness, and approval-bound AI flow in one view.</em></p>
+<p align="center"><em>Illustration: keep workspace association, Resources, Squad readiness, and the approval-bound AI flow in one view.</em></p>
 
 <p align="center">
   <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness Project Orchestrator desktop delivery task board" width="100%">
 </p>
 
-<p align="center"><em>The delivery board makes approval-aware work visible across planning, queued, active, review, and completed stages.</em></p>
+<p align="center"><em>Illustration: make approval-aware work visible across planning, queued, active, review, and completed stages.</em></p>
 
 ```text
 Brief or GitHub Issues -> read-only planning -> reviewable Tasks
