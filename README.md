@@ -8,7 +8,39 @@ A **DeepSeek Harness plugin** for local-first AI project management and task orc
 
 **Use this when** you want a local DeepSeek Harness workflow for planning coding tasks, importing GitHub Issues, executing in isolated Git worktrees, and requiring human approval before repository changes.
 
-> **Compatibility:** v1.5.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.5.4 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+
+## See it in action
+
+The plugin lives inside the existing Harness Web shell. The main workflow is visible in three places: a project list for approval and progress scanning, a project detail view for the working directory and collaboration context, and a task board for execution work.
+
+<p align="center">
+  <img src="docs/assets/screenshots/project-overview-desktop.png" alt="DeepSeek Harness Project Orchestrator project list showing approval and progress columns" width="100%">
+</p>
+
+<p align="center"><em>Projects are easy to scan by status, approval revision, progress, owner, and working directory.</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/project-detail-desktop.png" alt="DeepSeek Harness Project Orchestrator project detail showing working directory, Squad readiness, Issues, Resources, and AI delivery flow" width="100%">
+</p>
+
+<p align="center"><em>Project detail keeps the working directory, Issues, Resources, Squad readiness, and approval-bound AI flow in one view.</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness Project Orchestrator responsive task board" width="100%">
+</p>
+
+<p align="center"><em>The same workbench responds to narrow screens with a compact task board and bottom navigation.</em></p>
+
+```text
+Brief or GitHub Issues -> read-only planning -> reviewable Tasks
+                                      |
+                                      v
+                              human approval gate
+                                      |
+                                      v
+                 isolated worktree -> TaskRun -> tests, commits, artifacts, transcript
+```
 
 ## DeepSeek Harness plugin capabilities
 
@@ -56,7 +88,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.0
+dsh plugin --profile web add dsh-project-orchestrator@1.5.4
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -107,7 +139,7 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 8. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
 9. Human review approval is the only Issue completion path.
 
-Runtime records are local Harness Host facts. v1.5.0 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
+Runtime records are local Harness Host facts. v1.5.4 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
 
 ## Security model
 

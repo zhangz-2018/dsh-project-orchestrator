@@ -383,7 +383,7 @@ test('manual task deletion rejects dependents and invalidates approval after a s
   const service = new OrchestratorService({}, store)
   const approved = await approvedProject(service, store, ['true', 'true'])
 
-  await assert.rejects(() => service.deleteTask('code'), /required by task "test"/)
+  await assert.rejects(() => service.deleteTask('code'), /任务“Code”仍被“Test”依赖，不能删除/)
   assert.equal(store.projects.get(approved.id).revision, approved.revision)
   assert.notEqual(store.tasks.get('code'), undefined)
 

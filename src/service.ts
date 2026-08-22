@@ -2095,9 +2095,10 @@ export class OrchestratorService {
     if (!project.taskIds.includes(id)) {
       throw new WorkflowError('task-not-active', `Task "${id}" is not part of project "${project.id}".`)
     }
-    const dependent = siblings.find((sibling) => sibling.dependencies.includes(id))
-    if (dependent !== undefined) {
-      throw new WorkflowError('task-in-use', `Task "${id}" is required by task "${dependent.id}" and cannot be deleted.`)
+    const dependents = siblings.filter((sibling) => sibling.dependencies.includes(id))
+    if (dependents.length > 0) {
+      const names = dependents.map((dependent) => `“${dependent.title}”`).join('、')
+      throw new WorkflowError('task-in-use', `任务“${task.title}”仍被${names}依赖，不能删除。请先移除下游任务中的依赖。`)
     }
     const now = new Date().toISOString()
     const remaining = siblings.filter((sibling) => sibling.id !== id)

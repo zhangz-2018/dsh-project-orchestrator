@@ -8,7 +8,39 @@
 
 **适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
 
-> **兼容性：** 当前 1.x 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+> **兼容性：** 当前 `1.5.4` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+
+## 先看界面
+
+插件运行在现有 Harness Web Shell 中，核心体验集中在三个界面：项目列表用于扫描审批与进度，项目详情用于查看工作目录和协作上下文，任务看板用于持续跟踪交付工作。
+
+<p align="center">
+  <img src="docs/assets/screenshots/project-overview-desktop.png" alt="DeepSeek Harness 项目编排器项目列表，展示审批状态和任务进度" width="100%">
+</p>
+
+<p align="center"><em>项目列表可以快速查看状态、审批 Revision、完成进度、负责人和工作目录。</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/project-detail-desktop.png" alt="DeepSeek Harness 项目编排器项目详情，展示工作目录、Squad、Issues、Resources 和 AI 交付流程" width="100%">
+</p>
+
+<p align="center"><em>项目详情把工作目录、Issues、Resources、Squad 可用性和需要审批的 AI 流程放在同一视图。</em></p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness 项目编排器响应式任务看板" width="100%">
+</p>
+
+<p align="center"><em>同一工作台会在窄屏下切换为紧凑任务看板和底部导航。</em></p>
+
+```text
+交付简报或 GitHub Issues -> 只读规划 -> 可审阅任务
+                                      |
+                                      v
+                                  人工审批
+                                      |
+                                      v
+              隔离 worktree -> TaskRun -> 测试、提交、Artifact、Transcript
+```
 
 ## DeepSeek Harness 插件能力
 
@@ -89,7 +121,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.0
+dsh plugin --profile web add dsh-project-orchestrator@1.5.4
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
