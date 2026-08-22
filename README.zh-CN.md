@@ -27,10 +27,10 @@
 <p align="center"><em>项目详情把工作目录、Issues、Resources、Squad 可用性和需要审批的 AI 流程放在同一视图。</em></p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness 项目编排器响应式任务看板" width="100%">
+  <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness 项目编排器桌面交付任务看板" width="100%">
 </p>
 
-<p align="center"><em>同一工作台会在窄屏下切换为紧凑任务看板和底部导航。</em></p>
+<p align="center"><em>交付看板把待规划、待办、进行中、审核中和已完成阶段集中展示。</em></p>
 
 ```text
 交付简报或 GitHub Issues -> 只读规划 -> 可审阅任务

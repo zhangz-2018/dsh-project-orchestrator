@@ -27,10 +27,10 @@ The plugin lives inside the existing Harness Web shell. The main workflow is vis
 <p align="center"><em>Project detail keeps the working directory, Issues, Resources, Squad readiness, and approval-bound AI flow in one view.</em></p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness Project Orchestrator responsive task board" width="100%">
+  <img src="docs/assets/screenshots/delivery-workbench.png" alt="DeepSeek Harness Project Orchestrator desktop delivery task board" width="100%">
 </p>
 
-<p align="center"><em>The same workbench responds to narrow screens with a compact task board and bottom navigation.</em></p>
+<p align="center"><em>The delivery board makes approval-aware work visible across planning, queued, active, review, and completed stages.</em></p>
 
 ```text
 Brief or GitHub Issues -> read-only planning -> reviewable Tasks
