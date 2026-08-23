@@ -4,7 +4,7 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
-## [1.5.5] - 2026-08-23
+## [1.5.6] - 2026-08-23
 
 ### 新增
 

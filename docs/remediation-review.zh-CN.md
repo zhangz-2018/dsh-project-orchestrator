@@ -233,7 +233,7 @@ git diff --check
 
 当前完整测试结果为 `136/136`；`docs:check` 报告 12 个中文页面和 37 个 Markdown 文件；`smoke:package` 报告 74 个打包文件；production audit 报告 `No known vulnerabilities found`。专项测试覆盖 TOCTOU owner settlement、并发首次 reservation、lease 缺失 cleanup failure、restart lock owner 判断、Git cleanup timeout 配置和 PDF 三并发 slot 释放。
 
-已完成 clean profile live smoke：临时 `DSH_HOME` 安装构建包，在 macOS Host 上验证 `/project-orchestrator/api/health`、Web plugin marker、真实 Chromium 工作台、空 Project 创建、Runtime/Agent 创建、两阶段 Project TaskRun、Agent 文件变更、test command、evidence 和 Host 重启后的项目恢复。版本为 Harness `0.1.1-rc.2`、插件 `1.5.4`；Agent 使用隔离的本地 Runtime 和 OpenAI-compatible provider。GitHub Actions 云端发布将在 `1.5.5` tag 推送后执行。
+已完成 clean profile live smoke：临时 `DSH_HOME` 安装构建包，在 macOS Host 上验证 `/project-orchestrator/api/health`、Web plugin marker、真实 Chromium 工作台、空 Project 创建、Runtime/Agent 创建、两阶段 Project TaskRun、Agent 文件变更、test command、evidence 和 Host 重启后的项目恢复。版本为 Harness `0.1.1-rc.2`、插件 `1.5.4`；Agent 使用隔离的本地 Runtime 和 OpenAI-compatible provider。GitHub Actions 云端发布将在 `1.5.6` tag 推送后执行。
 
 ## 7. 关闭条件
 
