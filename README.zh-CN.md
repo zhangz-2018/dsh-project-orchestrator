@@ -8,7 +8,7 @@
 
 **适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
 
-> **兼容性：** 当前 `1.5.7` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+> **兼容性：** 当前 `1.5.8` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
 
 ## 先看界面
 
@@ -121,7 +121,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.7
+dsh plugin --profile web add dsh-project-orchestrator@1.5.8
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -139,7 +139,7 @@ dsh plugin --profile web add dsh-project-orchestrator@1.5.7
 curl --fail http://127.0.0.1:3080/project-orchestrator/api/health
 ```
 
-入口会出现在 Harness 侧边栏底部。
+入口会出现在 Harness 侧边栏底部。接着阅读[快速开始](docs/quickstart.zh-CN.md)，完成创建智能体、规划 Project、批准执行和检查 TaskRun 证据的首条流程。
 
 ## CLI
 
@@ -213,6 +213,7 @@ pnpm smoke:package
 
 ## 文档
 
+- [快速开始](docs/quickstart.zh-CN.md)
 - [HTTP 与 CLI 契约](docs/api.zh-CN.md)
 - [架构与事实来源规则](docs/architecture.zh-CN.md)
 - [兼容性与稳定性策略](docs/compatibility.zh-CN.md)

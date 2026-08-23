@@ -4,6 +4,13 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.8] - 2026-08-23
+
+### Added
+
+- Add eight idempotently seeded default Agents covering requirements discovery, requirements review, solution architecture, delivery planning, implementation, testing, code review, and release reliability.
+- Preserve existing user and legacy default Agents while filling only missing lifecycle roles during startup.
+
 ## [1.5.7] - 2026-08-23
 
 ### Added

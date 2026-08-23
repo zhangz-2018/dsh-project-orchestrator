@@ -9,6 +9,7 @@ import { OrchestratorStore, orchestratorDomain } from './storage.js'
 export * from './types.js'
 export * from './workflow.js'
 export * from './prompts.js'
+export * from './default-agents.js'
 export { OrchestratorStore, orchestratorDomain }
 export { OrchestratorService } from './service.js'
 export { createHttpHandler } from './http.js'

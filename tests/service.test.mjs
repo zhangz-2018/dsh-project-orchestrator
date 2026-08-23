@@ -9,6 +9,7 @@ import { promisify } from 'node:util'
 const execFileAsync = promisify(execFile)
 import {
   AgentRecordSchema,
+  DEFAULT_AGENT_SEEDS,
   OrchestratorService,
   ProjectRecordSchema,
   RuntimeRecordSchema,
@@ -52,6 +53,52 @@ function memoryStore() {
 }
 
 const now = '2026-08-17T00:00:00.000Z'
+
+test('initialization seeds the complete delivery lifecycle idempotently', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+
+  await service.initialize()
+  const first = service.snapshot().agents
+  await service.initialize()
+  const second = service.snapshot().agents
+
+  assert.equal(first.length, DEFAULT_AGENT_SEEDS.length)
+  assert.deepEqual(new Set(first.map((agent) => agent.id)), new Set(DEFAULT_AGENT_SEEDS.map((seed) => seed.id)))
+  assert.deepEqual(second, first)
+  assert.equal(service.snapshot().runtimeOverview.defaultHost.boundAgentCount, DEFAULT_AGENT_SEEDS.length)
+  for (const agent of first) {
+    assert.doesNotThrow(() => AgentRecordSchema.parse(agent))
+    assert.equal(agent.status, 'active')
+    assert.equal(agent.preset, 'standard')
+    assert.equal(agent.access, 'only_me')
+    assert.equal(agent.runtimeId, undefined)
+    assert.ok(agent.persona.length >= 300)
+    for (const heading of ['# 使命', '# 工作方式', '# 输出门禁', '# 边界与升级']) assert.match(agent.persona, new RegExp(heading))
+    assert.equal(new Set(agent.skills).size, agent.skills.length)
+  }
+  assert.equal(first.filter((agent) => agent.toolPolicy === 'read_only').length, 5)
+  assert.equal(first.filter((agent) => agent.toolPolicy === 'full').length, 3)
+})
+
+test('initialization preserves custom and legacy default Agents while adding only missing lifecycle roles', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const custom = await service.createAgent({ name: 'Custom Domain Agent', role: 'Domain Specialist', persona: 'Keep this user-defined configuration unchanged.' })
+  const legacy = await service.createAgent({ name: 'Legacy implementation agent', role: 'Software Engineer', persona: 'Keep this legacy implementation configuration unchanged.' })
+
+  await service.initialize()
+  const first = service.snapshot().agents
+  await service.initialize()
+  const second = service.snapshot().agents
+
+  assert.equal(store.agents.get(custom.id).persona, custom.persona)
+  assert.equal(store.agents.get(legacy.id).persona, legacy.persona)
+  assert.equal(first.filter((agent) => agent.role === 'Software Engineer').length, 1)
+  assert.equal(first.some((agent) => agent.id === 'default-agent-software-engineer'), false)
+  assert.equal(first.length, DEFAULT_AGENT_SEEDS.length + 1)
+  assert.deepEqual(second, first)
+})
 
 test('legacy persisted records parse without Multica metadata', () => {
   const agent = AgentRecordSchema.parse({

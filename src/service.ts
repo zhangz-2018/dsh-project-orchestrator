@@ -119,6 +119,7 @@ import {
   topologicalTasks,
 } from './workflow.js'
 import { compileIssuePrompt, compileTaskPrompt, type CompiledPrompt } from './prompts.js'
+import { DEFAULT_AGENT_SEEDS } from './default-agents.js'
 
 const PLANNER_PERSONA = `You are a senior delivery planner. Convert a PRD and technical design into an executable engineering plan. You must return JSON only, matching the requested schema. Produce both implementation and dedicated test tasks. Every task must have a real command that independently verifies its acceptance criteria. Keep tasks small enough for one coding-agent session, make dependencies explicit, and never claim implementation is complete.`
 
@@ -3312,35 +3313,13 @@ ${existingDraft}`
   }
 
   private async seedAgents(): Promise<void> {
-    if (this.store.agents.size > 0) return
+    const existing = [...this.store.agents.entries()].map(([, agent]) => agent)
     const now = new Date().toISOString()
-    const seeds: AgentInput[] = [
-      {
-        name: 'Software Engineer',
-        role: 'Software Engineer',
-        description: 'Implements production code and focused tests from approved task contracts.',
-        persona: 'You are a senior software engineer. Read the repository before editing, preserve existing architecture, implement the assigned task end to end, and validate behavior with focused tests. Never claim completion when checks fail.',
-        preset: 'standard',
-        toolPolicy: 'full',
-        skills: ['implementation', 'focused testing'],
-        access: 'only_me',
-        maxConcurrency: 1,
-      },
-      {
-        name: 'Test Engineer',
-        role: 'Test Engineer',
-        description: 'Designs regression coverage and validates acceptance criteria independently.',
-        persona: 'You are a senior test engineer. Turn acceptance criteria into durable automated tests, cover good, bad, and boundary cases, and run the relevant suite. Fix test defects you introduce, but do not weaken assertions to make failures disappear.',
-        preset: 'standard',
-        toolPolicy: 'full',
-        skills: ['test design', 'regression verification'],
-        access: 'only_me',
-        maxConcurrency: 1,
-      },
-    ]
-    for (const seed of seeds) {
-      const record = this.toAgentRecord(randomUUID(), seed, now, now)
+    for (const seed of DEFAULT_AGENT_SEEDS) {
+      if (existing.some((agent) => agent.id === seed.id || seed.matchNames.includes(agent.name) || seed.matchRoles.includes(agent.role))) continue
+      const record = this.toAgentRecord(seed.id, seed.input, now, now)
       await this.store.agents.put(record.id, record)
+      existing.push(record)
     }
   }
 

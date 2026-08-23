@@ -8,7 +8,7 @@ A **DeepSeek Harness plugin** for local-first AI project management and task orc
 
 **Use this when** you want a local DeepSeek Harness workflow for planning coding tasks, importing GitHub Issues, executing in isolated Git worktrees, and requiring human approval before repository changes.
 
-> **Compatibility:** v1.5.7 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.5.8 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
 ## See it in action
 
@@ -88,7 +88,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.7
+dsh plugin --profile web add dsh-project-orchestrator@1.5.8
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -106,7 +106,7 @@ Verify the Host half:
 curl --fail http://127.0.0.1:3080/project-orchestrator/api/health
 ```
 
-The launcher appears in the Harness sidebar footer.
+The launcher appears in the Harness sidebar footer. Continue with the [Quickstart](docs/quickstart.md) to create an Agent, plan a Project, approve execution, and inspect TaskRun evidence.
 
 ## CLI
 
@@ -180,6 +180,7 @@ The package smoke test builds the exact npm artifact, checks its file allowlist 
 ## Documentation
 
 - [Architecture and source-of-truth rules](docs/architecture.md)
+- [Quickstart](docs/quickstart.md)
 - [HTTP and CLI contracts](docs/api.md)
 - [Compatibility and stability policy](docs/compatibility.md)
 - [Operations, backup, upgrade, and rollback](docs/operations.md)
