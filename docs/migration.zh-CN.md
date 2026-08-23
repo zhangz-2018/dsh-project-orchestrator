@@ -15,7 +15,7 @@
 
 1. 停止现有的 Harness Host。
 2. 备份 `~/.dsh/storages/project_orchestrator.json`。
-3. 通过同一个 Web profile 安装目标发布版本（例如 `dsh-project-orchestrator@1.5.6`）；不要把文档中的示例版本当作固定安装版本。
+3. 通过同一个 Web profile 安装目标发布版本（例如 `dsh-project-orchestrator@1.5.7`）；不要把文档中的示例版本当作固定安装版本。
 4. 替换加载器行中的软件包名称；不要添加第二行：
 
    ```yaml

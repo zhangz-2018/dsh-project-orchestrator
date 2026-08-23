@@ -1,6 +1,6 @@
 {
   "name": "dsh-project-orchestrator",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "description": "Local-first AI project orchestration workbench and CLI plugin for DeepSeek Harness: approval-gated planning, Git worktrees, task execution, Issues, and auditable evidence.",
   "license": "MIT",
   "author": "zhangz-2018",
