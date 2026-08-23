@@ -205,6 +205,7 @@ export const ArtifactRecordSchema = z.object({
 export const CommandRecordSchema = z.object({
   id: z.string().min(1),
   idempotencyKey: z.string().min(1).max(240).optional(),
+  requestDigest: z.string().length(64).optional(),
   type: CommandTypeSchema,
   status: CommandStatusSchema,
   projectId: z.string().min(1).optional(),
@@ -361,6 +362,7 @@ export const TaskRunRecordSchema = z.object({
   projectId: z.string().min(1),
   issueId: z.string().min(1).optional(),
   taskId: z.string().min(1).optional(),
+  runId: z.string().min(1).optional(),
   agentId: z.string().min(1).optional(),
   runtimeId: z.string().min(1).optional(),
   runtimeNameSnapshot: z.string().min(1).max(160).optional(),
@@ -863,6 +865,7 @@ export const SquadArchiveInputSchema = z.object({
 
 export const CommandInputSchema = z.object({
   idempotencyKey: z.string().trim().min(1).max(240).optional(),
+  requestDigest: z.string().length(64).optional(),
   type: CommandTypeSchema,
   projectId: z.string().min(1).optional(),
   issueId: z.string().min(1).optional(),

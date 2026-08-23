@@ -4,9 +4,17 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.5.5] - 2026-08-23
+
+### 新增
+
+- 记录 clean Harness Host/Web 和真实 Agent 执行 smoke，完成整改版本的发布验证闭环。
+
 ## [1.5.4] - 2026-08-22
 
 ### 修复
+
+- 加固 TaskRun 终态结算、Workspace 恢复、命令 reservation 和发布校验，覆盖取消、重启、清理失败与重复请求竞态。
 
 - 删除任务前展示仍依赖当前任务的下游任务，并在依赖未移除前禁用删除操作。
 - 服务端拒绝删除时返回具体任务名称和处理建议，不再只展示难以识别的任务 ID。

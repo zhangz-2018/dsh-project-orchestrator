@@ -756,7 +756,7 @@ test('independent verification prefers a project virtualenv and records the reso
     assert.equal((await waitForRun(store, run.id)).status, 'completed')
     const taskRun = [...store.taskRuns.records.values()].find((value) => value.taskId === 'code')
     assert.equal(taskRun.executionEnvironment, 'project_venv')
-    assert.equal(taskRun.virtualEnvPath, join(root, '.venv'))
+    assert.equal(taskRun.virtualEnvPath, await realpath(join(root, '.venv')))
     assert.match(taskRun.testOutput, /project-orchestrator-venv-/)
   } finally {
     await rm(root, { recursive: true, force: true })
@@ -825,6 +825,7 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
     agents: {
       create: async (options) => {
         observation.createCalls = (observation.createCalls ?? 0) + 1
+        observation.cwd = options.meta?.cwd
         await options.setup({
           systemPrompt: {
             section: (section) => {
@@ -879,6 +880,29 @@ test('PDF requirement import sends extracted text and ordered page images to the
   assert.deepEqual(observation.message.content.map((block) => block.type), ['text', 'text', 'image', 'text', 'image'])
   assert.equal(observation.message.content[1].text, '以下图片是 PDF 第 1 页。')
   assert.equal(observation.message.content[3].text, '以下图片是 PDF 第 2 页。')
+})
+
+test('PDF reservation rejects a third concurrent import and releases slots after cancellation', async () => {
+  const observation = {}
+  const context = agentContext('# Imported requirement', observation)
+  const originalCreate = context.agents.create
+  let release
+  const gate = new Promise((resolve) => { release = resolve })
+  context.agents.create = async (options) => {
+    const handle = await originalCreate(options)
+    const idle = handle.agent.whenIdle
+    handle.agent.whenIdle = async () => { await idle(); await gate }
+    return handle
+  }
+  const service = new OrchestratorService(context, memoryStore())
+  const input = (name) => ({ fileName: `${name}.pdf`, documentKind: 'prd', pageCount: 1, textPageCount: 1, visualPageCount: 0, extractedText: 'Requirement', images: [] })
+  const first = service.importRequirementDocument(input('one'))
+  const second = service.importRequirementDocument(input('two'))
+  await new Promise((resolve) => setImmediate(resolve))
+  await assert.rejects(() => service.importRequirementDocument(input('three')), (error) => error.code === 'requirement-import-busy')
+  release()
+  await Promise.all([first, second])
+  await service.importRequirementDocument(input('after'))
 })
 
 test('PDF requirement import rejects an explicitly text-only model before saving images', async () => {
@@ -1279,6 +1303,7 @@ test('failed verification receives one automatic repair attempt and retains evid
   const store = memoryStore()
   const service = new OrchestratorService(agentContext('Repair attempted.'), store)
   const marker = `/tmp/project-orchestrator-retry-marker-${process.pid}`
+  await rm(marker, { force: true })
   const project = await approvedProject(service, store, [`sh -c "if [ -f ${marker} ]; then exit 0; else touch ${marker}; exit 1; fi"`, 'true'])
   const run = await service.startExecution(project.id)
   const settled = await waitForRun(store, run.id)
@@ -1290,6 +1315,7 @@ test('failed verification receives one automatic repair attempt and retains evid
   assert.equal(code.attempts?.[0].exitCode, 1)
   assert.equal(code.attempts?.[1].exitCode, 0)
   await store.tasks.delete('code')
+  await rm(marker, { force: true })
 })
 
 test('Issue updates, comments, activity, and retry preserve explicit workflow boundaries', async () => {
@@ -1562,6 +1588,123 @@ test('unified commands own assignment, idempotency, stop, continue, and review g
   await assert.rejects(() => service.executeCommand({ type: 'approve_review', issueId: issue.id, actorType: 'human', payload: { note: 'Again.' } }), (error) => error.code === 'issue-not-in-review')
 })
 
+test('claim compensates an in-place lock when lease persistence fails', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-claim-lock-failure-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext('Should not run.'), store)
+    const agent = await service.createAgent({ name: 'Claim Agent', role: 'Engineer', description: '', persona: 'Run.', preset: 'standard', toolPolicy: 'full' })
+    const project = await service.createProject({ name: 'Claim failure', cwd: root, prd: 'Claim.', technicalDesign: 'Compensate.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, joinedBy: 'tester' })
+    const issue = await service.createIssue({ projectId: project.id, title: 'Claim failure', description: '' })
+    const originalPut = store.workspaceLeases.put.bind(store.workspaceLeases)
+    let failed = false
+    store.workspaceLeases.put = async (key, value) => {
+      if (!failed && value.state === 'active') {
+        failed = true
+        throw new Error('lease write failed')
+      }
+      return originalPut(key, value)
+    }
+    const command = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id } })
+    const run = await waitForTaskRun(store, command.result.taskRunId)
+    assert.equal(run.status, 'failed')
+    assert.equal(store.localDirectoryLocks.size, 0)
+    assert.equal(store.workspaceLeases.get(`lease:${run.id}`).state, 'released')
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('cleanup failure without a persisted lease creates an orphan recovery record', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Orphan cleanup', cwd: '/tmp', prd: 'Cleanup', technicalDesign: 'Cleanup' })
+  const taskRunId = 'orphan-cleanup-run'
+  await store.taskRuns.put(taskRunId, { id: taskRunId, projectId: project.id, status: 'failed', trigger: 'assignment', attempt: 1, cwd: '/tmp', createdAt: now })
+  await assert.rejects(() => service.releaseTaskRunLease(taskRunId, { projectId: project.id, mode: 'worktree', sourcePath: '/tmp', workspacePath: '/tmp/nonexistent-worktree', lockAcquired: false, worktreeCreated: true }), (error) => error.code === 'workspace-cleanup-failed')
+  const lease = store.workspaceLeases.get(`lease:${taskRunId}`)
+  assert.equal(lease.state, 'orphaned')
+  assert.match(lease.cleanupError, /git|not a git repository|failed/i)
+})
+
+test('claim compensates a created worktree when lease persistence fails', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-claim-worktree-failure-'))
+  const repo = join(root, 'repo')
+  const worktrees = join(root, 'worktrees')
+  try {
+    await mkdir(repo)
+    await mkdir(worktrees)
+    await execFileAsync('git', ['init'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'claim failure\n')
+    await execFileAsync('git', ['add', 'README.md'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: claim failure'], { cwd: repo })
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext('Should not run.'), store)
+    const runtime = await service.createRuntime({ name: 'Claim Runtime', machineId: `claim-${Date.now()}`, capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
+    const agent = await service.createAgent({ name: 'Claim Agent', role: 'Engineer', description: '', persona: 'Run.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id })
+    const project = await service.createProject({ name: 'Claim worktree failure', cwd: repo, prd: 'Claim.', technicalDesign: 'Compensate.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, joinedBy: 'tester' })
+    await service.createProjectResource(project.id, { kind: 'local_directory', location: repo, executionMode: 'worktree', runtimeId: runtime.id })
+    const issue = await service.createIssue({ projectId: project.id, title: 'Claim worktree failure', description: '' })
+    const originalPut = store.workspaceLeases.put.bind(store.workspaceLeases)
+    let failed = false
+    store.workspaceLeases.put = async (key, value) => {
+      if (!failed && value.state === 'active') {
+        failed = true
+        throw new Error('lease write failed after worktree creation')
+      }
+      return originalPut(key, value)
+    }
+    const command = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id } })
+    const run = await waitForTaskRun(store, command.result.taskRunId)
+    assert.equal(run.status, 'failed')
+    assert.equal(store.workspaceLeases.get(`lease:${run.id}`).state, 'released')
+    await assert.rejects(() => stat(join(worktrees, run.id)))
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('late Issue Agent results cannot resurrect a cancelled TaskRun', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-cancel-race-'))
+  try {
+    const store = memoryStore()
+    const observation = {}
+    const context = agentContext('Late result', observation)
+    let releaseAgent
+    const gate = new Promise((resolve) => { releaseAgent = resolve })
+    const create = context.agents.create
+    context.agents.create = async (options) => {
+      const handle = await create(options)
+      const originalWhenIdle = handle.agent.whenIdle
+      handle.agent.whenIdle = async () => {
+        await gate
+        return originalWhenIdle()
+      }
+      return handle
+    }
+    const service = new OrchestratorService(context, store)
+    const agent = await service.createAgent({ name: 'Slow Agent', role: 'Engineer', description: '', persona: 'Wait.', preset: 'standard', toolPolicy: 'full' })
+    const project = await service.createProject({ name: 'Cancel race', cwd: root, prd: 'Cancel.', technicalDesign: 'Late result.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, joinedBy: 'tester' })
+    const issue = await service.createIssue({ projectId: project.id, title: 'Race', description: '' })
+    const assigned = await service.executeCommand({ type: 'assign_issue', issueId: issue.id, actorType: 'human', payload: { assigneeType: 'agent', assigneeId: agent.id } })
+    const taskRunId = assigned.result.taskRunId
+    for (let attempt = 0; attempt < 100 && store.taskRuns.get(taskRunId).status !== 'running'; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 5))
+    await service.executeCommand({ type: 'stop_issue', issueId: issue.id, actorType: 'human', payload: { reason: 'Race stop.' } })
+    releaseAgent()
+    for (let attempt = 0; attempt < 100 && store.taskRuns.get(taskRunId).status === 'cancelled'; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 5))
+    assert.equal(store.taskRuns.get(taskRunId).status, 'cancelled')
+    assert.equal(store.issues.get(issue.id).status, 'cancelled')
+    assert.equal([...store.activity.records.values()].some((event) => event.taskRunId === taskRunId && event.type === 'task_run.completed'), false)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 test('Issue TaskRun dispatcher enforces Runtime availability and enters review with evidence', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-queue-'))
   try {
@@ -1598,6 +1741,45 @@ test('Issue TaskRun dispatcher enforces Runtime availability and enters review w
     assert.equal([...store.artifacts.records.values()].some((artifact) => artifact.kind === 'commit'), true)
     assert.equal(store.transcripts.size, 1)
     assert.match([...store.transcripts.records.values()][0].text, /\[REDACTED\]/)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('Project execution passes the claimed worktree to Agent and verification command', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-project-worktree-'))
+  const repo = join(root, 'repo')
+  const worktrees = join(root, 'worktrees')
+  try {
+    await mkdir(repo)
+    await mkdir(worktrees)
+    await execFileAsync('git', ['init'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'project worktree\n')
+    await execFileAsync('git', ['add', 'README.md'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: project worktree'], { cwd: repo })
+    const store = memoryStore()
+    const observation = {}
+    const service = new OrchestratorService(agentContext('Project worktree agent.', observation), store)
+    const runtime = await service.createRuntime({ name: 'Project Worktree Runtime', machineId: `project-worktree-${Date.now()}`, capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
+    const agent = await service.createAgent({ name: 'Project Worktree Agent', role: 'Engineer', description: '', persona: 'Execute.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id })
+    const project = await service.createProject({ name: 'Project worktree', cwd: repo, prd: 'Use a worktree.', technicalDesign: 'Claim before execution.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: agent.role, autoAssignable: true, joinedBy: 'tester' })
+    const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], dependencies: [], agentId: agent.id, testCommand: 'test -f README.md' })
+    await service.createTask(project.id, { title: 'Test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, testCommand: 'test -f README.md' })
+    const pending = store.projects.get(project.id)
+    await service.createProjectResource(project.id, { kind: 'local_directory', location: repo, executionMode: 'worktree', runtimeId: runtime.id })
+    const awaiting = store.projects.get(project.id)
+    await store.projects.put(project.id, { ...awaiting, status: 'awaiting_approval', approvedRevision: undefined })
+    await service.approveProject(project.id, 'tester')
+    const run = await service.startExecution(project.id)
+    assert.equal((await waitForRun(store, run.id)).status, 'completed')
+    const taskRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id)
+    assert.equal(taskRuns.length, 2)
+    assert.ok(taskRuns.every((taskRun) => taskRun.workspace !== repo))
+    assert.equal(observation.cwd, taskRuns.at(-1).workspace)
+    assert.ok(taskRuns.every((taskRun) => store.workspaceLeases.get(`lease:${taskRun.id}`).state === 'released'))
   } finally {
     await rm(root, { recursive: true, force: true })
   }
@@ -1720,6 +1902,49 @@ test('request_decision atomically defers an active run and resumes exactly once 
   assert.equal(store.issues.get(issue.id).activeTaskRunId, continuation.id)
   await assert.rejects(() => service.resolveDecision(decisionId, { status: 'approved', resolution: 'Repeat.', resolvedBy: 'reviewer' }), (error) => error.code === 'decision-already-resolved')
   assert.equal([...store.taskRuns.records.values()].filter((run) => run.resumeDecisionId === decisionId).length, 1)
+})
+
+test('command idempotency keys reject different request payloads', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const first = await service.executeCommand({ idempotencyKey: 'digest-key', type: 'autopilot_tick', actorType: 'system', payload: { agentId: 'missing', limit: 1 } }).catch((error) => error)
+  assert.equal(first.code, 'agent-not-found')
+  const stored = [...store.commands.records.values()][0]
+  assert.equal(stored.requestDigest.length, 64)
+  await assert.rejects(() => service.executeCommand({ idempotencyKey: 'digest-key', type: 'autopilot_tick', actorType: 'system', payload: { agentId: 'missing', limit: 2 } }), (error) => error.code === 'command-idempotency-conflict')
+})
+
+test('external trigger keys reject different command payloads', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const input = { source: 'test-hook', externalKey: 'event-1', command: { type: 'autopilot_tick', actorType: 'system', payload: { agentId: 'missing', limit: 1 } } }
+  await assert.rejects(() => service.receiveExternalTrigger(input), (error) => error.code === 'agent-not-found')
+  await assert.rejects(() => service.receiveExternalTrigger({ ...input, command: { ...input.command, payload: { agentId: 'missing', limit: 2 } } }), (error) => error.code === 'external-trigger-conflict')
+})
+
+test('concurrent first Command and External Trigger requests share one reservation owner', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const commandInput = { idempotencyKey: 'concurrent-command', type: 'autopilot_tick', actorType: 'system', payload: { agentId: 'missing', limit: 1 } }
+  const commandResults = await Promise.allSettled([service.executeCommand(commandInput), service.executeCommand(commandInput)])
+  assert.deepEqual(commandResults.map((result) => result.status), ['rejected', 'rejected'])
+  assert.equal(commandResults[0].reason.code, 'agent-not-found')
+  assert.equal(commandResults[1].reason.code, 'agent-not-found')
+  assert.equal([...store.commands.records.values()].filter((command) => command.idempotencyKey === commandInput.idempotencyKey).length, 1)
+
+  const triggerInput = { source: 'concurrent-hook', externalKey: 'event-1', command: { type: 'autopilot_tick', actorType: 'system', payload: { agentId: 'missing', limit: 1 } } }
+  const triggerResults = await Promise.allSettled([service.receiveExternalTrigger(triggerInput), service.receiveExternalTrigger(triggerInput)])
+  assert.deepEqual(triggerResults.map((result) => result.status), ['rejected', 'rejected'])
+  assert.equal(triggerResults[0].reason.code, 'agent-not-found')
+  assert.equal(triggerResults[1].reason.code, 'agent-not-found')
+  assert.equal([...store.externalTriggers.records.values()].filter((trigger) => trigger.externalKey === 'event-1').length, 1)
+})
+
+test('legacy Command records without a digest fail closed during replay', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  await store.commands.put('legacy-command', { id: 'legacy-command', idempotencyKey: 'legacy-key', type: 'autopilot_tick', status: 'failed', actorType: 'system', payload: {}, createdAt: now })
+  await assert.rejects(() => service.executeCommand({ idempotencyKey: 'legacy-key', type: 'autopilot_tick', actorType: 'system', payload: {} }), (error) => error.code === 'command-idempotency-recovery-required')
 })
 
 test('Autopilot and external triggers are bounded and idempotent through unified commands', async () => {
@@ -1855,6 +2080,25 @@ test('Agent Runtime binding previews Project revisions, invalidates approval, an
   const busyImpact = service.getAgentRuntimeImpact(other.id, runtime.id)
   assert.equal(busyImpact.executableTaskRunIds.length, 4)
   await assert.rejects(() => service.bindAgentRuntime(other.id, { runtimeId: runtime.id, expectedTargetUpdatedAt: other.updatedAt, expectedProjectRevisions: {}, acknowledgeApprovalInvalidation: false }), (error) => error.code === 'runtime-nonterminal-task-runs')
+})
+
+test('startup preserves a valid in-place Issue owner lock during dispatch recovery', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Lock recovery', cwd: '/tmp', prd: 'Recover', technicalDesign: 'Recover' })
+  const issue = await service.createIssue({ projectId: project.id, title: 'Owned Issue', description: '' })
+  const agent = await service.createAgent({ name: 'Recovery agent', role: 'Engineer', description: '', persona: 'Recover.', preset: 'standard', toolPolicy: 'full' })
+  const taskRun = { id: 'recovery-run', projectId: project.id, issueId: issue.id, agentId: agent.id, status: 'queued', trigger: 'assignment', attempt: 1, assignmentRevision: 1, cwd: '/tmp', createdAt: now }
+  await store.taskRuns.put(taskRun.id, taskRun)
+  await store.issues.put(issue.id, { ...issue, status: 'in_progress', assignmentRevision: 1, activeTaskRunId: taskRun.id })
+  await store.localDirectoryLocks.put('/tmp', { id: '/tmp', canonicalPath: '/tmp', taskRunId: taskRun.id, projectId: project.id, acquiredAt: now, heartbeatAt: now })
+  await store.workspaceLeases.put(`lease:${taskRun.id}`, { id: `lease:${taskRun.id}`, taskRunId: taskRun.id, projectId: project.id, mode: 'in_place', sourcePath: '/tmp', workspacePath: '/tmp', state: 'active', acquiredAt: now, heartbeatAt: now })
+
+  await service.initialize()
+
+  assert.ok(store.localDirectoryLocks.get('/tmp'))
+  assert.equal(store.workspaceLeases.get(`lease:${taskRun.id}`).state, 'active')
+  assert.equal(store.taskRuns.get(taskRun.id).status, 'queued')
 })
 
 test('startup reconciles pending Commands, orphan TaskRuns, and broken Issue pointers before dispatch', async () => {

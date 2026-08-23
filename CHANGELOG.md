@@ -4,9 +4,17 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.5] - 2026-08-23
+
+### Added
+
+- Record clean Harness Host/Web and real Agent execution smoke evidence for the remediation release.
+
 ## [1.5.4] - 2026-08-22
 
 ### Fixed
+
+- Harden TaskRun settlement, workspace recovery, command reservations, and release verification against cancellation, restart, cleanup, and duplicate-request races.
 
 - Task deletion now explains which downstream Tasks still depend on the selected Task and disables deletion until those dependencies are removed.
 - The server returns actionable task names instead of opaque task IDs when dependency protection rejects deletion.

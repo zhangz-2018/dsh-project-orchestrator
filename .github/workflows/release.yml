@@ -22,6 +22,7 @@ jobs:
       - name: Checkout tagged source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -45,6 +46,32 @@ jobs:
           }
       - name: Verify release artifact
         run: pnpm verify
+      - name: Verify protected main ancestry and changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main --force
+          git merge-base --is-ancestor HEAD origin/main || {
+            echo "Tagged commit is not contained in protected main." >&2
+            exit 1
+          }
+          grep -q "^## \[${GITHUB_REF_NAME#v}\]" CHANGELOG.md
+          grep -q "^## \[${GITHUB_REF_NAME#v}\]" CHANGELOG.zh-CN.md
+      - name: Verify package contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm pack --dry-run --json | awk 'BEGIN {found=0} /^\{/ {found=1} found {print}' > package-pack.json
+          node - <<'NODE
+          const fs = require('node:fs')
+          const pack = JSON.parse(fs.readFileSync('package-pack.json', 'utf8'))
+          const files = new Set(pack.files.map((entry) => entry.path))
+          for (const required of ['lib/index.js', 'lib/client.js', 'lib/pdf.worker.mjs', 'README.md', 'SECURITY.md', 'CHANGELOG.md']) {
+            if (!files.has(required)) throw new Error(`Missing package file: ${required}`)
+          }
+          NODE
+      - name: Audit production dependencies
+        run: pnpm audit --prod --audit-level high
       - name: Publish with npm provenance
         run: npm publish --provenance --access public
 
