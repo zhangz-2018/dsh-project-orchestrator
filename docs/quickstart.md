@@ -48,15 +48,16 @@ The final verification must use the repository's existing non-interactive test c
 
 Planning is read-only. If the Planner reports missing repository evidence or an unconfirmed verification command, fix that repository prerequisite and run planning again instead of approving an invented command.
 
-## 4. Add and assign the Agent
+## 4. Bind and assign a Squad
 
-1. Open the Project's **Agents** (`智能体`) tab.
-2. Select **Add Agent** (`添加智能体`), choose the Agent, assign a Project role, and enable automatic matching if appropriate.
-3. Open the **Tasks** (`任务`) tab.
-4. Review every task, dependency, acceptance criterion, and test command.
-5. Use **Batch assign unassigned tasks** (`批量分配未分配任务`) if any task has no executor.
+1. Open **More > Squads** (`更多 > 团队编排`) and create a Squad with at least a Leader, an implementation member, and a test member. The Leader must also be in the Squad member list.
+2. Open the Project's **Agents** (`智能体`) tab. In **Squad orchestration** (`团队编排`), select **Bind Squad** (`绑定 Squad`), choose the new team, and confirm **Bind and synchronize** (`绑定并同步`). The first binding becomes the default Squad.
+3. Check the default badge, Leader, member count, and dispatch status. The member list identifies the **default Squad Leader** automatically, so the Leader is not selected again. **Project lead** is a separate optional responsibility and is not assigned by binding.
+4. Use **Add Agent** (`添加智能体`) only when the Project needs an additional Agent outside the Squad. Assign a Project role and enable automatic matching when appropriate.
+5. Open the **Tasks** (`任务`) tab and review every task, dependency, acceptance criterion, and test command.
+6. Use **Batch assign unassigned tasks** (`批量分配未分配任务`) if any task has no executor. Binding establishes team and membership eligibility; it does not change Task executors, approve the Project, or start execution.
 
-Approval requires at least one code task, one test task, an eligible Project Agent for every task, and a non-empty verification command for every task.
+Approval requires at least one code task, one test task, an eligible concrete Project Agent for every task, and a non-empty verification command for every task.
 
 ## 5. Approve and execute
 

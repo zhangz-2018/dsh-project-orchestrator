@@ -687,6 +687,7 @@ body[data-ds-dark-theme] .po-workbench {
 .po-member-row > span { min-width: 0; display: grid; gap: 4px; }
 .po-member-row strong, .po-member-row small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .po-member-row small { color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; }
+.po-member-leadership { width: fit-content; padding: 2px 6px; border-radius: 4px; color: var(--po-accent-ink); background: var(--po-accent-surface); font-size: 10px; font-weight: 650; line-height: 1.4; }
 .po-member-actions { display: flex !important; justify-content: flex-end; flex-wrap: wrap; }
 .po-check { min-height: 32px; display: flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; cursor: pointer; }
 .po-check input, .po-agent-picker input { accent-color: var(--po-accent); }

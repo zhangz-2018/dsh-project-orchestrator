@@ -4,6 +4,14 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.10] - 2026-08-24
+
+### Changed
+
+- Show the bound default Squad Leader directly in the Project Agent list instead of asking users to select the Leader again.
+- Clarify the separate Project lead action as `Set as project lead` for non-Squad-Leader members.
+- Document Project-Squad binding and Leader behavior in the English and Chinese Quickstarts and READMEs.
+
 ## [1.5.9] - 2026-08-24
 
 ### Added

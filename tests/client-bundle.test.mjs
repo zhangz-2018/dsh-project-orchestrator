@@ -106,6 +106,10 @@ test('client bundle exposes project membership and local usage workflows', async
   assert.match(bundle, /projectSquadBindings/)
   assert.match(bundle, /projectAgentMembershipSources/)
   assert.match(bundle, /meaningfulActions/)
+  assert.match(source, /默认 Squad Leader/)
+  assert.match(source, /Squad Leader/)
+  assert.match(source, /设为项目负责人/)
+  assert.doesNotMatch(source, />设为负责人</)
 })
 
 test('client exposes P0 Squad and Runtime management with context binding flows', async () => {

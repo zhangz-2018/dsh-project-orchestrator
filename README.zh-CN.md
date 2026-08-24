@@ -8,7 +8,7 @@
 
 **适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
 
-> **兼容性：** 当前 `1.5.9` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+> **兼容性：** 当前 `1.5.10` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
 
 ## 先看界面
 
@@ -107,6 +107,7 @@ Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代
 
 - **审批后执行：** 计划与 Revision/hash 绑定，明确批准后才执行。
 - **项目智能体成员：** 工作区可复用 Agent 必须显式加入 Project，设置项目职责和规划资格后，才能分配给该项目的 Task 或 Issue。
+- **显式团队绑定：** Project 可绑定多个 Squad 并设置一个默认团队；Leader 和成员资格会同步到项目，默认 Squad Leader 会直接显示在项目成员列表中，Task 仍分配给具体 Agent。
 - **可恢复的事项执行：** 分配、重新分配、停止、继续、评审和决策请求收敛为幂等 Command。
 - **Runtime 与容量控制：** 始终展示默认 Host，支持本机 Runtime 生命周期、Agent/Project Resource 绑定、心跳、Agent `maxConcurrency`、队列保留、重启恢复、目录锁和工作区租约。
 - **真实 Git 隔离：** 以失败关闭方式创建 worktree，记录基准/最终提交、受限差异、产物和清理证据。
@@ -121,7 +122,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.9
+dsh plugin --profile web add dsh-project-orchestrator@1.5.10
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：

@@ -4,6 +4,14 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.5.10] - 2026-08-24
+
+### 变更
+
+- 项目智能体列表直接展示已绑定默认 Squad 的 Leader，不再要求重复选择 Leader。
+- 将非 Squad Leader 的独立负责人操作明确为“设为项目负责人”。
+- 在中英文 README 和 Quickstart 中补充 Project-Squad 绑定及 Leader 使用说明。
+
 ## [1.5.9] - 2026-08-24
 
 ### 新增
