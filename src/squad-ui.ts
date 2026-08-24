@@ -82,9 +82,9 @@ export function squadUiDiagnostics(input: {
     agent: input.agents.find((agent) => agent.id === agentId),
     role: (input.memberRoles[agentId] ?? '').trim(),
   }))
-  const implementationPattern = /(实现|编码|开发|修改代码|write|implement|coding)/i
+  const implementationPattern = /(实现|编码|开发|修改代码|软件工程师|工程执行|程序员|write|implement(?:ation|er|ing|ed)?|coding|software\s+(?:engineer|developer)|(?:front[ -]?end|back[ -]?end|full[ -]?stack)\s+(?:engineer|developer)|programmer)/i
   const verificationPattern = /(测试|验证|审查|回归|test|verify|review|qa)/i
-  if (!memberEntries.some(({ agent, role }) => agent?.toolPolicy === 'full' && implementationPattern.test(`${role} ${agent.role}`))) diagnostics.push({ code: 'implementation_member_missing', scope: '成员职责', message: '没有识别到具备执行权限的实现成员。' })
+  if (!memberEntries.some(({ agent, role }) => agent?.toolPolicy === 'full' && implementationPattern.test(`${role} ${agent.role}`))) diagnostics.push({ code: 'implementation_member_missing', scope: '成员职责', message: '需要至少一名“可执行”成员，且职责明确包含代码实现或软件开发（例如 Software Engineer、开发、实现）。' })
   if (!memberEntries.some(({ role, agent }) => verificationPattern.test(`${role} ${agent?.role ?? ''}`))) diagnostics.push({ code: 'verification_member_missing', scope: '成员职责', message: '没有识别到明确负责验证或审查的成员。' })
   for (const { agent, role } of memberEntries) {
     if (agent?.toolPolicy === 'read_only' && implementationPattern.test(role)) diagnostics.push({ code: `read_only_implementation:${agent.id}`, scope: '成员职责', message: `${agent.name} 是只读 Agent，但职责包含实现或修改代码。` })

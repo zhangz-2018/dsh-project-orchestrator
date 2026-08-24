@@ -27,6 +27,8 @@ import {
   TaskRecordSchema,
   TaskRunRecordSchema,
   ProjectAgentMembershipRecordSchema,
+  ProjectSquadBindingRecordSchema,
+  ProjectAgentMembershipSourceRecordSchema,
   FeatureUsageDailyRecordSchema,
   type ActivityEvent,
   type CommentRecord,
@@ -51,6 +53,8 @@ import {
   type TaskRecord,
   type TaskRunRecord,
   type ProjectAgentMembershipRecord,
+  type ProjectSquadBindingRecord,
+  type ProjectAgentMembershipSourceRecord,
   type FeatureUsageDailyRecord,
 } from './types.js'
 import { WorkflowError, planDigest } from './workflow.js'
@@ -85,6 +89,8 @@ export const orchestratorDomain = defineDomain({
     local_directory_locks: domainTable<string, LocalDirectoryLockRecord>(LocalDirectoryLockRecordSchema),
     workspace_leases: domainTable<string, WorkspaceLeaseRecord>(WorkspaceLeaseRecordSchema),
     project_agent_memberships: domainTable<string, ProjectAgentMembershipRecord>(ProjectAgentMembershipRecordSchema),
+    project_squad_bindings: domainTable<string, ProjectSquadBindingRecord>(ProjectSquadBindingRecordSchema),
+    project_agent_membership_sources: domainTable<string, ProjectAgentMembershipSourceRecord>(ProjectAgentMembershipSourceRecordSchema),
     feature_usage_daily: domainTable<string, FeatureUsageDailyRecord>(FeatureUsageDailyRecordSchema),
   },
 })
@@ -112,6 +118,8 @@ export class OrchestratorStore {
   readonly localDirectoryLocks
   readonly workspaceLeases
   readonly projectAgentMemberships
+  readonly projectSquadBindings
+  readonly projectAgentMembershipSources
   readonly featureUsageDaily
 
   constructor(readonly domain: Domain<typeof orchestratorDomain>) {
@@ -137,6 +145,8 @@ export class OrchestratorStore {
     this.localDirectoryLocks = optionalTable<LocalDirectoryLockRecord>(domain, 'local_directory_locks')
     this.workspaceLeases = optionalTable<WorkspaceLeaseRecord>(domain, 'workspace_leases')
     this.projectAgentMemberships = optionalTable<ProjectAgentMembershipRecord>(domain, 'project_agent_memberships')
+    this.projectSquadBindings = optionalTable<ProjectSquadBindingRecord>(domain, 'project_squad_bindings')
+    this.projectAgentMembershipSources = optionalTable<ProjectAgentMembershipSourceRecord>(domain, 'project_agent_membership_sources')
     this.featureUsageDaily = optionalTable<FeatureUsageDailyRecord>(domain, 'feature_usage_daily')
   }
 
@@ -207,6 +217,8 @@ export class OrchestratorStore {
       workspaceLeases: [...this.workspaceLeases.entries()].map(([, value]) => value).filter((lease) => projectIds.has(lease.projectId)).sort((left, right) => right.acquiredAt.localeCompare(left.acquiredAt)),
       localDirectoryLocks: [...this.localDirectoryLocks.entries()].map(([, value]) => value).filter((lock) => projectIds.has(lock.projectId)).sort((left, right) => right.acquiredAt.localeCompare(left.acquiredAt)),
       projectAgentMemberships: [...this.projectAgentMemberships.entries()].map(([, value]) => value).filter((membership) => projectIds.has(membership.projectId)).sort(byUpdatedAt),
+      projectSquadBindings: [...this.projectSquadBindings.entries()].map(([, value]) => value).filter((binding) => projectIds.has(binding.projectId)).sort(byUpdatedAt),
+      projectAgentMembershipSources: [...this.projectAgentMembershipSources.entries()].map(([, value]) => value).filter((source) => projectIds.has(source.projectId)).sort(byUpdatedAt),
       featureUsageDaily: [...this.featureUsageDaily.entries()].map(([, value]) => value).sort((left, right) => right.date.localeCompare(left.date) || left.feature.localeCompare(right.feature)),
       runtimeOverview: {
         defaultHost: { id: 'default-host', name: '本机默认环境', status: 'unstable', capabilities: [], boundAgentCount: [...this.agents.entries()].filter(([, agent]) => agent.status === 'active' && agent.runtimeId === undefined).length },

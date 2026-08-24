@@ -62,6 +62,9 @@ export const CommandStatusSchema = z.enum(['pending', 'running', 'completed', 'f
 export const ExternalTriggerStatusSchema = z.enum(['received', 'processed', 'rejected', 'duplicate'])
 export const InboxKindSchema = z.enum(['needs_decision', 'blocked', 'review_ready', 'runtime_offline', 'permission_denied', 'test_failed_after_retry', 'stale_approval'])
 export const ProjectAgentMembershipStatusSchema = z.enum(['active', 'removed'])
+export const ProjectSquadBindingStatusSchema = z.enum(['active', 'needs_review', 'removed'])
+export const ProjectAgentMembershipSourceTypeSchema = z.enum(['manual', 'squad', 'retained_reference'])
+export const ProjectAgentMembershipSourceStatusSchema = z.enum(['active', 'removed'])
 export const FeatureUsageFeatureSchema = z.enum(['inbox', 'issues', 'projects', 'delivery', 'agents', 'skills', 'squads', 'runtimes', 'local_data'])
 
 export const ProjectAgentMembershipRecordSchema = z.object({
@@ -79,6 +82,42 @@ export const ProjectAgentMembershipRecordSchema = z.object({
   if (value.id !== `${value.projectId}:${value.agentId}`) context.addIssue({ code: z.ZodIssueCode.custom, path: ['id'], message: 'Membership id must match projectId:agentId.' })
   if (value.status === 'active' && value.removedAt !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Active memberships cannot have removedAt.' })
   if (value.status === 'removed' && value.removedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Removed memberships require removedAt.' })
+})
+
+export const ProjectSquadBindingRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  squadId: z.string().min(1),
+  status: ProjectSquadBindingStatusSchema,
+  isDefault: z.boolean(),
+  syncedSquadUpdatedAt: z.string().min(1),
+  boundBy: z.string().trim().min(1).max(240),
+  boundAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  removedAt: z.string().min(1).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.id !== `${value.projectId}:${value.squadId}`) context.addIssue({ code: z.ZodIssueCode.custom, path: ['id'], message: 'Binding id must match projectId:squadId.' })
+  if (value.status === 'removed' && value.removedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Removed bindings require removedAt.' })
+  if (value.status !== 'removed' && value.removedAt !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Active bindings cannot have removedAt.' })
+  if (value.status === 'removed' && value.isDefault) context.addIssue({ code: z.ZodIssueCode.custom, path: ['isDefault'], message: 'Removed bindings cannot be default.' })
+})
+
+export const ProjectAgentMembershipSourceRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  agentId: z.string().min(1),
+  sourceType: ProjectAgentMembershipSourceTypeSchema,
+  sourceId: z.string().min(1),
+  projectRole: z.string().trim().max(200),
+  autoAssignable: z.boolean(),
+  status: ProjectAgentMembershipSourceStatusSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  removedAt: z.string().min(1).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.id !== `${value.projectId}:${value.agentId}:${value.sourceType}:${value.sourceId}`) context.addIssue({ code: z.ZodIssueCode.custom, path: ['id'], message: 'Membership source id must match projectId:agentId:sourceType:sourceId.' })
+  if (value.status === 'active' && value.removedAt !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Active membership sources cannot have removedAt.' })
+  if (value.status === 'removed' && value.removedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['removedAt'], message: 'Removed membership sources require removedAt.' })
 })
 
 export const FeatureUsageDailyRecordSchema = z.object({
@@ -547,7 +586,10 @@ export const GeneratedTaskSchema = z.object({
   acceptanceCriteria: z.array(z.string().min(1).max(2_000)).min(1).max(100),
   dependencies: z.array(z.string()).max(100),
   suggestedAgentRole: z.string().min(1).max(200),
-  suggestedAgentId: z.string().min(1).optional(),
+  suggestedAgentId: z.preprocess(
+    (value) => typeof value === 'string' && value.trim() === '' ? undefined : value,
+    z.string().trim().min(1).optional(),
+  ),
   evidenceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(50).optional(),
   testCommand: z.string().min(1).max(10_000),
 })
@@ -943,6 +985,30 @@ export const ProjectTaskAssignmentsSchema = z.object({
   assignments: z.array(z.object({ taskId: z.string().min(1), agentId: z.string().min(1) }).strict()).min(1).max(1_000),
 }).strict()
 
+export const ProjectSquadBindingInputSchema = z.object({
+  squadId: z.string().min(1),
+  isDefault: z.boolean().default(false),
+  syncRoles: z.boolean().default(false),
+  boundBy: z.string().trim().min(1).max(240).default('Harness user'),
+  expectedProjectRevision: z.number().int().positive(),
+  expectedSquadUpdatedAt: z.string().min(1),
+}).strict()
+
+export const ProjectSquadBindingSyncInputSchema = z.object({
+  syncRoles: z.boolean().default(false),
+  expectedBindingUpdatedAt: z.string().min(1),
+  expectedSquadUpdatedAt: z.string().min(1).optional(),
+}).strict()
+
+export const ProjectSquadBindingDefaultInputSchema = z.object({
+  expectedBindingUpdatedAt: z.string().min(1),
+}).strict()
+
+export const ProjectSquadBindingRemoveSchema = z.object({
+  expectedBindingUpdatedAt: z.string().min(1),
+  replacementDefaultSquadId: z.string().min(1).optional(),
+}).strict()
+
 export const FeatureUsageInputSchema = z.object({
   feature: FeatureUsageFeatureSchema,
   opens: z.number().int().nonnegative().max(10_000).default(0),
@@ -966,6 +1032,12 @@ export const TaskUpdateSchema = z.object({
 })
 
 export type ProjectAgentMembershipRecord = z.infer<typeof ProjectAgentMembershipRecordSchema>
+export type ProjectSquadBindingRecord = z.infer<typeof ProjectSquadBindingRecordSchema>
+export type ProjectAgentMembershipSourceRecord = z.infer<typeof ProjectAgentMembershipSourceRecordSchema>
+export type ProjectSquadBindingInput = z.infer<typeof ProjectSquadBindingInputSchema>
+export type ProjectSquadBindingSyncInput = z.infer<typeof ProjectSquadBindingSyncInputSchema>
+export type ProjectSquadBindingDefaultInput = z.infer<typeof ProjectSquadBindingDefaultInputSchema>
+export type ProjectSquadBindingRemove = z.infer<typeof ProjectSquadBindingRemoveSchema>
 export type ProjectAgentMembershipInput = z.infer<typeof ProjectAgentMembershipInputSchema>
 export type ProjectAgentMembershipUpdate = z.infer<typeof ProjectAgentMembershipUpdateSchema>
 export type ProjectAgentMembershipBatchInput = z.infer<typeof ProjectAgentMembershipBatchInputSchema>
@@ -1011,7 +1083,7 @@ export type DecisionInput = z.infer<typeof DecisionInputSchema>
 export type DecisionResolution = z.infer<typeof DecisionResolutionSchema>
 export type InboxQuery = z.infer<typeof InboxQuerySchema>
 export type InboxAction = z.infer<typeof InboxActionSchema>
-export type SquadAvailabilityReason = 'legacy_member_count' | 'archived' | 'agent_inactive' | 'member_outside_project' | 'capacity_exhausted'
+export type SquadAvailabilityReason = 'not_bound' | 'binding_needs_review' | 'legacy_member_count' | 'archived' | 'agent_inactive' | 'member_outside_project' | 'capacity_exhausted'
 export type SquadAvailabilityWarning = 'leader_runtime_offline' | 'leader_runtime_unstable'
 export interface SquadAvailability {
   squadId: string
@@ -1153,6 +1225,8 @@ export interface Snapshot {
   workspaceLeases: WorkspaceLeaseRecord[]
   localDirectoryLocks: LocalDirectoryLockRecord[]
   projectAgentMemberships: ProjectAgentMembershipRecord[]
+  projectSquadBindings: ProjectSquadBindingRecord[]
+  projectAgentMembershipSources: ProjectAgentMembershipSourceRecord[]
   featureUsageDaily: FeatureUsageDailyRecord[]
   runtimeOverview: RuntimeOverview
   inbox: InboxItem[]

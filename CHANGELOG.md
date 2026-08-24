@@ -4,6 +4,19 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.9] - 2026-08-24
+
+### Added
+
+- Add explicit many-to-many Project-Squad bindings with one default Squad, synchronized Agent membership provenance, safe unbinding, and Project-local management controls.
+- Add a public Chinese design specification for Project-Squad binding semantics, APIs, migration, interaction, and acceptance criteria.
+
+### Fixed
+
+- Recognize standard implementation roles and permission-aware Squad execution diagnostics without false missing-implementer warnings.
+- Keep Project creation successful when follow-up Harness Workspace linking fails, and report the Workspace error separately.
+- Normalize blank suggested Agent IDs and preserve read-only repository tools across planning repair attempts.
+
 ## [1.5.8] - 2026-08-23
 
 ### Added

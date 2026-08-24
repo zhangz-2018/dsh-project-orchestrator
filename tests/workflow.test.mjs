@@ -75,6 +75,9 @@ test('parsePlannerResult accepts ready plans only with task evidence and verifie
   const ready = readyPlannerResult()
   assert.deepEqual(parsePlannerResult(JSON.stringify(ready)), ready)
 
+  const emptySuggestedAgent = readyPlannerResult({ tasks: ready.tasks.map((task) => ({ ...task, suggestedAgentId: '  ' })) })
+  assert.deepEqual(parsePlannerResult(JSON.stringify(emptySuggestedAgent)).tasks.map((task) => task.suggestedAgentId), [undefined, undefined])
+
   const withoutEvidence = readyPlannerResult({ tasks: ready.tasks.map((task, index) => index === 0 ? { ...task, evidenceRefs: undefined } : task) })
   assert.throws(() => parsePlannerResult(JSON.stringify(withoutEvidence)), (error) => error.code === 'task-evidence-required')
 

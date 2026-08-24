@@ -13,6 +13,8 @@ export type TaskRunStatus = 'deferred' | 'queued' | 'dispatched' | 'waiting_loca
 export type InboxKind = 'needs_decision' | 'blocked' | 'review_ready' | 'runtime_offline' | 'permission_denied' | 'test_failed_after_retry' | 'stale_approval'
 export type AgentWorkloadState = 'idle' | 'queued' | 'working'
 export type ProjectAgentMembershipStatus = 'active' | 'removed'
+export type ProjectSquadBindingStatus = 'active' | 'needs_review' | 'removed'
+export type ProjectAgentMembershipSourceType = 'manual' | 'squad' | 'retained_reference'
 export type FeatureUsageFeature = 'inbox' | 'issues' | 'projects' | 'delivery' | 'agents' | 'skills' | 'squads' | 'runtimes' | 'local_data'
 export type EscalationTrigger = 'requirement_conflict' | 'contract_conflict' | 'destructive_change' | 'production_data_change' | 'permission_required' | 'credential_required' | 'verification_unavailable' | 'repeated_failure' | 'scope_expansion' | 'delegation_conflict' | 'source_of_truth_unknown'
 
@@ -49,6 +51,33 @@ export interface ProjectAgentMembership {
   status: ProjectAgentMembershipStatus
   joinedBy: string
   joinedAt: string
+  updatedAt: string
+  removedAt?: string
+}
+
+export interface ProjectSquadBinding {
+  id: string
+  projectId: string
+  squadId: string
+  status: ProjectSquadBindingStatus
+  isDefault: boolean
+  syncedSquadUpdatedAt: string
+  boundBy: string
+  boundAt: string
+  updatedAt: string
+  removedAt?: string
+}
+
+export interface ProjectAgentMembershipSource {
+  id: string
+  projectId: string
+  agentId: string
+  sourceType: ProjectAgentMembershipSourceType
+  sourceId: string
+  projectRole: string
+  autoAssignable: boolean
+  status: ProjectAgentMembershipStatus
+  createdAt: string
   updatedAt: string
   removedAt?: string
 }
@@ -401,7 +430,7 @@ export interface SkillRecord { id: string; name: string; description: string; so
 export interface WorkspaceLease { id: string; taskRunId: string; projectId: string; resourceId?: string; runtimeId?: string; mode: ResourceExecutionMode; sourcePath: string; workspacePath: string; branchName?: string; baseCommit?: string; state: 'preparing' | 'active' | 'releasing' | 'released' | 'orphaned'; acquiredAt: string; heartbeatAt: string; releasedAt?: string; cleanupError?: string }
 export interface LocalDirectoryLock { id: string; canonicalPath: string; taskRunId: string; projectId: string; acquiredAt: string; heartbeatAt: string }
 export interface RunStatistics { taskRunId: string; projectId: string; issueId?: string; agentId?: string; durationMs?: number; inputTokens?: number; outputTokens?: number; costUsd?: number; usageKnown: boolean }
-export type SquadAvailabilityReason = 'legacy_member_count' | 'archived' | 'agent_inactive' | 'member_outside_project' | 'capacity_exhausted'
+export type SquadAvailabilityReason = 'not_bound' | 'binding_needs_review' | 'legacy_member_count' | 'archived' | 'agent_inactive' | 'member_outside_project' | 'capacity_exhausted'
 export type SquadAvailabilityWarning = 'leader_runtime_offline' | 'leader_runtime_unstable'
 export interface SquadAvailability { squadId: string; projectId: string; eligible: boolean; reasons: SquadAvailabilityReason[]; dispatchReady: boolean; warnings: SquadAvailabilityWarning[]; missingAgentIds: string[]; activeDelegations: number; availableSlots: number }
 export interface RuntimeOverview { defaultHost: { id: 'default-host'; name: '本机默认环境'; status: 'online' | 'unstable'; capabilities: string[]; boundAgentCount: number }; customCount: number; abnormalCount: number; archivedCount: number }
@@ -435,6 +464,8 @@ export interface Snapshot {
   agentWorkloads: AgentWorkload[]
   runStatistics: RunStatistics[]
   projectAgentMemberships: ProjectAgentMembership[]
+  projectSquadBindings: ProjectSquadBinding[]
+  projectAgentMembershipSources: ProjectAgentMembershipSource[]
   featureUsageDaily: FeatureUsageDaily[]
   runtimeOverview: RuntimeOverview
 }

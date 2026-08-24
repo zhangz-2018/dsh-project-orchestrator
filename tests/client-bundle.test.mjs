@@ -75,6 +75,8 @@ test('client exposes explicit empty and AI creation actions', async () => {
   assert.match(source, /ensureWorkspace/)
   assert.match(source, /选择当前目录/)
   assert.match(source, /projects\/\$\{result\.id\}\/workspace/)
+  assert.match(source, /项目已创建，但 Workspace 关联失败/)
+  assert.ok(source.indexOf('model.openProject(result.id)') < source.indexOf('model.ensureWorkspace(result.cwd)'))
   assert.doesNotMatch(source, /localStorage\.setItem\(PROJECT_INTAKE_STORAGE_KEY, JSON\.stringify\(value\)\)/)
   assert.match(bundle, /repositories\/inspect/)
   assert.match(bundle, /open-directory/)
@@ -101,6 +103,8 @@ test('client bundle exposes project membership and local usage workflows', async
     '/agents/batch',
   ]) assert.match(source, new RegExp(contract.replaceAll('/', '\\/')))
   assert.match(bundle, /projectAgentMemberships/)
+  assert.match(bundle, /projectSquadBindings/)
+  assert.match(bundle, /projectAgentMembershipSources/)
   assert.match(bundle, /meaningfulActions/)
 })
 
@@ -109,6 +113,10 @@ test('client exposes P0 Squad and Runtime management with context binding flows'
   const styles = await readFile(new URL('../src/styles.ts', import.meta.url), 'utf8')
   for (const contract of [
     '/eligible-squads',
+    '/squad-bindings',
+    'ProjectSquadBindingDrawer',
+    '绑定并同步',
+    '新的默认 Squad',
     '/runtime-impact',
     '/resources/${resource.id}/runtime',
     '本机默认环境',

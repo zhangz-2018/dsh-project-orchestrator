@@ -36,7 +36,7 @@ class MemoryTable {
 
 function memoryStore() {
   const store = {
-    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), projectAgentMemberships: new MemoryTable(), featureUsageDaily: new MemoryTable(),
+    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(),
     projectTasks(project) {
       if (new Set(project.taskIds).size !== project.taskIds.length) throw new Error('duplicate task pointers')
       return project.taskIds.map((id) => {
@@ -47,7 +47,7 @@ function memoryStore() {
       }).sort((a, b) => a.ordinal - b.ordinal)
     },
     approvalFor(project) { return store.approvals.get(`${project.id}:${project.revision}`) },
-    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], projectSquadBindings: [...store.projectSquadBindings.records.values()], projectAgentMembershipSources: [...store.projectAgentMembershipSources.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
   }
   return store
 }
@@ -98,6 +98,23 @@ test('initialization preserves custom and legacy default Agents while adding onl
   assert.equal(first.some((agent) => agent.id === 'default-agent-software-engineer'), false)
   assert.equal(first.length, DEFAULT_AGENT_SEEDS.length + 1)
   assert.deepEqual(second, first)
+})
+
+test('initialization idempotently backfills manual provenance for legacy active project memberships', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const agent = await service.createAgent({ name: 'Legacy Member', role: 'Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
+  const project = await service.createProject({ name: 'Legacy Project', cwd: '/tmp', prd: 'Legacy.', technicalDesign: 'Backfill.' })
+  const membership = { id: `${project.id}:${agent.id}`, projectId: project.id, agentId: agent.id, projectRole: 'Legacy Role', autoAssignable: true, status: 'active', joinedBy: 'legacy', joinedAt: now, updatedAt: now }
+  await store.projectAgentMemberships.put(membership.id, membership)
+
+  await service.initialize()
+  await service.initialize()
+
+  const sources = service.listProjectAgentMembershipSources(project.id).filter((item) => item.agentId === agent.id && item.status === 'active')
+  assert.equal(sources.length, 1)
+  assert.equal(sources[0].sourceType, 'manual')
+  assert.equal(sources[0].projectRole, membership.projectRole)
 })
 
 test('legacy persisted records parse without Multica metadata', () => {
@@ -847,18 +864,21 @@ test('a non-zero test command fails the project and blocks dependents', async ()
 })
 
 function agentContext(responseText = 'Agent work completed.', observation = {}) {
-  let normalizedResponse = responseText
-  try {
-    const parsed = JSON.parse(responseText)
-    if (Array.isArray(parsed.tasks) && parsed.status === undefined) {
-      const verifiedCommands = [...new Set(parsed.tasks.map((task) => task.testCommand))]
-      normalizedResponse = JSON.stringify({ status: 'ready', ...parsed, repositoryEvidence: { inspectedPaths: ['package.json'], manifests: ['package.json'], verifiedCommands, relevantModules: ['src'], assumptions: [] }, tasks: parsed.tasks.map((task) => ({ ...task, evidenceRefs: ['package.json'] })) })
-    }
-  } catch {}
+  const responses = Array.isArray(responseText) ? responseText : [responseText]
+  const normalizeResponse = (value) => {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed.tasks) && parsed.status === undefined) {
+        const verifiedCommands = [...new Set(parsed.tasks.map((task) => task.testCommand))]
+        return JSON.stringify({ status: 'ready', ...parsed, repositoryEvidence: { inspectedPaths: ['package.json'], manifests: ['package.json'], verifiedCommands, relevantModules: ['src'], assumptions: [] }, tasks: parsed.tasks.map((task) => ({ ...task, evidenceRefs: ['package.json'] })) })
+      }
+    } catch {}
+    return value
+  }
   return {
     skills: { list: async () => observation.availableSkills ?? [] },
     agentDefaultModel: { currentSelection: () => ({ provider: 'test', model: 'test' }) },
-    agentPresets: { mount: async () => {} },
+    agentPresets: { mount: async (_agentCtx, preset) => { observation.mountedPresets = [...(observation.mountedPresets ?? []), preset] } },
     llm: { resolveModelInfo: async () => ({ provider: 'test', id: 'test', name: 'Test model', inputModalities: ['text', 'image'] }) },
     attachments: {
       imageLimits: { maxImageBytes: 5_000_000, maxImagesPerMessage: 20, maxMessageImageBytes: 20_000_000, maxImagePixels: 4_000_000, mediaTypes: ['image/jpeg'] },
@@ -880,8 +900,9 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
               return () => {}
             },
           },
-          tools: { guard: () => { observation.guardCalls = (observation.guardCalls ?? 0) + 1; return () => {} } },
+          tools: { guard: (guard) => { observation.guardCalls = (observation.guardCalls ?? 0) + 1; observation.toolGuards = [...(observation.toolGuards ?? []), guard]; return () => {} } },
         })
+        const normalizedResponse = normalizeResponse(responses[Math.min(observation.createCalls - 1, responses.length - 1)])
         const session = {
           events: [{ type: 'assistant/message', data: { message: { content: [{ type: 'text', text: normalizedResponse }] } } }],
         }
@@ -1008,6 +1029,45 @@ test('project intake starts decomposition without a second user action', async (
   const settled = store.projects.get(project.id)
   assert.equal(settled.status, 'awaiting_approval')
   assert.equal(store.projectTasks(settled).length, 2)
+})
+
+test('planning mounts the standard preset while enforcing read-only tools', async () => {
+  const observation = {}
+  const response = JSON.stringify({ summary: 'Generated delivery plan.', tasks: [
+    { id: 'implement', title: 'Implement change', kind: 'code', description: 'Implement the requested change.', acceptanceCriteria: ['Behavior works'], dependencies: [], suggestedAgentRole: 'Software Engineer', testCommand: 'true' },
+    { id: 'verify', title: 'Verify change', kind: 'test', description: 'Add regression coverage.', acceptanceCriteria: ['Regression is covered'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', testCommand: 'true' },
+  ] })
+  const service = new OrchestratorService(agentContext(response, observation), memoryStore())
+  const project = await service.createProjectAndStart({ name: 'Tool-aware planning', cwd: '/tmp', prd: 'Build a feature.', technicalDesign: '', taskLanguage: 'en' })
+  await new Promise((resolve) => setTimeout(resolve, 30))
+
+  assert.deepEqual(observation.mountedPresets, ['standard'])
+  assert.equal(observation.toolGuards.length, 1)
+  assert.equal(observation.toolGuards[0]({ name: 'run_code' }), undefined)
+  assert.equal(observation.toolGuards[0]({ name: 'read', parent: Symbol('run_code') }), undefined)
+  assert.match(observation.toolGuards[0]({ name: 'write', parent: Symbol('run_code') }), /read-only/)
+  assert.equal(service.snapshot().projects.find((candidate) => candidate.id === project.id).status, 'awaiting_approval')
+})
+
+test('planning keeps read-only tools enabled while repairing an invalid plan response', async () => {
+  const observation = {}
+  const repaired = JSON.stringify({ summary: 'Generated delivery plan.', tasks: [
+    { id: 'implement', title: 'Implement change', kind: 'code', description: 'Implement the requested change.', acceptanceCriteria: ['Behavior works'], dependencies: [], suggestedAgentRole: 'Software Engineer', suggestedAgentId: '', testCommand: 'true' },
+    { id: 'verify', title: 'Verify change', kind: 'test', description: 'Add regression coverage.', acceptanceCriteria: ['Regression is covered'], dependencies: ['implement'], suggestedAgentRole: 'Test Engineer', suggestedAgentId: '  ', testCommand: 'true' },
+  ] })
+  const service = new OrchestratorService(agentContext(['{"status":"ready"}', repaired], observation), memoryStore())
+  const project = await service.createProjectAndStart({ name: 'Retry planning', cwd: '/tmp', prd: 'Build a feature.', technicalDesign: '', taskLanguage: 'en' })
+  await new Promise((resolve) => setTimeout(resolve, 30))
+
+  assert.equal(observation.createCalls, 2)
+  assert.deepEqual(observation.mountedPresets, ['standard', 'standard'])
+  assert.equal(observation.toolGuards.length, 2)
+  for (const guard of observation.toolGuards) {
+    assert.equal(guard({ name: 'read' }), undefined)
+    assert.equal(guard({ name: 'glob' }), undefined)
+    assert.match(guard({ name: 'write' }), /read-only/)
+  }
+  assert.equal(service.snapshot().projects.find((candidate) => candidate.id === project.id).status, 'awaiting_approval')
 })
 
 test('empty project creation persists a draft without invoking AI or creating tasks', async () => {
@@ -1899,6 +1959,7 @@ test('Squad delegation creates a child run and approved review wakes the leader 
   const squad = await service.createSquad({ name: 'Command Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
   const project = await service.createProject({ name: 'Delegation project', cwd: '/tmp', prd: 'Delegate work.', technicalDesign: 'Child Issue protocol.' })
   await service.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead', autoAssignable: true }, { agentId: member.id, projectRole: 'Engineer', autoAssignable: true }], joinedBy: 'tester' })
+  await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
   const parent = await service.createIssue({ projectId: project.id, title: 'Parent delivery', description: 'Coordinate.', assigneeType: 'squad', assigneeId: squad.id })
   const assigned = await service.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
   const leaderRunId = assigned.result.taskRunId
@@ -2078,6 +2139,87 @@ test('Issue assignment resolves Agent and Resource Runtime bindings before captu
   await rm(cwd, { recursive: true, force: true })
 })
 
+test('Project Squad bindings synchronize membership sources and unbind without deleting shared or referenced Agents', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Binding Leader', role: 'Lead', description: '', persona: 'Lead.', preset: 'standard', toolPolicy: 'full' })
+  const engineer = await service.createAgent({ name: 'Binding Engineer', role: 'Software Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
+  const tester = await service.createAgent({ name: 'Binding Tester', role: 'Test Engineer', description: '', persona: 'Test.', preset: 'standard', toolPolicy: 'full' })
+  const first = await service.createSquad({ name: 'Delivery Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, engineer.id], memberRoles: { [leader.id]: 'Leader', [engineer.id]: 'Software Engineer' }, instructions: 'Deliver.', escalationPolicy: 'Escalate.' })
+  const second = await service.createSquad({ name: 'Quality Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, tester.id], memberRoles: { [leader.id]: 'Quality Lead', [tester.id]: 'Test Engineer' }, instructions: 'Verify.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Bound project', cwd: '/tmp', prd: 'Bind teams.', technicalDesign: 'Explicit binding.' })
+
+  const firstBinding = await service.bindProjectSquad(project.id, { squadId: first.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: first.updatedAt })
+  assert.equal(firstBinding.isDefault, true)
+  assert.equal(service.listProjectAgents(project.id).filter((item) => item.status === 'active').length, 2)
+  assert.deepEqual(service.listProjectAgentMembershipSources(project.id).filter((item) => item.status === 'active').map((item) => item.sourceId).sort(), [first.id, first.id])
+  assert.equal(service.listEligibleSquads(project.id).find((item) => item.squadId === first.id).eligible, true)
+  assert.equal(service.listEligibleSquads(project.id).find((item) => item.squadId === second.id).reasons.includes('not_bound'), true)
+
+  const secondBinding = await service.bindProjectSquad(project.id, { squadId: second.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: second.updatedAt })
+  assert.equal(secondBinding.isDefault, false)
+  assert.equal(service.listProjectAgents(project.id).filter((item) => item.status === 'active').length, 3)
+  assert.equal(service.listProjectAgentMembershipSources(project.id).filter((item) => item.agentId === leader.id && item.status === 'active').length, 2)
+
+  const changedFirst = await service.updateSquad(first.id, { name: first.name, description: first.description, leaderAgentId: first.leaderAgentId, memberAgentIds: [leader.id, tester.id], memberRoles: { [leader.id]: 'Leader', [tester.id]: 'Release Tester' }, instructions: first.instructions, escalationPolicy: first.escalationPolicy, maxParallelDelegations: first.maxParallelDelegations, expectedUpdatedAt: first.updatedAt })
+  assert.equal(service.listEligibleSquads(project.id).find((item) => item.squadId === first.id).reasons.includes('binding_needs_review'), true)
+  const synced = await service.syncProjectSquadBinding(project.id, first.id, { expectedBindingUpdatedAt: firstBinding.updatedAt, expectedSquadUpdatedAt: changedFirst.updatedAt, syncRoles: true })
+  assert.equal(synced.syncedSquadUpdatedAt, changedFirst.updatedAt)
+  assert.equal(service.listProjectAgentMembershipSources(project.id).some((item) => item.agentId === engineer.id && item.sourceId === first.id && item.status === 'active'), false)
+  assert.equal(service.listProjectAgents(project.id).find((item) => item.agentId === engineer.id).status, 'removed')
+
+  const issue = await service.createIssue({ projectId: project.id, title: 'Squad-owned work', description: '', assigneeType: 'squad', assigneeId: first.id })
+  await assert.rejects(() => service.unbindProjectSquad(project.id, first.id, { expectedBindingUpdatedAt: synced.updatedAt, replacementDefaultSquadId: second.id }), (error) => error.code === 'project-squad-in-use')
+  await store.issues.put(issue.id, { ...store.issues.get(issue.id), status: 'done', updatedAt: now })
+  const removed = await service.unbindProjectSquad(project.id, first.id, { expectedBindingUpdatedAt: synced.updatedAt, replacementDefaultSquadId: second.id })
+  assert.equal(removed.status, 'removed')
+  assert.equal(service.listProjectSquadBindings(project.id).find((item) => item.squadId === second.id).isDefault, true)
+  assert.equal(service.listProjectAgents(project.id).find((item) => item.agentId === leader.id).status, 'active')
+  assert.equal(service.listProjectAgents(project.id).find((item) => item.agentId === tester.id).status, 'active')
+})
+
+test('Project Squad binding requires concurrency tokens and preserves explicit manual role edits during synchronization', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Concurrency Leader', role: 'Lead', description: '', persona: 'Lead.', preset: 'standard', toolPolicy: 'full' })
+  const member = await service.createAgent({ name: 'Role Engineer', role: 'Software Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
+  const squad = await service.createSquad({ name: 'Role Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], memberRoles: { [leader.id]: 'Leader', [member.id]: 'Squad Engineer' }, instructions: 'Deliver.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Role project', cwd: '/tmp', prd: 'Protect explicit roles.', technicalDesign: 'Source precedence.' })
+  await assert.rejects(() => service.bindProjectSquad(project.id, { squadId: squad.id }), (error) => error.name === 'ZodError')
+  assert.equal(service.listProjectSquadBindings(project.id).length, 0)
+
+  const binding = await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt, syncRoles: true })
+  const beforeEdit = service.listProjectAgents(project.id).find((item) => item.agentId === member.id)
+  assert.equal(beforeEdit.projectRole, 'Squad Engineer')
+  const edited = await service.updateProjectAgent(project.id, member.id, { projectRole: 'Project Specialist', autoAssignable: false, expectedMemberUpdatedAt: beforeEdit.updatedAt })
+  assert.equal(service.listProjectAgentMembershipSources(project.id).some((item) => item.agentId === member.id && item.sourceType === 'manual' && item.status === 'active'), true)
+  const changed = await service.updateSquad(squad.id, { name: squad.name, description: squad.description, leaderAgentId: squad.leaderAgentId, memberAgentIds: squad.memberAgentIds, memberRoles: { [leader.id]: 'Leader', [member.id]: 'Changed Squad Role' }, instructions: squad.instructions, escalationPolicy: squad.escalationPolicy, maxParallelDelegations: squad.maxParallelDelegations, expectedUpdatedAt: squad.updatedAt })
+  await service.syncProjectSquadBinding(project.id, squad.id, { expectedBindingUpdatedAt: binding.updatedAt, expectedSquadUpdatedAt: changed.updatedAt, syncRoles: true })
+  const afterSync = service.listProjectAgents(project.id).find((item) => item.agentId === member.id)
+  assert.equal(afterSync.projectRole, edited.projectRole)
+  assert.equal(afterSync.autoAssignable, false)
+})
+
+test('unbinding retains a referenced Agent with explicit retained-reference provenance', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Reference Leader', role: 'Lead', description: '', persona: 'Lead.', preset: 'standard', toolPolicy: 'full' })
+  const member = await service.createAgent({ name: 'Referenced Engineer', role: 'Software Engineer', description: '', persona: 'Build.', preset: 'standard', toolPolicy: 'full' })
+  const squad = await service.createSquad({ name: 'Reference Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Deliver.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Reference project', cwd: '/tmp', prd: 'Retain task owner.', technicalDesign: 'Explicit source.' })
+  const binding = await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
+  await service.createTask(project.id, { title: 'Owned task', kind: 'code', description: 'Keep the owner.', acceptanceCriteria: ['owner remains active'], dependencies: [], agentId: member.id, testCommand: 'true' })
+
+  await service.unbindProjectSquad(project.id, squad.id, { expectedBindingUpdatedAt: binding.updatedAt })
+
+  const retainedMembership = service.listProjectAgents(project.id).find((item) => item.agentId === member.id)
+  assert.equal(retainedMembership.status, 'active')
+  assert.equal(retainedMembership.autoAssignable, false)
+  const sources = service.listProjectAgentMembershipSources(project.id).filter((item) => item.agentId === member.id)
+  assert.equal(sources.find((item) => item.sourceType === 'squad').status, 'removed')
+  assert.equal(sources.find((item) => item.sourceType === 'retained_reference').status, 'active')
+})
+
 test('Squad availability is unified across project membership, global capacity, and Runtime warnings', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
@@ -2088,7 +2230,10 @@ test('Squad availability is unified across project membership, global capacity, 
   const squad = await service.createSquad({ name: 'Bounded Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.', maxParallelDelegations: 1 })
   const projectA = await service.createProject({ name: 'A', cwd: '/tmp', prd: 'A', technicalDesign: 'A' })
   const projectB = await service.createProject({ name: 'B', cwd: '/tmp', prd: 'B', technicalDesign: 'B' })
-  for (const project of [projectA, projectB]) await service.addProjectAgents(project.id, { members: [{ agentId: leader.id }, { agentId: member.id }], joinedBy: 'tester' })
+  for (const project of [projectA, projectB]) {
+    await service.addProjectAgents(project.id, { members: [{ agentId: leader.id }, { agentId: member.id }], joinedBy: 'tester' })
+    await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
+  }
   let availability = service.listEligibleSquads(projectA.id)[0]
   assert.equal(availability.eligible, true)
   assert.equal(availability.dispatchReady, false)

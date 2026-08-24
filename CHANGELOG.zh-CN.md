@@ -4,6 +4,19 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.5.9] - 2026-08-24
+
+### 新增
+
+- 新增显式 Project-Squad 多对多绑定、单一默认 Squad、可追溯的 Agent 成员来源同步、安全解绑，以及项目内团队编排管理界面。
+- 新增项目与 Squad 绑定语义、API、迁移、交互和验收标准的中文设计文档。
+
+### 修复
+
+- 正确识别标准实现角色，并按执行权限生成 Squad 诊断，避免错误提示缺少实现成员。
+- Project 创建成功后即进入项目；后续 Harness Workspace 关联失败会单独提示，不再伪装成创建失败。
+- 规范化空的建议 Agent ID，并在规划修复重试中持续提供只读仓库工具。
+
 ## [1.5.8] - 2026-08-23
 
 ### 新增

@@ -16,7 +16,7 @@ class MemoryTable {
   entries() { return this.records.entries() }
 }
 
-function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [], projectAgentMemberships = [], featureUsageDaily = [] } = {}) {
+function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [], projectAgentMemberships = [], projectSquadBindings = [], projectAgentMembershipSources = [], featureUsageDaily = [] } = {}) {
   const tables = {
     agents: new MemoryTable(agents),
     projects: new MemoryTable(projects),
@@ -24,6 +24,8 @@ function createStore({ agents = [], projects = [], tasks = [], approvals = [], r
     approvals: new MemoryTable(approvals),
     runs: new MemoryTable(runs),
     project_agent_memberships: new MemoryTable(projectAgentMemberships),
+    project_squad_bindings: new MemoryTable(projectSquadBindings),
+    project_agent_membership_sources: new MemoryTable(projectAgentMembershipSources),
     feature_usage_daily: new MemoryTable(featureUsageDaily),
   }
   return new OrchestratorStore({ table: (name) => tables[name] })
@@ -92,11 +94,15 @@ test('service snapshot exposes the current authoritative plan digest', () => {
   assert.equal(snapshot.planHashes[currentProject.id], snapshot.approvals[0].planHash)
 })
 
-test('snapshot includes durable memberships and local feature usage aggregates', () => {
+test('snapshot includes durable memberships, Squad bindings, sources, and local usage aggregates', () => {
   const membership = { id: 'p1:a1', projectId: 'p1', agentId: 'a1', projectRole: 'Backend', autoAssignable: true, status: 'active', joinedBy: 'tester', joinedAt: now, updatedAt: now }
+  const binding = { id: 'p1:s1', projectId: 'p1', squadId: 's1', status: 'active', isDefault: true, syncedSquadUpdatedAt: now, boundBy: 'tester', boundAt: now, updatedAt: now }
+  const source = { id: 'p1:a1:squad:s1', projectId: 'p1', agentId: 'a1', sourceType: 'squad', sourceId: 's1', projectRole: 'Backend', autoAssignable: true, status: 'active', createdAt: now, updatedAt: now }
   const usage = { id: '2026-08-17:projects', date: '2026-08-17', feature: 'projects', opens: 2, meaningfulActions: 1, errorRecoveries: 0, lastUsedAt: now }
-  const snapshot = createStore({ projects: [project('p1', [])], projectAgentMemberships: [membership], featureUsageDaily: [usage] }).snapshot()
+  const snapshot = createStore({ projects: [project('p1', [])], projectAgentMemberships: [membership], projectSquadBindings: [binding], projectAgentMembershipSources: [source], featureUsageDaily: [usage] }).snapshot()
   assert.deepEqual(snapshot.projectAgentMemberships, [membership])
+  assert.deepEqual(snapshot.projectSquadBindings, [binding])
+  assert.deepEqual(snapshot.projectAgentMembershipSources, [source])
   assert.deepEqual(snapshot.featureUsageDaily, [usage])
 })
 

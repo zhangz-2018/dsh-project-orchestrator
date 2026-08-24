@@ -96,7 +96,7 @@ Squad 和 Runtime 一旦被 Issue、Delegation 或 TaskRun 引用，优先归档
 5. **Runtime 能力**：P0 的 capabilities 仅用于展示和运维判断，不参与自动调度，因为当前 Task/Issue 没有权威的 requiredCapabilities 字段。能力门禁与该字段一起在 P1 设计。
 6. **恢复默认环境**：这是对 Agent/Resource 的持久化解绑，不是单次 TaskRun 覆盖，也不会由系统自动执行。Agent 绑定变化会按受影响范围使已审批 Project 失效，避免静默扩大执行权限。
 7. **Runtime 生命周期**：P0 为 Runtime 增加独立 lifecycle `active/archived`；online/offline/unstable 继续表达可用性。历史 TaskRun 引用的 Runtime 只能归档，不能物理删除。
-8. **Squad 与项目关系**：Squad 仍为工作区级对象，不新增项目绑定表。`sourceProjectId` 只用于创建请求的资格校验和 Activity；“可用于哪些项目”每次按当前 active memberships 实时投影。
+8. **Squad 与项目关系**：Squad 仍为工作区级可复用对象；Project 通过显式绑定选择参与本项目的 Squad。绑定会补齐并同步项目成员资格，Task 继续由具体 Agent 负责。完整语义见 [项目绑定团队编排设计方案](project-squad-binding-design.zh-CN.md)。
 9. **操作者权限**：当前只有本机 Harness 操作者，不新增 RBAC。所有人工 mutation 继续通过 same-origin 边界并写入 Activity/Command 审计。
 
 ## 5. 术语与来源事实

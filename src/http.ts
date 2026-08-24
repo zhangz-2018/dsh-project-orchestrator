@@ -33,6 +33,10 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET' && taskRunArtifacts !== undefined) return json(res, 200, service.snapshot().artifacts.filter((artifact) => artifact.taskRunId === taskRunArtifacts))
       const projectAgentsRead = matchOne(path, /^\/projects\/([^/]+)\/agents$/u)
       if (method === 'GET' && projectAgentsRead !== undefined) return json(res, 200, service.listProjectAgents(projectAgentsRead))
+      const projectSquadBindings = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/u)
+      if (method === 'GET' && projectSquadBindings !== undefined) return json(res, 200, service.listProjectSquadBindings(projectSquadBindings))
+      const projectMembershipSources = matchOne(path, /^\/projects\/([^/]+)\/agent-membership-sources$/u)
+      if (method === 'GET' && projectMembershipSources !== undefined) return json(res, 200, service.listProjectAgentMembershipSources(projectMembershipSources))
       const eligibleSquads = matchOne(path, /^\/projects\/([^/]+)\/eligible-squads$/u)
       if (method === 'GET' && eligibleSquads !== undefined) return json(res, 200, service.listEligibleSquads(eligibleSquads))
       const squadDetail = matchOne(path, /^\/squads\/([^/]+)$/u)
@@ -158,6 +162,15 @@ export function createHttpHandler(service: OrchestratorService) {
           await service.deleteAgent(agent)
           return json(res, 200, { ok: true })
         }
+
+        const projectSquadSync = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)\/sync$/)
+        if (projectSquadSync !== undefined && method === 'POST') return json(res, 200, await service.syncProjectSquadBinding(projectSquadSync[0], projectSquadSync[1], await readJson(req)))
+        const projectSquadDefault = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)\/default$/)
+        if (projectSquadDefault !== undefined && method === 'PUT') return json(res, 200, await service.setDefaultProjectSquadBinding(projectSquadDefault[0], projectSquadDefault[1], await readJson(req)))
+        const projectSquadBinding = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)$/)
+        if (projectSquadBinding !== undefined && method === 'DELETE') return json(res, 200, await service.unbindProjectSquad(projectSquadBinding[0], projectSquadBinding[1], await readJson(req)))
+        const projectSquadBindings = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/)
+        if (projectSquadBindings !== undefined && method === 'POST') return json(res, 201, await service.bindProjectSquad(projectSquadBindings, await readJson(req)))
 
         const projectAgentsBatch = matchOne(path, /^\/projects\/([^/]+)\/agents\/batch$/)
         if (projectAgentsBatch !== undefined && method === 'POST') return json(res, 201, await service.addProjectAgents(projectAgentsBatch, await readJson(req)))

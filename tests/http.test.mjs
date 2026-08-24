@@ -36,7 +36,7 @@ function response() {
 
 function service() {
   return {
-    snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [] } },
      async getInbox(query) { return query?.kind ? [{ id: 'filtered', kind: query.kind }] : [] },
      async getAgentWorkloads() { return [] },
      listProjectAgents(projectId) { return [{ id: `${projectId}:agent`, projectId, agentId: 'agent', status: 'active' }] },
@@ -51,7 +51,13 @@ function service() {
      async executeCommand(body) { return { id: 'command', status: 'completed', result: body } },
      async receiveExternalTrigger(body) { return { id: 'trigger', status: 'processed', ...body } },
      getSquad(id) { return { id, status: 'active' } },
+     listProjectSquadBindings(projectId) { return [{ id: `${projectId}:squad`, projectId, squadId: 'squad', status: 'active' }] },
+     listProjectAgentMembershipSources(projectId) { return [{ id: `${projectId}:agent:manual:manual`, projectId, agentId: 'agent', sourceType: 'manual', status: 'active' }] },
      listEligibleSquads(projectId) { return [{ projectId, squadId: 'squad', eligible: true }] },
+     async bindProjectSquad(projectId, body) { return { id: `${projectId}:${body.squadId}`, projectId, status: 'active', ...body } },
+     async syncProjectSquadBinding(projectId, squadId, body) { return { id: `${projectId}:${squadId}`, projectId, squadId, status: 'active', ...body } },
+     async setDefaultProjectSquadBinding(projectId, squadId, body) { return { id: `${projectId}:${squadId}`, projectId, squadId, status: 'active', isDefault: true, ...body } },
+     async unbindProjectSquad(projectId, squadId, body) { return { id: `${projectId}:${squadId}`, projectId, squadId, status: 'removed', ...body } },
      async createSquad(body) { return { id: 'squad', status: 'active', ...body } },
      async updateSquad(id, body) { return { id, status: 'active', ...body } },
      async cloneSquad(id, body) { return { id: `${id}-clone`, status: 'active', ...body } },
@@ -95,7 +101,7 @@ test('snapshot endpoint returns no-store JSON', async () => {
   assert.equal(res.statusCode, 200)
   assert.equal(res.headers.get('cache-control'), 'no-store')
   assert.deepEqual(JSON.parse(res.body), {
-     runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [],
+     runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [],
     projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {},
   })
 })
@@ -342,6 +348,33 @@ test('command, Squad, Artifact, trigger, and operational read routes stay same-o
     assert.equal(res.statusCode, 200)
     assert.deepEqual(JSON.parse(res.body), [])
   }
+})
+
+test('Project Squad binding routes are decoded, same-origin, and serialized', async () => {
+  const fake = service()
+  let lockCalls = 0
+  fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
+  const origin = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  for (const path of ['squad-bindings', 'agent-membership-sources']) {
+    const res = response()
+    await createHttpHandler(fake)(new Request({ url: `/project-orchestrator/api/projects/project%20one/${path}`, headers: { host: '127.0.0.1:3080' } }), res)
+    assert.equal(res.statusCode, 200)
+    assert.equal(JSON.parse(res.body)[0].projectId, 'project one')
+  }
+  for (const [method, url, body, status] of [
+    ['POST', '/project-orchestrator/api/projects/project%20one/squad-bindings', { squadId: 'squad one', expectedProjectRevision: 1, expectedSquadUpdatedAt: 'now' }, 201],
+    ['POST', '/project-orchestrator/api/projects/project%20one/squad-bindings/squad%20one/sync', { expectedBindingUpdatedAt: 'now' }, 200],
+    ['PUT', '/project-orchestrator/api/projects/project%20one/squad-bindings/squad%20one/default', { expectedBindingUpdatedAt: 'now' }, 200],
+    ['DELETE', '/project-orchestrator/api/projects/project%20one/squad-bindings/squad%20one', { expectedBindingUpdatedAt: 'now' }, 200],
+  ]) {
+    const res = response()
+    await createHttpHandler(fake)(new Request({ method, url, headers: origin, body: JSON.stringify(body) }), res)
+    assert.equal(res.statusCode, status)
+    const record = JSON.parse(res.body)
+    assert.equal(record.projectId, 'project one')
+    assert.equal(record.squadId, 'squad one')
+  }
+  assert.equal(lockCalls, 4)
 })
 
 test('project membership, task assignment, and usage routes are same-origin and serialized', async () => {
