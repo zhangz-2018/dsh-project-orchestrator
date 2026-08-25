@@ -177,7 +177,10 @@ export function compileTaskPrompt(input: {
   dependencies: TaskRecord[]
   agent: AgentRecord
   membership?: ProjectAgentMembershipRecord
+  dependencyEvidence?: Array<{ taskId: string; evidenceIds: string[] }>
+  workspace?: { cwd: string; baseCommit?: string; branch?: string }
 }): CompiledPrompt {
+  const evidenceByTask = new Map((input.dependencyEvidence ?? []).map((entry) => [entry.taskId, entry.evidenceIds]))
   const dependencyEvidence = input.dependencies.map((dependency) => ({
     id: dependency.id,
     title: dependency.title,
@@ -185,10 +188,18 @@ export function compileTaskPrompt(input: {
     resultSummary: boundedValue(dependency.resultSummary, 8_000),
     testExitCode: dependency.testExitCode,
     testOutput: boundedValue(dependency.testOutput, 4_000),
+    evidenceIds: evidenceByTask.get(dependency.id) ?? [],
   }))
-  const latestFailure = input.task.attempts?.at(-1)
+  const previousAttempts = (input.task.attempts ?? []).map((attempt) => ({
+    attempt: attempt.attempt,
+    exitCode: attempt.exitCode,
+    failureReason: attempt.failureReason,
+    output: boundedValue(attempt.output, 8_000),
+    createdAt: attempt.createdAt,
+  }))
+  const assignmentPolicy = input.task.assignmentPolicy
   const data = {
-    project: { id: input.project.id, name: input.project.name, summary: input.project.summary, priority: input.project.priority ?? 'medium', owner: input.project.owner || null },
+    project: { id: input.project.id, name: input.project.name, summary: input.project.summary, priority: input.project.priority ?? 'medium', owner: input.project.owner || null, planSnapshotId: input.task.planSnapshotId ?? input.project.currentPlanSnapshotId ?? null, teamDigest: input.project.teamDigest ?? null, assignmentDigest: input.project.assignmentDigest ?? null },
     assignment: { agentId: input.agent.id, projectRole: input.membership?.projectRole || input.agent.role },
     task: {
       id: input.task.id,
@@ -199,10 +210,18 @@ export function compileTaskPrompt(input: {
       approvedVerificationCommand: input.task.testCommand,
       priority: input.task.priority ?? 'medium',
       tags: input.task.tags ?? [],
+      sourceRequirementIds: input.task.sourceRequirementIds ?? [],
+      acceptanceIds: input.task.acceptanceIds ?? [],
+      relationship: input.task.relationship ?? null,
+      assignmentPolicy: assignmentPolicy ?? null,
+      allowedScope: assignmentPolicy?.allowedScope ?? [],
+      forbiddenScope: assignmentPolicy?.forbiddenScope ?? [],
+      escalationConditions: assignmentPolicy?.escalationConditions ?? [],
     },
+    workspace: input.workspace ?? { cwd: input.project.cwd },
     relevantProjectEvidence: { prd: boundedValue(input.project.prd, 20_000), technicalDesign: boundedValue(input.project.technicalDesign, 20_000) },
     completedDependencies: dependencyEvidence,
-    previousAutomaticAttempt: latestFailure === undefined ? null : { exitCode: latestFailure.exitCode, failureReason: latestFailure.failureReason, output: boundedValue(latestFailure.output, 8_000) },
+    previousAttempts,
   }
   const contextJson = JSON.stringify(data, null, 2)
   const sections: PromptSection[] = [

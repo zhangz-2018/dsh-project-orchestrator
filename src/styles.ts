@@ -322,6 +322,17 @@ body[data-ds-dark-theme] .po-workbench {
 .po-approval-summary span, .po-intervention-panel span { color: var(--dsw-alias-label-secondary, #52525b); font-size: 12px; }
 .po-intervention-panel { border-color: var(--dsw-alias-state-warn-secondary, #c88c48); background: var(--po-warn-surface); }
 .po-intervention-panel strong { color: var(--po-warn-ink); }
+.po-project-review-resolution { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--dsw-alias-border-l2, #d4d4d8); }
+.po-project-review-resolution h3 { margin: 0; font-size: 14px; }
+.po-review-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.po-review-fields label { display: grid; gap: 6px; min-width: 0; color: var(--dsw-alias-label-secondary, #52525b); font-size: 12px; }
+.po-review-note { grid-column: 1 / -1; }
+.po-review-waivers { display: grid; gap: 12px; margin-top: 12px; }
+.po-review-waivers fieldset { display: grid; gap: 8px; margin: 0; padding: 10px 12px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 6px; }
+.po-review-waivers legend { padding: 0 4px; font-size: 12px; font-weight: 650; }
+.po-responsibility-summary { display: grid; gap: 10px; padding: 12px 0 2px; }
+.po-responsibility-summary > div { display: grid; gap: 3px; }
+.po-responsibility-summary span, .po-responsibility-summary small { color: var(--dsw-alias-label-caption, #6b7280); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .po-project-content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 0 24px; }
 .po-project-content-grid .po-document-section { margin-left: 0; margin-right: 0; }
 .po-project-artifacts { margin: 18px 24px 0; display: grid; gap: 1px; border: 1px solid var(--dsw-alias-border-l2, #e5e7eb); border-radius: 7px; overflow: hidden; }
@@ -336,6 +347,9 @@ body[data-ds-dark-theme] .po-workbench {
 .po-requirement-batches summary { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
 .po-requirement-batches summary span { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
 .po-project-task-row { width: 100%; min-height: 62px; border: 0; border-top: 1px solid var(--dsw-alias-border-l3, #ededee); padding: 10px 4px; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto 20px; align-items: center; gap: 12px; background: transparent; cursor: pointer; text-align: left; }
+.po-project-task-row:has(.po-project-task-main) { display: block; padding: 0; cursor: default; }
+.po-project-task-main { width: 100%; min-height: 62px; border: 0; padding: 10px 4px; display: grid; grid-template-columns: 54px minmax(0, 1fr) auto 20px; align-items: center; gap: 12px; background: transparent; cursor: pointer; text-align: left; }
+.po-project-task-main:hover { background: var(--dsw-alias-interactive-bg-hover, #f7f7f8); }
 .po-project-task-row:hover { background: var(--dsw-alias-interactive-bg-hover, #f7f7f8); }
 .po-task-kind-mark { color: var(--dsw-alias-label-caption, #6b7280); font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .po-project-task-row > span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
@@ -661,6 +675,8 @@ body[data-ds-dark-theme] .po-workbench {
 .po-project-tab-body { padding: 20px 24px 36px; }
 .po-project-tab-body > .po-section-heading { margin-bottom: 16px; }
 .po-project-squad-bindings { padding-bottom: 20px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
+.po-team-impact { margin: 0 0 14px; border: 1px solid var(--dsw-alias-border-l3, #eeeeef); padding: 10px 12px; display: grid; gap: 4px; background: var(--dsw-alias-fill-l1, #fafafa); font-size: 12px; }
+.po-team-impact span, .po-team-impact small { color: var(--dsw-alias-label-secondary, #52525b); }
 .po-project-members-section { padding-top: 20px; }
 .po-binding-list { border-top: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
 .po-binding-row { min-height: 72px; border-bottom: 1px solid var(--dsw-alias-border-l3, #eeeeef); padding: 10px 0; display: grid; grid-template-columns: minmax(220px, 1fr) minmax(130px, .45fr) auto; align-items: center; gap: 14px; }
@@ -692,6 +708,30 @@ body[data-ds-dark-theme] .po-workbench {
 .po-check { min-height: 32px; display: flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; cursor: pointer; }
 .po-check input, .po-agent-picker input { accent-color: var(--po-accent); }
 .po-add-members-panel, .po-batch-panel, .po-agent-join-panel { margin-bottom: 18px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 7px; padding: 16px; background: var(--dsw-alias-bg-layer-1, #fafafa); }
+.po-team-plan-panel { margin-bottom: 18px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 7px; padding: 16px; background: var(--dsw-alias-bg-layer-1, #fafafa); }
+.po-team-plan-status { font-size: 12px; font-weight: 650; padding: 4px 8px; border-radius: 999px; }
+.po-team-plan-status.is-ready { color: var(--po-success-ink); background: var(--po-success-surface); }
+.po-team-plan-status.is-blocked { color: var(--po-error-ink); background: var(--po-error-surface); }
+.po-team-role-map { margin: 0 0 14px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-block: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
+.po-team-role-map > div { min-width: 0; padding: 10px 12px; border-inline-end: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
+.po-team-role-map > div:last-child { border-inline-end: 0; }
+.po-team-role-map dt { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
+.po-team-role-map dd { margin: 3px 0 0; overflow-wrap: anywhere; font-weight: 650; }
+.po-team-plan-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.po-team-plan-grid > div { display: grid; gap: 4px; min-width: 0; }
+.po-team-plan-grid small, .po-team-plan-errors, .po-team-plan-warnings { color: var(--dsw-alias-label-caption, #6b7280); font-size: 12px; line-height: 1.5; }
+.po-team-plan-errors, .po-team-plan-warnings { margin: 12px 0 0; padding-left: 18px; }
+.po-team-plan-errors { color: var(--po-error-ink); }
+.po-team-plan-warnings { color: var(--po-warn-ink); }
+.po-team-coverage { margin-top: 14px; border-top: 1px solid var(--dsw-alias-border-l2, #d4d4d8); font-size: 12px; }
+.po-team-coverage-head, .po-team-coverage-row { display: grid; grid-template-columns: minmax(140px, 1.1fr) minmax(120px, .8fr) minmax(180px, 1.5fr) 56px 82px; gap: 10px; align-items: center; min-height: 38px; padding: 0 4px; }
+.po-team-coverage-head { color: var(--dsw-alias-label-caption, #6b7280); font-weight: 650; }
+.po-team-coverage-row { border-top: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
+.po-team-coverage-row > span { min-width: 0; overflow-wrap: anywhere; }
+.po-task-candidates { margin: 0 4px 8px 70px; font-size: 12px; color: var(--dsw-alias-label-caption, #6b7280); }
+.po-task-candidates summary { cursor: pointer; color: var(--dsw-alias-label-secondary, #4b5563); }
+.po-task-candidates > div { display: grid; gap: 8px; padding: 8px 0; }
+.po-task-candidates ul { margin: 0; padding-left: 18px; }
 .po-agent-join-panel { margin: 18px 24px 0; }
 .po-add-members-panel > .po-search { width: 100%; margin-top: 14px; }
 .po-agent-picker { max-height: 430px; margin-top: 10px; border-top: 1px solid var(--dsw-alias-border-l3, #e5e7eb); overflow: auto; }
@@ -885,6 +925,8 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-project-diagnostic-actions details { width: 100%; }
   .po-project-diagnostic-actions pre { position: static; width: auto; max-height: 180px; margin-top: 8px; }
   .po-approval-summary, .po-intervention-panel { flex-direction: column; gap: 4px; }
+  .po-review-fields { grid-template-columns: 1fr; }
+  .po-review-note { grid-column: auto; }
   .po-delivery-gate, .po-document-section, .po-project-task-section, .po-run-summary { margin: 14px 14px 0; padding: 14px; }
   .po-project-content-grid { padding: 0; gap: 0; }
   .po-project-context-grid { padding: 14px 14px 0; grid-template-columns: 1fr; }
@@ -915,6 +957,14 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-squad-availability-row { grid-template-columns: 1fr; gap: 4px; }
   .po-squad-availability-row .po-link-button { justify-self: start; }
   .po-project-squads { margin: 14px 14px 0; padding: 12px; }
+  .po-team-role-map { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .po-team-role-map > div { border-block-end: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
+  .po-team-plan-grid { grid-template-columns: 1fr; }
+  .po-team-coverage { overflow-x: auto; }
+  .po-team-coverage-head, .po-team-coverage-row { min-width: 680px; }
+  .po-task-candidates { margin-left: 48px; }
+  .po-project-task-main { grid-template-columns: 44px minmax(0, 1fr) auto; }
+  .po-project-task-main > svg { display: none; }
   .po-detail-facts, .po-local-data dl { grid-template-columns: 105px minmax(0, 1fr); }
   .po-local-data { padding: 16px 14px 30px; }
   .po-entity-row { min-height: 86px; padding: 12px 4px; grid-template-columns: minmax(0, 1fr) auto 16px; gap: 10px; }

@@ -2,11 +2,13 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   assertExecutable,
+  assignmentDigest,
   boundedText,
   materializeTasks,
   parseGeneratedPlan,
   parsePlannerResult,
   planDigest,
+  teamCompositionDigest,
   topologicalTasks,
 } from '../lib/index.js'
 
@@ -146,7 +148,38 @@ test('materializeTasks matches only eligible project memberships by project role
     { id: 'removed-agent', role: 'QA', projectRole: 'QA', autoAssignable: true, status: 'removed' },
   ], now)
   assert.equal(generated[0].agentId, 'project-agent')
+  assert.equal(generated[0].assignmentSource, 'planner_recommendation')
   assert.equal(generated[1].agentId, undefined)
+  assert.equal(generated[1].assignmentSource, 'automatic_match')
+  assert.equal(generated.every((task) => task.assignmentPolicy?.mode === 'single_agent'), true)
+  assert.deepEqual(generated[0].assignmentPolicy.requiredRoles, [])
+})
+
+test('task assignment policy filters capabilities and independent review ownership', () => {
+  const plan = parseGeneratedPlan(JSON.stringify({
+    summary: 'Policy plan',
+    tasks: [
+      { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'Engineer', evidenceRefs: ['src'], assignmentPolicy: { mode: 'single_agent', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: true, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' },
+      { id: 'test', title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], suggestedAgentRole: 'QA', evidenceRefs: ['tests'], testCommand: 'true' },
+    ],
+  }))
+  const generated = materializeTasks('p1', plan, [
+    { id: 'engineer', role: 'Software Engineer', projectRole: 'Engineer', capabilities: ['coding'], autoAssignable: true, status: 'active' },
+    { id: 'reviewer', role: 'Code Reviewer', projectRole: 'Reviewer', capabilities: ['review'], autoAssignable: true, status: 'active' },
+  ], now)
+  assert.equal(generated[0].agentId, 'engineer')
+  assert.equal(generated[0].assignmentSource, 'automatic_match')
+  assert.equal(generated[0].assignmentPolicy?.requiresIndependentReviewer, true)
+  const assigned = generated.map((task) => ({ ...task, agentId: task.agentId ?? 'engineer' }))
+  const digest = planDigest({ ...project, teamDigest: 'a'.repeat(64), assignmentDigest: 'b'.repeat(64) }, assigned)
+  assert.doesNotThrow(() => assertExecutable(
+    { ...project, teamDigest: 'a'.repeat(64), assignmentDigest: 'b'.repeat(64) },
+    assigned,
+    { revision: 2, planHash: digest },
+    [{ agentId: 'engineer', active: true }, { agentId: 'reviewer', active: true }],
+    [{ id: 'engineer', role: 'Software Engineer', projectRole: 'Engineer', capabilities: ['coding'], status: 'active' }, { id: 'reviewer', role: 'Code Reviewer', projectRole: 'Reviewer', capabilities: ['review'], status: 'active' }],
+    { leadAgentId: 'engineer', reviewerAgentId: 'reviewer', members: [], squads: [], teamDigest: 'a'.repeat(64), capturedAt: now },
+  ))
 })
 
 test('assertExecutable requires every task assignee to remain an active project member', () => {
@@ -157,6 +190,59 @@ test('assertExecutable requires every task assignee to remain an active project 
   const unassigned = [{ ...assigned[0] }, { ...assigned[1] }]
   delete unassigned[1].agentId
   assert.throws(() => assertExecutable(project, unassigned, { revision: 2, planHash: planDigest(project, unassigned) }, [{ agentId: 'engineer', active: true }]), (error) => error.code === 'project-task-unassigned')
+})
+
+test('assertExecutable treats high-risk tasks as requiring independent review', () => {
+  const highRisk = tasks.map((task, index) => ({
+    ...task,
+    agentId: index === 0 ? 'engineer' : 'tester',
+    ...(index === 0 ? { assignmentPolicy: { mode: 'single_agent', riskLevel: 'high', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] } } : {}),
+  }))
+  const withDigests = { ...project, teamDigest: 'a'.repeat(64), assignmentDigest: assignmentDigest(highRisk) }
+  const digest = planDigest(withDigests, highRisk)
+  assert.throws(() => assertExecutable(
+    withDigests,
+    highRisk,
+    { revision: project.revision, planHash: digest },
+    [{ agentId: 'engineer', active: true }, { agentId: 'tester', active: true }],
+    [{ id: 'engineer', role: 'Engineer', capabilities: [], status: 'active' }, { id: 'tester', role: 'Tester', capabilities: [], status: 'active' }],
+    { leadAgentId: 'engineer', members: [], squads: [], teamDigest: 'a'.repeat(64), capturedAt: now },
+  ), /high risk.*independent reviewer/)
+})
+
+test('team composition digest ignores live slots but tracks capacity policy and runtime state', () => {
+  const member = { agentId: 'engineer', projectRole: 'Engineer', source: 'manual', sourceId: 'membership-1', capabilities: ['coding'], runtimeStatus: 'online', maxConcurrency: 2, availableSlots: 2 }
+  const snapshot = { leadAgentId: 'engineer', members: [member], squads: [] }
+  const digest = teamCompositionDigest(snapshot)
+  assert.equal(teamCompositionDigest({ ...snapshot, members: [{ ...member, availableSlots: 0 }] }), digest)
+  assert.notEqual(teamCompositionDigest({ ...snapshot, members: [{ ...member, maxConcurrency: 1 }] }), digest)
+  assert.notEqual(teamCompositionDigest({ ...snapshot, members: [{ ...member, runtimeStatus: 'offline' }] }), digest)
+})
+
+test('team composition digest is independent of member, capability, Squad, and Squad-member order', () => {
+  const memberA = { agentId: 'a', projectRole: 'Engineer', source: 'manual', sourceId: 'membership-a', capabilities: ['tests', 'coding'], runtimeStatus: 'online', maxConcurrency: 2 }
+  const memberB = { agentId: 'b', projectRole: 'Reviewer', source: 'manual', sourceId: 'membership-b', capabilities: ['review'], runtimeStatus: 'online', maxConcurrency: 1 }
+  const squadA = { squadId: 'squad-a', leaderAgentId: 'a', memberAgentIds: ['b', 'a'], maxParallelDelegations: 2, syncedSquadUpdatedAt: now }
+  const squadB = { squadId: 'squad-b', leaderAgentId: 'b', memberAgentIds: ['a', 'b'], maxParallelDelegations: 1, syncedSquadUpdatedAt: now }
+  const first = { leadAgentId: 'a', members: [memberA, memberB], squads: [squadA, squadB] }
+  const reordered = { leadAgentId: 'a', members: [memberB, { ...memberA, capabilities: ['coding', 'tests'] }], squads: [{ ...squadB, memberAgentIds: ['b', 'a'] }, { ...squadA, memberAgentIds: ['a', 'b'] }] }
+  assert.equal(teamCompositionDigest(first), teamCompositionDigest(reordered))
+})
+
+test('materializeTasks prefers exact roles, then capacity, then stable Agent id', () => {
+  const plan = parseGeneratedPlan(JSON.stringify({
+    summary: 'Stable assignment',
+    tasks: [
+      { id: 'code', title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], dependencies: [], suggestedAgentRole: 'Engineer', evidenceRefs: ['src'], assignmentPolicy: { mode: 'single_agent', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' },
+      { id: 'test', title: 'Test', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: ['code'], suggestedAgentRole: 'QA', evidenceRefs: ['tests'], testCommand: 'true' },
+    ],
+  }))
+  const assigned = materializeTasks('p1', plan, [
+    { id: 'z-broad', role: 'Engineer', projectRole: 'Senior Engineer', capabilities: ['coding'], availableSlots: 8 },
+    { id: 'b-exact', role: 'Engineer', projectRole: 'Engineer', capabilities: ['coding'], availableSlots: 2 },
+    { id: 'a-exact', role: 'Engineer', projectRole: 'Engineer', capabilities: ['coding'], availableSlots: 2 },
+  ], now)
+  assert.equal(assigned[0].agentId, 'a-exact')
 })
 
 test('boundedText retains the final evidence', () => {

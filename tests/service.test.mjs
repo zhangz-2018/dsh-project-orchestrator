@@ -36,7 +36,7 @@ class MemoryTable {
 
 function memoryStore() {
   const store = {
-    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(),
+    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), taskRunConflictLocks: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(), planSnapshots: new MemoryTable(), requirementBundles: new MemoryTable(), requirementItems: new MemoryTable(), acceptanceCriteria: new MemoryTable(), verificationEvidence: new MemoryTable(), projectReviews: new MemoryTable(), deliveryRecords: new MemoryTable(),
     projectTasks(project) {
       if (new Set(project.taskIds).size !== project.taskIds.length) throw new Error('duplicate task pointers')
       return project.taskIds.map((id) => {
@@ -47,7 +47,7 @@ function memoryStore() {
       }).sort((a, b) => a.ordinal - b.ordinal)
     },
     approvalFor(project) { return store.approvals.get(`${project.id}:${project.revision}`) },
-    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], projectSquadBindings: [...store.projectSquadBindings.records.values()], projectAgentMembershipSources: [...store.projectAgentMembershipSources.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], projectSquadBindings: [...store.projectSquadBindings.records.values()], projectAgentMembershipSources: [...store.projectAgentMembershipSources.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], planSnapshots: [...store.planSnapshots.records.values()], requirementBundles: [...store.requirementBundles.records.values()], requirementItems: [...store.requirementItems.records.values()], acceptanceCriteria: [...store.acceptanceCriteria.records.values()], verificationEvidence: [...store.verificationEvidence.records.values()], projectReviews: [...store.projectReviews.records.values()], deliveryRecords: [...store.deliveryRecords.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
   }
   return store
 }
@@ -115,6 +115,46 @@ test('initialization idempotently backfills manual provenance for legacy active 
   assert.equal(sources.length, 1)
   assert.equal(sources[0].sourceType, 'manual')
   assert.equal(sources[0].projectRole, membership.projectRole)
+})
+
+test('initialization idempotently migrates exactly 31 legacy Tasks without duplicating Issues or Decisions', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const legacyAgent = await service.createAgent({ name: 'Legacy Delivery Agent', role: 'Engineer', persona: 'Preserve legacy work.', toolPolicy: 'full' })
+  const taskIds = Array.from({ length: 31 }, (_, index) => `legacy-task-${index + 1}`)
+  const legacyProject = { id: 'legacy-31-project', name: 'Legacy 31 Task Project', summary: '', cwd: '/tmp', prd: 'Legacy requirements.', technicalDesign: 'Legacy design.', status: 'draft', revision: 7, taskIds, leadAgentId: legacyAgent.id, createdAt: now, updatedAt: now }
+  await store.projects.put(legacyProject.id, legacyProject)
+  for (const [index, id] of taskIds.entries()) {
+    const status = index % 3 === 0 ? 'completed' : index % 3 === 1 ? 'failed' : 'draft'
+    await store.tasks.put(id, { id, projectId: legacyProject.id, ordinal: index, title: `Legacy Task ${index + 1}`, kind: 'code', description: `Legacy task ${index + 1}.`, acceptanceCriteria: ['preserved'], dependencies: [], testCommand: 'true', agentId: legacyAgent.id, status, createdAt: now, updatedAt: now })
+  }
+  await store.approvals.put('legacy-31-approval', { id: 'legacy-31-approval', projectId: legacyProject.id, revision: 7, planHash: 'a'.repeat(64), actor: 'legacy-owner', approvedAt: now })
+
+  await service.initialize()
+  const firstTaskIssueIds = taskIds.map((id) => store.tasks.get(id).issueId)
+  const firstIssueIds = [...store.issues.records.values()].filter((issue) => issue.projectId === legacyProject.id).map((issue) => issue.id).sort()
+  const firstDecisionIds = [...store.decisions.records.values()].filter((decision) => decision.projectId === legacyProject.id).map((decision) => decision.id)
+  const firstMigratedProject = structuredClone(store.projects.get(legacyProject.id))
+  await service.initialize()
+
+  const migratedTasks = taskIds.map((id) => store.tasks.get(id))
+  const migratedIssues = [...store.issues.records.values()].filter((issue) => issue.projectId === legacyProject.id)
+  assert.equal(migratedTasks.length, 31)
+  assert.equal(migratedIssues.filter((issue) => issue.parentIssueId === undefined).length, 1)
+  assert.equal(migratedIssues.filter((issue) => issue.parentIssueId !== undefined).length, 31)
+  assert.equal(new Set(migratedTasks.map((task) => task.issueId)).size, 31)
+  assert.deepEqual(migratedTasks.map((task) => task.issueId), firstTaskIssueIds)
+  assert.deepEqual(migratedIssues.map((issue) => issue.id).sort(), firstIssueIds)
+  for (const task of migratedTasks) {
+    const issue = store.issues.get(task.issueId)
+    assert.equal(issue.status, task.status === 'completed' ? 'done' : task.status === 'failed' ? 'blocked' : 'todo')
+    assert.equal(task.assignmentPolicy, undefined)
+  }
+  assert.equal([...store.projectAgentMemberships.records.values()].filter((membership) => membership.projectId === legacyProject.id && membership.agentId === legacyAgent.id && membership.status === 'active').length, 1)
+  assert.equal([...store.projectAgentMembershipSources.records.values()].filter((source) => source.projectId === legacyProject.id && source.agentId === legacyAgent.id && source.status === 'active').length, 1)
+  assert.deepEqual([...store.decisions.records.values()].filter((decision) => decision.projectId === legacyProject.id).map((decision) => decision.id), firstDecisionIds)
+  assert.deepEqual(firstDecisionIds, ['legacy-approval:legacy-31-approval'])
+  assert.deepEqual(store.projects.get(legacyProject.id), firstMigratedProject)
 })
 
 test('legacy persisted records parse without Multica metadata', () => {
@@ -625,6 +665,212 @@ test('project memberships are idempotent, revision neutral, soft-deleted, and pr
   await assert.rejects(() => service.createTask(project.id, { title: 'Rejected', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' }), (error) => error.code === 'project-agent-not-member')
 })
 
+test('project team plan snapshots active members, roles, capabilities, and preflight blockers', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Team plan', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const engineer = await service.createAgent({ name: 'Engineer', role: 'Software Engineer', persona: 'Implement.', capabilities: ['coding'] })
+  const reviewer = await service.createAgent({ name: 'Reviewer', role: 'Code Reviewer', persona: 'Review.', capabilities: ['review'] })
+  await service.addProjectAgents(project.id, { members: [{ agentId: engineer.id, projectRole: 'Engineer', autoAssignable: true }, { agentId: reviewer.id, projectRole: 'Reviewer', autoAssignable: true }] })
+  const code = await service.createTask(project.id, { title: 'Code', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: engineer.id, assignmentPolicy: { mode: 'single_agent', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: true, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+  await service.createTask(project.id, { title: 'Verify', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: reviewer.id, testCommand: 'true' })
+  const plan = service.getProjectTeamPlan(project.id)
+  assert.equal(plan.team.members.length, 2)
+  assert.equal(plan.team.reviewerAgentId, reviewer.id)
+  assert.equal(plan.tasks[0].id, code.id)
+  assert.deepEqual(plan.preflight.errors, [])
+  assert.equal(plan.preflight.ready, true)
+  assert.equal(plan.preflight.teamDigest.length, 64)
+  assert.equal(plan.team.members[0].skillsDigest.length, 64)
+  assert.equal(plan.team.members[0].personaDigest.length, 64)
+  assert.ok(plan.preflight.capacityObservation.agents.length >= 2)
+})
+
+test('team candidates apply membership, capability, runtime, and capacity rules with stable ordering', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Candidate project', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const capable = await service.createAgent({ name: 'Capable', role: 'Engineer', persona: 'Implement.', capabilities: ['coding'], maxConcurrency: 1 })
+  const incapable = await service.createAgent({ name: 'Incapable', role: 'Engineer', persona: 'Implement.', capabilities: [] })
+  await service.addProjectAgents(project.id, { members: [{ agentId: capable.id, projectRole: 'Engineer', autoAssignable: true }, { agentId: incapable.id, projectRole: 'Engineer', autoAssignable: true }] })
+  const task = await service.createTask(project.id, { title: 'Candidate task', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], assignmentPolicy: { mode: 'single_agent', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: ['src'], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+  const candidates = service.getProjectAgentCandidates(project.id, task.id)
+  assert.equal(candidates.candidates.find((candidate) => candidate.agentId === capable.id).eligible, true)
+  assert.ok(candidates.candidates.find((candidate) => candidate.agentId === incapable.id).reasons.includes('missing_capability:coding'))
+  assert.deepEqual(candidates.candidates.map((candidate) => candidate.agentId), [capable.id, incapable.id])
+  const before = store.projects.get(project.id)
+  const reassigned = await service.reassignProjectTask(project.id, { expectedRevision: before.revision, taskId: task.id, agentId: capable.id, actor: 'tester' })
+  assert.equal(reassigned.task.agentId, capable.id)
+  assert.equal(reassigned.project.revision, before.revision + 1)
+  assert.equal(reassigned.project.approvedRevision, undefined)
+  assert.equal(reassigned.project.assignmentDigest.length, 64)
+  const impact = service.getProjectTeamImpact(project.id)
+  assert.deepEqual(impact.tasks.map((item) => item.id), [task.id])
+  assert.equal(impact.tasks[0].title, task.title)
+  assert.equal(impact.tasks[0].ownerAgentId, capable.id)
+  assert.equal(impact.hasActiveExecution, true)
+  assert.equal(impact.activeIssues.length, 1)
+})
+
+test('team plan projects requirement domain, role, task, acceptance, and evidence coverage directly', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Coverage project', cwd: '/tmp', prd: 'Protect checkout.', technicalDesign: 'Add tests.' })
+  const agent = await service.createAgent({ name: 'Checkout engineer', role: 'Engineer', persona: 'Implement.', capabilities: ['checkout'] })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Checkout Specialist', autoAssignable: true })
+  const task = await service.createTask(project.id, { title: 'Protect checkout', kind: 'code', description: 'Implement.', acceptanceCriteria: ['protected'], agentId: agent.id, assignmentPolicy: { mode: 'single_agent', riskLevel: 'low', requiredRoles: ['specialist'], requiredCapabilities: ['checkout'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: ['src/checkout'], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+  await service.createTask(project.id, { title: 'Verify checkout', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], agentId: agent.id, testCommand: 'true' })
+  await store.requirementItems.put('req-checkout', { id: 'req-checkout', projectId: project.id, bundleId: 'bundle', key: 'checkout', kind: 'fact', statement: 'Checkout must remain protected.', sourceRefs: ['prd'], status: 'active', createdAt: now, updatedAt: now })
+  await store.requirementItems.put('req-uncovered', { id: 'req-uncovered', projectId: project.id, bundleId: 'bundle', key: 'audit', kind: 'fact', statement: 'Audit export is required.', sourceRefs: ['prd'], status: 'active', createdAt: now, updatedAt: now })
+  await store.tasks.put(task.id, { ...store.tasks.get(task.id), sourceRequirementIds: ['req-checkout'], acceptanceIds: ['acc-checkout'] })
+  await store.acceptanceCriteria.put('acc-checkout', { id: 'acc-checkout', projectId: project.id, bundleId: 'bundle', requirementItemId: 'req-checkout', key: 'checkout-protected', statement: 'Checkout is protected.', sourceRefs: ['prd'], taskIds: [task.id], evidenceIds: ['evidence-checkout'], status: 'verified', createdAt: now, updatedAt: now })
+
+  const matrix = service.getProjectTeamPlan(project.id).preflight.coverageMatrix
+  assert.deepEqual(matrix.find((row) => row.requirementId === 'req-checkout'), { requirementId: 'req-checkout', requirementKey: 'checkout', statement: 'Checkout must remain protected.', roleNames: ['specialist'], taskIds: [task.id], acceptanceIds: ['acc-checkout'], evidenceIds: ['evidence-checkout'], status: 'covered' })
+  assert.equal(matrix.find((row) => row.requirementId === 'req-uncovered').status, 'uncovered')
+})
+
+test('team mutations share idempotent Command records and return impact plus validation', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Command Lead', role: 'Lead', persona: 'Lead.', capabilities: ['coordination'] })
+  const member = await service.createAgent({ name: 'Command Member', role: 'Engineer', persona: 'Implement.', capabilities: ['coding'] })
+  const squad = await service.createSquad({ name: 'Command Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Command project', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+
+  const bound = await service.executeCommand({ idempotencyKey: 'bind-command-squad', type: 'bind_project_squad', projectId: project.id, squadId: squad.id, actorType: 'human', actorId: 'operator', payload: { expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt } })
+  assert.equal(bound.status, 'completed')
+  assert.equal(bound.result.squadId, squad.id)
+  assert.ok(bound.result.impact)
+  assert.ok(bound.result.validation)
+  const binding = store.projectSquadBindings.get(`${project.id}:${squad.id}`)
+
+  const synced = await service.executeCommand({ type: 'sync_project_squad', projectId: project.id, squadId: squad.id, actorType: 'human', actorId: 'operator', payload: { expectedBindingUpdatedAt: binding.updatedAt, expectedSquadUpdatedAt: squad.updatedAt } })
+  assert.equal(synced.status, 'completed')
+  const task = await service.createTask(project.id, { title: 'Command task', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: leader.id, testCommand: 'true' })
+  const beforeReassign = store.projects.get(project.id)
+  const reassigned = await service.executeCommand({ type: 'reassign_task', projectId: project.id, actorType: 'human', actorId: 'operator', payload: { expectedRevision: beforeReassign.revision, taskId: task.id, agentId: member.id } })
+  assert.equal(reassigned.status, 'completed')
+  assert.equal(reassigned.result.task.agentId, member.id)
+  assert.ok(reassigned.result.impact)
+
+  const validated = await service.executeCommand({ type: 'validate_team', projectId: project.id, actorType: 'human', actorId: 'operator', payload: {} })
+  assert.equal(validated.status, 'completed')
+  assert.equal(typeof validated.result.ready, 'boolean')
+  const blocker = await service.executeCommand({ type: 'resolve_team_blocker', projectId: project.id, actorType: 'human', actorId: 'operator', payload: { taskId: task.id, reason: 'Confirm execution access.', missingPermissions: ['execute'] } })
+  assert.equal(blocker.status, 'completed')
+  assert.equal(blocker.result.kind, 'permission')
+  assert.ok(service.snapshot().inbox.some((item) => item.decisionId === blocker.result.id))
+  assert.deepEqual([...store.commands.records.values()].map((command) => command.type), ['bind_project_squad', 'sync_project_squad', 'reassign_task', 'validate_team', 'resolve_team_blocker'])
+  assert.deepEqual(await service.executeCommand({ idempotencyKey: 'bind-command-squad', type: 'bind_project_squad', projectId: project.id, squadId: squad.id, actorType: 'human', actorId: 'operator', payload: { expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt } }), bound)
+})
+
+test('squad delegation remains eligible when at least one allowed Squad is available', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Lead', role: 'Lead', persona: 'Lead delivery.' })
+  const member = await service.createAgent({ name: 'Member', role: 'Engineer', persona: 'Implement.' })
+  const project = await service.createProject({ name: 'Squad candidates', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const available = await service.createSquad({ name: 'Available', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
+  const unavailable = await service.createSquad({ name: 'Unavailable', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
+  await service.bindProjectSquad(project.id, { squadId: available.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: available.updatedAt })
+  const task = await service.createTask(project.id, { title: 'Delegated implementation', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: leader.id, assignmentPolicy: { mode: 'squad_delegation', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [available.id, unavailable.id, 'missing-squad'], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+
+  const projection = service.getProjectAgentCandidates(project.id, task.id)
+  const candidate = projection.candidates.find((item) => item.agentId === leader.id)
+  assert.equal(candidate.eligible, true)
+  assert.equal(candidate.reasons.some((reason) => reason.startsWith('squad_unavailable')), false)
+  assert.deepEqual(new Set(projection.squadCandidates.map((item) => item.squadId)), new Set([available.id, unavailable.id, 'missing-squad']))
+  assert.equal(projection.squadCandidates.find((item) => item.squadId === available.id).eligible, true)
+  assert.deepEqual(projection.squadCandidates.find((item) => item.squadId === unavailable.id).reasons, ['not_bound'])
+  assert.deepEqual(projection.squadCandidates.find((item) => item.squadId === 'missing-squad').reasons, ['squad_not_found'])
+})
+
+test('parallel groups enforce their shared maxParallel during TaskRun claim', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const firstAgent = await service.createAgent({ name: 'First', role: 'Engineer', persona: 'Implement.', maxConcurrency: 2 })
+  const secondAgent = await service.createAgent({ name: 'Second', role: 'Engineer', persona: 'Implement.', maxConcurrency: 2 })
+  const project = await service.createProject({ name: 'Parallel limit', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  await service.addProjectAgents(project.id, { members: [{ agentId: firstAgent.id, projectRole: 'Engineer', autoAssignable: true }, { agentId: secondAgent.id, projectRole: 'Engineer', autoAssignable: true }] })
+  const policy = { mode: 'single_agent', riskLevel: 'low', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, parallelGroup: 'shared-files', maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }
+  const first = await service.createTask(project.id, { title: 'First task', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: firstAgent.id, assignmentPolicy: policy, testCommand: 'true' })
+  const second = await service.createTask(project.id, { title: 'Second task', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], agentId: secondAgent.id, assignmentPolicy: policy, testCommand: 'true' })
+  const runId = 'parallel-project-run'
+  await store.projects.put(project.id, { ...store.projects.get(project.id), status: 'running', activeRunId: runId })
+  await store.taskRuns.put('active-group-run', { id: 'active-group-run', projectId: project.id, runId, taskId: first.id, agentId: firstAgent.id, status: 'running', trigger: 'approval', attempt: 1, cwd: '/tmp', createdAt: now })
+  await store.taskRuns.put('queued-group-run', { id: 'queued-group-run', projectId: project.id, runId, taskId: second.id, agentId: secondAgent.id, status: 'queued', trigger: 'approval', attempt: 1, cwd: '/tmp', createdAt: now })
+
+  assert.equal(await service.serializedMutation(() => service.claimTaskRun('queued-group-run', 'project')), undefined)
+  assert.equal(store.taskRuns.get('queued-group-run').status, 'queued')
+})
+
+test('high-risk tasks require an independent reviewer even without an explicit task flag', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'High risk plan', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const engineer = await service.createAgent({ name: 'Engineer', role: 'Software Engineer', persona: 'Implement.', capabilities: ['coding'] })
+  await service.addProjectAgent(project.id, { agentId: engineer.id, projectRole: 'Engineer', autoAssignable: true })
+  await service.createTask(project.id, { title: 'Critical write', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: engineer.id, assignmentPolicy: { mode: 'single_agent', riskLevel: 'critical', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+  await service.createTask(project.id, { title: 'Verify', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], agentId: engineer.id, testCommand: 'true' })
+  const blocked = service.getProjectTeamPlan(project.id)
+  assert.equal(blocked.preflight.ready, false)
+  assert.ok(blocked.preflight.errors.some((message) => message.includes('critical risk') && message.includes('independent reviewer')))
+  const reviewer = await service.createAgent({ name: 'Reviewer', role: 'Code Reviewer', persona: 'Review independently.', capabilities: ['review'] })
+  await service.addProjectAgent(project.id, { agentId: reviewer.id, projectRole: 'Reviewer', autoAssignable: true })
+  const ready = service.getProjectTeamPlan(project.id)
+  assert.equal(ready.team.reviewerAgentId, reviewer.id)
+  assert.equal(ready.preflight.errors.some((message) => message.includes('independent reviewer')), false)
+})
+
+test('team collaboration metrics derive only observable assignment, delegation, evidence, and blocking facts', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Metrics', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const agent = await service.createAgent({ name: 'Engineer', role: 'Engineer', persona: 'Implement.', capabilities: [] })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true })
+  const task = await service.createTask(project.id, { title: 'Capability gap', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: agent.id, assignmentPolicy: { mode: 'single_agent', riskLevel: 'medium', requiredRoles: [], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+  await store.tasks.put(task.id, { ...store.tasks.get(task.id), status: 'blocked', assignmentSource: 'planner_recommendation' })
+  await store.activity.put('reassigned', { id: 'reassigned', projectId: project.id, actorType: 'human', type: 'project.task_reassigned', message: 'Changed recommendation.', metadata: { taskId: task.id }, createdAt: now })
+  await store.taskRuns.put('metric-run', { id: 'metric-run', projectId: project.id, taskId: task.id, agentId: agent.id, status: 'failed', trigger: 'retry', attempt: 2, squadId: 'squad', waitDurationsMs: { runtime: 1200, capacity: 800, parallelGroup: 300, conflict: 200, workspace: 100 }, waitCounts: { runtime: 1, capacity: 1, parallelGroup: 1, conflict: 1, workspace: 1 }, durationMs: 4000, cwd: '/tmp', createdAt: '2026-08-17T00:00:00.000Z', startedAt: '2026-08-17T00:00:01.000Z', completedAt: '2026-08-17T00:00:05.000Z' })
+  const metrics = service.getTeamCollaborationMetrics(project.id)
+  assert.equal(metrics.scope, 'project')
+  assert.equal(metrics.taskCount, 1)
+  assert.equal(metrics.singleAgentRatio, 1)
+  assert.equal(metrics.capabilityGapCount, 1)
+  assert.equal(metrics.recommendedAssignmentCount, 1)
+  assert.equal(metrics.recommendationManualChangeRate, 1)
+  assert.equal(metrics.runtimeWaitDurationMs, 1200)
+  assert.equal(metrics.capacityWaitDurationMs, 800)
+  assert.equal(metrics.resourceConflictWaitDurationMs, 600)
+  assert.equal(metrics.conflictCount, 3)
+  assert.equal(metrics.collaborationReworkCount, 1)
+  assert.equal(metrics.agentUtilization[0].busyDurationMs, 4000)
+  assert.equal(metrics.agentUtilization[0].blockedDurationMs > 0, true)
+  assert.equal(metrics.blockedTaskCount, 1)
+  assert.equal(metrics.delegationCompletionRate, undefined)
+  assert.equal(metrics.childEvidenceCompletenessRate, undefined)
+})
+
+test('team plan projects critical path and team blockers into Decisions without auto-assignment', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Team blocker', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const agent = await service.createAgent({ name: 'Engineer', role: 'Engineer', persona: 'Implement.', capabilities: ['coding'] })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true })
+  const first = await service.createTask(project.id, { title: 'First', kind: 'code', description: 'Implement', acceptanceCriteria: ['done'], agentId: agent.id, testCommand: 'true' })
+  const second = await service.createTask(project.id, { title: 'Second', kind: 'test', description: 'Verify', acceptanceCriteria: ['passes'], dependencies: [first.id], testCommand: 'true' })
+  const plan = service.getProjectTeamPlan(project.id)
+  assert.deepEqual(plan.preflight.criticalPath.taskIds, [first.id, second.id])
+  assert.equal(plan.preflight.criticalPath.length, 2)
+  const decision = await service.resolveTeamBlocker(project.id, { taskId: second.id, reason: '需要确认测试环境权限。', facts: ['Runtime 未配置'], missingPermissions: ['test:execute'], actor: 'operator' })
+  assert.equal(decision.kind, 'permission')
+  assert.equal(decision.metadata.teamBlocker, true)
+  assert.equal(decision.metadata.taskId, second.id)
+  assert.equal(store.tasks.get(second.id).agentId, undefined)
+  assert.ok(service.snapshot().inbox.some((item) => item.decisionId === decision.id))
+})
+
 test('feature usage stays local, aggregates daily, and prunes records older than 30 days', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
@@ -766,6 +1012,10 @@ test('agent changes invalidate every referencing project plan', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
   const project = await approvedProject(service, store, ['true', 'true'])
+  const unrelated = await service.createAgent({ name: 'Unrelated', role: 'Writer', persona: 'Write docs.' })
+  await service.updateAgent(unrelated.id, { ...unrelated, persona: 'Write unrelated docs carefully.' })
+  assert.equal(store.projects.get(project.id).revision, project.revision)
+  assert.equal(store.projects.get(project.id).approvedRevision, project.revision)
   const agent = store.agents.get(store.tasks.get('code').agentId)
   await service.updateAgent(agent.id, { ...agent, persona: 'Updated execution contract.' })
   const changed = store.projects.get(project.id)
@@ -773,6 +1023,93 @@ test('agent changes invalidate every referencing project plan', async () => {
   assert.equal(changed.revision, project.revision + 1)
   assert.equal(changed.approvedRevision, undefined)
   assert.deepEqual(store.projectTasks(changed).map((task) => task.status), ['draft', 'draft'])
+})
+
+test('approved team snapshots invalidate when an unassigned project member is added or removed', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const firstApproval = await approvedProject(service, store, ['true', 'true'])
+  const observer = await service.createAgent({ name: 'Observer', role: 'Reviewer', persona: 'Review.' })
+  await service.addProjectAgent(firstApproval.id, { agentId: observer.id, projectRole: 'Reviewer', autoAssignable: true, expectedProjectRevision: firstApproval.revision })
+  const afterAdd = store.projects.get(firstApproval.id)
+  assert.equal(afterAdd.status, 'awaiting_approval')
+  assert.equal(afterAdd.revision, firstApproval.revision + 1)
+  assert.equal(afterAdd.approvedRevision, undefined)
+
+  const refreshedTeam = service.getProjectTeamPlan(firstApproval.id).team
+  await store.projects.put(firstApproval.id, { ...afterAdd, teamDigest: refreshedTeam.teamDigest, teamComposition: refreshedTeam })
+  const secondApproval = await service.approveProject(firstApproval.id, 'tester')
+  const membership = service.listProjectAgents(firstApproval.id).find((item) => item.agentId === observer.id)
+  await service.removeProjectAgent(firstApproval.id, observer.id, { expectedMemberUpdatedAt: membership.updatedAt, assignedTaskPolicy: 'reject' })
+  const afterRemove = store.projects.get(firstApproval.id)
+  assert.equal(afterRemove.status, 'awaiting_approval')
+  assert.equal(afterRemove.revision, secondApproval.revision + 1)
+  assert.equal(afterRemove.approvedRevision, undefined)
+})
+
+test('Runtime unavailability invalidates only approved Projects that use that Runtime', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const runtime = await service.createRuntime({ name: 'Approval Runtime', machineId: 'approval-runtime' })
+  const affected = await approvedProject(service, store, ['true', 'true'], { runtimeId: runtime.id })
+
+  const otherAgent = await service.createAgent({ name: 'Other Engineer', role: 'Software Engineer', persona: 'Implement elsewhere.', toolPolicy: 'full' })
+  const otherProject = await service.createProject({ name: 'Other approved project', cwd: '/tmp', prd: 'Other.', technicalDesign: 'Other.' })
+  await service.addProjectAgent(otherProject.id, { agentId: otherAgent.id, projectRole: 'Software Engineer', autoAssignable: true })
+  const otherCode = await service.createTask(otherProject.id, { title: 'Other code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: otherAgent.id, testCommand: 'true' })
+  await service.createTask(otherProject.id, { title: 'Other test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [otherCode.id], agentId: otherAgent.id, testCommand: 'true' })
+  const otherApproved = await service.approveProject(otherProject.id, 'tester')
+
+  await service.heartbeatRuntime(runtime.id, 'offline')
+
+  const invalidated = store.projects.get(affected.id)
+  assert.equal(invalidated.status, 'awaiting_approval')
+  assert.equal(invalidated.deliveryStage, 'awaiting_approval')
+  assert.equal(invalidated.revision, affected.revision + 1)
+  assert.equal(invalidated.approvedRevision, undefined)
+  assert.equal(store.projects.get(otherProject.id).revision, otherApproved.revision)
+  assert.equal(store.projects.get(otherProject.id).status, 'approved')
+
+  await service.heartbeatRuntime(runtime.id, 'offline')
+  assert.equal(store.projects.get(affected.id).revision, invalidated.revision)
+})
+
+test('Squad bind, default, and unbind changes invalidate approved teams but initial binding is revision-neutral', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Snapshot Leader', role: 'Lead', persona: 'Lead.', toolPolicy: 'full' })
+  const firstMember = await service.createAgent({ name: 'First Member', role: 'Engineer', persona: 'Build.', toolPolicy: 'full' })
+  const secondMember = await service.createAgent({ name: 'Second Member', role: 'Verifier', persona: 'Verify.', toolPolicy: 'full' })
+  const firstSquad = await service.createSquad({ name: 'First Snapshot Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, firstMember.id], instructions: 'Build.', escalationPolicy: 'Escalate.' })
+  const secondSquad = await service.createSquad({ name: 'Second Snapshot Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, secondMember.id], instructions: 'Verify.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Squad snapshot project', cwd: '/tmp', prd: 'Freeze team.', technicalDesign: 'Invalidate changed composition.' })
+  const firstBinding = await service.bindProjectSquad(project.id, { squadId: firstSquad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: firstSquad.updatedAt })
+  assert.equal(store.projects.get(project.id).revision, project.revision)
+
+  const code = await service.createTask(project.id, { title: 'Squad code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: leader.id, testCommand: 'true' })
+  await service.createTask(project.id, { title: 'Squad test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: leader.id, testCommand: 'true' })
+  let approved = await service.approveProject(project.id, 'tester')
+  const secondBinding = await service.bindProjectSquad(project.id, { squadId: secondSquad.id, expectedProjectRevision: approved.revision, expectedSquadUpdatedAt: secondSquad.updatedAt })
+  assert.equal(store.projects.get(project.id).revision, approved.revision + 1)
+  assert.equal(store.projects.get(project.id).status, 'awaiting_approval')
+
+  const approveCurrentTeam = async () => {
+    const current = store.projects.get(project.id)
+    const team = service.getProjectTeamPlan(project.id).team
+    await store.projects.put(project.id, { ...current, teamComposition: team, teamDigest: team.teamDigest })
+    return service.approveProject(project.id, 'tester')
+  }
+
+  approved = await approveCurrentTeam()
+  const defaulted = await service.setDefaultProjectSquadBinding(project.id, secondSquad.id, { expectedBindingUpdatedAt: secondBinding.updatedAt })
+  assert.equal(store.projects.get(project.id).revision, approved.revision + 1)
+  assert.equal(service.getProjectTeamPlan(project.id).team.squads.find((squad) => squad.squadId === secondSquad.id).isDefault, true)
+
+  approved = await approveCurrentTeam()
+  await service.unbindProjectSquad(project.id, secondSquad.id, { expectedBindingUpdatedAt: defaulted.updatedAt, replacementDefaultSquadId: firstSquad.id })
+  assert.equal(store.projects.get(project.id).revision, approved.revision + 1)
+  assert.equal(store.projects.get(project.id).status, 'awaiting_approval')
+  assert.equal(service.listProjectSquadBindings(project.id).find((binding) => binding.id === firstBinding.id).isDefault, true)
 })
 
 test('serialized mutations cannot overlap', async () => {
@@ -797,12 +1134,155 @@ test('execution completes only after independent commands pass', async () => {
   const store = memoryStore()
   const service = new OrchestratorService(agentContext(), store)
   const project = await approvedProject(service, store, ['printf code-verified', 'printf test-verified'])
+  const implementerId = store.tasks.get('code').agentId
+  await store.activity.put('historical-reassignment', { id: 'historical-reassignment', projectId: project.id, actorType: 'human', type: 'project.task_reassigned', message: 'Historical explicit reassignment.', metadata: { taskId: 'code', previousAgentId: 'previous-owner', agentId: implementerId }, createdAt: now })
+  await store.taskRuns.put('historical-retry', { id: 'historical-retry', projectId: project.id, taskId: 'code', agentId: implementerId, status: 'failed', trigger: 'retry', attempt: 2, retryOf: 'historical-first-attempt', cwd: '/tmp', error: 'Historical focused failure.', createdAt: now, completedAt: now })
+  await store.delegations.put('historical-delegation', { id: 'historical-delegation', squadId: 'historical-squad', projectId: project.id, parentIssueId: 'historical-parent', childIssueId: 'historical-child', leaderAgentId: implementerId, memberAgentId: implementerId, taskRunId: 'historical-retry', status: 'escalated', instruction: 'Historical delegated repair.', childTaskIds: ['code'], evidenceIds: [], error: 'Escalated for review.', createdAt: now, updatedAt: now, completedAt: now })
+  await store.decisions.put('historical-escalation', { id: 'historical-escalation', projectId: project.id, kind: 'review', title: 'Historical escalation', prompt: 'Review the delegated failure.', status: 'approved', requestedByType: 'system', metadata: { delegationId: 'historical-delegation' }, createdAt: now, resolvedBy: 'delivery-owner', resolution: 'Proceed with a focused retry.', resolvedAt: now })
   const run = await service.startExecution(project.id)
   const completedRun = await waitForRun(store, run.id)
   assert.equal(completedRun.status, 'completed')
   assert.equal(store.projects.get(project.id).status, 'completed')
   assert.deepEqual(store.projectTasks(store.projects.get(project.id)).map((task) => task.testExitCode), [0, 0])
   assert.match(store.tasks.get('test').testOutput, /test-verified/)
+  assert.equal([...store.verificationEvidence.records.values()].filter((evidence) => evidence.projectId === project.id).length, 2)
+  assert.equal([...store.verificationEvidence.records.values()].every((evidence) => evidence.status === 'passed'), true)
+  assert.equal([...store.acceptanceCriteria.records.values()].filter((criterion) => criterion.projectId === project.id).every((criterion) => criterion.status === 'verified'), true)
+  assert.equal([...store.projectReviews.records.values()].find((review) => review.projectId === project.id)?.status, 'pending')
+  const readyDelivery = [...store.deliveryRecords.records.values()].find((record) => record.projectId === project.id)
+  assert.equal(readyDelivery?.status, 'ready')
+  assert.deepEqual(readyDelivery.responsibilityChain.tasks.map((task) => task.taskId), ['code', 'test'])
+  assert.equal(readyDelivery.responsibilityChain.tasks.every((task) => task.taskRunIds.length === 1), true)
+  assert.equal(readyDelivery.responsibilityChain.verifications.length, 2)
+  assert.deepEqual(readyDelivery.responsibilityChain.reviewIds, [`${project.id}:review:r${project.revision}`])
+  assert.ok(readyDelivery.responsibilityChain.retryTaskRunIds.includes('historical-retry'))
+  assert.ok(readyDelivery.responsibilityChain.reassignedTaskIds.includes('code'))
+  assert.ok(readyDelivery.responsibilityChain.escalationDecisionIds.includes('historical-escalation'))
+  assert.equal(readyDelivery.responsibilityChain.delegations.find((delegation) => delegation.delegationId === 'historical-delegation').status, 'escalated')
+  assert.ok(readyDelivery.responsibilityChain.delegations.find((delegation) => delegation.delegationId === 'historical-delegation').retryTaskRunIds.includes('historical-retry'))
+  assert.ok(readyDelivery.responsibilityChain.delegations.find((delegation) => delegation.delegationId === 'historical-delegation').escalationDecisionIds.includes('historical-escalation'))
+  await assert.rejects(() => service.putDeliveryRecord({ ...readyDelivery, changedFiles: ['tampered.txt'] }), (error) => error.code === 'delivery-record-immutable')
+  assert.equal([...store.activity.records.values()].filter((activity) => activity.projectId === project.id && activity.type === 'task_run.started').length, 2)
+  assert.equal(store.projects.get(project.id).deliveryStage, 'review')
+  await assert.rejects(() => service.confirmProjectDelivery(project.id, { actor: '交付负责人' }), (error) => error.code === 'project-review-pending')
+  await service.resolveProjectReview(project.id, { decision: 'approve', actor: '交付负责人', note: '验收证据完整。' })
+  assert.equal(store.projects.get(project.id).deliveryStage, 'delivery_ready')
+  const delivered = await service.confirmProjectDelivery(project.id, { actor: '交付负责人', note: '验收通过。' })
+  assert.equal(delivered.status, 'delivered')
+  assert.equal(store.projects.get(project.id).deliveryStage, 'delivered')
+  assert.equal([...store.projectReviews.records.values()].find((review) => review.projectId === project.id)?.status, 'approved')
+  const closed = await service.closeProjectDelivery(project.id, { actor: '交付负责人', note: '已归档。' })
+  assert.equal(closed.status, 'closed')
+  assert.equal(store.projects.get(project.id).deliveryStage, 'closed')
+})
+
+test('Project Review enforces independent human waiver details and persists the audit record', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService(agentContext(), store)
+  const project = await approvedProject(service, store, ['true', 'true'])
+  const implementerId = store.tasks.get('code').agentId
+  const run = await service.startExecution(project.id)
+  assert.equal((await waitForRun(store, run.id)).status, 'completed')
+
+  await assert.rejects(() => service.resolveProjectReview(project.id, { decision: 'approve', actor: implementerId, note: 'Self approval.' }), (error) => error.code === 'reviewer-not-independent')
+  await assert.rejects(() => service.resolveProjectReview(project.id, { decision: 'approve', actor: implementerId, note: 'Wrong waiver decision.', reviewerIndependenceWaiver: { reason: 'No reviewer available.', owner: 'delivery-owner', risk: 'Self-review can miss regressions.', followUpAction: 'Schedule retrospective review.' } }), (error) => error.code === 'reviewer-waiver-decision-required')
+  const waiver = { reason: 'No independent reviewer is available in this bounded local delivery.', owner: 'delivery-owner', risk: 'The implementer may miss defects in their own change.', followUpAction: 'Assign an independent retrospective review before reuse.' }
+  const resolved = await service.resolveProjectReview(project.id, { decision: 'waive', actor: implementerId, note: 'Risk accepted by the human owner.', reviewerIndependenceWaiver: waiver })
+  assert.equal(resolved.status, 'waived')
+  assert.equal(resolved.independencePassed, false)
+  assert.deepEqual(resolved.reviewerIndependenceWaiver, waiver)
+  assert.deepEqual(store.projectReviews.get(resolved.id).reviewerIndependenceWaiver, waiver)
+  const delivery = [...store.deliveryRecords.records.values()].find((record) => record.projectId === project.id)
+  assert.ok(delivery.responsibilityChain.reviewIds.includes(resolved.id))
+  assert.deepEqual(store.projectReviews.get(delivery.responsibilityChain.reviewIds[0]).reviewerIndependenceWaiver, waiver)
+  assert.equal(store.projects.get(project.id).deliveryStage, 'delivery_ready')
+})
+
+test('Project Review rejection closes the current round and creates a revision Decision in Inbox', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService(agentContext(), store)
+  const project = await approvedProject(service, store, ['true', 'true'])
+  const run = await service.startExecution(project.id)
+  assert.equal((await waitForRun(store, run.id)).status, 'completed')
+  const rejected = await service.resolveProjectReview(project.id, { decision: 'request_changes', actor: 'delivery-owner', note: 'Add the missing boundary regression before another review.' })
+
+  assert.equal(rejected.status, 'rejected')
+  assert.equal(rejected.decision, 'request_changes')
+  assert.equal(store.projects.get(project.id).deliveryStage, 'review')
+  const decision = [...store.decisions.records.values()].find((item) => item.metadata.projectReviewId === rejected.id)
+  assert.equal(decision.status, 'pending')
+  assert.equal(decision.metadata.requiresRevision, true)
+  assert.ok(service.snapshot().inbox.some((item) => item.decisionId === decision.id))
+  await assert.rejects(() => service.resolveProjectReview(project.id, { decision: 'approve', actor: 'delivery-owner', note: 'Try same revision.' }), (error) => error.code === 'project-review-already-resolved')
+  assert.equal([...store.projectReviews.records.values()].filter((review) => review.revision === project.revision).length, 1)
+})
+
+test('Project Review rejection restores Review and Project when Decision persistence fails', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService(agentContext(), store)
+  const project = await approvedProject(service, store, ['true', 'true'])
+  const run = await service.startExecution(project.id)
+  assert.equal((await waitForRun(store, run.id)).status, 'completed')
+  const reviewBefore = structuredClone([...store.projectReviews.records.values()].find((review) => review.projectId === project.id))
+  const projectBefore = structuredClone(store.projects.get(project.id))
+  const originalPut = store.decisions.put.bind(store.decisions)
+  store.decisions.put = async () => { throw new Error('injected Decision write failure') }
+
+  await assert.rejects(
+    () => service.resolveProjectReview(project.id, { decision: 'request_changes', actor: 'delivery-owner', note: 'Request a revision.' }),
+    /injected Decision write failure/,
+  )
+  store.decisions.put = originalPut
+
+  assert.deepEqual(store.projectReviews.get(reviewBefore.id), reviewBefore)
+  assert.deepEqual(store.projects.get(project.id), projectBefore)
+  assert.equal([...store.decisions.records.values()].some((decision) => decision.metadata?.projectReviewId === reviewBefore.id), false)
+})
+
+test('Project Review waiver restores all Acceptance records after a partial waiver write', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService(agentContext(), store)
+  const project = await approvedProject(service, store, ['true', 'true'])
+  const run = await service.startExecution(project.id)
+  assert.equal((await waitForRun(store, run.id)).status, 'completed')
+  const criteria = ['code', 'test'].map((taskId, index) => ({
+    id: `${project.id}:acceptance:waiver-${index + 1}`,
+    projectId: project.id,
+    bundleId: `${project.id}:bundle:test`,
+    key: `waiver-${index + 1}`,
+    statement: `Acceptance ${index + 1} requires a bounded waiver.`,
+    sourceRefs: [],
+    taskIds: [taskId],
+    evidenceIds: [],
+    status: 'open',
+    createdAt: now,
+    updatedAt: now,
+  }))
+  for (const criterion of criteria) await store.acceptanceCriteria.put(criterion.id, criterion)
+  const acceptanceBefore = new Map(criteria.map((criterion) => [criterion.id, structuredClone(store.acceptanceCriteria.get(criterion.id))]))
+  const reviewBefore = structuredClone([...store.projectReviews.records.values()].find((review) => review.projectId === project.id))
+  const projectBefore = structuredClone(store.projects.get(project.id))
+  const originalPut = store.acceptanceCriteria.put.bind(store.acceptanceCriteria)
+  let waivedWrites = 0
+  store.acceptanceCriteria.put = async (key, value) => {
+    if (value.status === 'waived' && ++waivedWrites === 2) throw new Error('injected Acceptance write failure')
+    await originalPut(key, value)
+  }
+
+  await assert.rejects(
+    () => service.resolveProjectReview(project.id, {
+      decision: 'waive',
+      actor: 'delivery-owner',
+      note: 'Waive both pending criteria.',
+      waivers: criteria.map((criterion) => ({ acceptanceId: criterion.id, reason: 'Bounded exception.', owner: 'delivery-owner' })),
+    }),
+    /injected Acceptance write failure/,
+  )
+  store.acceptanceCriteria.put = originalPut
+
+  for (const [criterionId, criterion] of acceptanceBefore) assert.deepEqual(store.acceptanceCriteria.get(criterionId), criterion)
+  assert.deepEqual(store.projectReviews.get(reviewBefore.id), reviewBefore)
+  assert.deepEqual(store.projects.get(project.id), projectBefore)
 })
 
 test('independent verification prefers a project virtualenv and records the resolved environment', async () => {
@@ -861,6 +1341,8 @@ test('a non-zero test command fails the project and blocks dependents', async ()
   assert.equal(store.tasks.get('code').testExitCode, 7)
   assert.match(store.tasks.get('code').testOutput, /failure-evidence/)
   assert.equal(store.tasks.get('test').status, 'blocked')
+  assert.equal([...store.verificationEvidence.records.values()].some((evidence) => evidence.projectId === project.id && evidence.status === 'failed' && evidence.exitCode === 7), true)
+  assert.equal([...store.deliveryRecords.records.values()].some((record) => record.projectId === project.id), false)
 })
 
 function agentContext(responseText = 'Agent work completed.', observation = {}) {
@@ -893,6 +1375,7 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
       create: async (options) => {
         observation.createCalls = (observation.createCalls ?? 0) + 1
         observation.cwd = options.meta?.cwd
+        if (observation.onAgentCreate) await observation.onAgentCreate(options, observation.createCalls)
         await options.setup({
           systemPrompt: {
             section: (section) => {
@@ -1046,6 +1529,10 @@ test('planning mounts the standard preset while enforcing read-only tools', asyn
   assert.equal(observation.toolGuards[0]({ name: 'run_code' }), undefined)
   assert.equal(observation.toolGuards[0]({ name: 'read', parent: Symbol('run_code') }), undefined)
   assert.match(observation.toolGuards[0]({ name: 'write', parent: Symbol('run_code') }), /read-only/)
+  assert.match(observation.prompt, /Every ready task must include assignmentPolicy/)
+  assert.match(observation.prompt, /requiredCapabilities/)
+  assert.match(observation.prompt, /"allowedScope": \["concrete file or directory this task may change"\]/)
+  assert.match(observation.prompt, /Active Project Agent capability and capacity facts/)
   assert.equal(service.snapshot().projects.find((candidate) => candidate.id === project.id).status, 'awaiting_approval')
 })
 
@@ -1276,6 +1763,19 @@ test('a Project can append multiple requirement decomposition batches without de
     assert.equal(settled.decompositionBatches.length, 2)
     assert.deepEqual(settled.decompositionBatches.map((batch) => batch.title), ['多需求项目', '第二批需求'])
     assert.equal(store.projectTasks(settled).length, 4)
+    const snapshots = [...store.planSnapshots.records.values()].sort((left, right) => left.revision - right.revision)
+    assert.equal(snapshots.length, 2)
+    assert.equal(snapshots[0].status, 'superseded')
+    assert.equal(snapshots[1].status, 'candidate')
+    assert.equal(settled.currentPlanSnapshotId, snapshots[1].id)
+    assert.deepEqual(store.projectTasks(settled).map((task) => task.planSnapshotId), [snapshots[0].id, snapshots[0].id, snapshots[1].id, snapshots[1].id])
+    const bundles = [...store.requirementBundles.records.values()].sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+    assert.equal(bundles.length, 2)
+    assert.equal(bundles[0].status, 'active')
+    assert.equal(bundles[1].status, 'active')
+    assert.equal([...store.requirementItems.records.values()].length, 2)
+    assert.equal([...store.acceptanceCriteria.records.values()].length, 4)
+    assert.equal(store.projectTasks(settled).every((task) => (task.acceptanceIds ?? []).length === task.acceptanceCriteria.length), true)
   } finally {
     await rm(root, { recursive: true, force: true })
   }
@@ -1834,11 +2334,15 @@ test('Issue TaskRun dispatcher enforces Runtime availability and enters review w
     const taskRunId = command.result.taskRunId
     await new Promise((resolve) => setTimeout(resolve, 20))
     assert.equal(store.taskRuns.get(taskRunId).status, 'queued')
+    assert.equal(store.taskRuns.get(taskRunId).waitReason, 'runtime')
     assert.equal(observation.createCalls, undefined)
 
     await service.heartbeatRuntime(runtime.id, 'online')
     const settled = await waitForTaskRun(store, taskRunId)
     assert.equal(settled.status, 'completed')
+    assert.equal(settled.waitReason, undefined)
+    assert.equal(settled.waitCounts.runtime, 1)
+    assert.equal(settled.waitDurationsMs.runtime > 0, true)
     assert.equal(store.issues.get(issue.id).status, 'in_review')
     assert.equal(store.issues.get(issue.id).reviewStatus, 'pending')
     assert.equal(store.workspaceLeases.get(`lease:${taskRunId}`).state, 'released')
@@ -1867,7 +2371,7 @@ test('Project execution passes the claimed worktree to Agent and verification co
     await execFileAsync('git', ['add', 'README.md'], { cwd: repo })
     await execFileAsync('git', ['commit', '-m', 'test: project worktree'], { cwd: repo })
     const store = memoryStore()
-    const observation = {}
+    const observation = { onAgentCreate: async (options, call) => writeFile(join(options.meta.cwd, `agent-output-${call}.txt`), `output ${call}\n`) }
     const service = new OrchestratorService(agentContext('Project worktree agent.', observation), store)
     const runtime = await service.createRuntime({ name: 'Project Worktree Runtime', machineId: `project-worktree-${Date.now()}`, capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
     const agent = await service.createAgent({ name: 'Project Worktree Agent', role: 'Engineer', description: '', persona: 'Execute.', preset: 'standard', toolPolicy: 'full', runtimeId: runtime.id })
@@ -1887,9 +2391,178 @@ test('Project execution passes the claimed worktree to Agent and verification co
     assert.ok(taskRuns.every((taskRun) => taskRun.workspace !== repo))
     assert.equal(observation.cwd, taskRuns.at(-1).workspace)
     assert.ok(taskRuns.every((taskRun) => store.workspaceLeases.get(`lease:${taskRun.id}`).state === 'released'))
+    assert.ok(taskRuns.every((taskRun) => taskRun.changedFiles?.some((file) => file.startsWith('agent-output-'))))
+    assert.ok([...store.artifacts.records.values()].some((artifact) => artifact.projectId === project.id && artifact.kind === 'diff'))
+    assert.ok([...store.transcripts.records.values()].some((entry) => taskRuns.some((taskRun) => taskRun.id === entry.taskRunId)))
+    const delivery = [...store.deliveryRecords.records.values()].find((record) => record.projectId === project.id)
+    assert.deepEqual(delivery.changedFiles.sort(), ['agent-output-1.txt', 'agent-output-2.txt'])
   } finally {
     await rm(root, { recursive: true, force: true })
   }
+})
+
+test('Project Task scope gate attributes each worktree change to its TaskRun', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-project-scope-good-'))
+  const repo = join(root, 'repo')
+  const worktrees = join(root, 'worktrees')
+  try {
+    await mkdir(repo)
+    await mkdir(worktrees)
+    await mkdir(join(repo, 'src'))
+    await mkdir(join(repo, 'tests'))
+    await execFileAsync('git', ['init'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'scope fixture\n')
+    await writeFile(join(repo, 'src', '.gitkeep'), '')
+    await writeFile(join(repo, 'tests', '.gitkeep'), '')
+    await execFileAsync('git', ['add', '.'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: initialize scope fixture'], { cwd: repo })
+    const store = memoryStore()
+    const observation = { onAgentCreate: async (options, call) => writeFile(join(options.meta.cwd, call === 1 ? 'src/feature.ts' : 'tests/feature.test.ts'), `change ${call}\n`) }
+    const service = new OrchestratorService(agentContext('Scoped work completed.', observation), store)
+    const runtime = await service.createRuntime({ name: 'Scope Runtime', machineId: `scope-good-${Date.now()}`, capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
+    const agent = await service.createAgent({ name: 'Scope Agent', role: 'Engineer', persona: 'Execute.', runtimeId: runtime.id })
+    const project = await service.createProject({ name: 'Scoped project', cwd: repo, prd: 'Stay in approved paths.', technicalDesign: 'Enforce using Git evidence.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true })
+    await service.createProjectResource(project.id, { kind: 'local_directory', location: repo, executionMode: 'worktree', runtimeId: runtime.id })
+    const policy = (allowedScope, forbiddenScope = []) => ({ mode: 'single_agent', riskLevel: 'low', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope, forbiddenScope, escalationConditions: ['scope expansion'] })
+    const code = await service.createTask(project.id, { title: 'Scoped code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: agent.id, assignmentPolicy: policy(['src']), testCommand: 'test -f README.md' })
+    await service.createTask(project.id, { title: 'Scoped test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, assignmentPolicy: policy(['tests/**']), testCommand: 'test -f README.md' })
+    await service.approveProject(project.id, 'tester')
+
+    const run = await service.startExecution(project.id)
+    assert.equal((await waitForRun(store, run.id)).status, 'completed')
+    const taskRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.runId === run.id).sort((left, right) => left.createdAt.localeCompare(right.createdAt))
+    assert.deepEqual(taskRuns.map((taskRun) => taskRun.changedFiles), [['src/feature.ts'], ['tests/feature.test.ts']])
+    assert.equal([...store.decisions.records.values()].some((decision) => ['scope_expansion', 'verification_unavailable'].includes(decision.metadata?.escalationTrigger)), false)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('Project Task scope expansion fails before verification and creates one durable Decision', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-project-scope-bad-'))
+  const repo = join(root, 'repo')
+  const worktrees = join(root, 'worktrees')
+  try {
+    await mkdir(repo)
+    await mkdir(worktrees)
+    await mkdir(join(repo, 'src'))
+    await execFileAsync('git', ['init'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'scope fixture\n')
+    await writeFile(join(repo, 'src', '.gitkeep'), '')
+    await execFileAsync('git', ['add', '.'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: initialize scope fixture'], { cwd: repo })
+    const store = memoryStore()
+    const observation = { onAgentCreate: async (options) => writeFile(join(options.meta.cwd, 'outside.txt'), 'not approved\n') }
+    const service = new OrchestratorService(agentContext('Changed an unapproved file.', observation), store)
+    const runtime = await service.createRuntime({ name: 'Scope Runtime', machineId: `scope-bad-${Date.now()}`, capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
+    const agent = await service.createAgent({ name: 'Scope Agent', role: 'Engineer', persona: 'Execute.', runtimeId: runtime.id })
+    const project = await service.createProject({ name: 'Scope violation', cwd: repo, prd: 'Stay in src.', technicalDesign: 'Stop on expansion.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true })
+    await service.createProjectResource(project.id, { kind: 'local_directory', location: repo, executionMode: 'worktree', runtimeId: runtime.id })
+    const policy = { mode: 'single_agent', riskLevel: 'low', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: ['src'], forbiddenScope: [], escalationConditions: ['scope expansion'] }
+    const code = await service.createTask(project.id, { title: 'Bounded code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: agent.id, assignmentPolicy: policy, testCommand: 'touch verification-command-ran' })
+    await service.createTask(project.id, { title: 'Independent test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, testCommand: 'true' })
+    await service.approveProject(project.id, 'tester')
+
+    const run = await service.startExecution(project.id)
+    assert.equal((await waitForRun(store, run.id)).status, 'failed')
+    const taskRun = [...store.taskRuns.records.values()].find((candidate) => candidate.runId === run.id)
+    assert.equal(taskRun.status, 'failed')
+    assert.equal(taskRun.errorCode, 'scope_violation')
+    assert.equal(taskRun.testExitCode, undefined)
+    assert.equal(await stat(join(taskRun.workspace, 'verification-command-ran')).then(() => true, () => false), false)
+    const decisions = [...store.decisions.records.values()].filter((decision) => decision.taskRunId === taskRun.id && decision.metadata?.escalationTrigger === 'scope_expansion')
+    assert.equal(decisions.length, 1)
+    assert.deepEqual(decisions[0].metadata.outsideAllowedScope, ['outside.txt'])
+    assert.ok(service.snapshot().inbox.some((item) => item.decisionId === decisions[0].id))
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('Project Task forbidden scope takes precedence over an allowed parent path', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-project-scope-forbidden-'))
+  const repo = join(root, 'repo')
+  const worktrees = join(root, 'worktrees')
+  try {
+    await mkdir(repo)
+    await mkdir(worktrees)
+    await mkdir(join(repo, 'src'))
+    await execFileAsync('git', ['init'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'scope fixture\n')
+    await writeFile(join(repo, 'src', '.gitkeep'), '')
+    await execFileAsync('git', ['add', '.'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: initialize scope fixture'], { cwd: repo })
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext('Touched a forbidden path.', { onAgentCreate: async (options) => writeFile(join(options.meta.cwd, 'src/secret.ts'), 'forbidden\n') }), store)
+    const runtime = await service.createRuntime({ name: 'Scope Runtime', machineId: `scope-forbidden-${Date.now()}`, capabilities: ['agent', 'worktree'], workspaceRoot: worktrees })
+    const agent = await service.createAgent({ name: 'Scope Agent', role: 'Engineer', persona: 'Execute.', runtimeId: runtime.id })
+    const project = await service.createProject({ name: 'Forbidden scope', cwd: repo, prd: 'Do not touch secret.', technicalDesign: 'Enforce forbidden path.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true })
+    await service.createProjectResource(project.id, { kind: 'local_directory', location: repo, executionMode: 'worktree', runtimeId: runtime.id })
+    const policy = { mode: 'single_agent', riskLevel: 'low', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: ['src'], forbiddenScope: ['src/secret.ts'], escalationConditions: ['scope expansion'] }
+    const code = await service.createTask(project.id, { title: 'Bounded code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: agent.id, assignmentPolicy: policy, testCommand: 'true' })
+    await service.createTask(project.id, { title: 'Independent test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, testCommand: 'true' })
+    await service.approveProject(project.id, 'tester')
+
+    const run = await service.startExecution(project.id)
+    assert.equal((await waitForRun(store, run.id)).status, 'failed')
+    const decision = [...store.decisions.records.values()].find((candidate) => candidate.metadata?.escalationTrigger === 'scope_expansion')
+    assert.deepEqual(decision.metadata.outsideAllowedScope, [])
+    assert.deepEqual(decision.metadata.forbiddenScopeMatches, ['src/secret.ts'])
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('Project Task with an enforced scope fails closed when Git evidence is unavailable', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-project-scope-no-git-'))
+  try {
+    const store = memoryStore()
+    const observation = {}
+    const service = new OrchestratorService(agentContext('Should not run.', observation), store)
+    const agent = await service.createAgent({ name: 'Scope Agent', role: 'Engineer', persona: 'Execute.' })
+    const project = await service.createProject({ name: 'No Git scope', cwd: root, prd: 'Enforce scope.', technicalDesign: 'Fail closed without evidence.' })
+    await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'Engineer', autoAssignable: true })
+    const policy = { mode: 'single_agent', riskLevel: 'low', requiredRoles: [], requiredCapabilities: [], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: ['src'], forbiddenScope: [], escalationConditions: ['verification unavailable'] }
+    const code = await service.createTask(project.id, { title: 'Scoped code', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], agentId: agent.id, assignmentPolicy: policy, testCommand: 'true' })
+    await service.createTask(project.id, { title: 'Independent test', kind: 'test', description: 'Verify.', acceptanceCriteria: ['passes'], dependencies: [code.id], agentId: agent.id, testCommand: 'true' })
+    await service.approveProject(project.id, 'tester')
+
+    const run = await service.startExecution(project.id)
+    assert.equal((await waitForRun(store, run.id)).status, 'failed')
+    assert.equal(observation.createCalls, undefined)
+    const taskRun = [...store.taskRuns.records.values()].find((candidate) => candidate.runId === run.id)
+    assert.equal(taskRun.errorCode, 'verification_unavailable')
+    const decisions = [...store.decisions.records.values()].filter((decision) => decision.metadata?.escalationTrigger === 'verification_unavailable')
+    assert.equal(decisions.length, 1)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('automatic Task repair exhaustion creates one durable retry Decision', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService(agentContext('Repair attempted.'), store)
+  const project = await approvedProject(service, store, ['false', 'true'])
+  const run = await service.startExecution(project.id)
+  assert.equal((await waitForRun(store, run.id)).status, 'failed')
+  const failedRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.runId === run.id && taskRun.errorCode === 'verification_failed')
+  assert.equal(failedRuns.length, 2)
+  const exhaustedRun = failedRuns.find((taskRun) => taskRun.attempt === 2)
+  const decisions = [...store.decisions.records.values()].filter((decision) => decision.taskRunId === exhaustedRun.id && decision.metadata?.escalationTrigger === 'repeated_failure')
+  assert.equal(decisions.length, 1)
+  assert.equal(decisions[0].kind, 'retry')
+  const inbox = service.snapshot().inbox.filter((item) => item.taskRunId === exhaustedRun.id)
+  assert.equal(inbox.filter((item) => item.decisionId === decisions[0].id).length, 1)
+  assert.equal(inbox.some((item) => item.kind === 'test_failed_after_retry'), false)
 })
 
 test('worktree TaskRun creates isolated branch, captures Git evidence, and cleans workspace', async () => {
@@ -1961,6 +2634,9 @@ test('Squad delegation creates a child run and approved review wakes the leader 
   await service.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead', autoAssignable: true }, { agentId: member.id, projectRole: 'Engineer', autoAssignable: true }], joinedBy: 'tester' })
   await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
   const parent = await service.createIssue({ projectId: project.id, title: 'Parent delivery', description: 'Coordinate.', assigneeType: 'squad', assigneeId: squad.id })
+  const parentTask = await service.createTask(project.id, { title: 'Delegated parent task', kind: 'code', description: 'Track delegated acceptance.', acceptanceCriteria: ['Delegated child is reviewed.'], testCommand: 'true' })
+  await store.tasks.put(parentTask.id, { ...parentTask, issueId: parent.id, acceptanceIds: ['delegation-acceptance'] })
+  await store.acceptanceCriteria.put('delegation-acceptance', { id: 'delegation-acceptance', projectId: project.id, bundleId: 'delegation-bundle', key: 'delegation-review', statement: 'Delegated child is reviewed.', sourceRefs: [], taskIds: [parentTask.id], evidenceIds: [], status: 'open', createdAt: now, updatedAt: now })
   const assigned = await service.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
   const leaderRunId = assigned.result.taskRunId
   await store.taskRuns.put(leaderRunId, { ...store.taskRuns.get(leaderRunId), status: 'running', startedAt: now })
@@ -1973,16 +2649,140 @@ test('Squad delegation creates a child run and approved review wakes the leader 
   assert.equal(store.issues.get(childId).assigneeId, member.id)
   assert.equal(store.taskRuns.get(delegated.result.taskRunId).delegatedByTaskRunId, leaderRunId)
   assert.equal(store.delegations.get(delegated.result.delegationId).contract.objective, 'Implement delegated work.')
+  assert.equal(store.delegations.get(delegated.result.delegationId).parentAssignmentRevision, assignedParent.assignmentRevision)
   assert.equal(store.taskRuns.get(leaderRunId).status, 'deferred')
   const child = { ...store.issues.get(childId), status: 'in_review', reviewStatus: 'pending', updatedAt: new Date().toISOString() }
   delete child.activeTaskRunId
   await store.issues.put(childId, child)
+  await assert.rejects(() => service.executeCommand({ type: 'approve_review', issueId: childId, actorType: 'human', actorId: 'reviewer', payload: { note: 'No child evidence yet.' } }), (error) => error.code === 'delegation-evidence-missing')
+  assert.equal(store.issues.get(childId).status, 'in_review')
+  const childArtifact = await service.attachArtifact({ projectId: project.id, issueId: childId, taskRunId: delegated.result.taskRunId, kind: 'test_report', name: 'Delegated focused test', content: 'passed', metadata: { exitCode: 0 } })
   await service.executeCommand({ idempotencyKey: 'review-child-once', type: 'approve_review', issueId: childId, actorType: 'human', actorId: 'reviewer', payload: { note: 'Child verified.' } })
   const wakeRuns = [...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.trigger === 'retry')
   assert.equal(wakeRuns.length, 1)
   assert.equal([...store.delegations.records.values()][0].status, 'completed')
+  const delegation = [...store.delegations.records.values()][0]
+  assert.ok(delegation.evidenceIds.includes(childArtifact.id))
+  assert.ok(delegation.evidenceIds.some((evidenceId) => evidenceId.startsWith(`${delegation.id}:review:`)))
+  assert.deepEqual(store.acceptanceCriteria.get('delegation-acceptance').evidenceIds, delegation.evidenceIds.filter((evidenceId) => evidenceId.startsWith(`${delegation.id}:review:`)))
+  assert.equal(store.acceptanceCriteria.get('delegation-acceptance').status, 'verified')
   await service.executeCommand({ idempotencyKey: 'review-child-once', type: 'approve_review', issueId: childId, actorType: 'human', actorId: 'reviewer', payload: { note: 'Child verified.' } })
   assert.equal([...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.trigger === 'retry').length, 1)
+})
+
+test('multi-child Delegation enforces capacity, survives partial failure and restart, and wakes Leader once after out-of-order Reviews', async () => {
+  const store = memoryStore()
+  let service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Parallel Leader', role: 'Lead', persona: 'Coordinate.', toolPolicy: 'full', maxConcurrency: 2 })
+  const members = []
+  for (const name of ['API Specialist', 'Data Specialist', 'Test Specialist']) members.push(await service.createAgent({ name, role: 'Specialist', persona: 'Deliver scoped evidence.', toolPolicy: 'full', maxConcurrency: 2 }))
+  const squad = await service.createSquad({ name: 'Parallel Delivery Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, ...members.map((member) => member.id)], instructions: 'Delegate bounded child work.', escalationPolicy: 'Escalate conflicts.', maxParallelDelegations: 3 })
+  const project = await service.createProject({ name: 'Parallel delegation project', cwd: '/tmp', prd: 'Coordinate three specialists.', technicalDesign: 'One Leader coordination epoch.' })
+  await service.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead' }, ...members.map((member) => ({ agentId: member.id, projectRole: member.role }))], joinedBy: 'tester' })
+  await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
+  const parent = await service.createIssue({ projectId: project.id, title: 'Parallel parent', description: 'Coordinate all child outcomes.', assigneeType: 'squad', assigneeId: squad.id })
+  const parentTask = await service.createTask(project.id, { title: 'Parallel parent task', kind: 'code', description: 'Track all delegated evidence.', acceptanceCriteria: ['All delegated children are reviewed.'], testCommand: 'true' })
+  await store.tasks.put(parentTask.id, { ...parentTask, issueId: parent.id, acceptanceIds: ['parallel-delegation-acceptance'] })
+  await store.acceptanceCriteria.put('parallel-delegation-acceptance', { id: 'parallel-delegation-acceptance', projectId: project.id, bundleId: 'parallel-delegation-bundle', key: 'parallel-delegation-review', statement: 'All delegated children are reviewed.', sourceRefs: [], taskIds: [parentTask.id], evidenceIds: [], status: 'open', createdAt: now, updatedAt: now })
+  const assigned = await service.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
+  const leaderRunId = assigned.result.taskRunId
+  await store.taskRuns.put(leaderRunId, { ...store.taskRuns.get(leaderRunId), status: 'running', startedAt: now })
+  const assignmentRevision = store.issues.get(parent.id).assignmentRevision
+  const contract = { objective: 'Deliver scoped child evidence.', scope: ['assigned child scope'], forbiddenScope: ['sibling scope'], deliverables: ['Implementation and evidence'], acceptanceCriteria: ['Scoped behavior works'], verification: ['Run focused verification'], escalationConditions: ['Cross-scope conflict'] }
+
+  const commands = await Promise.all(members.map((member, index) => service.executeCommand({ idempotencyKey: `parallel-delegation-${index + 1}`, type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: member.id, title: `Parallel child ${index + 1}`, expectedAssignmentRevision: assignmentRevision, contract } })))
+  const delegations = commands.map((command) => store.delegations.get(command.result.delegationId))
+  assert.equal(new Set(delegations.map((delegation) => delegation.coordinationTaskRunId)).size, 1)
+  assert.equal(delegations[0].coordinationTaskRunId, leaderRunId)
+  assert.equal(store.taskRuns.get(leaderRunId).status, 'deferred')
+  assert.equal(store.issues.get(parent.id).status, 'blocked')
+  await assert.rejects(() => service.executeCommand({ type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: members[0].id, title: 'Capacity overflow', expectedAssignmentRevision: assignmentRevision, contract } }), (error) => error.code === 'squad-delegation-capacity')
+
+  const prepareReview = async (delegation, label) => {
+    const child = { ...store.issues.get(delegation.childIssueId), status: 'in_review', reviewStatus: 'pending', updatedAt: new Date().toISOString() }
+    delete child.activeTaskRunId
+    await store.issues.put(child.id, child)
+    return service.attachArtifact({ projectId: project.id, issueId: child.id, taskRunId: delegation.taskRunId, kind: 'test_report', name: `${label} focused test`, content: 'passed', metadata: { exitCode: 0 } })
+  }
+
+  await prepareReview(delegations[2], 'third')
+  await service.executeCommand({ type: 'approve_review', issueId: delegations[2].childIssueId, actorType: 'human', actorId: 'independent-reviewer', payload: { note: 'Third child reviewed first.' } })
+  assert.equal(store.acceptanceCriteria.get('parallel-delegation-acceptance').status, 'open')
+  assert.equal([...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.resumeDelegationId !== undefined).length, 0)
+
+  await prepareReview(delegations[0], 'first-failed')
+  await service.executeCommand({ type: 'reject_review', issueId: delegations[0].childIssueId, actorType: 'human', actorId: 'independent-reviewer', payload: { note: 'First child needs a focused repair.' } })
+  assert.equal(store.acceptanceCriteria.get('parallel-delegation-acceptance').status, 'failed')
+  const failedRunId = store.delegations.get(delegations[0].id).taskRunId
+  const retried = await service.executeCommand({ type: 'retry_delegation', projectId: project.id, actorType: 'human', actorId: 'delivery-owner', payload: { delegationId: delegations[0].id } })
+  const retryRun = store.taskRuns.get(retried.result.taskRunId)
+  assert.equal(retryRun.retryOf, failedRunId)
+  assert.equal(retryRun.delegatedByTaskRunId, leaderRunId)
+  assert.equal(store.acceptanceCriteria.get('parallel-delegation-acceptance').status, 'open')
+
+  const retriedDelegation = store.delegations.get(delegations[0].id)
+  await prepareReview(retriedDelegation, 'first-retry')
+  await service.executeCommand({ type: 'approve_review', issueId: retriedDelegation.childIssueId, actorType: 'human', actorId: 'independent-reviewer', payload: { note: 'Focused repair verified.' } })
+  assert.equal([...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.resumeDelegationId !== undefined).length, 0)
+
+  service = new OrchestratorService({}, store)
+  await service.initialize()
+  const second = store.delegations.get(delegations[1].id)
+  await prepareReview(second, 'second-last')
+  const executeBeforeCrash = service.executeCommand.bind(service)
+  service.executeCommand = async (input) => {
+    if (input.idempotencyKey?.startsWith('leader-wakeup:')) throw new Error('simulated Host crash before Leader wakeup')
+    return executeBeforeCrash(input)
+  }
+  await assert.rejects(() => service.executeCommand({ idempotencyKey: 'parallel-last-review', type: 'approve_review', issueId: second.childIssueId, actorType: 'human', actorId: 'independent-reviewer', payload: { note: 'Second child reviewed last after restart.' } }), /simulated Host crash/)
+  assert.equal(store.delegations.get(second.id).status, 'waiting_leader')
+  assert.equal(store.issues.get(parent.id).status, 'blocked')
+  service = new OrchestratorService({}, store)
+  await service.initialize()
+  await service.initialize()
+
+  const finalGroup = delegations.map((delegation) => store.delegations.get(delegation.id))
+  const wakeRuns = [...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.resumeDelegationId !== undefined)
+  const wakeActivities = [...store.activity.records.values()].filter((activity) => activity.type === 'squad.leader_woken' && activity.issueId === parent.id)
+  assert.deepEqual(finalGroup.map((delegation) => delegation.status), ['completed', 'completed', 'completed'])
+  assert.equal(wakeRuns.length, 1)
+  assert.equal(wakeActivities.length, 1)
+  assert.equal(store.acceptanceCriteria.get('parallel-delegation-acceptance').status, 'verified')
+  const reviewEvidenceIds = finalGroup.flatMap((delegation) => delegation.evidenceIds ?? []).filter((id) => id.includes(':review:'))
+  assert.equal(reviewEvidenceIds.length, 4)
+  assert.deepEqual(new Set(store.acceptanceCriteria.get('parallel-delegation-acceptance').evidenceIds), new Set(reviewEvidenceIds))
+})
+
+test('stale delegated child Review cannot publish evidence or wake a reassigned or terminal parent', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Stale Leader', role: 'Lead', persona: 'Lead.', toolPolicy: 'full' })
+  const member = await service.createAgent({ name: 'Stale Member', role: 'Engineer', persona: 'Build.', toolPolicy: 'full' })
+  const squad = await service.createSquad({ name: 'Stale Callback Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Stale callback project', cwd: '/tmp', prd: 'Protect owner state.', technicalDesign: 'Use assignment tokens.' })
+  await service.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead' }, { agentId: member.id, projectRole: 'Engineer' }] })
+  await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
+  const parent = await service.createIssue({ projectId: project.id, title: 'Parent', description: 'Coordinate.', assigneeType: 'squad', assigneeId: squad.id })
+  const assigned = await service.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
+  await store.taskRuns.put(assigned.result.taskRunId, { ...store.taskRuns.get(assigned.result.taskRunId), status: 'running', startedAt: now })
+  const assignedParent = store.issues.get(parent.id)
+  const delegated = await service.executeCommand({ type: 'delegate_issue', issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: member.id, title: 'Child', expectedAssignmentRevision: assignedParent.assignmentRevision, contract: { objective: 'Implement.', scope: ['child'], forbiddenScope: [], deliverables: ['evidence'], acceptanceCriteria: ['works'], verification: ['focused test'], escalationConditions: ['conflict'] } } })
+  const child = { ...store.issues.get(delegated.result.childIssueId), status: 'in_review', reviewStatus: 'pending', updatedAt: now }
+  delete child.activeTaskRunId
+  await store.issues.put(child.id, child)
+  await service.attachArtifact({ projectId: project.id, issueId: child.id, taskRunId: delegated.result.taskRunId, kind: 'test_report', name: 'Focused test', content: 'passed' })
+
+  const blockedParent = store.issues.get(parent.id)
+  await store.issues.put(parent.id, { ...blockedParent, assignmentRevision: blockedParent.assignmentRevision + 2 })
+  await assert.rejects(() => service.executeCommand({ type: 'approve_review', issueId: child.id, actorType: 'human', actorId: 'reviewer', payload: { note: 'Late result.' } }), (error) => error.code === 'delegation-owner-stale')
+  assert.equal(store.issues.get(child.id).status, 'in_review')
+  assert.equal(store.delegations.get(delegated.result.delegationId).status, 'running')
+  assert.equal([...store.verificationEvidence.records.values()].length, 0)
+  assert.equal([...store.taskRuns.records.values()].filter((run) => run.issueId === parent.id && run.resumeDelegationId === delegated.result.delegationId).length, 0)
+
+  await store.issues.put(parent.id, { ...blockedParent, status: 'done' })
+  await assert.rejects(() => service.executeCommand({ type: 'approve_review', issueId: child.id, actorType: 'human', actorId: 'reviewer', payload: { note: 'Result after parent completion.' } }), (error) => error.code === 'delegation-owner-stale')
+  assert.equal(store.issues.get(parent.id).status, 'done')
 })
 
 test('request_decision atomically defers an active run and resumes exactly once after resolution', async () => {
@@ -2010,6 +2810,28 @@ test('request_decision atomically defers an active run and resumes exactly once 
   assert.equal(store.issues.get(issue.id).activeTaskRunId, continuation.id)
   await assert.rejects(() => service.resolveDecision(decisionId, { status: 'approved', resolution: 'Repeat.', resolvedBy: 'reviewer' }), (error) => error.code === 'decision-already-resolved')
   assert.equal([...store.taskRuns.records.values()].filter((run) => run.resumeDecisionId === decisionId).length, 1)
+})
+
+test('a failed Delegation retries through the child Issue and preserves the Delegation owner chain', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const member = await service.createAgent({ name: 'Retry Member', role: 'Engineer', persona: 'Repair delegated work.', toolPolicy: 'full' })
+  const project = await service.createProject({ name: 'Delegation retry', cwd: '/tmp', prd: 'Retry failed child work.', technicalDesign: 'Preserve ownership.' })
+  await service.addProjectAgent(project.id, { agentId: member.id, projectRole: 'Engineer', autoAssignable: true })
+  const parent = await service.createIssue({ projectId: project.id, title: 'Parent', description: 'Coordinate the child.' })
+  const child = await service.createIssue({ projectId: project.id, parentIssueId: parent.id, title: 'Child', description: 'Repair the failure.', assigneeType: 'agent', assigneeId: member.id })
+  await store.issues.put(child.id, { ...child, status: 'blocked', updatedAt: now })
+  await store.taskRuns.put('failed-child-run', { id: 'failed-child-run', projectId: project.id, issueId: child.id, agentId: member.id, status: 'failed', trigger: 'assignment', attempt: 1, assignmentRevision: child.assignmentRevision, cwd: project.cwd, error: 'Focused verification failed.', createdAt: now, completedAt: now })
+  const delegation = { id: 'failed-delegation', squadId: 'squad-1', projectId: project.id, parentIssueId: parent.id, childIssueId: child.id, leaderAgentId: 'leader-1', memberAgentId: member.id, taskRunId: 'failed-child-run', status: 'failed', instruction: 'Repair delegated work.', error: 'Focused verification failed.', createdAt: now, updatedAt: now, completedAt: now }
+  await store.delegations.put(delegation.id, delegation)
+
+  const retried = await service.executeCommand({ type: 'retry_delegation', projectId: project.id, actorType: 'human', actorId: 'delivery-owner', payload: { delegationId: delegation.id } })
+  const retryRun = store.taskRuns.get(retried.result.taskRunId)
+  assert.equal(store.delegations.get(delegation.id).status, 'running')
+  assert.equal(store.delegations.get(delegation.id).taskRunId, retryRun.id)
+  assert.equal(retryRun.retryOf, delegation.taskRunId)
+  assert.equal(retryRun.delegatedByTaskRunId, delegation.taskRunId)
+  assert.equal(store.issues.get(child.id).activeTaskRunId, retryRun.id)
 })
 
 test('command idempotency keys reject different request payloads', async () => {
@@ -2200,6 +3022,36 @@ test('Project Squad binding requires concurrency tokens and preserves explicit m
   assert.equal(afterSync.autoAssignable, false)
 })
 
+test('Squad dispatch fails closed for a missing member, a leader outside the Project, and a stale binding', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const leader = await service.createAgent({ name: 'Boundary Leader', role: 'Lead', persona: 'Lead.', toolPolicy: 'full' })
+  const member = await service.createAgent({ name: 'Boundary Member', role: 'Engineer', persona: 'Build.', toolPolicy: 'full' })
+  const squad = await service.createSquad({ name: 'Boundary Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Deliver.', escalationPolicy: 'Escalate.' })
+  const project = await service.createProject({ name: 'Boundary Project', cwd: '/tmp', prd: 'Validate ownership.', technicalDesign: 'Fail closed.' })
+  await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
+  const leaderMembership = store.projectAgentMemberships.get(`${project.id}:${leader.id}`)
+  const memberMembership = store.projectAgentMemberships.get(`${project.id}:${member.id}`)
+
+  await store.projectAgentMemberships.put(memberMembership.id, { ...memberMembership, status: 'removed', removedAt: now, updatedAt: now })
+  let availability = service.listEligibleSquads(project.id).find((item) => item.squadId === squad.id)
+  assert.ok(availability.reasons.includes('member_outside_project'))
+  assert.ok(availability.missingAgentIds.includes(member.id))
+  await assert.rejects(() => service.createIssue({ projectId: project.id, title: 'Missing member', assigneeType: 'squad', assigneeId: squad.id }), (error) => error.code === 'squad-member-outside-project')
+
+  await store.projectAgentMemberships.put(memberMembership.id, memberMembership)
+  await store.projectAgentMemberships.put(leaderMembership.id, { ...leaderMembership, status: 'removed', removedAt: now, updatedAt: now })
+  availability = service.listEligibleSquads(project.id).find((item) => item.squadId === squad.id)
+  assert.ok(availability.missingAgentIds.includes(leader.id))
+  await assert.rejects(() => service.createIssue({ projectId: project.id, title: 'Leader outside', assigneeType: 'squad', assigneeId: squad.id }), (error) => error.code === 'squad-member-outside-project')
+
+  await store.projectAgentMemberships.put(leaderMembership.id, leaderMembership)
+  await service.updateSquad(squad.id, { name: squad.name, description: squad.description, leaderAgentId: squad.leaderAgentId, memberAgentIds: squad.memberAgentIds, memberRoles: squad.memberRoles, instructions: 'Updated collaboration policy.', escalationPolicy: squad.escalationPolicy, maxParallelDelegations: squad.maxParallelDelegations, expectedUpdatedAt: squad.updatedAt })
+  availability = service.listEligibleSquads(project.id).find((item) => item.squadId === squad.id)
+  assert.ok(availability.reasons.includes('binding_needs_review'))
+  await assert.rejects(() => service.createIssue({ projectId: project.id, title: 'Stale binding', assigneeType: 'squad', assigneeId: squad.id }), (error) => error.code === 'project-squad-sync-required')
+})
+
 test('unbinding retains a referenced Agent with explicit retained-reference provenance', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
@@ -2293,6 +3145,36 @@ test('startup preserves a valid in-place Issue owner lock during dispatch recove
   assert.equal(store.taskRuns.get(taskRun.id).status, 'queued')
 })
 
+test('host restart preserves valid TeamSnapshot, active Delegation, and owned child TaskRun', async () => {
+  const store = memoryStore()
+  const firstService = new OrchestratorService({}, store)
+  const leader = await firstService.createAgent({ name: 'Restart Leader', role: 'Lead', persona: 'Coordinate.', toolPolicy: 'full' })
+  const member = await firstService.createAgent({ name: 'Restart Member', role: 'Engineer', persona: 'Implement.', toolPolicy: 'full' })
+  const squad = await firstService.createSquad({ name: 'Restart Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
+  const project = await firstService.createProject({ name: 'Restart project', cwd: '/tmp', prd: 'Recover.', technicalDesign: 'Preserve durable owners.' })
+  await firstService.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead', autoAssignable: true }, { agentId: member.id, projectRole: 'Engineer', autoAssignable: true }] })
+  await firstService.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: project.revision, expectedSquadUpdatedAt: squad.updatedAt })
+  const task = await firstService.createTask(project.id, { title: 'Durable task', kind: 'code', description: 'Track restart.', acceptanceCriteria: ['preserved'], agentId: leader.id, testCommand: 'true' })
+  const team = firstService.getProjectTeamPlan(project.id).team
+  const digest = 'd'.repeat(64)
+  const planSnapshot = { id: `${project.id}:restart-plan`, projectId: project.id, revision: store.projects.get(project.id).revision, mode: 'initial', taskIds: [task.id], planHash: digest, teamComposition: team, teamDigest: team.teamDigest, assignmentDigest: digest, status: 'candidate', createdAt: now }
+  await store.planSnapshots.put(planSnapshot.id, planSnapshot)
+  await store.projects.put(project.id, { ...store.projects.get(project.id), currentPlanSnapshotId: planSnapshot.id, teamComposition: team, teamDigest: team.teamDigest })
+  const parent = await firstService.createIssue({ projectId: project.id, title: 'Restart parent', assigneeType: 'squad', assigneeId: squad.id })
+  const assigned = await firstService.executeCommand({ type: 'assign_issue', issueId: parent.id, actorType: 'human', payload: { assigneeType: 'squad', assigneeId: squad.id } })
+  await store.taskRuns.put(assigned.result.taskRunId, { ...store.taskRuns.get(assigned.result.taskRunId), status: 'running', startedAt: now })
+  const activeParent = store.issues.get(parent.id)
+  const delegated = await firstService.executeCommand({ type: 'delegate_issue', projectId: project.id, issueId: parent.id, squadId: squad.id, actorType: 'agent', actorId: leader.id, payload: { memberAgentId: member.id, title: 'Restart child', expectedAssignmentRevision: activeParent.assignmentRevision, contract: { objective: 'Preserve child work.', scope: ['child'], forbiddenScope: [], deliverables: ['evidence'], acceptanceCriteria: ['preserved'], verification: ['focused test'], escalationConditions: ['state mismatch'] } } })
+
+  const restartedService = new OrchestratorService({}, store)
+  await restartedService.initialize()
+
+  assert.equal(restartedService.listProjectPlanSnapshots(project.id).find((snapshot) => snapshot.id === planSnapshot.id)?.teamDigest, team.teamDigest)
+  assert.equal(store.delegations.get(delegated.result.delegationId).status, 'running')
+  assert.equal(store.taskRuns.get(delegated.result.taskRunId).status, 'queued')
+  assert.equal(store.issues.get(delegated.result.childIssueId).activeTaskRunId, delegated.result.taskRunId)
+})
+
 test('startup reconciles pending Commands, orphan TaskRuns, and broken Issue pointers before dispatch', async () => {
   const store = memoryStore()
   const service = new OrchestratorService({}, store)
@@ -2309,6 +3191,26 @@ test('startup reconciles pending Commands, orphan TaskRuns, and broken Issue poi
   assert.equal(store.issues.get(issue.id).status, 'blocked')
   assert.equal(store.issues.get(issue.id).activeTaskRunId, undefined)
   assert.equal([...store.commands.records.values()].some((command) => ['pending', 'running'].includes(command.status)), false)
+})
+
+test('startup escalates an invalid Delegation into one durable Decision and Inbox item', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Delegation recovery decision', cwd: '/tmp', prd: 'Recover ownership.', technicalDesign: 'Escalate invalid durable context.' })
+  const parent = await service.createIssue({ projectId: project.id, title: 'Existing parent', description: 'The child context was lost.' })
+  const delegation = { id: 'invalid-recovery-delegation', squadId: 'missing-squad', projectId: project.id, parentIssueId: parent.id, childIssueId: 'missing-child', leaderAgentId: 'missing-leader', memberAgentId: 'missing-member', status: 'running', instruction: 'Recover safely.', createdAt: now, updatedAt: now }
+  await store.delegations.put(delegation.id, delegation)
+
+  await service.initialize()
+  await service.initialize()
+
+  const recovered = store.delegations.get(delegation.id)
+  assert.equal(recovered.status, 'escalated')
+  assert.match(recovered.error, /ownership or Issue context became invalid/)
+  const decisions = [...store.decisions.records.values()].filter((decision) => decision.metadata?.delegationId === delegation.id)
+  assert.equal(decisions.length, 1)
+  assert.equal(decisions[0].status, 'pending')
+  assert.ok(service.snapshot().inbox.some((item) => item.decisionId === decisions[0].id && item.kind === 'needs_decision'))
 })
 
 async function approvedProject(service, store, commands, agentOverrides = {}, cwd = '/tmp') {

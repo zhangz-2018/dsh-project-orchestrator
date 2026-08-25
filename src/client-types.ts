@@ -9,6 +9,7 @@ export type RuntimeLifecycle = 'active' | 'archived'
 export type ResourceKind = 'github_repo' | 'local_directory'
 export type ResourceExecutionMode = 'in_place' | 'worktree'
 export type IssueStatus = 'backlog' | 'todo' | 'in_progress' | 'in_review' | 'done' | 'blocked' | 'cancelled'
+export type IssueAssigneeType = 'member' | 'agent' | 'squad'
 export type TaskRunStatus = 'deferred' | 'queued' | 'dispatched' | 'waiting_local_directory' | 'running' | 'completed' | 'failed' | 'cancelled'
 export type InboxKind = 'needs_decision' | 'blocked' | 'review_ready' | 'runtime_offline' | 'permission_denied' | 'test_failed_after_retry' | 'stale_approval'
 export type AgentWorkloadState = 'idle' | 'queued' | 'working'
@@ -16,6 +17,9 @@ export type ProjectAgentMembershipStatus = 'active' | 'removed'
 export type ProjectSquadBindingStatus = 'active' | 'needs_review' | 'removed'
 export type ProjectAgentMembershipSourceType = 'manual' | 'squad' | 'retained_reference'
 export type FeatureUsageFeature = 'inbox' | 'issues' | 'projects' | 'delivery' | 'agents' | 'skills' | 'squads' | 'runtimes' | 'local_data'
+export type AssignmentMode = 'single_agent' | 'squad_delegation' | 'review_only'
+export type TaskRiskLevel = 'low' | 'medium' | 'high' | 'critical'
+export interface TaskAssignmentPolicy { mode: AssignmentMode; riskLevel: TaskRiskLevel; requiredRoles: string[]; requiredCapabilities: string[]; allowedAgentIds: string[]; allowedSquadIds: string[]; requiresIndependentReviewer: boolean; maxParallel: number; parallelGroup?: string; conflictKeys: string[]; allowedScope: string[]; forbiddenScope: string[]; escalationConditions: string[] }
 export type EscalationTrigger = 'requirement_conflict' | 'contract_conflict' | 'destructive_change' | 'production_data_change' | 'permission_required' | 'credential_required' | 'verification_unavailable' | 'repeated_failure' | 'scope_expansion' | 'delegation_conflict' | 'source_of_truth_unknown'
 
 export interface SquadEscalationPolicy {
@@ -131,12 +135,278 @@ export interface AgentRecord {
   preset: string
   toolPolicy: AgentToolPolicy
   skills?: string[]
+  capabilities?: string[]
   runtimeId?: string
   access?: 'only_me' | 'workspace' | 'specific_people'
   maxConcurrency?: number
   status: 'active' | 'archived'
   createdAt: string
   updatedAt: string
+}
+
+export interface TeamCompositionSnapshot {
+  plannerAgentId?: string
+  leadAgentId?: string
+  reviewerAgentId?: string
+  members: Array<{ agentId: string; projectRole: string; source: ProjectAgentMembershipSourceType; sourceId: string; capabilities: string[]; skillsDigest?: string; personaDigest?: string; runtimeId?: string; runtimeStatus?: RuntimeStatus; maxConcurrency: number; availableSlots?: number }>
+  squads: Array<{ squadId: string; isDefault: boolean; leaderAgentId: string; memberAgentIds: string[]; collaborationPolicyVersion?: string; policyDigest?: string; maxParallelDelegations: number; syncedSquadUpdatedAt: string }>
+  teamDigest: string
+  capturedAt: string
+}
+
+export interface TaskAssignmentSnapshot { taskId: string; policy: TaskAssignmentPolicy; ownerAgentId?: string; ownerSquadId?: string }
+export interface TeamCapacityObservation {
+  agents: Array<{ agentId: string; availability: RuntimeStatus | 'unknown'; queued: number; working: number; occupied: number; maxConcurrency: number; availableSlots: number }>
+  squads: Array<{ squadId: string; eligible: boolean; activeDelegations: number; maxParallelDelegations: number; availableSlots: number }>
+}
+export interface ProjectTeamPlan {
+  project: ProjectRecord
+  team: TeamCompositionSnapshot
+  tasks: TaskRecord[]
+  preflight: {
+    ready: boolean
+    errors: string[]
+    warnings: string[]
+    teamDigest: string
+    assignmentDigest: string
+    planHash: string
+    capacityObservation: TeamCapacityObservation
+    criticalPath: { taskIds: string[]; length: number }
+    blockedTasks: Array<{ taskId: string; title: string; reasons: string[] }>
+    waitProjection: Array<{ taskId: string; title: string; reason: string; queuedAhead: number; availableSlots: number }>
+    coverageMatrix: Array<{ requirementId: string; requirementKey: string; statement: string; roleNames: string[]; taskIds: string[]; acceptanceIds: string[]; evidenceIds: string[]; status: 'covered' | 'partial' | 'uncovered' }>
+  }
+}
+export interface AgentCandidateProjection { agentId: string; eligible: boolean; reasons: string[]; projectRole: string; capabilities: string[]; runtimeId?: string; runtimeStatus: RuntimeStatus | 'unknown'; queued: number; working: number; occupied: number; maxConcurrency: number; availableSlots: number; score: number }
+export interface SquadCandidateProjection { squadId: string; eligible: boolean; reasons: string[]; dispatchReady: boolean; warnings: SquadAvailabilityWarning[]; activeDelegations: number; availableSlots: number }
+export interface ProjectTaskCandidates { projectId: string; task: TaskRecord; candidates: AgentCandidateProjection[]; squadCandidates: SquadCandidateProjection[]; conflicts: string[] }
+export interface ProjectTeamImpact {
+  projectId: string
+  revision: number
+  tasks: Array<{ id: string; title: string; ownerAgentId?: string; status: TaskStatus; reasons: string[] }>
+  acceptanceCriteria: Array<{ id: string; key: string; statement: string; status: 'open' | 'verified' | 'failed' | 'waived'; evidenceIds: string[] }>
+  planSnapshotIds: string[]
+  currentPlanSnapshot?: PlanSnapshotRecord
+  currentApproval?: ApprovalRecord
+  activeIssues: Array<{ id: string; title: string; status: IssueStatus; assigneeType?: IssueAssigneeType; assigneeId?: string }>
+  delegations: Array<{ id: string; status: DelegationRecord['status']; parentIssueId: string; childIssueId: string; memberAgentId: string; reason: string }>
+  reviewerAgentId?: string
+  approvalWillInvalidate: boolean
+  hasActiveExecution: boolean
+}
+export interface TeamCollaborationMetrics {
+  scope: 'all' | 'project'
+  projectId?: string
+  taskCount: number
+  singleAgentTaskCount: number
+  squadDelegationTaskCount: number
+  singleAgentRatio: number
+  squadDelegationRatio: number
+  recommendedAssignmentCount: number
+  manuallyChangedAssignmentCount: number
+  recommendationManualChangeRate?: number
+  capabilityGapCount: number
+  capabilityGapRate?: number
+  runtimeWaitCount: number
+  capacityWaitCount: number
+  runtimeWaitDurationMs: number
+  capacityWaitDurationMs: number
+  resourceConflictWaitDurationMs: number
+  blockedTaskCount: number
+  activeBlockedIssueCount: number
+  delegationCount: number
+  delegationCompletedCount: number
+  delegationFailedCount: number
+  delegationEscalatedCount: number
+  delegationCompletionRate?: number
+  delegationEscalationRate?: number
+  leaderRestartCount: number
+  leaderRestartRate?: number
+  childEvidenceCompleteCount: number
+  childEvidenceIncompleteCount: number
+  childEvidenceCompletenessRate?: number
+  implementationSelfReviewCount: number
+  reviewRejectedCount: number
+  collaborationReworkCount: number
+  conflictCount: number
+  activeAgentCount: number
+  agentUtilization: Array<{ agentId: string; busyDurationMs: number; blockedDurationMs: number; observationWindowMs: number; utilizationRate?: number }>
+  blockedCount: number
+  generatedAt: string
+}
+export interface ReviewerIndependencePolicy { required: boolean; reviewerAgentId?: string; excludedAgentIds: string[]; basis: 'team_role' | 'explicit' | 'none' }
+
+export interface PlanSnapshotRecord {
+  id: string
+  projectId: string
+  revision: number
+  mode: 'initial' | 'append' | 'revise'
+  taskIds: string[]
+  planHash: string
+  teamComposition: TeamCompositionSnapshot
+  teamDigest: string
+  assignmentDigest: string
+  requirementDigest?: string
+  decisionDigest?: string
+  taskAssignments?: TaskAssignmentSnapshot[]
+  capacityObservation?: TeamCapacityObservation
+  reviewerIndependencePolicy?: ReviewerIndependencePolicy
+  diagnostics?: Array<{ code: string; severity: 'info' | 'warning' | 'error'; message: string }>
+  generatedBy?: 'planner' | 'human'
+  status: 'candidate' | 'approved' | 'superseded' | 'blocked'
+  supersedesId?: string
+  createdAt: string
+  approvedAt?: string
+}
+
+export interface RequirementBundleRecord {
+  id: string
+  projectId: string
+  title: string
+  mode: 'initial' | 'append' | 'revise'
+  prd: string
+  technicalDesign: string
+  sourceRefs: string[]
+  sourceDigest: string
+  status: 'active' | 'superseded'
+  supersedesId?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RequirementItemRecord {
+  id: string
+  projectId: string
+  bundleId: string
+  key: string
+  kind: 'fact' | 'inference' | 'unknown'
+  statement: string
+  sourceRefs: string[]
+  status: 'active' | 'superseded'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RequirementDecisionRecord {
+  id: string
+  projectId: string
+  bundleId?: string
+  key: string
+  question: string
+  options: Array<{ id: string; label: string; impact?: string }>
+  recommendedOption?: string
+  impact: 'low' | 'medium' | 'high' | 'critical'
+  affectedRequirementIds: string[]
+  affectedTaskIds: string[]
+  owner?: string
+  dueAt?: string
+  status: 'pending' | 'resolved' | 'deferred' | 'rejected'
+  chosenOption?: string
+  resolution?: string
+  decidedBy?: string
+  decidedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AcceptanceCriterionRecord {
+  id: string
+  projectId: string
+  bundleId: string
+  requirementItemId?: string
+  key: string
+  statement: string
+  sourceRefs: string[]
+  taskIds: string[]
+  evidenceIds: string[]
+  status: 'open' | 'verified' | 'failed' | 'waived'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface VerificationEvidenceRecord {
+  id: string
+  projectId: string
+  taskId?: string
+  taskRunId?: string
+  attempt?: number
+  planSnapshotId?: string
+  acceptanceIds: string[]
+  kind: 'test_command' | 'artifact' | 'delegation' | 'review'
+  status: 'passed' | 'failed' | 'unavailable'
+  command?: string
+  exitCode?: number
+  output?: string
+  artifactIds: string[]
+  actorType: 'human' | 'agent' | 'system'
+  actorId?: string
+  createdAt: string
+}
+
+export interface ProjectReviewRecord {
+  id: string
+  projectId: string
+  revision: number
+  planSnapshotId?: string
+  evidenceIds: string[]
+  round?: number
+  acceptanceResults?: Array<{ acceptanceId: string; result: 'passed' | 'failed' | 'waived' | 'not_applicable'; evidenceIds: string[]; note?: string }>
+  decision?: 'approve' | 'request_changes' | 'reject' | 'waive'
+  independencePassed?: boolean
+  reviewerIndependenceWaiver?: { reason: string; owner: string; risk: string; followUpAction: string }
+  waivers?: Array<{ acceptanceId: string; reason: string; owner: string }>
+  status: 'pending' | 'approved' | 'rejected' | 'waived'
+  reviewerType: 'human' | 'agent' | 'system'
+  reviewerId?: string
+  summary: string
+  note?: string
+  createdAt: string
+  resolvedAt?: string
+}
+
+export interface DeliveryRecord {
+  id: string
+  projectId: string
+  revision: number
+  planSnapshotId?: string
+  reviewId?: string
+  evidenceIds: string[]
+  immutableDigest?: string
+  repository?: string
+  baseCommit?: string
+  headCommit?: string
+  branch?: string
+  worktree?: string
+  changedFiles?: string[]
+  diffStat?: string
+  testSummary?: string
+  knownRisks?: string[]
+  rollbackSteps?: string[]
+  handoffMode?: 'local_review'
+  teamDigest?: string
+  assignmentDigest?: string
+  requirementDigest?: string
+  decisionDigest?: string
+  responsibilityChain?: {
+    plannerAgentId?: string
+    leadAgentId?: string
+    plannedReviewerAgentId?: string
+    tasks: Array<{ taskId: string; ownerAgentId?: string; assignmentMode: AssignmentMode; teamDigest?: string; assignmentDigest?: string; taskRunIds: string[]; artifactIds: string[]; verificationEvidenceIds: string[]; delegationIds: string[]; activityIds: string[]; attemptCount: number; wasReassigned: boolean }>
+    delegations: Array<{ delegationId: string; squadId: string; leaderAgentId: string; memberAgentId: string; childIssueId: string; status: DelegationRecord['status']; taskRunId?: string; taskRunIds: string[]; retryTaskRunIds: string[]; escalationDecisionIds: string[]; reviewerId?: string; evidenceIds: string[] }>
+    verifications: Array<{ evidenceId: string; taskId?: string; taskRunId?: string; actorType: 'human' | 'agent' | 'system'; actorId?: string; artifactIds: string[] }>
+    reviewIds: string[]
+    decisionIds: string[]
+    retryTaskRunIds: string[]
+    reassignedTaskIds: string[]
+    escalationDecisionIds: string[]
+    activityIds: string[]
+  }
+  status: 'ready' | 'delivered' | 'closed'
+  deliveredBy?: string
+  deliveredAt?: string
+  closedAt?: string
+  note?: string
+  createdAt: string
 }
 
 export interface RepositoryBranch {
@@ -191,6 +461,11 @@ export interface ProjectRecord {
   issueIds?: string[]
   workspaceId?: string
   leadAgentId?: string
+  deliveryStage?: 'planning' | 'awaiting_approval' | 'approved' | 'executing' | 'review' | 'delivery_ready' | 'delivered' | 'closed'
+  teamComposition?: TeamCompositionSnapshot
+  teamDigest?: string
+  assignmentDigest?: string
+  currentPlanSnapshotId?: string
   decompositionSessionId?: string
   activeRunId?: string
   lastError?: string
@@ -211,6 +486,13 @@ export interface TaskRecord {
   dependencies: string[]
   agentId?: string
   testCommand: string
+  sourceRequirementIds?: string[]
+  acceptanceIds?: string[]
+  assignmentPolicy?: { mode: AssignmentMode; riskLevel: TaskRiskLevel; requiredRoles: string[]; requiredCapabilities: string[]; allowedAgentIds: string[]; allowedSquadIds: string[]; requiresIndependentReviewer: boolean; maxParallel: number; parallelGroup?: string; conflictKeys: string[]; allowedScope: string[]; forbiddenScope: string[]; escalationConditions: string[] }
+  assignmentSource?: 'planner_recommendation' | 'automatic_match' | 'manual'
+  assignmentDigest?: string
+  teamDigest?: string
+  relationship?: 'implementation' | 'verification' | 'review' | 'handoff'
   status: TaskStatus
   boardStage?: BoardStage
   sessionId?: string
@@ -232,6 +514,8 @@ export interface ApprovalRecord {
   projectId: string
   revision: number
   planHash: string
+  teamDigest?: string
+  assignmentDigest?: string
   actor: string
   approvedAt: string
 }
@@ -243,6 +527,8 @@ export interface RunRecord {
   currentTaskId?: string
   approvalRevision?: number
   approvalPlanHash?: string
+  teamDigest?: string
+  assignmentDigest?: string
   error?: string
   createdAt: string
   startedAt?: string
@@ -331,8 +617,14 @@ export interface TaskRunRecord {
   baseCommit?: string
   headCommit?: string
   diffSummary?: string
+  changedFiles?: string[]
+  diffStat?: string
   artifactIds?: string[]
   dispatchedAt?: string
+  waitReason?: 'runtime' | 'capacity' | 'parallel_group' | 'conflict' | 'workspace'
+  waitStartedAt?: string
+  waitDurationsMs?: { runtime: number; capacity: number; parallelGroup: number; conflict: number; workspace: number }
+  waitCounts?: { runtime: number; capacity: number; parallelGroup: number; conflict: number; workspace: number }
   durationMs?: number
   provider?: string
   model?: string
@@ -340,7 +632,7 @@ export interface TaskRunRecord {
   outputTokens?: number
   costUsd?: number
   error?: string
-  errorCode?: 'verification_failed' | 'permission_denied' | 'runtime_offline' | 'capacity_exhausted' | 'dependency_failed' | 'internal'
+  errorCode?: 'verification_failed' | 'scope_violation' | 'verification_unavailable' | 'permission_denied' | 'runtime_offline' | 'capacity_exhausted' | 'dependency_failed' | 'internal'
   testExitCode?: number
   testOutput?: string
   executionEnvironment?: 'host_path' | 'project_venv'
@@ -421,7 +713,7 @@ export interface AgentWorkload {
 }
 
 export interface SquadRecord { id: string; name: string; description: string; leaderAgentId: string; memberAgentIds: string[]; memberRoles: Record<string, string>; instructions: string; escalationPolicy: string; escalationConfig?: SquadEscalationPolicy; collaborationPolicyVersion?: string; maxParallelDelegations: number; status: 'active' | 'archived'; createdAt: string; updatedAt: string }
-export interface DelegationRecord { id: string; squadId: string; projectId: string; parentIssueId: string; childIssueId: string; leaderAgentId: string; memberAgentId: string; taskRunId?: string; commandId?: string; status: 'queued' | 'running' | 'waiting_leader' | 'completed' | 'failed' | 'cancelled' | 'escalated'; instruction: string; contract?: DelegationContract; resultSummary?: string; error?: string; createdAt: string; updatedAt: string; completedAt?: string }
+export interface DelegationRecord { id: string; squadId: string; projectId: string; parentIssueId: string; parentAssignmentRevision?: number; coordinationTaskRunId?: string; childIssueId: string; leaderAgentId: string; memberAgentId: string; taskRunId?: string; commandId?: string; status: 'queued' | 'running' | 'waiting_leader' | 'completed' | 'failed' | 'cancelled' | 'escalated'; instruction: string; contract?: DelegationContract; contractDigest?: string; teamDigest?: string; planSnapshotId?: string; parentAcceptanceIds?: string[]; childTaskIds?: string[]; sourceRequirementIds?: string[]; assignmentDigest?: string; evidenceIds?: string[]; reviewerId?: string; resultSummary?: string; error?: string; createdAt: string; updatedAt: string; completedAt?: string }
 export interface TranscriptEntry { id: string; taskRunId: string; sequence: number; role: 'user' | 'assistant' | 'tool' | 'system'; kind: string; text: string; createdAt: string }
 export interface ArtifactRecord { id: string; projectId: string; issueId?: string; taskRunId?: string; kind: 'diff' | 'test_report' | 'document' | 'log' | 'commit' | 'pull_request'; name: string; status: 'available' | 'missing' | 'failed'; uri?: string; content?: string; metadata: Record<string, unknown>; createdAt: string }
 export interface CommandRecord { id: string; idempotencyKey?: string; type: string; status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'; projectId?: string; issueId?: string; squadId?: string; actorType: 'human' | 'agent' | 'system'; actorId?: string; payload: Record<string, unknown>; result?: Record<string, unknown>; error?: string; createdAt: string; completedAt?: string }
@@ -444,6 +736,14 @@ export interface Snapshot {
   approvals: ApprovalRecord[]
   runs: RunRecord[]
   planHashes: Record<string, string>
+  planSnapshots?: PlanSnapshotRecord[]
+  requirementBundles?: RequirementBundleRecord[]
+  requirementItems?: RequirementItemRecord[]
+  requirementDecisions?: RequirementDecisionRecord[]
+  acceptanceCriteria?: AcceptanceCriterionRecord[]
+  verificationEvidence?: VerificationEvidenceRecord[]
+  projectReviews?: ProjectReviewRecord[]
+  deliveryRecords?: DeliveryRecord[]
   runtimes: RuntimeRecord[]
   resources: ProjectResource[]
   issues: IssueRecord[]

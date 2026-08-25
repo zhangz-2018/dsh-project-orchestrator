@@ -17,6 +17,7 @@ import {
   SkillRecordSchema,
   LocalDirectoryLockRecordSchema,
   WorkspaceLeaseRecordSchema,
+  TaskRunConflictLockRecordSchema,
   AgentRecordSchema,
   ApprovalRecordSchema,
   IssueRecordSchema,
@@ -29,6 +30,14 @@ import {
   ProjectAgentMembershipRecordSchema,
   ProjectSquadBindingRecordSchema,
   ProjectAgentMembershipSourceRecordSchema,
+  PlanSnapshotRecordSchema,
+  RequirementBundleRecordSchema,
+  RequirementItemRecordSchema,
+  RequirementDecisionRecordSchema,
+  AcceptanceCriterionRecordSchema,
+  VerificationEvidenceRecordSchema,
+  ProjectReviewRecordSchema,
+  DeliveryRecordSchema,
   FeatureUsageDailyRecordSchema,
   type ActivityEvent,
   type CommentRecord,
@@ -42,6 +51,7 @@ import {
   type SkillRecord,
   type LocalDirectoryLockRecord,
   type WorkspaceLeaseRecord,
+  type TaskRunConflictLockRecord,
   type AgentRecord,
   type ApprovalRecord,
   type IssueRecord,
@@ -56,6 +66,14 @@ import {
   type ProjectSquadBindingRecord,
   type ProjectAgentMembershipSourceRecord,
   type FeatureUsageDailyRecord,
+  type PlanSnapshotRecord,
+  type RequirementBundleRecord,
+  type RequirementItemRecord,
+  type RequirementDecisionRecord,
+  type AcceptanceCriterionRecord,
+  type VerificationEvidenceRecord,
+  type ProjectReviewRecord,
+  type DeliveryRecord,
 } from './types.js'
 import { WorkflowError, planDigest } from './workflow.js'
 
@@ -88,10 +106,19 @@ export const orchestratorDomain = defineDomain({
     skills: domainTable<string, SkillRecord>(SkillRecordSchema),
     local_directory_locks: domainTable<string, LocalDirectoryLockRecord>(LocalDirectoryLockRecordSchema),
     workspace_leases: domainTable<string, WorkspaceLeaseRecord>(WorkspaceLeaseRecordSchema),
+    task_run_conflict_locks: domainTable<string, TaskRunConflictLockRecord>(TaskRunConflictLockRecordSchema),
     project_agent_memberships: domainTable<string, ProjectAgentMembershipRecord>(ProjectAgentMembershipRecordSchema),
     project_squad_bindings: domainTable<string, ProjectSquadBindingRecord>(ProjectSquadBindingRecordSchema),
     project_agent_membership_sources: domainTable<string, ProjectAgentMembershipSourceRecord>(ProjectAgentMembershipSourceRecordSchema),
     feature_usage_daily: domainTable<string, FeatureUsageDailyRecord>(FeatureUsageDailyRecordSchema),
+    plan_snapshots: domainTable<string, PlanSnapshotRecord>(PlanSnapshotRecordSchema),
+    requirement_bundles: domainTable<string, RequirementBundleRecord>(RequirementBundleRecordSchema),
+    requirement_items: domainTable<string, RequirementItemRecord>(RequirementItemRecordSchema),
+    requirement_decisions: domainTable<string, RequirementDecisionRecord>(RequirementDecisionRecordSchema),
+    acceptance_criteria: domainTable<string, AcceptanceCriterionRecord>(AcceptanceCriterionRecordSchema),
+    verification_evidence: domainTable<string, VerificationEvidenceRecord>(VerificationEvidenceRecordSchema),
+    project_reviews: domainTable<string, ProjectReviewRecord>(ProjectReviewRecordSchema),
+    delivery_records: domainTable<string, DeliveryRecord>(DeliveryRecordSchema),
   },
 })
 
@@ -117,10 +144,19 @@ export class OrchestratorStore {
   readonly skills
   readonly localDirectoryLocks
   readonly workspaceLeases
+  readonly taskRunConflictLocks
   readonly projectAgentMemberships
   readonly projectSquadBindings
   readonly projectAgentMembershipSources
   readonly featureUsageDaily
+  readonly planSnapshots
+  readonly requirementBundles
+  readonly requirementItems
+  readonly requirementDecisions
+  readonly acceptanceCriteria
+  readonly verificationEvidence
+  readonly projectReviews
+  readonly deliveryRecords
 
   constructor(readonly domain: Domain<typeof orchestratorDomain>) {
     this.agents = domain.table('agents')
@@ -144,10 +180,19 @@ export class OrchestratorStore {
     this.skills = optionalTable<SkillRecord>(domain, 'skills')
     this.localDirectoryLocks = optionalTable<LocalDirectoryLockRecord>(domain, 'local_directory_locks')
     this.workspaceLeases = optionalTable<WorkspaceLeaseRecord>(domain, 'workspace_leases')
+    this.taskRunConflictLocks = optionalTable<TaskRunConflictLockRecord>(domain, 'task_run_conflict_locks')
     this.projectAgentMemberships = optionalTable<ProjectAgentMembershipRecord>(domain, 'project_agent_memberships')
     this.projectSquadBindings = optionalTable<ProjectSquadBindingRecord>(domain, 'project_squad_bindings')
     this.projectAgentMembershipSources = optionalTable<ProjectAgentMembershipSourceRecord>(domain, 'project_agent_membership_sources')
     this.featureUsageDaily = optionalTable<FeatureUsageDailyRecord>(domain, 'feature_usage_daily')
+    this.planSnapshots = optionalTable<PlanSnapshotRecord>(domain, 'plan_snapshots')
+    this.requirementBundles = optionalTable<RequirementBundleRecord>(domain, 'requirement_bundles')
+    this.requirementItems = optionalTable<RequirementItemRecord>(domain, 'requirement_items')
+    this.requirementDecisions = optionalTable<RequirementDecisionRecord>(domain, 'requirement_decisions')
+    this.acceptanceCriteria = optionalTable<AcceptanceCriterionRecord>(domain, 'acceptance_criteria')
+    this.verificationEvidence = optionalTable<VerificationEvidenceRecord>(domain, 'verification_evidence')
+    this.projectReviews = optionalTable<ProjectReviewRecord>(domain, 'project_reviews')
+    this.deliveryRecords = optionalTable<DeliveryRecord>(domain, 'delivery_records')
   }
 
   snapshot(): Snapshot {
@@ -220,6 +265,14 @@ export class OrchestratorStore {
       projectSquadBindings: [...this.projectSquadBindings.entries()].map(([, value]) => value).filter((binding) => projectIds.has(binding.projectId)).sort(byUpdatedAt),
       projectAgentMembershipSources: [...this.projectAgentMembershipSources.entries()].map(([, value]) => value).filter((source) => projectIds.has(source.projectId)).sort(byUpdatedAt),
       featureUsageDaily: [...this.featureUsageDaily.entries()].map(([, value]) => value).sort((left, right) => right.date.localeCompare(left.date) || left.feature.localeCompare(right.feature)),
+      planSnapshots: [...this.planSnapshots.entries()].map(([, value]) => value).filter((snapshot) => projectIds.has(snapshot.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      requirementBundles: [...this.requirementBundles.entries()].map(([, value]) => value).filter((bundle) => projectIds.has(bundle.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      requirementItems: [...this.requirementItems.entries()].map(([, value]) => value).filter((item) => projectIds.has(item.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      requirementDecisions: [...this.requirementDecisions.entries()].map(([, value]) => value).filter((decision) => projectIds.has(decision.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      acceptanceCriteria: [...this.acceptanceCriteria.entries()].map(([, value]) => value).filter((criterion) => projectIds.has(criterion.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      verificationEvidence: [...this.verificationEvidence.entries()].map(([, value]) => value).filter((evidence) => projectIds.has(evidence.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      projectReviews: [...this.projectReviews.entries()].map(([, value]) => value).filter((review) => projectIds.has(review.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      deliveryRecords: [...this.deliveryRecords.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       runtimeOverview: {
         defaultHost: { id: 'default-host', name: '本机默认环境', status: 'unstable', capabilities: [], boundAgentCount: [...this.agents.entries()].filter(([, agent]) => agent.status === 'active' && agent.runtimeId === undefined).length },
         customCount: runtimes.filter((runtime) => runtime.lifecycle === 'active').length,
@@ -262,6 +315,7 @@ function optionalTable<T>(domain: Domain<typeof orchestratorDomain>, name: strin
     return table
   } catch {
     return {
+      __unavailable: true,
       get: () => undefined,
       entries: () => [][Symbol.iterator](),
       put: async () => { throw new WorkflowError('storage-table-unavailable', `Storage table "${name}" is unavailable in this legacy test domain.`, 503) },

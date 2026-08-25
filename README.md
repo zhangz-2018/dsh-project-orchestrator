@@ -8,7 +8,7 @@ A **DeepSeek Harness plugin** for local-first AI project management and task orc
 
 **Use this when** you want a local DeepSeek Harness workflow for planning coding tasks, importing GitHub Issues, executing in isolated Git worktrees, and requiring human approval before repository changes.
 
-> **Compatibility:** v1.5.10 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.5.11 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
 ## See it in action
 
@@ -89,7 +89,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.10
+dsh plugin --profile web add dsh-project-orchestrator@1.5.11
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -196,7 +196,7 @@ The package smoke test builds the exact npm artifact, checks its file allowlist 
 
 ## Buy the author a coffee
 
-If this project helps you, you can support its continued maintenance with WeChat Pay or Alipay. Thank you for your support.
+If this project helps you, you can support its continued maintenance with Alipay. Thank you for your support.
 
 <p align="center">
   <img src="docs/assets/donate-alipay.jpg" alt="Alipay QR code" width="280">

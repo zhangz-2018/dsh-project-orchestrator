@@ -2,6 +2,9 @@ import { z } from 'zod'
 
 export const AgentToolPolicySchema = z.enum(['full', 'read_only'])
 export const AgentStatusSchema = z.enum(['active', 'archived'])
+export const AssignmentModeSchema = z.enum(['single_agent', 'squad_delegation', 'review_only'])
+export const TaskRiskLevelSchema = z.enum(['low', 'medium', 'high', 'critical'])
+export const ProjectDeliveryStageSchema = z.enum(['planning', 'awaiting_approval', 'approved', 'executing', 'review', 'delivery_ready', 'delivered', 'closed'])
 export const PrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'])
 export const TaskLanguageSchema = z.enum(['zh-CN', 'en'])
 export const RuntimeStatusSchema = z.enum(['online', 'offline', 'unstable'])
@@ -11,7 +14,7 @@ export const ResourceExecutionModeSchema = z.enum(['in_place', 'worktree'])
 export const IssueStatusSchema = z.enum(['backlog', 'todo', 'in_progress', 'in_review', 'done', 'blocked', 'cancelled'])
 export const IssueAssigneeTypeSchema = z.enum(['member', 'agent', 'squad'])
 export const TaskRunStatusSchema = z.enum(['deferred', 'queued', 'dispatched', 'waiting_local_directory', 'running', 'completed', 'failed', 'cancelled'])
-export const TaskRunErrorCodeSchema = z.enum(['verification_failed', 'permission_denied', 'runtime_offline', 'capacity_exhausted', 'dependency_failed', 'internal'])
+export const TaskRunErrorCodeSchema = z.enum(['verification_failed', 'scope_violation', 'verification_unavailable', 'permission_denied', 'runtime_offline', 'capacity_exhausted', 'dependency_failed', 'internal'])
 export const ActivityActorTypeSchema = z.enum(['human', 'agent', 'system'])
 export const DecisionKindSchema = z.enum(['approval', 'retry', 'assignment', 'review', 'permission', 'runtime'])
 export const DecisionStatusSchema = z.enum(['pending', 'approved', 'rejected', 'deferred'])
@@ -54,10 +57,347 @@ export const DelegationContractSchema = z.object({
   verification: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
   escalationConditions: z.array(z.string().trim().min(1).max(2_000)).min(1).max(50),
 }).strict()
+
+export const TaskAssignmentPolicySchema = z.object({
+  mode: AssignmentModeSchema.default('single_agent'),
+  riskLevel: TaskRiskLevelSchema.default('low'),
+  requiredRoles: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
+  requiredCapabilities: z.array(z.string().trim().min(1).max(160)).max(50).default([]),
+  allowedAgentIds: z.array(z.string().min(1)).max(100).default([]),
+  allowedSquadIds: z.array(z.string().min(1)).max(50).default([]),
+  requiresIndependentReviewer: z.boolean().default(false),
+  maxParallel: z.number().int().positive().max(32).default(1),
+  parallelGroup: z.string().trim().min(1).max(160).optional(),
+  conflictKeys: z.array(z.string().trim().min(1).max(200)).max(50).default([]),
+  allowedScope: z.array(z.string().trim().min(1).max(2_000)).max(100).default([]),
+  forbiddenScope: z.array(z.string().trim().min(1).max(2_000)).max(50).default([]),
+  escalationConditions: z.array(z.string().trim().min(1).max(2_000)).max(50).default([]),
+}).strict()
+
+export const TeamCompositionMemberSchema = z.object({
+  agentId: z.string().min(1),
+  projectRole: z.string().trim().max(200),
+  source: z.enum(['manual', 'squad', 'retained_reference']),
+  sourceId: z.string().min(1),
+  capabilities: z.array(z.string().trim().min(1).max(160)).max(100).default([]),
+  skillsDigest: z.string().length(64).optional(),
+  personaDigest: z.string().length(64).optional(),
+  runtimeId: z.string().min(1).optional(),
+  runtimeStatus: RuntimeStatusSchema.optional(),
+  maxConcurrency: z.number().int().positive().max(32).default(1),
+  availableSlots: z.number().int().nonnegative().optional(),
+}).strict()
+
+export const TeamCompositionSquadSchema = z.object({
+  squadId: z.string().min(1),
+  isDefault: z.boolean().default(false),
+  leaderAgentId: z.string().min(1),
+  memberAgentIds: z.array(z.string().min(1)).min(1).max(100),
+  collaborationPolicyVersion: z.string().trim().min(1).max(100).optional(),
+  policyDigest: z.string().length(64).optional(),
+  maxParallelDelegations: z.number().int().positive().max(32).default(1),
+  syncedSquadUpdatedAt: z.string().min(1),
+}).strict()
+
+export const TeamCompositionSnapshotSchema = z.object({
+  plannerAgentId: z.string().min(1).optional(),
+  leadAgentId: z.string().min(1).optional(),
+  reviewerAgentId: z.string().min(1).optional(),
+  members: z.array(TeamCompositionMemberSchema).max(100),
+  squads: z.array(TeamCompositionSquadSchema).max(50),
+  teamDigest: z.string().length(64),
+  capturedAt: z.string().min(1),
+}).strict()
+
+export const TaskAssignmentSnapshotSchema = z.object({
+  taskId: z.string().min(1),
+  policy: TaskAssignmentPolicySchema,
+  ownerAgentId: z.string().min(1).optional(),
+  ownerSquadId: z.string().min(1).optional(),
+}).strict()
+
+export const TeamCapacityObservationSchema = z.object({
+  agents: z.array(z.object({
+    agentId: z.string().min(1),
+    availability: z.enum(['online', 'offline', 'unstable', 'unknown']),
+    queued: z.number().int().nonnegative(),
+    working: z.number().int().nonnegative(),
+    occupied: z.number().int().nonnegative(),
+    maxConcurrency: z.number().int().positive(),
+    availableSlots: z.number().int().nonnegative(),
+  }).strict()).max(100),
+  squads: z.array(z.object({
+    squadId: z.string().min(1),
+    eligible: z.boolean(),
+    activeDelegations: z.number().int().nonnegative(),
+    maxParallelDelegations: z.number().int().positive(),
+    availableSlots: z.number().int().nonnegative(),
+  }).strict()).max(50),
+}).strict()
+
+export const ReviewerIndependencePolicySchema = z.object({
+  required: z.boolean(),
+  reviewerAgentId: z.string().min(1).optional(),
+  excludedAgentIds: z.array(z.string().min(1)).max(100).default([]),
+  basis: z.enum(['team_role', 'explicit', 'none']),
+}).strict()
+
+export const PlanSnapshotStatusSchema = z.enum(['candidate', 'approved', 'superseded', 'blocked'])
+export const PlanSnapshotModeSchema = z.enum(['initial', 'append', 'revise'])
+export const PlanSnapshotRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  revision: z.number().int().positive(),
+  mode: PlanSnapshotModeSchema,
+  taskIds: z.array(z.string().min(1)).min(1).max(1_000),
+  planHash: z.string().length(64),
+  teamComposition: TeamCompositionSnapshotSchema,
+  teamDigest: z.string().length(64),
+  assignmentDigest: z.string().length(64),
+  requirementDigest: z.string().length(64).optional(),
+  decisionDigest: z.string().length(64).optional(),
+  taskAssignments: z.array(TaskAssignmentSnapshotSchema).max(1_000).optional(),
+  capacityObservation: TeamCapacityObservationSchema.optional(),
+  reviewerIndependencePolicy: ReviewerIndependencePolicySchema.optional(),
+  diagnostics: z.array(z.object({ code: z.string().trim().min(1).max(100), severity: z.enum(['info', 'warning', 'error']), message: z.string().trim().min(1).max(2_000) }).strict()).max(200).optional(),
+  generatedBy: z.enum(['planner', 'human']).optional(),
+  status: PlanSnapshotStatusSchema,
+  supersedesId: z.string().min(1).optional(),
+  createdAt: z.string().min(1),
+  approvedAt: z.string().min(1).optional(),
+}).strict()
+
+export const RequirementBundleModeSchema = z.enum(['initial', 'append', 'revise'])
+export const RequirementBundleStatusSchema = z.enum(['active', 'superseded'])
+export const RequirementBundleRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  title: z.string().trim().min(1).max(160),
+  mode: RequirementBundleModeSchema,
+  prd: z.string().min(1).max(500_000),
+  technicalDesign: z.string().max(500_000),
+  sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  sourceDigest: z.string().length(64),
+  status: RequirementBundleStatusSchema,
+  supersedesId: z.string().min(1).optional(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+}).strict()
+export const RequirementItemKindSchema = z.enum(['fact', 'inference', 'unknown'])
+export const RequirementItemStatusSchema = z.enum(['active', 'superseded'])
+export const RequirementItemRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  bundleId: z.string().min(1),
+  key: z.string().trim().min(1).max(240),
+  kind: RequirementItemKindSchema,
+  statement: z.string().trim().min(1).max(20_000),
+  sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  status: RequirementItemStatusSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+}).strict()
+export const RequirementDecisionImpactSchema = z.enum(['low', 'medium', 'high', 'critical'])
+export const RequirementDecisionStatusSchema = z.enum(['pending', 'resolved', 'deferred', 'rejected'])
+const RequirementDecisionOptionSchema = z.object({
+  id: z.string().trim().min(1).max(100),
+  label: z.string().trim().min(1).max(2_000),
+  impact: z.string().trim().max(2_000).optional(),
+}).strict()
+export const RequirementDecisionRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  bundleId: z.string().min(1).optional(),
+  key: z.string().trim().min(1).max(240),
+  question: z.string().trim().min(1).max(20_000),
+  options: z.array(RequirementDecisionOptionSchema).min(1).max(20),
+  recommendedOption: z.string().trim().min(1).max(100).optional(),
+  impact: RequirementDecisionImpactSchema,
+  affectedRequirementIds: z.array(z.string().min(1)).max(100),
+  affectedTaskIds: z.array(z.string().min(1)).max(100),
+  owner: z.string().trim().max(240).optional(),
+  dueAt: z.string().min(1).optional(),
+  status: RequirementDecisionStatusSchema,
+  chosenOption: z.string().trim().min(1).max(100).optional(),
+  resolution: z.string().trim().max(20_000).optional(),
+  decidedBy: z.string().trim().max(240).optional(),
+  decidedAt: z.string().min(1).optional(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+}).strict().superRefine((value, context) => {
+  if (value.status === 'resolved' && value.chosenOption === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['chosenOption'], message: 'Resolved decisions require chosenOption.' })
+  if (value.status === 'resolved' && value.decidedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['decidedAt'], message: 'Resolved decisions require decidedAt.' })
+})
+export const RequirementDecisionInputSchema = z.object({
+  bundleId: z.string().min(1).optional(),
+  key: z.string().trim().min(1).max(240),
+  question: z.string().trim().min(1).max(20_000),
+  options: z.array(RequirementDecisionOptionSchema).min(1).max(20),
+  recommendedOption: z.string().trim().min(1).max(100).optional(),
+  impact: RequirementDecisionImpactSchema,
+  affectedRequirementIds: z.array(z.string().min(1)).max(100).default([]),
+  affectedTaskIds: z.array(z.string().min(1)).max(100).default([]),
+  owner: z.string().trim().max(240).optional(),
+  dueAt: z.string().min(1).optional(),
+}).strict()
+export const RequirementDecisionResolutionSchema = z.object({
+  status: z.enum(['resolved', 'deferred', 'rejected']),
+  chosenOption: z.string().trim().min(1).max(100).optional(),
+  resolution: z.string().trim().min(1).max(20_000),
+  decidedBy: z.string().trim().min(1).max(240),
+}).strict()
+export const AcceptanceCriterionStatusSchema = z.enum(['open', 'verified', 'failed', 'waived'])
+export const AcceptanceCriterionRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  bundleId: z.string().min(1),
+  requirementItemId: z.string().min(1).optional(),
+  key: z.string().trim().min(1).max(240),
+  statement: z.string().trim().min(1).max(2_000),
+  sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  taskIds: z.array(z.string().min(1)).max(100),
+  evidenceIds: z.array(z.string().min(1)).max(100),
+  status: AcceptanceCriterionStatusSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+}).strict()
+export const VerificationEvidenceStatusSchema = z.enum(['passed', 'failed', 'unavailable'])
+export const VerificationEvidenceKindSchema = z.enum(['test_command', 'artifact', 'delegation', 'review'])
+export const VerificationEvidenceRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  taskId: z.string().min(1).optional(),
+  taskRunId: z.string().min(1).optional(),
+  attempt: z.number().int().positive().optional(),
+  planSnapshotId: z.string().min(1).optional(),
+  acceptanceIds: z.array(z.string().min(1)).max(100).default([]),
+  kind: VerificationEvidenceKindSchema,
+  status: VerificationEvidenceStatusSchema,
+  command: z.string().max(10_000).optional(),
+  exitCode: z.number().int().optional(),
+  output: z.string().max(70_000).optional(),
+  artifactIds: z.array(z.string().min(1)).max(500).default([]),
+  actorType: ActivityActorTypeSchema,
+  actorId: z.string().max(240).optional(),
+  createdAt: z.string().min(1),
+}).strict()
+export const ProjectReviewStatusSchema = z.enum(['pending', 'approved', 'rejected', 'waived'])
+export const ReviewerIndependenceWaiverSchema = z.object({
+  reason: z.string().trim().min(1).max(10_000),
+  owner: z.string().trim().min(1).max(240),
+  risk: z.string().trim().min(1).max(10_000),
+  followUpAction: z.string().trim().min(1).max(10_000),
+}).strict()
+export const ProjectReviewRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  revision: z.number().int().positive(),
+  planSnapshotId: z.string().min(1).optional(),
+  evidenceIds: z.array(z.string().min(1)).max(1_000),
+  round: z.number().int().positive().default(1),
+  acceptanceResults: z.array(z.object({ acceptanceId: z.string().min(1), result: z.enum(['passed', 'failed', 'waived', 'not_applicable']), evidenceIds: z.array(z.string().min(1)).max(100), note: z.string().max(2_000).optional() }).strict()).max(1_000).default([]),
+  decision: z.enum(['approve', 'request_changes', 'reject', 'waive']).optional(),
+  independencePassed: z.boolean().optional(),
+  reviewerIndependenceWaiver: ReviewerIndependenceWaiverSchema.optional(),
+  waivers: z.array(z.object({ acceptanceId: z.string().min(1), reason: z.string().trim().min(1).max(10_000), owner: z.string().trim().min(1).max(240) }).strict()).max(100).default([]),
+  status: ProjectReviewStatusSchema,
+  reviewerType: ActivityActorTypeSchema,
+  reviewerId: z.string().max(240).optional(),
+  summary: z.string().max(20_000),
+  note: z.string().max(20_000).optional(),
+  createdAt: z.string().min(1),
+  resolvedAt: z.string().min(1).optional(),
+}).strict()
+export const ProjectReviewResolutionSchema = z.object({
+  decision: z.enum(['approve', 'request_changes', 'reject', 'waive']),
+  actor: z.string().trim().min(1).max(240),
+  note: z.string().trim().min(1).max(20_000),
+  waivers: z.array(z.object({ acceptanceId: z.string().min(1), reason: z.string().trim().min(1).max(10_000), owner: z.string().trim().min(1).max(240) }).strict()).max(100).default([]),
+  reviewerIndependenceWaiver: ReviewerIndependenceWaiverSchema.optional(),
+}).strict()
+export const DeliveryResponsibilityChainSchema = z.object({
+  plannerAgentId: z.string().min(1).optional(),
+  leadAgentId: z.string().min(1).optional(),
+  plannedReviewerAgentId: z.string().min(1).optional(),
+  tasks: z.array(z.object({
+    taskId: z.string().min(1),
+    ownerAgentId: z.string().min(1).optional(),
+    assignmentMode: AssignmentModeSchema,
+    teamDigest: z.string().length(64).optional(),
+    assignmentDigest: z.string().length(64).optional(),
+    taskRunIds: z.array(z.string().min(1)).max(100),
+    artifactIds: z.array(z.string().min(1)).max(500),
+    verificationEvidenceIds: z.array(z.string().min(1)).max(500),
+    delegationIds: z.array(z.string().min(1)).max(100),
+    activityIds: z.array(z.string().min(1)).max(1_000),
+    attemptCount: z.number().int().nonnegative(),
+    wasReassigned: z.boolean(),
+  }).strict()).max(1_000),
+  delegations: z.array(z.object({
+    delegationId: z.string().min(1),
+    squadId: z.string().min(1),
+    leaderAgentId: z.string().min(1),
+    memberAgentId: z.string().min(1),
+    childIssueId: z.string().min(1),
+    status: z.enum(['queued', 'running', 'waiting_leader', 'completed', 'failed', 'cancelled', 'escalated']),
+    taskRunId: z.string().min(1).optional(),
+    taskRunIds: z.array(z.string().min(1)).max(100).default([]),
+    retryTaskRunIds: z.array(z.string().min(1)).max(100).default([]),
+    escalationDecisionIds: z.array(z.string().min(1)).max(100).default([]),
+    reviewerId: z.string().max(240).optional(),
+    evidenceIds: z.array(z.string().min(1)).max(500),
+  }).strict()).max(1_000),
+  verifications: z.array(z.object({
+    evidenceId: z.string().min(1),
+    taskId: z.string().min(1).optional(),
+    taskRunId: z.string().min(1).optional(),
+    actorType: ActivityActorTypeSchema,
+    actorId: z.string().max(240).optional(),
+    artifactIds: z.array(z.string().min(1)).max(500),
+  }).strict()).max(2_000),
+  reviewIds: z.array(z.string().min(1)).max(100),
+  decisionIds: z.array(z.string().min(1)).max(1_000),
+  retryTaskRunIds: z.array(z.string().min(1)).max(1_000).default([]),
+  reassignedTaskIds: z.array(z.string().min(1)).max(1_000).default([]),
+  escalationDecisionIds: z.array(z.string().min(1)).max(1_000).default([]),
+  activityIds: z.array(z.string().min(1)).max(5_000),
+}).strict()
+export const DeliveryRecordStatusSchema = z.enum(['ready', 'delivered', 'closed'])
+export const DeliveryRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  revision: z.number().int().positive(),
+  planSnapshotId: z.string().min(1).optional(),
+  reviewId: z.string().min(1).optional(),
+  evidenceIds: z.array(z.string().min(1)).max(1_000),
+  immutableDigest: z.string().length(64).optional(),
+  repository: z.string().max(4_096).optional(),
+  baseCommit: z.string().max(100).optional(),
+  headCommit: z.string().max(100).optional(),
+  branch: z.string().max(500).optional(),
+  worktree: z.string().max(4_096).optional(),
+  changedFiles: z.array(z.string().max(4_096)).max(2_000).default([]),
+  diffStat: z.string().max(70_000).optional(),
+  testSummary: z.string().max(20_000).optional(),
+  knownRisks: z.array(z.string().max(2_000)).max(100).default([]),
+  rollbackSteps: z.array(z.string().max(2_000)).max(100).default([]),
+  handoffMode: z.enum(['local_review']).default('local_review'),
+  teamDigest: z.string().length(64).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  requirementDigest: z.string().length(64).optional(),
+  decisionDigest: z.string().length(64).optional(),
+  responsibilityChain: DeliveryResponsibilityChainSchema.optional(),
+  status: DeliveryRecordStatusSchema,
+  deliveredBy: z.string().max(240).optional(),
+  deliveredAt: z.string().min(1).optional(),
+  closedAt: z.string().min(1).optional(),
+  note: z.string().max(20_000).optional(),
+  createdAt: z.string().min(1),
+}).strict()
 export const DelegationStatusSchema = z.enum(['queued', 'running', 'waiting_leader', 'completed', 'failed', 'cancelled', 'escalated'])
 export const ArtifactKindSchema = z.enum(['diff', 'test_report', 'document', 'log', 'commit', 'pull_request'])
 export const ArtifactStatusSchema = z.enum(['available', 'missing', 'failed'])
-export const CommandTypeSchema = z.enum(['assign_issue', 'reassign_issue', 'stop_issue', 'continue_issue', 'approve_review', 'reject_review', 'request_decision', 'delegate_issue', 'retry_delegation', 'stop_delegation', 'autopilot_tick'])
+export const CommandTypeSchema = z.enum(['assign_issue', 'reassign_issue', 'stop_issue', 'continue_issue', 'approve_review', 'reject_review', 'request_decision', 'delegate_issue', 'retry_delegation', 'stop_delegation', 'autopilot_tick', 'reassign_task', 'bind_project_squad', 'sync_project_squad', 'validate_team', 'resolve_team_blocker'])
 export const CommandStatusSchema = z.enum(['pending', 'running', 'completed', 'failed', 'cancelled'])
 export const ExternalTriggerStatusSchema = z.enum(['received', 'processed', 'rejected', 'duplicate'])
 export const InboxKindSchema = z.enum(['needs_decision', 'blocked', 'review_ready', 'runtime_offline', 'permission_denied', 'test_failed_after_retry', 'stale_approval'])
@@ -202,6 +542,8 @@ export const DelegationRecordSchema = z.object({
   squadId: z.string().min(1),
   projectId: z.string().min(1),
   parentIssueId: z.string().min(1),
+  parentAssignmentRevision: z.number().int().nonnegative().optional(),
+  coordinationTaskRunId: z.string().min(1).optional(),
   childIssueId: z.string().min(1),
   leaderAgentId: z.string().min(1),
   memberAgentId: z.string().min(1),
@@ -210,6 +552,15 @@ export const DelegationRecordSchema = z.object({
   status: DelegationStatusSchema,
   instruction: z.string().trim().min(1).max(20_000),
   contract: DelegationContractSchema.optional(),
+  contractDigest: z.string().length(64).optional(),
+  teamDigest: z.string().length(64).optional(),
+  planSnapshotId: z.string().min(1).optional(),
+  parentAcceptanceIds: z.array(z.string().min(1)).max(100).optional(),
+  childTaskIds: z.array(z.string().min(1)).max(100).optional(),
+  sourceRequirementIds: z.array(z.string().min(1)).max(100).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  evidenceIds: z.array(z.string().min(1)).max(500).optional(),
+  reviewerId: z.string().max(240).optional(),
   resultSummary: z.string().max(20_000).optional(),
   error: z.string().max(20_000).optional(),
   createdAt: z.string().min(1),
@@ -295,6 +646,15 @@ export const WorkspaceLeaseRecordSchema = z.object({
   heartbeatAt: z.string().min(1),
   releasedAt: z.string().min(1).optional(),
   cleanupError: z.string().max(20_000).optional(),
+}).strict()
+export const TaskRunConflictLockRecordSchema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  taskRunId: z.string().min(1),
+  conflictKey: z.string().trim().min(1).max(200),
+  acquiredAt: z.string().min(1),
+  heartbeatAt: z.string().min(1),
+  releasedAt: z.string().min(1).optional(),
 }).strict()
 
 export const SkillRecordSchema = z.object({
@@ -420,6 +780,8 @@ export const TaskRunRecordSchema = z.object({
   promptDigest: z.string().length(64).optional(),
   promptContextDigest: z.string().length(64).optional(),
   collaborationPolicyVersion: z.string().trim().min(1).max(100).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  teamDigest: z.string().length(64).optional(),
   promptDiagnostics: z.array(z.object({ code: z.string().trim().min(1).max(100), severity: z.enum(['info', 'warning']) }).strict()).max(50).optional(),
   sessionId: z.string().min(1).optional(),
   cwd: z.string().min(1).max(4_096).optional(),
@@ -429,8 +791,26 @@ export const TaskRunRecordSchema = z.object({
   baseCommit: z.string().min(1).max(100).optional(),
   headCommit: z.string().min(1).max(100).optional(),
   diffSummary: z.string().max(70_000).optional(),
+  changedFiles: z.array(z.string().max(4_096)).max(2_000).optional(),
+  diffStat: z.string().max(70_000).optional(),
   artifactIds: z.array(z.string().min(1)).max(500).optional(),
   dispatchedAt: z.string().min(1).optional(),
+  waitReason: z.enum(['runtime', 'capacity', 'parallel_group', 'conflict', 'workspace']).optional(),
+  waitStartedAt: z.string().min(1).optional(),
+  waitDurationsMs: z.object({
+    runtime: z.number().int().nonnegative().default(0),
+    capacity: z.number().int().nonnegative().default(0),
+    parallelGroup: z.number().int().nonnegative().default(0),
+    conflict: z.number().int().nonnegative().default(0),
+    workspace: z.number().int().nonnegative().default(0),
+  }).strict().optional(),
+  waitCounts: z.object({
+    runtime: z.number().int().nonnegative().default(0),
+    capacity: z.number().int().nonnegative().default(0),
+    parallelGroup: z.number().int().nonnegative().default(0),
+    conflict: z.number().int().nonnegative().default(0),
+    workspace: z.number().int().nonnegative().default(0),
+  }).strict().optional(),
   durationMs: z.number().int().nonnegative().optional(),
   provider: z.string().max(200).optional(),
   model: z.string().max(300).optional(),
@@ -472,6 +852,7 @@ export const AgentRecordSchema = z.object({
   preset: z.string().min(1).max(100),
   toolPolicy: AgentToolPolicySchema,
   skills: SkillsSchema.optional(),
+  capabilities: z.array(z.string().trim().min(1).max(160)).max(100).optional(),
   runtimeId: z.string().min(1).optional(),
   access: z.enum(['only_me', 'workspace', 'specific_people']).optional(),
   maxConcurrency: z.number().int().positive().max(32).optional(),
@@ -510,6 +891,13 @@ export const ProjectRecordSchema = z.object({
   issueIds: z.array(z.string().min(1)).max(1_000).optional(),
   workspaceId: z.string().min(1).max(240).optional(),
   leadAgentId: z.string().min(1).optional(),
+  deliveryStage: ProjectDeliveryStageSchema.optional(),
+  teamComposition: TeamCompositionSnapshotSchema.optional(),
+  teamDigest: z.string().length(64).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  requirementDigest: z.string().length(64).optional(),
+  decisionDigest: z.string().length(64).optional(),
+  currentPlanSnapshotId: z.string().min(1).optional(),
   decompositionSessionId: z.string().optional(),
   activeRunId: z.string().optional(),
   lastError: z.string().max(20_000).optional(),
@@ -539,6 +927,14 @@ export const TaskRecordSchema = z.object({
   tags: TagsSchema.optional(),
   agentId: z.string().optional(),
   testCommand: z.string().min(1).max(10_000),
+  sourceRequirementIds: z.array(z.string().min(1)).max(100).optional(),
+  acceptanceIds: z.array(z.string().min(1)).max(100).optional(),
+  assignmentPolicy: TaskAssignmentPolicySchema.optional(),
+  assignmentSource: z.enum(['planner_recommendation', 'automatic_match', 'manual']).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  teamDigest: z.string().length(64).optional(),
+  planSnapshotId: z.string().min(1).optional(),
+  relationship: z.enum(['implementation', 'verification', 'review', 'handoff']).optional(),
   status: TaskStatusSchema,
   boardStage: BoardStageSchema.optional(),
   sessionId: z.string().optional(),
@@ -560,6 +956,12 @@ export const ApprovalRecordSchema = z.object({
   projectId: z.string().min(1),
   revision: z.number().int().positive(),
   planHash: z.string().length(64),
+  teamDigest: z.string().length(64).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  planSnapshotId: z.string().min(1).optional(),
+  requirementDigest: z.string().length(64).optional(),
+  decisionDigest: z.string().length(64).optional(),
+  approvedTaskIds: z.array(z.string().min(1)).max(1_000).optional(),
   actor: z.string().min(1).max(200),
   approvedAt: z.string().min(1),
 })
@@ -571,6 +973,9 @@ export const RunRecordSchema = z.object({
   currentTaskId: z.string().optional(),
   approvalRevision: z.number().int().positive().optional(),
   approvalPlanHash: z.string().length(64).optional(),
+  teamDigest: z.string().length(64).optional(),
+  assignmentDigest: z.string().length(64).optional(),
+  planSnapshotId: z.string().min(1).optional(),
   taskRunIds: z.array(z.string().min(1)).max(1_000).optional(),
   error: z.string().max(20_000).optional(),
   createdAt: z.string().min(1),
@@ -591,6 +996,10 @@ export const GeneratedTaskSchema = z.object({
     z.string().trim().min(1).optional(),
   ),
   evidenceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(50).optional(),
+  sourceRequirementIds: z.array(z.string().min(1)).max(100).optional(),
+  acceptanceIds: z.array(z.string().min(1)).max(100).optional(),
+  assignmentPolicy: TaskAssignmentPolicySchema.optional(),
+  relationship: z.enum(['implementation', 'verification', 'review', 'handoff']).optional(),
   testCommand: z.string().min(1).max(10_000),
 })
 
@@ -632,6 +1041,7 @@ export const AgentInputSchema = z.object({
   preset: z.string().trim().min(1).max(100).default('standard'),
   toolPolicy: AgentToolPolicySchema.default('full'),
   skills: SkillsSchema.default([]),
+  capabilities: z.array(z.string().trim().min(1).max(160)).max(100).default([]),
   runtimeId: z.string().min(1).optional(),
   access: z.enum(['only_me', 'workspace', 'specific_people']).default('only_me'),
   maxConcurrency: z.number().int().positive().max(32).default(1),
@@ -775,6 +1185,7 @@ export const ProjectDecompositionRequestSchema = z.object({
   prd: z.string().trim().min(1).max(500_000),
   technicalDesign: z.string().trim().max(500_000).default(''),
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
+  sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100).default([]),
 }).strict()
 
 export const ProjectApprovalRequestSchema = z.object({
@@ -944,6 +1355,7 @@ export const TaskInputSchema = z.object({
   priority: PrioritySchema.default('medium'),
   tags: TagsSchema.default([]),
   agentId: z.string().min(1).nullable().optional(),
+  assignmentPolicy: TaskAssignmentPolicySchema.optional(),
   testCommand: z.string().trim().min(1).max(10_000),
 })
 
@@ -983,6 +1395,22 @@ export const ProjectAgentMembershipRemoveSchema = z.object({
 export const ProjectTaskAssignmentsSchema = z.object({
   expectedRevision: z.number().int().positive(),
   assignments: z.array(z.object({ taskId: z.string().min(1), agentId: z.string().min(1) }).strict()).min(1).max(1_000),
+}).strict()
+
+export const ProjectTaskReassignSchema = z.object({
+  expectedRevision: z.number().int().positive(),
+  taskId: z.string().min(1),
+  agentId: z.string().min(1),
+  actor: z.string().trim().min(1).max(240).default('Harness user'),
+}).strict()
+
+export const ResolveTeamBlockerSchema = z.object({
+  taskId: z.string().min(1),
+  reason: z.string().trim().min(1).max(4_000),
+  facts: z.array(z.string().trim().min(1).max(2_000)).max(20).default([]),
+  missingCapabilities: z.array(z.string().trim().min(1).max(160)).max(50).default([]),
+  missingPermissions: z.array(z.string().trim().min(1).max(160)).max(50).default([]),
+  actor: z.string().trim().min(1).max(240).default('Harness user'),
 }).strict()
 
 export const ProjectSquadBindingInputSchema = z.object({
@@ -1028,6 +1456,7 @@ export const TaskUpdateSchema = z.object({
   priority: PrioritySchema.optional(),
   tags: TagsSchema.optional(),
   agentId: z.string().min(1).nullable().optional(),
+  assignmentPolicy: TaskAssignmentPolicySchema.optional(),
   testCommand: z.string().trim().min(1).max(10_000).optional(),
 })
 
@@ -1043,6 +1472,8 @@ export type ProjectAgentMembershipUpdate = z.infer<typeof ProjectAgentMembership
 export type ProjectAgentMembershipBatchInput = z.infer<typeof ProjectAgentMembershipBatchInputSchema>
 export type ProjectAgentMembershipRemove = z.infer<typeof ProjectAgentMembershipRemoveSchema>
 export type ProjectTaskAssignments = z.infer<typeof ProjectTaskAssignmentsSchema>
+export type ProjectTaskReassign = z.infer<typeof ProjectTaskReassignSchema>
+export type ResolveTeamBlocker = z.infer<typeof ResolveTeamBlockerSchema>
 export type FeatureUsageDailyRecord = z.infer<typeof FeatureUsageDailyRecordSchema>
 export type FeatureUsageInput = z.infer<typeof FeatureUsageInputSchema>
 export type EscalationTrigger = z.infer<typeof EscalationTriggerSchema>
@@ -1157,6 +1588,47 @@ export interface RunStatistics {
   usageKnown: boolean
 }
 
+export interface TeamCollaborationMetrics {
+  scope: 'all' | 'project'
+  projectId?: string
+  taskCount: number
+  singleAgentTaskCount: number
+  squadDelegationTaskCount: number
+  singleAgentRatio: number
+  squadDelegationRatio: number
+  recommendedAssignmentCount: number
+  manuallyChangedAssignmentCount: number
+  recommendationManualChangeRate?: number
+  capabilityGapCount: number
+  capabilityGapRate?: number
+  runtimeWaitCount: number
+  capacityWaitCount: number
+  runtimeWaitDurationMs: number
+  capacityWaitDurationMs: number
+  resourceConflictWaitDurationMs: number
+  blockedTaskCount: number
+  activeBlockedIssueCount: number
+  delegationCount: number
+  delegationCompletedCount: number
+  delegationFailedCount: number
+  delegationEscalatedCount: number
+  delegationCompletionRate?: number
+  delegationEscalationRate?: number
+  leaderRestartCount: number
+  leaderRestartRate?: number
+  childEvidenceCompleteCount: number
+  childEvidenceIncompleteCount: number
+  childEvidenceCompletenessRate?: number
+  implementationSelfReviewCount: number
+  reviewRejectedCount: number
+  collaborationReworkCount: number
+  conflictCount: number
+  activeAgentCount: number
+  agentUtilization: Array<{ agentId: string; busyDurationMs: number; blockedDurationMs: number; observationWindowMs: number; utilizationRate?: number }>
+  blockedCount: number
+  generatedAt: string
+}
+
 export interface AgentWorkload {
   agentId: string
   availability: 'online' | 'offline' | 'unstable' | 'unknown'
@@ -1173,6 +1645,28 @@ export interface AgentWorkload {
 export type AgentRecord = z.infer<typeof AgentRecordSchema>
 export type ProjectRecord = z.infer<typeof ProjectRecordSchema>
 export type TaskRecord = z.infer<typeof TaskRecordSchema>
+export type AssignmentMode = z.infer<typeof AssignmentModeSchema>
+export type TaskAssignmentPolicy = z.infer<typeof TaskAssignmentPolicySchema>
+export type TaskRiskLevel = z.infer<typeof TaskRiskLevelSchema>
+export type TeamCompositionSnapshot = z.infer<typeof TeamCompositionSnapshotSchema>
+export type TeamCompositionMember = z.infer<typeof TeamCompositionMemberSchema>
+export type TeamCompositionSquad = z.infer<typeof TeamCompositionSquadSchema>
+export type TaskAssignmentSnapshot = z.infer<typeof TaskAssignmentSnapshotSchema>
+export type TeamCapacityObservation = z.infer<typeof TeamCapacityObservationSchema>
+export type ReviewerIndependencePolicy = z.infer<typeof ReviewerIndependencePolicySchema>
+export type PlanSnapshotRecord = z.infer<typeof PlanSnapshotRecordSchema>
+export type RequirementBundleRecord = z.infer<typeof RequirementBundleRecordSchema>
+export type RequirementItemRecord = z.infer<typeof RequirementItemRecordSchema>
+export type RequirementDecisionRecord = z.infer<typeof RequirementDecisionRecordSchema>
+export type RequirementDecisionInput = z.infer<typeof RequirementDecisionInputSchema>
+export type RequirementDecisionResolution = z.infer<typeof RequirementDecisionResolutionSchema>
+export type AcceptanceCriterionRecord = z.infer<typeof AcceptanceCriterionRecordSchema>
+export type VerificationEvidenceRecord = z.infer<typeof VerificationEvidenceRecordSchema>
+export type ProjectReviewRecord = z.infer<typeof ProjectReviewRecordSchema>
+export type ProjectReviewResolution = z.infer<typeof ProjectReviewResolutionSchema>
+export type DeliveryRecord = z.infer<typeof DeliveryRecordSchema>
+export type DeliveryResponsibilityChain = z.infer<typeof DeliveryResponsibilityChainSchema>
+export type TaskRunConflictLockRecord = z.infer<typeof TaskRunConflictLockRecordSchema>
 export type BoardStage = z.infer<typeof BoardStageSchema>
 export type TaskBoardStageRequest = z.infer<typeof TaskBoardStageRequestSchema>
 export type ApprovalRecord = z.infer<typeof ApprovalRecordSchema>
@@ -1200,6 +1694,7 @@ export type DecompositionBatch = z.infer<typeof DecompositionBatchSchema>
 export type ProjectApprovalRequest = z.infer<typeof ProjectApprovalRequestSchema>
 export type TaskInput = z.infer<typeof TaskInputSchema>
 export type TaskUpdate = z.infer<typeof TaskUpdateSchema>
+export type ProjectDeliveryStage = z.infer<typeof ProjectDeliveryStageSchema>
 
 export interface Snapshot {
   agents: AgentRecord[]
@@ -1228,6 +1723,14 @@ export interface Snapshot {
   projectSquadBindings: ProjectSquadBindingRecord[]
   projectAgentMembershipSources: ProjectAgentMembershipSourceRecord[]
   featureUsageDaily: FeatureUsageDailyRecord[]
+  planSnapshots?: PlanSnapshotRecord[]
+  requirementBundles?: RequirementBundleRecord[]
+  requirementItems?: RequirementItemRecord[]
+  requirementDecisions?: RequirementDecisionRecord[]
+  acceptanceCriteria?: AcceptanceCriterionRecord[]
+  verificationEvidence?: VerificationEvidenceRecord[]
+  projectReviews?: ProjectReviewRecord[]
+  deliveryRecords?: DeliveryRecord[]
   runtimeOverview: RuntimeOverview
   inbox: InboxItem[]
   agentWorkloads: AgentWorkload[]

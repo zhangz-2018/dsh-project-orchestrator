@@ -27,12 +27,37 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET' && path === '/artifacts') return json(res, 200, service.snapshot().artifacts)
       if (method === 'GET' && path === '/commands') return json(res, 200, service.snapshot().commands)
       if (method === 'GET' && path === '/stats') return json(res, 200, service.snapshot().runStatistics)
+      if (method === 'GET' && path === '/team-metrics') return json(res, 200, service.getTeamCollaborationMetrics())
       const taskRunTranscript = matchOne(path, /^\/task-runs\/([^/]+)\/transcript$/)
       if (method === 'GET' && taskRunTranscript !== undefined) return json(res, 200, service.snapshot().transcripts.filter((entry) => entry.taskRunId === taskRunTranscript))
       const taskRunArtifacts = matchOne(path, /^\/task-runs\/([^/]+)\/artifacts$/)
       if (method === 'GET' && taskRunArtifacts !== undefined) return json(res, 200, service.snapshot().artifacts.filter((artifact) => artifact.taskRunId === taskRunArtifacts))
       const projectAgentsRead = matchOne(path, /^\/projects\/([^/]+)\/agents$/u)
       if (method === 'GET' && projectAgentsRead !== undefined) return json(res, 200, service.listProjectAgents(projectAgentsRead))
+      const projectTeamPlan = matchOne(path, /^\/projects\/([^/]+)\/team-plan$/u)
+      if (method === 'GET' && projectTeamPlan !== undefined) return json(res, 200, service.getProjectTeamPlan(projectTeamPlan))
+      const projectAgentCandidates = matchOne(path, /^\/projects\/([^/]+)\/agent-candidates$/u)
+      if (method === 'GET' && projectAgentCandidates !== undefined) {
+        const taskId = url.searchParams.get('taskId')
+        if (taskId === null || taskId.trim() === '') return json(res, 400, { error: { code: 'task-id-required', message: 'taskId query parameter is required.' } })
+        return json(res, 200, service.getProjectAgentCandidates(projectAgentCandidates, taskId))
+      }
+      const projectTeamImpact = matchOne(path, /^\/projects\/([^/]+)\/team-impact$/u)
+      if (method === 'GET' && projectTeamImpact !== undefined) return json(res, 200, service.getProjectTeamImpact(projectTeamImpact))
+      const projectTeamMetrics = matchOne(path, /^\/projects\/([^/]+)\/team-metrics$/u)
+      if (method === 'GET' && projectTeamMetrics !== undefined) return json(res, 200, service.getTeamCollaborationMetrics(projectTeamMetrics))
+      const projectTeamValidation = matchOne(path, /^\/projects\/([^/]+)\/validate-team$/u)
+      if (method === 'GET' && projectTeamValidation !== undefined) return json(res, 200, service.validateProjectTeam(projectTeamValidation))
+      const projectPlanSnapshots = matchOne(path, /^\/projects\/([^/]+)\/plan-snapshots$/u)
+      if (method === 'GET' && projectPlanSnapshots !== undefined) return json(res, 200, service.listProjectPlanSnapshots(projectPlanSnapshots))
+      const projectRequirements = matchOne(path, /^\/projects\/([^/]+)\/requirements$/u)
+      if (method === 'GET' && projectRequirements !== undefined) return json(res, 200, {
+        ...service.getProjectRequirementMatrix(projectRequirements),
+      })
+      const projectDecisions = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
+      if (method === 'GET' && projectDecisions !== undefined) return json(res, 200, service.listProjectRequirementDecisions(projectDecisions))
+      const projectDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery$/u)
+      if (method === 'GET' && projectDelivery !== undefined) return json(res, 200, service.getProjectDelivery(projectDelivery))
       const projectSquadBindings = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/u)
       if (method === 'GET' && projectSquadBindings !== undefined) return json(res, 200, service.listProjectSquadBindings(projectSquadBindings))
       const projectMembershipSources = matchOne(path, /^\/projects\/([^/]+)\/agent-membership-sources$/u)
@@ -53,6 +78,37 @@ export function createHttpHandler(service: OrchestratorService) {
 
       assertSameOrigin(req)
       if (method === 'POST' || method === 'PUT' || requestHasBody(req)) assertJsonRequest(req)
+      const projectTeamValidationMutation = matchOne(path, /^\/projects\/([^/]+)\/validate-team$/u)
+      if (projectTeamValidationMutation !== undefined && method === 'POST') {
+        const command = await service.executeCommand({ type: 'validate_team', projectId: projectTeamValidationMutation, actorType: 'human', payload: await readJson(req) })
+        return json(res, 200, commandResult(command))
+      }
+      const projectTeamBlocker = matchOne(path, /^\/projects\/([^/]+)\/resolve-team-blocker$/u)
+      if (projectTeamBlocker !== undefined && method === 'POST') {
+        const body = await readJson(req) as Record<string, unknown>
+        const command = await service.executeCommand({ type: 'resolve_team_blocker', projectId: projectTeamBlocker, actorType: 'human', ...(typeof body.actor === 'string' ? { actorId: body.actor } : {}), payload: body })
+        return json(res, 201, commandResult(command))
+      }
+      if (method === 'POST' && path === '/commands') return json(res, 202, await service.executeCommand(await readJson(req)))
+      if (method === 'POST' && path === '/external-triggers') return json(res, 202, await service.receiveExternalTrigger(await readJson(req)))
+      const projectSquadSyncCommand = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)\/sync$/)
+      if (projectSquadSyncCommand !== undefined && method === 'POST') {
+        const body = await readJson(req) as Record<string, unknown>
+        const command = await service.executeCommand({ type: 'sync_project_squad', projectId: projectSquadSyncCommand[0], squadId: projectSquadSyncCommand[1], actorType: 'human', payload: body })
+        return json(res, 200, commandResult(command))
+      }
+      const projectSquadBindCommand = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/)
+      if (projectSquadBindCommand !== undefined && method === 'POST') {
+        const body = await readJson(req) as Record<string, unknown>
+        const command = await service.executeCommand({ type: 'bind_project_squad', projectId: projectSquadBindCommand, ...(typeof body.squadId === 'string' ? { squadId: body.squadId } : {}), actorType: 'human', ...(typeof body.boundBy === 'string' ? { actorId: body.boundBy } : {}), payload: body })
+        return json(res, 201, commandResult(command))
+      }
+      const projectReassignCommand = matchOne(path, /^\/projects\/([^/]+)\/reassign-task$/)
+      if (projectReassignCommand !== undefined && method === 'POST') {
+        const body = await readJson(req) as Record<string, unknown>
+        const command = await service.executeCommand({ type: 'reassign_task', projectId: projectReassignCommand, actorType: 'human', ...(typeof body.actor === 'string' ? { actorId: body.actor } : {}), payload: body })
+        return json(res, 200, commandResult(command))
+      }
       if (method === 'POST' && path === '/agents/draft') {
         return json(res, 200, await service.draftAgent(await readJson(req)))
       }
@@ -75,12 +131,6 @@ export function createHttpHandler(service: OrchestratorService) {
       await service.serializedMutation(async () => {
         if (method === 'POST' && path === '/agents') {
           return json(res, 201, await service.createAgent(await readJson(req)))
-        }
-        if (method === 'POST' && path === '/commands') {
-          return json(res, 202, await service.executeCommand(await readJson(req)))
-        }
-        if (method === 'POST' && path === '/external-triggers') {
-          return json(res, 202, await service.receiveExternalTrigger(await readJson(req)))
         }
         if (method === 'POST' && path === '/squads') {
           return json(res, 201, await service.createSquad(await readJson(req)))
@@ -163,14 +213,10 @@ export function createHttpHandler(service: OrchestratorService) {
           return json(res, 200, { ok: true })
         }
 
-        const projectSquadSync = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)\/sync$/)
-        if (projectSquadSync !== undefined && method === 'POST') return json(res, 200, await service.syncProjectSquadBinding(projectSquadSync[0], projectSquadSync[1], await readJson(req)))
         const projectSquadDefault = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)\/default$/)
         if (projectSquadDefault !== undefined && method === 'PUT') return json(res, 200, await service.setDefaultProjectSquadBinding(projectSquadDefault[0], projectSquadDefault[1], await readJson(req)))
         const projectSquadBinding = matchTwo(path, /^\/projects\/([^/]+)\/squad-bindings\/([^/]+)$/)
         if (projectSquadBinding !== undefined && method === 'DELETE') return json(res, 200, await service.unbindProjectSquad(projectSquadBinding[0], projectSquadBinding[1], await readJson(req)))
-        const projectSquadBindings = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/)
-        if (projectSquadBindings !== undefined && method === 'POST') return json(res, 201, await service.bindProjectSquad(projectSquadBindings, await readJson(req)))
 
         const projectAgentsBatch = matchOne(path, /^\/projects\/([^/]+)\/agents\/batch$/)
         if (projectAgentsBatch !== undefined && method === 'POST') return json(res, 201, await service.addProjectAgents(projectAgentsBatch, await readJson(req)))
@@ -208,6 +254,22 @@ export function createHttpHandler(service: OrchestratorService) {
           await service.deleteProject(project)
           return json(res, 200, { ok: true })
         }
+        const confirmDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery\/confirm$/)
+        if (confirmDelivery !== undefined && method === 'POST') {
+          return json(res, 200, await service.confirmProjectDelivery(confirmDelivery, await readJson(req) as { actor: string; note?: string }))
+        }
+        const resolveReview = matchOne(path, /^\/projects\/([^/]+)\/review\/resolve$/)
+        if (resolveReview !== undefined && method === 'POST') {
+          return json(res, 200, await service.resolveProjectReview(resolveReview, await readJson(req)))
+        }
+        const closeDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery\/close$/)
+        if (closeDelivery !== undefined && method === 'POST') {
+          return json(res, 200, await service.closeProjectDelivery(closeDelivery, await readJson(req) as { actor: string; note?: string }))
+        }
+        const createRequirementDecision = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
+        if (createRequirementDecision !== undefined && method === 'POST') return json(res, 201, await service.createProjectRequirementDecision(createRequirementDecision, await readJson(req)))
+        const resolveRequirementDecision = matchTwo(path, /^\/projects\/([^/]+)\/requirement-decisions\/([^/]+)\/resolve$/u)
+        if (resolveRequirementDecision !== undefined && method === 'POST') return json(res, 200, await service.resolveProjectRequirementDecision(resolveRequirementDecision[0], resolveRequirementDecision[1], await readJson(req)))
         const replan = matchOne(path, /^\/projects\/([^/]+)\/replan$/)
         if (replan !== undefined && method === 'POST') {
           return json(res, 202, await service.replanProject(replan, await readJson(req)))
@@ -380,6 +442,11 @@ function javascript(res: ServerResponse, body: Uint8Array): void {
   res.setHeader('x-content-type-options', 'nosniff')
   res.setHeader('cross-origin-resource-policy', 'same-origin')
   res.end(body)
+}
+
+function commandResult(command: { status: string; result?: Record<string, unknown> | undefined }): Record<string, unknown> {
+  if (command.status !== 'completed' || command.result === undefined) throw new WorkflowError('command-result-missing', 'The team command did not produce a completed result.', 500)
+  return command.result
 }
 
 function json(res: ServerResponse, status: number, body: unknown): void {

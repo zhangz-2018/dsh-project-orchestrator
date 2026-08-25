@@ -4,6 +4,24 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.5.11] - 2026-08-25
+
+### 新增
+
+- 新增可持久化的需求到交付生命周期，覆盖需求来源与决策、不可变计划和团队快照、分派策略、验证证据、项目级 Review、交付记录，以及显式 delivered/closed 状态。
+- 在 Service、HTTP API、CLI 和响应式 Web 工作台中增加 Agent/Squad 候选、影响分析、执行前校验、重新分派、阻塞解决和协作指标投影。
+- 新增有界多 child Squad 委派，支持独立 child Review、证据聚合、聚焦重试、过期 owner 防护和幂等 Leader continuation 恢复。
+
+### 修复
+
+- 启动迁移幂等保留全部旧 Task、状态、成员来源、审批决策和生成的 Issue，并覆盖 31 条 Task 兼容场景。
+- 无上下文变化时不再刷新 Project 时间戳，并防止重启或部分失败后重复生成 Decision、证据或 Leader 唤醒。
+
+### 变更
+
+- 执行或交付推进前，已批准计划必须继续满足 Agent、Squad、Runtime、容量、Reviewer 独立性、分派和 conflict key 事实。
+- 发布验证扩展为 189 个自动化测试，并包含真实 PDF/Git、存储恢复、安装包和桌面/移动端浏览器验收证据。
+
 ## [1.5.10] - 2026-08-24
 
 ### 变更
