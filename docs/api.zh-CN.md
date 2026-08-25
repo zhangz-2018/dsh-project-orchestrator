@@ -23,6 +23,7 @@
 - `GET /artifacts`
 - `GET /commands`
 - `GET /stats`
+- `GET /team-metrics`
 - `GET /task-runs/:id/transcript`
 - `GET /task-runs/:id/artifacts`
 
@@ -58,6 +59,36 @@ Inbox 查询字段采用严格校验：`kind`、`projectId`、`issueId`，以及
 
 Task 创建/更新、规划、审批、重试、执行，以及项目范围内的 Issue/Squad 指派都会校验 active 项目成员资格。只要保留了项目成员历史，就禁止物理删除对应 Agent；应改为归档，以便历史名称和引用仍可解析。审批要求每个 Task 都有明确且具备资格的 Agent；执行时不会从工作区全局 Agent 中选择未被审批的回退执行者。
 
+## Team Plan、Review 与交付路由
+
+读取路由使用 Service 拥有的投影，不在客户端重复推导资格：
+
+- `GET /projects/:id/team-plan` 返回团队快照、任务策略、候选覆盖、阻塞项、关键路径和容量观察。
+- `GET /projects/:id/agent-candidates?taskId=...` 在 `candidates` 和 `squadCandidates` 中分别返回确定性的可用/拒绝 Agent、Squad 候选及原因。
+- `GET /projects/:id/team-impact` 预览受影响 Task、验收证据、当前 PlanSnapshot/Approval、active Issue/Delegation 和活动执行保护。
+- `GET /projects/:id/team-metrics` 返回项目范围团队指标；`GET /team-metrics` 返回全局投影。
+- `GET /projects/:id/validate-team` 只评估当前团队，不写 Command。
+- `GET /projects/:id/plan-snapshots`、`/requirements`、`/requirement-decisions` 和 `/delivery` 暴露计划、需求到证据矩阵、决策、Project Review 和交付事实。
+- `GET /projects/:id/squad-bindings`、`/agent-membership-sources` 和 `/eligible-squads` 暴露 Squad 来源与资格。
+
+以下团队规划变更由 Command 驱动，与 `POST /commands` 共享幂等、审计和失败语义：
+
+- `POST /projects/:id/validate-team`
+- `POST /projects/:id/reassign-task`
+- `POST /projects/:id/resolve-team-blocker`
+- `POST /projects/:id/squad-bindings`
+- `POST /projects/:id/squad-bindings/:squadId/sync`
+
+Project Review 和交付由各自的串行生命周期 owner 处理：
+
+- `POST /projects/:id/review/resolve`
+- `POST /projects/:id/delivery/confirm`
+- `POST /projects/:id/delivery/close`
+
+Review 驳回会创建可审计的 Decision/Inbox 待办；waiver 会写入 Acceptance 记录。Review/waiver 发生部分写入失败时，API 返回失败前会补偿恢复，避免留下 Project、Review 和 Acceptance 混合状态。
+
+非空 Task `allowedScope`/`forbiddenScope` 在执行时强制依赖 Git 证据。TaskRun 只记录相对其启动基线实际变化的文件；`scope_violation` 或 `verification_unavailable` 会在测试命令前失败关闭并创建关联 Decision。自动修复达到上限时同样创建一个关联的 retry Decision。
+
 ## 本地功能使用路由
 
 - `POST /usage` 按服务端当前 UTC 日期，为一个已知 feature 增加有界的 `opens`、`meaningfulActions` 或 `errorRecoveries` 计数。
@@ -71,7 +102,9 @@ Task 创建/更新、规划、审批、重试、执行，以及项目范围内�
 
 - `assign_issue`、`reassign_issue`、`stop_issue`、`continue_issue`
 - `approve_review`、`reject_review`、`request_decision`
-- `delegate_issue`
+- `delegate_issue`、`retry_delegation`、`stop_delegation`
+- `reassign_task`、`bind_project_squad`、`sync_project_squad`
+- `validate_team`、`resolve_team_blocker`
 - `autopilot_tick`
 
 提供相同的非空 `idempotencyKey` 时，会返回原始 Command 记录，不会重复执行变更。
@@ -98,3 +131,5 @@ Task 创建/更新、规划、审批、重试、执行，以及项目范围内�
 - `2`：CLI verb 无效，或缺少必需的 JSON 参数。
 
 CLI 会把成功 payload 以格式化 JSON 输出，把失败信息输出到 stderr。CLI 绝不会直接写入存储文件。
+
+团队和交付 CLI 命令包括 `team-plan`、`agent-candidates`、`team-impact`、`team-metrics`、`validate-team`、`reassign-task`、`resolve-team-blocker`、`bind-project-squad`、`sync-project-squad`、`plan-snapshots`、`requirements`、`decisions`、`delivery`、`resolve-review`、`confirm-delivery` 和 `close-delivery`。所有命令只连接 loopback Harness API。

@@ -48,11 +48,30 @@ function service() {
      async recordFeatureUsage(body) { return { id: `${body.date ?? 'today'}:${body.feature}`, opens: 0, meaningfulActions: 0, errorRecoveries: 0, ...body } },
      async clearFeatureUsage() {},
      async createDecision(body) { return { id: 'decision', status: 'pending', ...body } },
-     async executeCommand(body) { return { id: 'command', status: 'completed', result: body } },
+     async executeCommand(body) {
+       let result = body
+       if (body.type === 'validate_team') result = { ready: false, errors: [], warnings: [], teamDigest: 'a'.repeat(64), assignmentDigest: 'b'.repeat(64), planHash: 'c'.repeat(64) }
+       if (body.type === 'resolve_team_blocker') result = { id: 'team-decision', projectId: body.projectId, status: 'pending', ...body.payload }
+       if (body.type === 'bind_project_squad' || body.type === 'sync_project_squad') result = { id: `${body.projectId}:${body.squadId}`, projectId: body.projectId, squadId: body.squadId, status: 'active', ...body.payload }
+       if (body.type === 'reassign_task') result = { project: { id: body.projectId, revision: body.payload.expectedRevision + 1 }, task: { id: body.payload.taskId, agentId: body.payload.agentId }, planHash: 'a'.repeat(64) }
+       return { id: 'command', type: body.type, status: 'completed', result }
+     },
      async receiveExternalTrigger(body) { return { id: 'trigger', status: 'processed', ...body } },
      getSquad(id) { return { id, status: 'active' } },
      listProjectSquadBindings(projectId) { return [{ id: `${projectId}:squad`, projectId, squadId: 'squad', status: 'active' }] },
      listProjectAgentMembershipSources(projectId) { return [{ id: `${projectId}:agent:manual:manual`, projectId, agentId: 'agent', sourceType: 'manual', status: 'active' }] },
+     getProjectTeamPlan(projectId) { return { project: { id: projectId }, team: { members: [], squads: [], teamDigest: 'a'.repeat(64), capturedAt: 'now' }, tasks: [], preflight: { ready: false, errors: [], warnings: [], teamDigest: 'a'.repeat(64), assignmentDigest: 'b'.repeat(64), planHash: 'c'.repeat(64) } } },
+     getProjectTeamImpact(projectId) { return { projectId, revision: 1, tasks: [], acceptanceCriteria: [], planSnapshotIds: [], activeIssues: [], delegations: [], approvalWillInvalidate: false, hasActiveExecution: false } },
+     getTeamCollaborationMetrics(projectId) { return { scope: projectId === undefined ? 'all' : 'project', ...(projectId === undefined ? {} : { projectId }), taskCount: 0 } },
+     async resolveTeamBlocker(projectId, body) { return { id: 'team-decision', projectId, status: 'pending', ...body } },
+     listProjectPlanSnapshots() { return [] },
+     listProjectRequirementBundles() { return [] },
+     listProjectRequirementItems() { return [] },
+     listProjectAcceptanceCriteria() { return [] },
+     listProjectRequirementDecisions() { return [] },
+     getProjectRequirementMatrix(projectId) { return { project: { id: projectId }, bundles: [], items: [], decisions: [], acceptanceCriteria: [], rows: [] } },
+     getProjectDelivery(projectId) { return { project: { id: projectId, deliveryStage: 'delivery_ready' }, evidence: [], ready: false, blockers: ['No evidence.'] } },
+     async confirmProjectDelivery(projectId, body) { return { id: `${projectId}:delivery`, status: 'delivered', ...body } },
      listEligibleSquads(projectId) { return [{ projectId, squadId: 'squad', eligible: true }] },
      async bindProjectSquad(projectId, body) { return { id: `${projectId}:${body.squadId}`, projectId, status: 'active', ...body } },
      async syncProjectSquadBinding(projectId, squadId, body) { return { id: `${projectId}:${squadId}`, projectId, squadId, status: 'active', ...body } },
@@ -115,6 +134,27 @@ test('read routes reject non-loopback peers before exposing project data', async
   }), res)
   assert.equal(res.statusCode, 403)
   assert.equal(JSON.parse(res.body).error.code, 'invalid-origin')
+})
+
+test('delivery projection and human confirmation use the serialized HTTP boundary', async () => {
+  const fake = service()
+  const read = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/delivery', headers: { host: '127.0.0.1:3080' } }), read)
+  assert.equal(read.statusCode, 200)
+  assert.equal(JSON.parse(read.body).project.deliveryStage, 'delivery_ready')
+  const confirmed = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/delivery/confirm', headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }, body: JSON.stringify({ actor: 'reviewer', note: '通过。' }) }), confirmed)
+  assert.equal(confirmed.statusCode, 200)
+  assert.equal(JSON.parse(confirmed.body).status, 'delivered')
+})
+
+test('requirements projection exposes source bundles and acceptance criteria', async () => {
+  const fake = service()
+  fake.getProjectRequirementMatrix = () => ({ project: { id: 'project-1' }, bundles: [{ id: 'bundle-1' }], items: [{ id: 'item-1' }], decisions: [], acceptanceCriteria: [{ id: 'acceptance-1' }], rows: [] })
+  const res = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/requirements', headers: { host: '127.0.0.1:3080' } }), res)
+  assert.equal(res.statusCode, 200)
+  assert.deepEqual(JSON.parse(res.body), { project: { id: 'project-1' }, bundles: [{ id: 'bundle-1' }], items: [{ id: 'item-1' }], decisions: [], acceptanceCriteria: [{ id: 'acceptance-1' }], rows: [] })
 })
 
 test('project creation starts planning and approval starts execution through one route', async () => {
@@ -326,6 +366,51 @@ test('Inbox, workload, and Decision routes use the serialized mutation boundary'
   assert.equal(JSON.parse(inboxActionResponse.body).itemId, 'decision:decision')
 })
 
+test('team impact and collaboration metrics expose the Service-owned read projections', async () => {
+  const fake = service()
+  const headers = { host: '127.0.0.1:3080' }
+  const impact = response()
+  await createHttpHandler(fake)(new Request({ method: 'GET', url: '/project-orchestrator/api/projects/project-1/team-impact', headers }), impact)
+  assert.equal(JSON.parse(impact.body).projectId, 'project-1')
+  const projectMetrics = response()
+  await createHttpHandler(fake)(new Request({ method: 'GET', url: '/project-orchestrator/api/projects/project-1/team-metrics', headers }), projectMetrics)
+  assert.equal(JSON.parse(projectMetrics.body).scope, 'project')
+  const globalMetrics = response()
+  await createHttpHandler(fake)(new Request({ method: 'GET', url: '/project-orchestrator/api/team-metrics', headers }), globalMetrics)
+  assert.equal(JSON.parse(globalMetrics.body).scope, 'all')
+})
+
+test('team validation and task reassignment mutations use auditable Project Commands', async () => {
+  const fake = service()
+  const commands = []
+  const executeCommand = fake.executeCommand
+  fake.executeCommand = async (body) => { commands.push(body); return executeCommand(body) }
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const validation = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/validate-team', headers, body: '{}' }), validation)
+  assert.equal(validation.statusCode, 200)
+  assert.equal(JSON.parse(validation.body).ready, false)
+  const reassign = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/reassign-task', headers, body: JSON.stringify({ expectedRevision: 2, taskId: 'task-1', agentId: 'agent-2', actor: 'operator' }) }), reassign)
+  assert.equal(reassign.statusCode, 200)
+  assert.equal(JSON.parse(reassign.body).task.agentId, 'agent-2')
+  assert.deepEqual(commands.map((command) => command.type), ['validate_team', 'reassign_task'])
+})
+
+test('team blocker resolution is same-origin and uses the Command boundary', async () => {
+  const fake = service()
+  const commands = []
+  const executeCommand = fake.executeCommand
+  fake.executeCommand = async (body) => { commands.push(body); return executeCommand(body) }
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const res = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/resolve-team-blocker', headers, body: JSON.stringify({ taskId: 'task-1', reason: 'Missing permission.' }) }), res)
+  assert.equal(res.statusCode, 201)
+  assert.equal(JSON.parse(res.body).id, 'team-decision')
+  assert.equal(commands[0].type, 'resolve_team_blocker')
+  assert.equal(commands[0].projectId, 'project-1')
+})
+
 test('command, Squad, Artifact, trigger, and operational read routes stay same-origin and serialized', async () => {
   const fake = service()
   let lockCalls = 0
@@ -341,7 +426,7 @@ test('command, Squad, Artifact, trigger, and operational read routes stay same-o
     await createHttpHandler(fake)(new Request({ method: 'POST', url, headers, body: JSON.stringify(body) }), res)
     assert.equal(res.statusCode, status)
   }
-  assert.equal(lockCalls, 4)
+  assert.equal(lockCalls, 2)
   for (const path of ['issues', 'squads', 'runtimes', 'skills', 'artifacts', 'commands', 'stats', 'task-runs/run/transcript', 'task-runs/run/artifacts']) {
     const res = response()
     await createHttpHandler(fake)(new Request({ url: `/project-orchestrator/api/${path}`, headers: { host: '127.0.0.1:3080' } }), res)
@@ -350,9 +435,12 @@ test('command, Squad, Artifact, trigger, and operational read routes stay same-o
   }
 })
 
-test('Project Squad binding routes are decoded, same-origin, and serialized', async () => {
+test('Project Squad binding routes are decoded and bind/sync use the Command boundary', async () => {
   const fake = service()
   let lockCalls = 0
+  const commands = []
+  const executeCommand = fake.executeCommand
+  fake.executeCommand = async (body) => { commands.push(body); return executeCommand(body) }
   fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
   const origin = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
   for (const path of ['squad-bindings', 'agent-membership-sources']) {
@@ -374,7 +462,8 @@ test('Project Squad binding routes are decoded, same-origin, and serialized', as
     assert.equal(record.projectId, 'project one')
     assert.equal(record.squadId, 'squad one')
   }
-  assert.equal(lockCalls, 4)
+  assert.deepEqual(commands.map((command) => command.type), ['bind_project_squad', 'sync_project_squad'])
+  assert.equal(lockCalls, 2)
 })
 
 test('project membership, task assignment, and usage routes are same-origin and serialized', async () => {

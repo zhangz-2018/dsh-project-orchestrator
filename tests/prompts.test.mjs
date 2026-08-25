@@ -50,12 +50,20 @@ test('Prompt Compiler bounds untrusted context and records truncation diagnostic
 })
 
 test('Project Task compiler includes approved dependency evidence and stable digests', () => {
-  const task = { id: 'task-1', projectId: project.id, ordinal: 1, title: 'Implement', kind: 'code', description: 'Implement it.', acceptanceCriteria: ['Works'], dependencies: ['task-0'], testCommand: 'pnpm test', status: 'draft', createdAt: now, updatedAt: now }
+  const task = { id: 'task-1', projectId: project.id, ordinal: 1, title: 'Implement', kind: 'code', description: 'Implement it.', acceptanceCriteria: ['Works'], dependencies: ['task-0'], planSnapshotId: 'plan-1', assignmentPolicy: { mode: 'single_agent', riskLevel: 'high', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: true, maxParallel: 1, conflictKeys: ['src'], allowedScope: ['src/feature'], forbiddenScope: ['secrets'], escalationConditions: ['scope expansion'] }, attempts: [{ attempt: 1, exitCode: 1, output: 'failed once', failureReason: 'Regression failed', createdAt: now }], testCommand: 'pnpm test', status: 'draft', createdAt: now, updatedAt: now }
   const dependency = { ...task, id: 'task-0', ordinal: 0, title: 'Prepare', dependencies: [], status: 'completed', resultSummary: 'Prepared.', testExitCode: 0 }
-  const compiled = compileTaskPrompt({ project, task, dependencies: [dependency], agent: member })
+  const compiled = compileTaskPrompt({ project, task, dependencies: [dependency], agent: member, dependencyEvidence: [{ taskId: dependency.id, evidenceIds: ['evidence-1'] }], workspace: { cwd: '/tmp/project-worktree', baseCommit: 'abc123', branch: 'task-branch' } })
   assert.equal(compiled.version, 'project-task.v2')
   assert.match(compiled.userPrompt, /Prepared\./)
   assert.match(compiled.userPrompt, /approvedVerificationCommand/)
+  assert.match(compiled.userPrompt, /"planSnapshotId": "plan-1"/)
+  assert.match(compiled.userPrompt, /"evidenceIds": \[\s+"evidence-1"/)
+  assert.match(compiled.userPrompt, /"cwd": "\/tmp\/project-worktree"/)
+  assert.match(compiled.userPrompt, /"baseCommit": "abc123"/)
+  assert.match(compiled.userPrompt, /"previousAttempts"/)
+  assert.match(compiled.userPrompt, /Regression failed/)
+  assert.match(compiled.userPrompt, /"allowedScope": \[\s+"src\/feature"/)
+  assert.match(compiled.userPrompt, /"forbiddenScope": \[\s+"secrets"/)
   assert.equal(compiled.digest.length, 64)
   assert.equal(compiled.contextDigest.length, 64)
 })

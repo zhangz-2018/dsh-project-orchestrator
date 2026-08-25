@@ -8,7 +8,7 @@
 
 **适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
 
-> **兼容性：** 当前 `1.5.10` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+> **兼容性：** 当前 `1.5.11` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
 
 ## 先看界面
 
@@ -122,7 +122,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.5.10
+dsh plugin --profile web add dsh-project-orchestrator@1.5.11
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -230,7 +230,7 @@ pnpm smoke:package
 
 ## 请作者喝杯咖啡
 
-如果这个项目对你有帮助，欢迎通过微信支付或支付宝请作者喝杯咖啡。感谢你的支持。
+如果这个项目对你有帮助，欢迎通过支付宝请作者喝杯咖啡。感谢你的支持。
 
 <p align="center">
   <img src="docs/assets/donate-alipay.jpg" alt="支付宝收款码" width="280">

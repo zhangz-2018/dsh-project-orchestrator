@@ -2,10 +2,12 @@ import { createHash, randomUUID } from 'node:crypto'
 import {
   GeneratedPlanSchema,
   PlannerResultSchema,
+  TaskAssignmentPolicySchema,
   type GeneratedPlan,
   type PlannerResult,
   type ProjectRecord,
   type TaskRecord,
+  type TeamCompositionSnapshot,
 } from './types.js'
 
 export class WorkflowError extends Error {
@@ -19,7 +21,7 @@ export class WorkflowError extends Error {
   }
 }
 
-function canonicalize(value: unknown): unknown {
+export function canonicalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalize)
   if (value !== null && typeof value === 'object') {
     return Object.fromEntries(
@@ -29,6 +31,35 @@ function canonicalize(value: unknown): unknown {
     )
   }
   return value
+}
+
+export function digestObject(value: unknown): string {
+  return createHash('sha256').update(JSON.stringify(canonicalize(value))).digest('hex')
+}
+
+export function assignmentDigest(tasks: TaskRecord[]): string {
+  return digestObject([...tasks]
+    .sort((left, right) => left.ordinal - right.ordinal || left.id.localeCompare(right.id))
+    .map((task) => ({
+      taskId: task.id,
+      agentId: task.agentId ?? null,
+      assignmentPolicy: task.assignmentPolicy ?? null,
+      sourceRequirementIds: task.sourceRequirementIds ?? [],
+      acceptanceIds: task.acceptanceIds ?? [],
+      relationship: task.relationship ?? null,
+    })))
+}
+
+export function teamCompositionDigest(snapshot: Omit<TeamCompositionSnapshot, 'teamDigest' | 'capturedAt'>): string {
+  return digestObject({
+    ...snapshot,
+    members: snapshot.members
+      .map(({ availableSlots: _availableSlots, ...member }) => ({ ...member, capabilities: [...member.capabilities].sort() }))
+      .sort((left, right) => left.agentId.localeCompare(right.agentId)),
+    squads: snapshot.squads
+      .map((squad) => ({ ...squad, memberAgentIds: [...squad.memberAgentIds].sort() }))
+      .sort((left, right) => left.squadId.localeCompare(right.squadId)),
+  })
 }
 
 export function boundedText(value: string, maxBytes = 64_000): string {
@@ -42,13 +73,24 @@ export function boundedText(value: string, maxBytes = 64_000): string {
 export function planDigest(project: ProjectRecord, tasks: TaskRecord[]): string {
   const hasExecutionMetadata = project.priority !== undefined
     || project.owner !== undefined
-    || tasks.some((task) => task.priority !== undefined || task.tags !== undefined)
+    || project.teamDigest !== undefined
+    || project.assignmentDigest !== undefined
+    || project.requirementDigest !== undefined
+    || project.decisionDigest !== undefined
+    || tasks.some((task) => task.priority !== undefined || task.tags !== undefined || task.assignmentPolicy !== undefined || task.sourceRequirementIds !== undefined || task.acceptanceIds !== undefined)
   const payload = {
     projectId: project.id,
     revision: project.revision,
     cwd: project.cwd,
     ...(hasExecutionMetadata
-      ? { priority: project.priority ?? 'medium', owner: project.owner ?? '' }
+      ? {
+          priority: project.priority ?? 'medium',
+          owner: project.owner ?? '',
+          ...(project.teamDigest === undefined ? {} : { teamDigest: project.teamDigest }),
+          ...(project.assignmentDigest === undefined ? {} : { assignmentDigest: project.assignmentDigest }),
+          ...(project.requirementDigest === undefined ? {} : { requirementDigest: project.requirementDigest }),
+          ...(project.decisionDigest === undefined ? {} : { decisionDigest: project.decisionDigest }),
+        }
       : {}),
     taskIds: project.taskIds,
     tasks: [...tasks]
@@ -64,6 +106,12 @@ export function planDigest(project: ProjectRecord, tasks: TaskRecord[]): string 
         ...(hasExecutionMetadata
           ? { priority: task.priority ?? 'medium', tags: [...(task.tags ?? [])].sort() }
           : {}),
+        ...(task.sourceRequirementIds === undefined ? {} : { sourceRequirementIds: [...task.sourceRequirementIds].sort() }),
+        ...(task.acceptanceIds === undefined ? {} : { acceptanceIds: [...task.acceptanceIds].sort() }),
+        ...(task.assignmentPolicy === undefined ? {} : { assignmentPolicy: TaskAssignmentPolicySchema.parse(task.assignmentPolicy) }),
+        ...(task.assignmentDigest === undefined ? {} : { assignmentDigest: task.assignmentDigest }),
+        ...(task.teamDigest === undefined ? {} : { teamDigest: task.teamDigest }),
+        ...(task.relationship === undefined ? {} : { relationship: task.relationship }),
         agentId: task.agentId ?? null,
         testCommand: task.testCommand,
       })),
@@ -220,18 +268,62 @@ export function parsePlannerResult(raw: string): PlannerResult {
 export function materializeTasks(
   projectId: string,
   plan: GeneratedPlan,
-  agents: Array<{ id: string; role: string; projectRole?: string; autoAssignable?: boolean; status?: 'active' | 'removed' }>,
+  agents: Array<{ id: string; role: string; projectRole?: string; capabilities?: string[]; autoAssignable?: boolean; status?: 'active' | 'removed'; runtimeStatus?: 'online' | 'offline' | 'unstable' | 'unknown'; availableSlots?: number }>,
   now = new Date().toISOString(),
   ordinalOffset = 0,
 ): TaskRecord[] {
   const ids = new Map(plan.tasks.map((task) => [task.id, randomUUID()]))
   return plan.tasks.map((task, ordinal) => {
     const suggestedRole = task.suggestedAgentRole.toLocaleLowerCase()
-    const assigned = agents.find((agent) => task.suggestedAgentId === agent.id && agent.autoAssignable !== false && agent.status !== 'removed') ?? agents.find((agent) => {
+    const hasDeclaredPolicy = task.assignmentPolicy !== undefined
+    const policy = TaskAssignmentPolicySchema.parse(task.assignmentPolicy ?? {
+      mode: 'single_agent',
+      riskLevel: 'low',
+      requiredRoles: [],
+      requiredCapabilities: [],
+      allowedAgentIds: [],
+      allowedSquadIds: [],
+      requiresIndependentReviewer: false,
+      maxParallel: 1,
+      conflictKeys: [],
+      allowedScope: [],
+      forbiddenScope: [],
+      escalationConditions: [],
+    })
+    const eligible = agents.filter((agent) => {
       if (agent.autoAssignable === false || agent.status === 'removed') return false
+      if (agent.runtimeStatus !== undefined && agent.runtimeStatus !== 'online') return false
+      if (agent.availableSlots !== undefined && agent.availableSlots <= 0) return false
+      if (policy?.allowedAgentIds.length && !policy.allowedAgentIds.includes(agent.id)) return false
+      const role = (agent.projectRole?.trim() || agent.role).toLocaleLowerCase()
+      if (policy?.requiredRoles.some((required) => !role.includes(required.toLocaleLowerCase()))) return false
+      if (policy?.requiredCapabilities.some((required) => !(agent.capabilities ?? []).some((capability) => capability.toLocaleLowerCase() === required.toLocaleLowerCase()))) return false
+      return true
+    })
+    const ranked = [...eligible].sort((left, right) => {
+      const roleRank = (agent: (typeof agents)[number]) => {
+        const role = (agent.projectRole?.trim() || agent.role).toLocaleLowerCase()
+        const exactSuggested = role === suggestedRole ? 1 : 0
+        const relatedSuggested = role.includes(suggestedRole) || suggestedRole.includes(role) ? 1 : 0
+        const exactRequired = policy?.requiredRoles.filter((required) => role === required.toLocaleLowerCase()).length ?? 0
+        return { exactSuggested, relatedSuggested, exactRequired }
+      }
+      const leftRank = roleRank(left)
+      const rightRank = roleRank(right)
+      const suggestedDifference = rightRank.exactSuggested - leftRank.exactSuggested
+      if (suggestedDifference !== 0) return suggestedDifference
+      const relatedDifference = rightRank.relatedSuggested - leftRank.relatedSuggested
+      if (relatedDifference !== 0) return relatedDifference
+      const requiredDifference = rightRank.exactRequired - leftRank.exactRequired
+      if (requiredDifference !== 0) return requiredDifference
+      const slotDifference = (right.availableSlots ?? 0) - (left.availableSlots ?? 0)
+      return slotDifference || left.id.localeCompare(right.id)
+    })
+    const suggested = ranked.find((agent) => task.suggestedAgentId === agent.id)
+    const assigned = suggested ?? ranked.find((agent) => {
       const role = (agent.projectRole?.trim() || agent.role).toLocaleLowerCase()
       return role.includes(suggestedRole) || suggestedRole.includes(role)
-    })
+    }) ?? (hasDeclaredPolicy ? ranked[0] : undefined)
     return {
       id: ids.get(task.id) ?? randomUUID(),
       projectId,
@@ -244,7 +336,12 @@ export function materializeTasks(
       priority: 'medium',
       tags: [],
       ...(assigned === undefined ? {} : { agentId: assigned.id }),
+      assignmentSource: suggested === undefined ? 'automatic_match' : 'planner_recommendation',
       testCommand: task.testCommand,
+      ...(task.sourceRequirementIds === undefined ? {} : { sourceRequirementIds: task.sourceRequirementIds }),
+      ...(task.acceptanceIds === undefined ? {} : { acceptanceIds: task.acceptanceIds }),
+      assignmentPolicy: policy,
+      ...(task.relationship === undefined ? {} : { relationship: task.relationship }),
       status: 'draft',
       createdAt: now,
       updatedAt: now,
@@ -257,6 +354,8 @@ export function assertExecutable(
   tasks: TaskRecord[],
   approval: { revision: number; planHash: string } | undefined,
   memberships?: Array<{ agentId: string; active: boolean }>,
+  agents?: Array<{ id: string; role: string; projectRole?: string; capabilities?: string[]; status?: 'active' | 'archived' }>,
+  team?: TeamCompositionSnapshot,
 ): void {
   if (project.status !== 'approved' && project.status !== 'failed' && project.status !== 'cancelled') {
     throw new WorkflowError('project-not-approved', 'Project must be approved before execution.')
@@ -276,6 +375,27 @@ export function assertExecutable(
     const activeAgentIds = new Set(memberships.filter((membership) => membership.active).map((membership) => membership.agentId))
     const invalid = tasks.find((task) => !activeAgentIds.has(task.agentId!))
     if (invalid !== undefined) throw new WorkflowError('project-agent-not-member', `Task "${invalid.id}" Agent is not an active project member.`)
+  }
+  if (agents !== undefined) {
+    for (const task of tasks) {
+      const policy = task.assignmentPolicy
+      if (policy === undefined) continue
+      const assigned = agents.find((agent) => agent.id === task.agentId)
+      if (assigned === undefined || assigned.status === 'archived') throw new WorkflowError('assignment-agent-inactive', `Task "${task.id}" references an unavailable Agent.`)
+      if (policy.allowedAgentIds.length > 0 && !policy.allowedAgentIds.includes(assigned.id)) throw new WorkflowError('assignment-agent-not-allowed', `Task "${task.id}" is assigned outside its allowed Agent set.`)
+      const role = (assigned.projectRole?.trim() || assigned.role).toLocaleLowerCase()
+      const missingRole = policy.requiredRoles.find((required) => !role.includes(required.toLocaleLowerCase()))
+      if (missingRole !== undefined) throw new WorkflowError('assignment-role-mismatch', `Task "${task.id}" requires role "${missingRole}".`)
+      const missingCapability = policy.requiredCapabilities.find((required) => !(assigned.capabilities ?? []).some((capability) => capability.toLocaleLowerCase() === required.toLocaleLowerCase()))
+      if (missingCapability !== undefined) throw new WorkflowError('assignment-capability-missing', `Task "${task.id}" requires capability "${missingCapability}".`)
+      if (policy.mode === 'squad_delegation' && policy.allowedSquadIds.length === 0) throw new WorkflowError('assignment-squad-required', `Task "${task.id}" requires a Squad but no allowed Squad is configured.`)
+      if (policy.requiresIndependentReviewer || policy.riskLevel === 'high' || policy.riskLevel === 'critical') {
+        const reviewerId = team?.reviewerAgentId
+        if (reviewerId === undefined || reviewerId === assigned.id) throw new WorkflowError('independent-reviewer-required', `Task "${task.id}" (${policy.riskLevel} risk) requires an independent reviewer.`)
+        const reviewer = agents.find((agent) => agent.id === reviewerId)
+        if (reviewer === undefined || reviewer.status === 'archived') throw new WorkflowError('independent-reviewer-unavailable', `Task "${task.id}" reviewer is unavailable.`)
+      }
+    }
   }
   if (project.approvedRevision !== project.revision || approval === undefined || approval.revision !== project.revision) {
     throw new WorkflowError('stale-approval', 'The current project revision has not been approved.')

@@ -110,6 +110,7 @@ test('client bundle exposes project membership and local usage workflows', async
   assert.match(source, /Squad Leader/)
   assert.match(source, /设为项目负责人/)
   assert.doesNotMatch(source, />设为负责人</)
+  for (const reviewContract of ['ProjectReviewResolutionPanel', '要求修改', '人工豁免', '豁免 Reviewer 独立性', 'DeliveryResponsibilitySummary', '交付责任链', '交付阶段角色', 'Planner', 'Lead', 'Implementer', 'Verifier', 'Reviewer']) assert.match(source, new RegExp(reviewContract))
 })
 
 test('client exposes P0 Squad and Runtime management with context binding flows', async () => {

@@ -4,6 +4,24 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.11] - 2026-08-25
+
+### Added
+
+- Add a durable requirement-to-delivery lifecycle covering requirement sources and decisions, immutable plan and team snapshots, assignment policies, verification evidence, project-level Review, delivery records, and explicit delivered/closed states.
+- Add Agent/Squad candidate, impact, preflight, reassignment, blocker-resolution, and collaboration-metrics projections across the Service, HTTP API, CLI, and responsive Web workbench.
+- Add bounded multi-child Squad delegation with independent child Review, evidence aggregation, focused retry, stale-owner protection, and idempotent Leader continuation recovery.
+
+### Fixed
+
+- Preserve all legacy Tasks, statuses, membership provenance, approval decisions, and generated Issues during idempotent startup migration, including the 31-Task compatibility case.
+- Avoid rewriting Project timestamps during no-op context initialization and prevent duplicate Decisions, evidence, or Leader wakeups after restart or partial failure.
+
+### Changed
+
+- Require approved plans to remain consistent with Agent, Squad, Runtime, capacity, reviewer-independence, assignment, and conflict-key facts before execution or delivery can advance.
+- Expand release verification to 189 automated tests plus real PDF/Git, storage recovery, package-install, and desktop/mobile browser acceptance evidence.
+
 ## [1.5.10] - 2026-08-24
 
 ### Changed

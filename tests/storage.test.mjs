@@ -14,9 +14,11 @@ class MemoryTable {
   }
   get(key) { return this.records.get(key) }
   entries() { return this.records.entries() }
+  async put(key, value) { this.records.set(key, structuredClone(value)) }
+  async delete(key) { return this.records.delete(key) }
 }
 
-function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [], projectAgentMemberships = [], projectSquadBindings = [], projectAgentMembershipSources = [], featureUsageDaily = [] } = {}) {
+function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [], projectAgentMemberships = [], projectSquadBindings = [], projectAgentMembershipSources = [], featureUsageDaily = [], planSnapshots = [], verificationEvidence = [], projectReviews = [], deliveryRecords = [] } = {}) {
   const tables = {
     agents: new MemoryTable(agents),
     projects: new MemoryTable(projects),
@@ -27,6 +29,13 @@ function createStore({ agents = [], projects = [], tasks = [], approvals = [], r
     project_squad_bindings: new MemoryTable(projectSquadBindings),
     project_agent_membership_sources: new MemoryTable(projectAgentMembershipSources),
     feature_usage_daily: new MemoryTable(featureUsageDaily),
+    plan_snapshots: new MemoryTable(planSnapshots),
+    requirement_bundles: new MemoryTable(),
+    requirement_items: new MemoryTable(),
+    acceptance_criteria: new MemoryTable(),
+    verification_evidence: new MemoryTable(verificationEvidence),
+    project_reviews: new MemoryTable(projectReviews),
+    delivery_records: new MemoryTable(deliveryRecords),
   }
   return new OrchestratorStore({ table: (name) => tables[name] })
 }
@@ -94,16 +103,35 @@ test('service snapshot exposes the current authoritative plan digest', () => {
   assert.equal(snapshot.planHashes[currentProject.id], snapshot.approvals[0].planHash)
 })
 
-test('snapshot includes durable memberships, Squad bindings, sources, and local usage aggregates', () => {
+test('snapshot includes durable memberships, Squad bindings, sources, and local usage aggregates', async () => {
   const membership = { id: 'p1:a1', projectId: 'p1', agentId: 'a1', projectRole: 'Backend', autoAssignable: true, status: 'active', joinedBy: 'tester', joinedAt: now, updatedAt: now }
   const binding = { id: 'p1:s1', projectId: 'p1', squadId: 's1', status: 'active', isDefault: true, syncedSquadUpdatedAt: now, boundBy: 'tester', boundAt: now, updatedAt: now }
   const source = { id: 'p1:a1:squad:s1', projectId: 'p1', agentId: 'a1', sourceType: 'squad', sourceId: 's1', projectRole: 'Backend', autoAssignable: true, status: 'active', createdAt: now, updatedAt: now }
   const usage = { id: '2026-08-17:projects', date: '2026-08-17', feature: 'projects', opens: 2, meaningfulActions: 1, errorRecoveries: 0, lastUsedAt: now }
-  const snapshot = createStore({ projects: [project('p1', [])], projectAgentMemberships: [membership], projectSquadBindings: [binding], projectAgentMembershipSources: [source], featureUsageDaily: [usage] }).snapshot()
+  const digest = 'a'.repeat(64)
+  const planSnapshot = { id: 'p1:r3', projectId: 'p1', revision: 3, mode: 'initial', taskIds: ['p1-code', 'p1-test'], planHash: digest, teamComposition: { members: [], squads: [], teamDigest: digest, capturedAt: now }, teamDigest: digest, assignmentDigest: digest, status: 'candidate', createdAt: now }
+  const verification = { id: 'e1', projectId: 'p1', taskId: 'p1-code', kind: 'test_command', status: 'passed', acceptanceIds: [], artifactIds: [], actorType: 'system', createdAt: now }
+  const review = { id: 'p1:review:r3', projectId: 'p1', revision: 3, evidenceIds: ['e1'], status: 'pending', reviewerType: 'human', summary: '待人工确认。', createdAt: now }
+  const delivery = { id: 'p1:delivery:r3', projectId: 'p1', revision: 3, reviewId: review.id, evidenceIds: ['e1'], status: 'ready', createdAt: now }
+  const bundle = { id: 'p1:bundle:1', projectId: 'p1', title: '需求来源', mode: 'initial', prd: 'PRD', technicalDesign: 'Design', sourceRefs: ['pdf:1'], sourceDigest: 'b'.repeat(64), status: 'active', createdAt: now, updatedAt: now }
+  const item = { id: 'p1:item:1', projectId: 'p1', bundleId: bundle.id, key: 'root', kind: 'fact', statement: '需求来源包', sourceRefs: ['pdf:1'], status: 'active', createdAt: now, updatedAt: now }
+  const criterion = { id: 'p1:acceptance:1', projectId: 'p1', bundleId: bundle.id, requirementItemId: item.id, key: 'a1', statement: '通过验证', sourceRefs: ['pdf:1'], taskIds: ['p1-code'], evidenceIds: ['e1'], status: 'verified', createdAt: now, updatedAt: now }
+  const store = createStore({ projects: [project('p1', [])], projectAgentMemberships: [membership], projectSquadBindings: [binding], projectAgentMembershipSources: [source], featureUsageDaily: [usage], planSnapshots: [planSnapshot], verificationEvidence: [verification], projectReviews: [review], deliveryRecords: [delivery] })
+  await store.requirementBundles.put(bundle.id, bundle)
+  await store.requirementItems.put(item.id, item)
+  await store.acceptanceCriteria.put(criterion.id, criterion)
+  const snapshot = store.snapshot()
   assert.deepEqual(snapshot.projectAgentMemberships, [membership])
   assert.deepEqual(snapshot.projectSquadBindings, [binding])
   assert.deepEqual(snapshot.projectAgentMembershipSources, [source])
   assert.deepEqual(snapshot.featureUsageDaily, [usage])
+  assert.deepEqual(snapshot.planSnapshots, [planSnapshot])
+  assert.deepEqual(snapshot.requirementBundles, [bundle])
+  assert.deepEqual(snapshot.requirementItems, [item])
+  assert.deepEqual(snapshot.acceptanceCriteria, [criterion])
+  assert.deepEqual(snapshot.verificationEvidence, [verification])
+  assert.deepEqual(snapshot.projectReviews, [review])
+  assert.deepEqual(snapshot.deliveryRecords, [delivery])
 })
 
 test('snapshot omits hashes for corrupt plans while authoritative reads remain fail-closed', () => {

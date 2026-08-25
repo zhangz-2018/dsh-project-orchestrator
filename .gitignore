@@ -9,6 +9,10 @@ coverage/
 .env.*
 !.env.example
 .dsh-worktrees/
+.playwright-cli/
+graphify-out/
+output/
+tmp/
 .vscode/
 .idea/
 *.swp
