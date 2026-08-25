@@ -39,6 +39,10 @@ export async function loadProjectPlanSnapshots<T = unknown>(projectId: string, s
   return request<T>(`/projects/${encodeURIComponent(projectId)}/plan-snapshots`, signal === undefined ? undefined : { signal })
 }
 
+export async function reviseProjectDecomposition<T = unknown>(projectId: string, bundleId: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  return mutate<T>(`/projects/${encodeURIComponent(projectId)}/decompositions/${encodeURIComponent(bundleId)}/revise`, 'POST', body, signal)
+}
+
 export async function loadProjectRequirements<T = unknown>(projectId: string, signal?: AbortSignal): Promise<T> {
   return request<T>(`/projects/${encodeURIComponent(projectId)}/requirements`, signal === undefined ? undefined : { signal })
 }

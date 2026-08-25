@@ -4,6 +4,24 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-08-26
+
+### Added
+
+- Add Planning Contract V2 with deterministic source manifests, separately persisted requirements, acceptance criteria, requirement decisions, plan snapshots, and mapped implementation and verification tasks.
+- Add independent requirement analysis Review, stable Markdown/PDF source locators, controlled delivery-role and capability catalogs, and explicit append/revise APIs across the Service, HTTP API, CLI, and Web workbench.
+
+### Fixed
+
+- Fail approval closed when a required acceptance item lacks implementation or verification coverage, a high/critical requirement Decision remains unresolved, no eligible assignee exists, or an independent Reviewer is unavailable.
+- Preserve resolved Decision contracts across same-source replanning and reject stale, conflicting, or source-free model output instead of rewriting user decisions.
+- Atomically compensate partial Planning V2 writes and reject stale concurrent decomposition or targeted revision results.
+
+### Changed
+
+- New planning writes use Contract V2 while legacy plans remain readable; planning coverage and execution evidence are now reported as separate facts.
+- Expand verification to 216 automated tests, including the `lscity-nuxt` 21-acceptance/27-open-question fixture, append/revise idempotency, storage rollback, stale concurrency, restart recovery, package installation, and desktop/mobile browser regression.
+
 ## [1.5.11] - 2026-08-25
 
 ### Added

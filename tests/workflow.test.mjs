@@ -1,12 +1,19 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { readFileSync } from 'node:fs'
 import {
   assertExecutable,
   assignmentDigest,
   boundedText,
+  buildRequirementSourceManifest,
+  digestObject,
+  materializeTasksV2,
   materializeTasks,
+  parseGeneratedPlanV2,
   parseGeneratedPlan,
   parsePlannerResult,
+  parseRequirementAnalysis,
+  parseRequirementReview,
   planDigest,
   teamCompositionDigest,
   topologicalTasks,
@@ -96,6 +103,94 @@ test('parsePlannerResult preserves explicit blocked planner outcomes', () => {
     nextAction: 'Restore the repository checkout and retry planning.',
   }
   assert.deepEqual(parsePlannerResult(JSON.stringify(blocked)), blocked)
+})
+
+function planningV2Fixture() {
+  const manifest = buildRequirementSourceManifest({ prd: '# Feature\n## 验收标准\n1. 用户可以保存配置\n## 待确认事项\n1. 失败时是否自动重试？' })
+  const acceptanceRef = manifest.anchors.find((anchor) => anchor.kind === 'acceptance_item').id
+  const decisionRef = manifest.anchors.find((anchor) => anchor.kind === 'open_question').id
+  const analysis = {
+    status: 'needs_decision', summary: 'Structured requirements.',
+    requirements: [{ key: 'REQ-001', kind: 'fact', scope: 'in_scope', statement: '用户可以保存配置。', sourceRefs: [acceptanceRef], acceptanceCriteria: [{ key: 'AC-001', statement: '保存后重新读取结果一致。', required: true, scenario: 'good', sourceRefs: [acceptanceRef] }] }],
+    decisions: [{ key: 'DEC-001', question: '失败时是否自动重试？', options: [{ id: 'yes', label: '自动重试' }, { id: 'no', label: '不自动重试' }], impact: 'high', affectedRequirementKeys: ['REQ-001'], sourceRefs: [decisionRef] }],
+    diagnostics: [],
+  }
+  return { manifest, analysis }
+}
+
+test('Planning V2 preserves required source anchors and rejects omissions or duplicate dispositions', () => {
+  const { manifest, analysis } = planningV2Fixture()
+  assert.deepEqual(parseRequirementAnalysis(JSON.stringify(analysis), manifest), analysis)
+  const normalizedDiagnostics = parseRequirementAnalysis(JSON.stringify({ ...analysis, diagnostics: ['Source wording is ambiguous.'] }), manifest)
+  assert.deepEqual(normalizedDiagnostics.diagnostics, [{ code: 'model-diagnostic-1', severity: 'warning', message: 'Source wording is ambiguous.', sourceRefs: [] }])
+  const defaultedSourceRefs = parseRequirementAnalysis(JSON.stringify({ ...analysis, diagnostics: [{ code: 'source-ambiguity', severity: 'warning', message: 'Source wording is ambiguous.' }] }), manifest)
+  assert.deepEqual(defaultedSourceRefs.diagnostics, [{ code: 'source-ambiguity', severity: 'warning', message: 'Source wording is ambiguous.', sourceRefs: [] }])
+  const blockedDiagnostics = parseRequirementAnalysis(JSON.stringify({ ...analysis, status: 'blocked', diagnostics: ['Source conflict blocks analysis.'] }), manifest)
+  assert.equal(blockedDiagnostics.diagnostics[0].severity, 'error')
+  const readyWithHighImpactDecision = { ...analysis, status: 'ready' }
+  assert.throws(() => parseRequirementAnalysis(JSON.stringify(readyWithHighImpactDecision), manifest), (error) => error.code === 'requirement-decision-pending')
+  assert.deepEqual(parseRequirementAnalysis(JSON.stringify(readyWithHighImpactDecision), manifest, { resolvedDecisionKeys: ['DEC-001'] }), readyWithHighImpactDecision)
+  assert.throws(() => parseRequirementAnalysis(JSON.stringify({ ...analysis, diagnostics: [42] }), manifest))
+  assert.throws(() => parseRequirementAnalysis(JSON.stringify({ ...analysis, decisions: [] }), manifest), (error) => error.code === 'requirement-source-uncovered')
+  assert.throws(() => parseRequirementAnalysis(JSON.stringify({ ...analysis, decisions: [{ ...analysis.decisions[0], sourceRefs: [analysis.requirements[0].acceptanceCriteria[0].sourceRefs[0]] }] }), manifest), (error) => ['requirement-source-uncovered', 'requirement-source-duplicate'].includes(error.code))
+  const deferredWithoutReason = { ...analysis, status: 'ready', requirements: [{ ...analysis.requirements[0], scope: 'deferred', acceptanceCriteria: [] }] }
+  assert.throws(() => parseRequirementAnalysis(JSON.stringify(deferredWithoutReason), manifest), /disposition reason/i)
+})
+
+test('PDF source manifest retains stable page/block locators instead of summarized Markdown line locators', () => {
+  const documentHash = 'd'.repeat(64)
+  const block = (page, index, text) => ({ documentKind: 'prd', locator: `pdf:${documentHash}:page:${page}:block:${index}`, page, block: index, text, textDigest: digestObject(text) })
+  const manifest = buildRequirementSourceManifest({
+    prd: '# AI 归纳后的需求文档\n## 验收标准\n1. 这不是原始 PDF locator',
+    sourceBlocks: [block(3, 1, '## 验收标准'), block(3, 2, '1. 保存后结果一致'), block(4, 1, '## 待确认事项'), block(4, 2, '1. 失败时是否重试？')],
+  })
+  assert.deepEqual(manifest.anchors.filter((anchor) => anchor.requiredDisposition).map((anchor) => anchor.locator), [`pdf:${documentHash}:page:3:block:2`, `pdf:${documentHash}:page:4:block:2`])
+  assert.equal(manifest.anchors.some((anchor) => anchor.locator.startsWith('prd:line:')), false)
+  assert.throws(() => buildRequirementSourceManifest({ prd: '# ignored', sourceBlocks: [block(3, 1, 'first'), block(3, 1, 'conflicting duplicate')] }), (error) => error.code === 'requirement-source-locator-duplicate')
+})
+
+test('lscity-nuxt fixture preserves all 21 acceptance items and 27 open questions as independent dispositions', () => {
+  const prd = readFileSync(new URL('./fixtures/lscity-nuxt-required-dispositions.md', import.meta.url), 'utf8')
+  for (const signal of ['AI 自动补齐', '城链', '管理后台', '项目对比', '修改记录', 'AI 分析']) assert.match(prd, new RegExp(signal))
+  const manifest = buildRequirementSourceManifest({ prd })
+  const acceptance = manifest.anchors.filter((anchor) => anchor.kind === 'acceptance_item')
+  const questions = manifest.anchors.filter((anchor) => anchor.kind === 'open_question')
+  assert.equal(acceptance.length, 21)
+  assert.equal(questions.length, 27)
+  assert.equal(manifest.anchors.filter((anchor) => anchor.requiredDisposition).length, 48)
+  const analysis = { status: 'ready', summary: 'lscity-nuxt dispositions.', requirements: acceptance.map((anchor, index) => ({ key: `REQ-${String(index + 1).padStart(3, '0')}`, kind: 'fact', scope: 'in_scope', statement: `Requirement ${index + 1}`, sourceRefs: [anchor.id], acceptanceCriteria: [{ key: `AC-${String(index + 1).padStart(3, '0')}`, statement: `Acceptance ${index + 1}`, required: true, scenario: 'good', sourceRefs: [anchor.id] }] })), decisions: questions.map((anchor, index) => ({ key: `DEC-${String(index + 1).padStart(3, '0')}`, question: `Question ${index + 1}`, options: [{ id: 'resolve', label: 'Resolve now' }, { id: 'defer', label: 'Defer with reason' }], impact: 'low', affectedRequirementKeys: [`REQ-${String(Math.min(index + 1, 21)).padStart(3, '0')}`], sourceRefs: [anchor.id] })), diagnostics: [] }
+  assert.deepEqual(parseRequirementAnalysis(JSON.stringify(analysis), manifest), analysis)
+})
+
+test('Requirement review is digest-bound and cannot approve blocking findings', () => {
+  const { manifest, analysis } = planningV2Fixture()
+  const expectedDigest = digestObject(analysis)
+  const approved = { status: 'approved', reviewedSourceDigest: manifest.sourceDigest, reviewedAnalysisDigest: expectedDigest, missingSourceRefs: [], conflicts: [], untestableAcceptanceKeys: [], findings: [] }
+  assert.deepEqual(parseRequirementReview(JSON.stringify(approved), { sourceDigest: manifest.sourceDigest, analysisDigest: expectedDigest }), approved)
+  assert.throws(() => parseRequirementReview(JSON.stringify({ ...approved, reviewedSourceDigest: '0'.repeat(64) }), { sourceDigest: manifest.sourceDigest, analysisDigest: expectedDigest }), (error) => error.code === 'requirement-review-stale')
+})
+
+test('Delivery Plan V2 requires implementation and verification coverage and derives assignment ids in Service materialization', () => {
+  const { analysis: unresolved } = planningV2Fixture()
+  const analysis = { ...unresolved, status: 'ready', decisions: [] }
+  const task = (id, kind, relationship, role, capability, dependencies = []) => ({ id, title: id, kind, relationship, description: id, completionCriteria: ['done'], dependencies, sourceRequirementKeys: ['REQ-001'], acceptanceKeys: ['AC-001'], decisionKeys: [], assignmentPolicy: { policyVersion: 2, mode: 'single_agent', riskLevel: 'low', requiredRoles: [role], requiredCapabilities: [capability], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: ['src'], allowedScope: ['src'], forbiddenScope: [], escalationConditions: [] }, evidenceRefs: ['package.json'], testCommand: 'pnpm test' })
+  const raw = { contractVersion: 2, status: 'ready', summary: 'Plan', repositoryEvidence: { inspectedPaths: ['package.json'], manifests: ['package.json'], verifiedCommands: ['pnpm test'], relevantModules: ['src'], assumptions: [] }, tasks: [task('implement', 'code', 'implementation', 'implementer', 'implementation'), task('verify', 'test', 'verification', 'verifier', 'testing', ['implement'])], diagnostics: [] }
+  const plan = parseGeneratedPlanV2(JSON.stringify(raw), { analysis, capabilityCatalog: ['implementation', 'testing'], roleCatalog: ['implementer', 'verifier'] })
+  const normalizedPlan = parseGeneratedPlanV2(JSON.stringify({ ...raw, diagnostics: ['Repository evidence is bounded.'] }), { analysis, capabilityCatalog: ['implementation', 'testing'], roleCatalog: ['implementer', 'verifier'] })
+  assert.deepEqual(normalizedPlan.diagnostics, [{ code: 'model-diagnostic-1', severity: 'warning', message: 'Repository evidence is bounded.' }])
+  const requirementIds = new Map([['REQ-001', 'req-id']]); const acceptanceIds = new Map([['AC-001', 'acc-id']]); const decisionIds = new Map()
+  const tasksV2 = materializeTasksV2('p1', plan, { requirementIds, acceptanceIds, decisionIds }, [{ id: 'engineer', deliveryRoles: ['implementer'], capabilities: ['implementation'], runtimeStatus: 'online', availableSlots: 0 }, { id: 'tester', deliveryRoles: ['verifier'], capabilities: ['testing'], runtimeStatus: 'online', availableSlots: 1 }], now)
+  assert.deepEqual(tasksV2.map((item) => item.agentId), ['engineer', 'tester'])
+  assert.deepEqual(tasksV2[0].assignmentPolicy.allowedAgentIds, ['engineer'])
+  assert.deepEqual(tasksV2[0].sourceRequirementIds, ['req-id'])
+  assert.deepEqual(tasksV2[0].acceptanceIds, ['acc-id'])
+  assert.equal(tasksV2[0].planningContractVersion, 2)
+  assert.throws(() => parseGeneratedPlanV2(JSON.stringify({ ...raw, tasks: [raw.tasks[0]] }), { analysis, capabilityCatalog: ['implementation'], roleCatalog: ['implementer'] }), (error) => ['incomplete-plan', 'acceptance-verification-missing'].includes(error.code))
+  assert.throws(() => parseGeneratedPlanV2(JSON.stringify({ ...raw, tasks: raw.tasks.map((item, index) => index === 0 ? { ...item, assignmentPolicy: { ...item.assignmentPolicy, allowedAgentIds: ['forged'] } } : item) }), { analysis, capabilityCatalog: ['implementation', 'testing'], roleCatalog: ['implementer', 'verifier'] }))
+
+  const decisionPlan = { ...raw, tasks: raw.tasks.map((item) => ({ ...item, decisionKeys: ['DEC-001'] })) }
+  assert.throws(() => parseGeneratedPlanV2(JSON.stringify(decisionPlan), { analysis: unresolved, capabilityCatalog: ['implementation', 'testing'], roleCatalog: ['implementer', 'verifier'] }), (error) => error.code === 'plan-decision-unresolved')
+  assert.doesNotThrow(() => parseGeneratedPlanV2(JSON.stringify(decisionPlan), { analysis: unresolved, capabilityCatalog: ['implementation', 'testing'], roleCatalog: ['implementer', 'verifier'], resolvedDecisionKeys: ['DEC-001'] }))
 })
 
 test('assertExecutable binds approval to exact plan digest', () => {

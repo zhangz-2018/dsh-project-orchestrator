@@ -60,6 +60,15 @@ test('CLI Squad bind and sync commands use the audited team mutation routes', as
   })
 })
 
+test('CLI targeted decomposition revision encodes identifiers and preserves the request body', async () => {
+  await withCliServer(async ({ requests, url }) => {
+    const payload = { title: '修订', prd: '更新验收。', technicalDesign: '', taskLanguage: 'zh-CN', expectedBundleUpdatedAt: '2026-08-26T00:00:00.000Z', idempotencyKey: 'revise-1' }
+    const result = await execFileAsync(cli, ['revise-decomposition', 'project / one', 'bundle ? one', JSON.stringify(payload), '--url', url])
+    assert.deepEqual(JSON.parse(result.stdout), { ok: true })
+    assert.deepEqual(requests, [{ method: 'POST', url: '/project-orchestrator/api/projects/project%20%2F%20one/decompositions/bundle%20%3F%20one/revise', body: payload }])
+  })
+})
+
 test('CLI rejects non-loopback endpoints before sending team data', async () => {
   await assert.rejects(
     () => execFileAsync(cli, ['team-plan', 'project-1', '--url', 'https://example.com/project-orchestrator/api']),

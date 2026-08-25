@@ -52,11 +52,16 @@ import type {
   ProjectResource,
   ProjectReviewRecord,
   AcceptanceCriterionRecord,
+  RequirementDecisionRecord,
+  RequirementItemRecord,
+  RequirementSourceBlock,
+  RequirementBundleRecord,
   ProjectTeamPlan,
   ProjectTaskCandidates,
   ProjectTeamImpact,
   Snapshot,
   TaskLanguage,
+  DeliveryRole,
   TaskRiskLevel,
   TaskRecord,
   TaskStatus,
@@ -79,6 +84,7 @@ type Panel = 'task-new' | 'task-detail' | 'project-form' | 'issue-detail' | 'age
 type ProjectTab = 'overview' | 'tasks' | 'agents' | 'runs'
 
 type DialogTone = 'default' | 'warning' | 'danger'
+const DELIVERY_ROLE_OPTIONS: Array<{ id: DeliveryRole; label: string }> = [{ id: 'planner', label: '规划' }, { id: 'lead', label: '负责人' }, { id: 'implementer', label: '实施' }, { id: 'verifier', label: '验证' }, { id: 'reviewer', label: '评审' }, { id: 'specialist', label: '专项' }, { id: 'release', label: '发布' }]
 interface DialogRequest {
   title: string
   message: string
@@ -114,6 +120,8 @@ interface WorkspaceLink { workspaceId: string; path: string; title: string }
 
 interface RequirementImportResult {
   markdown: string
+  documentHash: string
+  sourceBlocks: RequirementSourceBlock[]
   pageCount: number
   textPageCount: number
   analyzedImagePages: number[]
@@ -121,6 +129,7 @@ interface RequirementImportResult {
 }
 
 interface ParsedPdfImport {
+  documentHash: string
   pageCount: number
   textPageCount: number
   visualPageCount: number
@@ -138,7 +147,9 @@ const MAX_PDF_IMAGE_BASE64_CHARS = 26 * 1024 * 1024
 async function parsePdfImport(file: File, signal: AbortSignal, progress: (message: string) => void): Promise<ParsedPdfImport> {
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
   pdfjs.GlobalWorkerOptions.workerSrc = `/project-orchestrator/api/pdf-worker.mjs?v=${encodeURIComponent(pdfjs.version)}`
-  const loadingTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()), enableScripting: false } as Parameters<typeof pdfjs.getDocument>[0])
+  const fileBytes = new Uint8Array(await file.arrayBuffer())
+  const documentHash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', fileBytes))].map((byte) => byte.toString(16).padStart(2, '0')).join('')
+  const loadingTask = pdfjs.getDocument({ data: fileBytes, enableScripting: false } as Parameters<typeof pdfjs.getDocument>[0])
   const abort = () => { void loadingTask.destroy() }
   signal.addEventListener('abort', abort, { once: true })
   let document: Awaited<typeof loadingTask.promise> | undefined
@@ -207,6 +218,7 @@ async function parsePdfImport(file: File, signal: AbortSignal, progress: (messag
     if (textTruncated) warnings.push(`PDF 可提取文字超过 ${MAX_PDF_TEXT_CHARS.toLocaleString()} 字符，已截取前部内容。`)
     if (visualCandidates.length > selectedVisualPages.length) warnings.push(`需要视觉识别的页面较多，已抽样 ${selectedVisualPages.length}/${visualCandidates.length} 页。`)
     return {
+      documentHash,
       pageCount: document.numPages,
       textPageCount,
       visualPageCount: visualCandidates.length,
@@ -1186,6 +1198,12 @@ function ProgressRing({ value }: { value: number }) {
   return <span className="po-progress-ring" style={{ '--po-progress': `${Math.round(value * 360)}deg` } as React.CSSProperties} aria-hidden="true" />
 }
 
+function ProjectTaskEmptyState({ project }: { project: ProjectRecord }) {
+  if (project.status === 'decomposing') return <EmptyState title="AI 正在拆解任务" body="需求分析、独立评审和任务规划完成前，不会展示或批准半成品任务。" />
+  if (project.status === 'awaiting_approval') return <EmptyState title="当前计划没有可执行任务" body="需求决策、来源覆盖、团队能力或规划证据仍可能阻塞。请查看上方门禁并处理后替换当前计划。" />
+  return <EmptyState title="这是一个空项目" body="现在还没有任务。你可以手动添加任务，或补充需求后明确选择让 AI 拆解。" />
+}
+
 function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
   const tasks = state.snapshot.tasks.filter((task) => task.projectId === project.id).sort((left, right) => left.ordinal - right.ordinal)
   const activeMemberships = projectMemberships(state.snapshot, project.id)
@@ -1196,9 +1214,20 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const active = isProjectActive(project)
   const approvalCurrent = isApprovalCurrent(state.snapshot, project)
   const planHash = state.snapshot.planHashes[project.id]
+  const [teamPlan, setTeamPlan] = useState<ProjectTeamPlan>()
+  const [teamPlanError, setTeamPlanError] = useState<string>()
+  useEffect(() => {
+    const controller = new AbortController()
+    setTeamPlan(undefined)
+    setTeamPlanError(undefined)
+    void readApi<ProjectTeamPlan>(`/projects/${encodeURIComponent(project.id)}/team-plan`)
+      .then((plan) => { if (!controller.signal.aborted) setTeamPlan(plan) })
+      .catch((reason) => { if (!controller.signal.aborted) setTeamPlanError(messageOf(reason)) })
+    return () => controller.abort()
+  }, [project.id, project.revision])
   const assignmentsComplete = unassignedTasks.length === 0 && ineligibleTaskAssignments.length === 0
   const planComplete = tasks.some((task) => task.kind === 'code') && tasks.some((task) => task.kind === 'test') && tasks.every((task) => task.testCommand.trim() !== '') && assignmentsComplete
-  const canApprove = project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent
+  const canApprove = project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent && teamPlan?.preflight.ready === true
   const canRetry = approvalCurrent && ['approved', 'failed', 'cancelled'].includes(project.status)
   const canReplan = project.prd.trim() !== '' && ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
   const canAppendDecomposition = ['draft', 'awaiting_approval'].includes(project.status) && latestRun === undefined && !active
@@ -1251,9 +1280,11 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <ol className="po-lifecycle-stepper" aria-label="项目交付阶段">
           {(['understanding', 'planning', 'approval', 'execution', 'verification'] as const).map((phase) => <li key={phase} className={lifecyclePhaseState(project, phase)} aria-current={lifecyclePhaseState(project, phase) === 'current' ? 'step' : undefined}><span>{lifecyclePhaseIcon(phase)}</span><strong>{lifecyclePhaseLabel(phase)}</strong></li>)}
         </ol>
-        {project.status === 'awaiting_approval' && planComplete ? <div className="po-approval-summary"><strong>计划结构完整</strong><span>{tasks.filter((task) => task.kind === 'code').length} 个代码任务 · {tasks.filter((task) => task.kind === 'test').length} 个测试任务 · 所有任务均已绑定项目智能体和独立测试门禁</span></div> : null}
+        {project.status === 'awaiting_approval' && teamPlan?.preflight.ready === true ? <div className="po-approval-summary"><strong>全部审批门禁已通过</strong><span>{tasks.filter((task) => task.kind === 'code').length} 个代码任务 · {tasks.filter((task) => task.kind === 'test').length} 个测试任务 · 需求覆盖、团队资格、分派与独立评审均已校验</span></div> : null}
         {project.teamComposition ? <div className="po-context-row" data-testid="project-team-snapshot"><strong>交付团队快照</strong><span>{project.teamComposition.members.length} 个成员 · {project.teamComposition.squads.length} 个 Squad · Team Digest {project.teamDigest?.slice(0, 10) ?? 'unknown'}</span></div> : null}
         {project.status === 'awaiting_approval' && !assignmentsComplete ? <div className="po-intervention-panel" role="alert"><strong>计划还不能批准</strong><span>{unassignedTasks.length > 0 ? `${unassignedTasks.length} 个任务未分配执行者。` : ''}{ineligibleTaskAssignments.length > 0 ? `${ineligibleTaskAssignments.length} 个任务的执行者已不具备项目资格。` : ''}</span><ActionButton size="sm" variant="outline" onClick={() => model.setProjectTab('tasks')}>检查任务分配</ActionButton></div> : null}
+        {project.status === 'awaiting_approval' && teamPlan !== undefined && !teamPlan.preflight.ready && assignmentsComplete ? <div className="po-intervention-panel" role="alert"><strong>审批门禁未通过</strong><span>{teamPlan.preflight.errors[0] ?? '需求覆盖、团队资格或计划快照需要处理。'}</span><ActionButton size="sm" variant="outline" onClick={() => model.setProjectTab('tasks')}>查看全部门禁</ActionButton></div> : null}
+        {project.status === 'awaiting_approval' && teamPlan === undefined && teamPlanError === undefined ? <div className="po-intervention-panel" role="status"><strong>正在校验审批门禁</strong><span>校验完成前不会开放批准操作。</span></div> : null}
         {project.status === 'failed' ? <div className="po-intervention-panel" role="alert"><strong>AI 已暂停，保留了已通过的任务</strong><span>{project.lastError || '执行未完成，请检查失败任务的测试证据。'}</span></div> : null}
         <div className="po-gate-actions">
           {currentReview?.status === 'approved' || currentReview?.status === 'waived' ? currentDelivery?.status === 'ready' ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={confirmDelivery}>确认交付</ActionButton> : null : null}
@@ -1261,13 +1292,14 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
           {canApprove ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={() => void approveAndExecuteProject(model, project, planHash)}>批准计划并开始实施</ActionButton> : null}
           {project.status === 'draft' && tasks.length === 0 ? <ActionButton variant="primary" icon={<IconEditOutline16 />} disabled={state.loading} onClick={() => model.openProjectForm(project.id)}>补充需求并让 AI 拆解</ActionButton> : null}
           {canAppendDecomposition && tasks.length > 0 ? <ActionButton variant="primary" icon={<IconChecklistOutline14 />} disabled={state.loading} onClick={() => setAppendDialogOpen(true)}>新增需求并拆分任务</ActionButton> : null}
-          {canReplan && tasks.length > 0 ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>替换当前计划</ActionButton> : null}
+          {canReplan && (tasks.length > 0 || project.currentPlanSnapshotId !== undefined) ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>替换当前计划</ActionButton> : null}
           {project.status === 'failed' && canRetry ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>让 AI 修复并继续</ActionButton> : null}
           {project.status === 'cancelled' && canRetry ? <ActionButton variant="primary" icon={<IconPlayOutline16 />} disabled={active || state.loading} onClick={() => void retryProject(model, project)}>继续自动实施</ActionButton> : null}
-          {active ? <ActionButton variant="outline" icon={<IconStopFill16 />} disabled={state.loading} onClick={() => void cancelProject(model, project)}>停止运行</ActionButton> : null}
+          {project.status === 'running' && project.activeRunId !== undefined ? <ActionButton variant="outline" icon={<IconStopFill16 />} disabled={state.loading} onClick={() => void cancelProject(model, project)}>停止运行</ActionButton> : null}
         </div>
         {currentReview?.status === 'pending' ? <ProjectReviewResolutionPanel project={project} review={currentReview} acceptanceCriteria={(state.snapshot.acceptanceCriteria ?? []).filter((criterion) => criterion.projectId === project.id)} model={model} loading={state.loading || active} /> : null}
       </section>
+      <RequirementPlanningPanel project={project} state={state} model={model} teamPlan={teamPlan} />
       <div className="po-project-artifacts">
         {currentDelivery?.responsibilityChain ? <DeliveryResponsibilitySummary delivery={currentDelivery} review={currentReview} snapshot={state.snapshot} /> : null}
         <details className="po-artifact-disclosure" open><summary>初始需求简报</summary><div className="po-document-text">{project.prd || '尚未填写。空项目可以先手动管理任务，之后再补充需求并启动 AI 拆解。'}</div></details>
@@ -1276,7 +1308,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
       </div>
       <section className="po-project-task-section">
         <div className="po-section-heading"><div><h2>项目任务</h2><p>{completed}/{tasks.length} 个任务测试通过</p></div>{['draft', 'failed', 'cancelled'].includes(project.status) ? <ActionButton variant="outline" size="sm" icon={<IconPlusOutline16 />} disabled={active || state.loading} onClick={() => model.openPanel('task-new')}>添加任务</ActionButton> : null}</div>
-        {tasks.length === 0 ? <EmptyState title="这是一个空项目" body="现在还没有任务。你可以手动添加任务，或补充需求后明确选择让 AI 拆解。" /> : tasks.map((task) => <button key={task.id} type="button" className="po-project-task-row" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{agentName(state.snapshot, task.agentId)} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button>)}
+        {tasks.length === 0 ? <ProjectTaskEmptyState project={project} /> : tasks.map((task) => <button key={task.id} type="button" className="po-project-task-row" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{agentName(state.snapshot, task.agentId)} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button>)}
       </section>
       {latestRun ? <RunSummary run={latestRun} snapshot={state.snapshot} /> : null}
       </> : null}
@@ -1357,7 +1389,7 @@ function ProjectSquadsPanel({ project, state, model }: { project: ProjectRecord;
 function ProjectTasksTab({ project, tasks, state, model }: { project: ProjectRecord; tasks: TaskRecord[]; state: WorkbenchState; model: WorkbenchModel }) {
   const unassigned = tasks.filter((task) => !task.agentId)
   const [batchOpen, setBatchOpen] = useState(false)
-  return <div className="po-project-tab-body"><TeamPlanPanel project={project} state={state} /><div className="po-section-heading"><div><h2>项目任务</h2><p>{unassigned.length > 0 ? `${unassigned.length} 个任务需要分配执行者` : '所有任务均已明确执行者'}</p></div><div className="po-inline-actions">{unassigned.length > 0 ? <ActionButton variant="outline" onClick={() => setBatchOpen((open) => !open)}>批量分配未分配任务</ActionButton> : null}<ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => model.openPanel('task-new')}>添加任务</ActionButton></div></div>{batchOpen ? <BatchAssignmentPanel project={project} tasks={unassigned} state={state} model={model} onDone={() => setBatchOpen(false)} /> : null}<div className="po-member-list">{tasks.length === 0 ? <EmptyState title="这是一个空项目" body="添加任务，或从概览中明确启动 AI 拆解。" /> : tasks.map((task) => <div key={task.id} className="po-project-task-row"><button type="button" className="po-project-task-main" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{task.agentId ? agentName(state.snapshot, task.agentId) : '未分配'} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button><TaskCandidateInspector project={project} task={task} state={state} model={model} /></div>)}</div></div>
+  return <div className="po-project-tab-body"><TeamPlanPanel project={project} state={state} /><RequirementPlanningPanel project={project} state={state} model={model} /><div className="po-section-heading"><div><h2>项目任务</h2><p>{unassigned.length > 0 ? `${unassigned.length} 个任务需要分配执行者` : '所有任务均已明确执行者'}</p></div><div className="po-inline-actions">{unassigned.length > 0 ? <ActionButton variant="outline" onClick={() => setBatchOpen((open) => !open)}>批量分配未分配任务</ActionButton> : null}<ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => model.openPanel('task-new')}>添加任务</ActionButton></div></div>{batchOpen ? <BatchAssignmentPanel project={project} tasks={unassigned} state={state} model={model} onDone={() => setBatchOpen(false)} /> : null}<div className="po-member-list">{tasks.length === 0 ? <ProjectTaskEmptyState project={project} /> : tasks.map((task) => <div key={task.id} className="po-project-task-row"><button type="button" className="po-project-task-main" onClick={() => model.openTask(task.id)}><span className="po-task-kind-mark">{task.kind === 'code' ? '代码' : '测试'}</span><span><strong>{task.title}</strong><small>{task.agentId ? agentName(state.snapshot, task.agentId) : '未分配'} · {task.testCommand}</small></span><StatusBadge status={task.status} /><IconChevronRightOutline14 /></button><TaskCandidateInspector project={project} task={task} state={state} model={model} /></div>)}</div></div>
 }
 
 function TeamPlanPanel({ project, state }: { project: ProjectRecord; state: WorkbenchState }) {
@@ -1374,10 +1406,68 @@ function TeamPlanPanel({ project, state }: { project: ProjectRecord; state: Work
     <div className="po-section-heading"><div><h2>团队计划预检</h2><p>{preflight.ready ? '当前团队满足审批前执行资格。' : `${preflight.errors.length} 个阻塞，需处理后才能批准。`}</p></div><span className={`po-team-plan-status ${preflight.ready ? 'is-ready' : 'is-blocked'}`}>{preflight.ready ? '可继续' : '需处理'}</span></div>
     <dl className="po-team-role-map" aria-label="交付阶段角色"><div><dt>Planner</dt><dd>{roleAgentName(plan.team.plannerAgentId)}</dd></div><div><dt>Lead</dt><dd>{roleAgentName(plan.team.leadAgentId)}</dd></div><div><dt>Implementer</dt><dd>{roleOwners('code')}</dd></div><div><dt>Verifier</dt><dd>{roleOwners('test')}</dd></div><div><dt>Reviewer</dt><dd>{roleAgentName(plan.team.reviewerAgentId)}</dd></div></dl>
     <div className="po-team-plan-grid"><div><strong>关键路径 · {preflight.criticalPath.length} 步</strong><small>{preflight.criticalPath.taskIds.map((id) => taskNames.get(id) ?? id).join(' → ') || '暂无任务'}</small></div><div><strong>等待投影 · {preflight.waitProjection.length} 项</strong><small>{preflight.waitProjection.map((item) => `${item.title}：${item.reason}${item.queuedAhead > 0 ? `，前方 ${item.queuedAhead} 个` : ''}`).join('；') || '无容量或 Runtime 等待'}</small></div><div><strong>冲突/资格阻塞 · {preflight.blockedTasks.length} 项</strong><small>{preflight.blockedTasks.map((item) => `${item.title}：${item.reasons.join('、')}`).join('；') || '无'}</small></div></div>
-    {preflight.coverageMatrix.length > 0 ? <div className="po-team-coverage" role="table" aria-label="需求域角色任务证据覆盖矩阵"><div className="po-team-coverage-head" role="row"><span>需求域</span><span>责任角色</span><span>任务</span><span>证据</span><span>状态</span></div>{preflight.coverageMatrix.map((row) => <div className="po-team-coverage-row" role="row" key={row.requirementId}><span title={row.statement}>{row.requirementKey}</span><span>{row.roleNames.join('、') || '未覆盖'}</span><span>{row.taskIds.map((id) => taskNames.get(id) ?? id).join('、') || '未关联'}</span><span>{row.evidenceIds.length}</span><span><StatusBadge status={row.status === 'covered' ? 'completed' : row.status === 'partial' ? 'queued' : 'blocked'} /></span></div>)}</div> : null}
+    {preflight.coverageMatrix.length > 0 ? <div className="po-team-coverage" role="table" aria-label="需求规划与验证覆盖矩阵"><div className="po-team-coverage-head" role="row"><span>需求域</span><span>责任角色</span><span>实施/验证任务</span><span>规划覆盖</span><span>验证证据</span></div>{preflight.coverageMatrix.map((row) => <div className="po-team-coverage-row" role="row" key={row.requirementId}><span title={row.statement}>{row.requirementKey}</span><span>{row.roleNames.join('、') || '未覆盖'}</span><span>{row.implementationTaskIds.length}/{row.verificationTaskIds.length}</span><span><StatusBadge status={row.planningStatus === 'planned' ? 'completed' : row.planningStatus === 'partial' ? 'queued' : 'blocked'} /></span><span>{row.verificationStatus} · {row.evidenceIds.length}</span></div>)}</div> : null}
     {preflight.errors.length > 0 ? <ul className="po-team-plan-errors">{preflight.errors.map((error) => <li key={error}>{error}</li>)}</ul> : null}
     {preflight.warnings.length > 0 ? <ul className="po-team-plan-warnings">{preflight.warnings.map((warning) => <li key={warning}>{warning}</li>)}</ul> : null}
   </section>
+}
+
+function RequirementPlanningPanel({ project, state, model, teamPlan }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel; teamPlan?: ProjectTeamPlan | undefined }) {
+  const currentSnapshot = state.snapshot.planSnapshots?.find((snapshot) => snapshot.id === project.currentPlanSnapshotId)
+  const bundleIds = new Set(currentSnapshot?.requirementBundleIds ?? [])
+  if (currentSnapshot?.planningContractVersion !== 2) return null
+  const requirements = (state.snapshot.requirementItems ?? []).filter((item) => item.projectId === project.id && bundleIds.has(item.bundleId))
+  const bundles = (state.snapshot.requirementBundles ?? []).filter((bundle) => bundle.projectId === project.id && bundleIds.has(bundle.id))
+  const acceptance = (state.snapshot.acceptanceCriteria ?? []).filter((criterion) => criterion.projectId === project.id && bundleIds.has(criterion.bundleId))
+  const decisions = (state.snapshot.requirementDecisions ?? []).filter((decision) => decision.projectId === project.id && decision.bundleId !== undefined && bundleIds.has(decision.bundleId)).sort((left, right) => decisionImpactRank(right.impact) - decisionImpactRank(left.impact) || left.key.localeCompare(right.key))
+  const inScope = requirements.filter((item) => item.scope !== 'deferred' && item.scope !== 'out_of_scope')
+  const requiredAcceptance = acceptance.filter((criterion) => criterion.required !== false)
+  const requiredAcceptanceIds = new Set(requiredAcceptance.map((criterion) => criterion.id))
+  const plannedAcceptanceIds = new Set((teamPlan?.preflight.coverageMatrix.filter((row) => row.planningStatus === 'planned').flatMap((row) => row.acceptanceIds) ?? []).filter((id) => requiredAcceptanceIds.has(id)))
+  const pending = decisions.filter((decision) => decision.status !== 'resolved')
+  return <section className="po-requirement-plan" aria-label="需求、验收与待决问题">
+    <div className="po-section-heading"><div><h2>需求与审批依据</h2><p>当前计划只使用本 Revision 冻结的需求快照。</p></div><span>{inScope.length} 条需求 · {requiredAcceptance.length} 条必需验收 · {pending.length} 个待决</span></div>
+    <dl className="po-requirement-summary"><div><dt>本期需求</dt><dd>{inScope.length}</dd></div><div><dt>必需验收</dt><dd>{requiredAcceptance.length}</dd></div><div><dt>计划覆盖</dt><dd>{plannedAcceptanceIds.size}/{requiredAcceptance.length}</dd></div><div><dt>待决问题</dt><dd>{pending.length}</dd></div></dl>
+    {bundles.length > 0 ? <details className="po-requirement-disclosure"><summary>需求批次（{bundles.length}）</summary><div className="po-requirement-list">{bundles.map((bundle) => <RequirementBundleRevisionRow key={bundle.id} project={project} bundle={bundle} model={model} loading={state.loading} />)}</div></details> : null}
+    {requirements.length > 0 ? <details className="po-requirement-disclosure"><summary>来源需求（{requirements.length}）</summary><div className="po-requirement-list">{requirements.map((requirement) => <RequirementItemRow key={requirement.id} requirement={requirement} acceptance={acceptance.filter((criterion) => criterion.requirementItemId === requirement.id)} />)}</div></details> : null}
+    {decisions.length > 0 ? <details className="po-requirement-disclosure" open={pending.length > 0}><summary>需求决策（{pending.length} 待处理 / {decisions.length} 总计）</summary><div className="po-requirement-list">{decisions.map((decision) => <RequirementDecisionRow key={decision.id} project={project} decision={decision} model={model} loading={state.loading} />)}</div></details> : null}
+  </section>
+}
+
+function RequirementBundleRevisionRow({ project, bundle, model, loading }: { project: ProjectRecord; bundle: RequirementBundleRecord; model: WorkbenchModel; loading: boolean }) {
+  const [editing, setEditing] = useState(false)
+  const [title, setTitle] = useState(bundle.title)
+  const [prd, setPrd] = useState(bundle.prd)
+  const [technicalDesign, setTechnicalDesign] = useState(bundle.technicalDesign)
+  const [sourceBlocks, setSourceBlocks] = useState(bundle.sourceBlocks ?? [])
+  const submit = async () => {
+    const result = await model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/decompositions/${encodeURIComponent(bundle.id)}/revise`, 'POST', { title, prd, technicalDesign, taskLanguage: project.taskLanguage ?? 'zh-CN', sourceRefs: bundle.sourceRefs, sourceBlocks, expectedBundleUpdatedAt: bundle.updatedAt, idempotencyKey: crypto.randomUUID() }), '需求批次已提交局部修订；未受影响的需求和任务保持不变。')
+    if (result !== undefined) setEditing(false)
+  }
+  return <div className="po-requirement-row"><div><strong>{bundle.title}</strong><span>{bundle.mode} · {bundle.id.slice(-8)}</span></div>{editing ? <div className="po-decision-form"><label><span>批次标题</span><input className="po-input" value={title} onChange={(event) => setTitle(event.target.value)} /></label><label><span>技术方案</span><textarea className="po-textarea" value={technicalDesign} onChange={(event) => { setTechnicalDesign(event.target.value); setSourceBlocks((current) => current.filter((block) => block.documentKind !== 'technical_design')) }} /></label><label><span>需求文档</span><textarea className="po-textarea po-textarea-tall" value={prd} onChange={(event) => { setPrd(event.target.value); setSourceBlocks((current) => current.filter((block) => block.documentKind !== 'prd')) }} /></label><div className="po-inline-actions"><ActionButton size="sm" variant="primary" disabled={loading || title.trim() === '' || prd.trim() === ''} onClick={() => void submit()}>修订此需求批次</ActionButton><ActionButton size="sm" variant="ghost" onClick={() => setEditing(false)}>取消</ActionButton></div></div> : <><p>{bundle.prd.slice(0, 240)}{bundle.prd.length > 240 ? '…' : ''}</p><ActionButton size="sm" variant="outline" disabled={loading} onClick={() => setEditing(true)}>局部修订</ActionButton></>}</div>
+}
+
+function RequirementItemRow({ requirement, acceptance }: { requirement: RequirementItemRecord; acceptance: AcceptanceCriterionRecord[] }) {
+  return <div className="po-requirement-row"><div><strong>{requirement.key}</strong><span>{requirement.kind} · {requirement.scope ?? 'in_scope'}</span></div><p>{requirement.statement}</p>{requirement.dispositionReason ? <small>范围处理理由：{requirement.dispositionReason}</small> : null}<ul>{acceptance.map((criterion) => <li key={criterion.id}><strong>{criterion.key}</strong> {criterion.statement}<span>{criterion.required === false ? '可选' : '必需'} · {criterion.scenario ?? '未分类'} · 实施/验证任务 {criterion.taskIds.length}</span></li>)}</ul></div>
+}
+
+function RequirementDecisionRow({ project, decision, model, loading }: { project: ProjectRecord; decision: RequirementDecisionRecord; model: WorkbenchModel; loading: boolean }) {
+  const [status, setStatus] = useState<'resolved' | 'deferred' | 'rejected'>('resolved')
+  const [chosenOption, setChosenOption] = useState(decision.recommendedOption ?? decision.options[0]?.id ?? '')
+  const [resolution, setResolution] = useState('')
+  const [decidedBy, setDecidedBy] = useState(project.owner?.trim() || '项目负责人')
+  const submit = async () => {
+    const result = await model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/requirement-decisions/${encodeURIComponent(decision.id)}/resolve`, 'POST', { status, ...(status === 'resolved' ? { chosenOption } : {}), resolution, decidedBy }), '需求决策已记录；旧计划已失效，请替换当前计划。')
+    if (result !== undefined) {
+      setResolution('')
+      model.setProjectTab('overview')
+    }
+  }
+  return <div className={`po-decision-row is-${decision.status}`}><div className="po-decision-heading"><div><strong>{decision.key} · {decision.impact.toUpperCase()}</strong><span>{decision.status === 'resolved' ? '已解决' : decision.status === 'pending' ? '待处理' : decision.status}</span></div><p>{decision.question}</p></div>{decision.status === 'resolved' ? <small>选择：{decision.options.find((option) => option.id === decision.chosenOption)?.label ?? decision.chosenOption} · {decision.resolution}</small> : <div className="po-decision-form"><label><span>处理方式</span><select className="po-select" value={status} onChange={(event) => setStatus(event.target.value as typeof status)}><option value="resolved">解决并纳入规划</option><option value="deferred">延期（仍阻止高风险审批）</option><option value="rejected">拒绝（仍阻止高风险审批）</option></select></label>{status === 'resolved' ? <label><span>选择方案</span><select className="po-select" value={chosenOption} onChange={(event) => setChosenOption(event.target.value)}>{decision.options.map((option) => <option key={option.id} value={option.id}>{option.label}{option.id === decision.recommendedOption ? '（推荐）' : ''}</option>)}</select></label> : null}<label><span>决策说明</span><textarea className="po-textarea" value={resolution} onChange={(event) => setResolution(event.target.value)} placeholder="记录业务依据和影响" /></label><label><span>决策人</span><input className="po-input" value={decidedBy} onChange={(event) => setDecidedBy(event.target.value)} /></label><ActionButton size="sm" variant="primary" disabled={loading || resolution.trim() === '' || decidedBy.trim() === '' || (status === 'resolved' && chosenOption === '')} onClick={() => void submit()}>解决需求决策</ActionButton></div>}</div>
+}
+
+function decisionImpactRank(impact: RequirementDecisionRecord['impact']): number {
+  return impact === 'critical' ? 4 : impact === 'high' ? 3 : impact === 'medium' ? 2 : 1
 }
 
 function TaskCandidateInspector({ project, task, state, model }: { project: ProjectRecord; task: TaskRecord; state: WorkbenchState; model: WorkbenchModel }) {
@@ -1433,6 +1523,10 @@ function ProjectAgentsTab({ project, state, model }: { project: ProjectRecord; s
   return <div className="po-project-tab-body"><ProjectSquadBindingsSection project={project} state={state} model={model} /><section className="po-project-members-section"><div className="po-section-heading"><div><h2>项目成员</h2><p>{active.length} 个 active 成员，Task 执行者只能从这里选择。</p></div><div className="po-inline-actions">{unassigned.length > 0 ? <ActionButton variant="outline" onClick={() => setBatchOpen((open) => !open)}>批量分配未分配任务</ActionButton> : null}<ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => setAdding((open) => !open)}>添加智能体</ActionButton></div></div>{adding ? <AddProjectAgentsPanel project={project} state={state} model={model} onDone={() => setAdding(false)} /> : null}{batchOpen ? <BatchAssignmentPanel project={project} tasks={unassigned} state={state} model={model} onDone={() => setBatchOpen(false)} /> : null}{active.length === 0 ? <EmptyState title="项目还没有成员" body="绑定 Squad 或添加智能体后，才能为任务选择执行者。" /> : <div className="po-member-list" role="table" aria-label="项目智能体列表"><div className="po-member-head" role="row"><span>智能体</span><span>项目职责</span><span>能力与来源</span><span>任务</span><span>操作</span></div>{active.map((member) => <ProjectMemberRow key={member.id} member={member} project={project} state={state} model={model} />)}</div>}{removed.length > 0 ? <details className="po-history-members"><summary>历史成员（{removed.length}）</summary>{removed.map((member) => <div key={member.id}><strong>{agentName(state.snapshot, member.agentId)}</strong><span>{member.projectRole || '未设置职责'} · {member.removedAt ? formatDate(member.removedAt) : '已移出'}</span></div>)}</details> : null}</section></div>
 }
 
+function DeliveryRoleChecks({ value, onChange, label }: { value: DeliveryRole[]; onChange: (roles: DeliveryRole[]) => void; label: string }) {
+  return <fieldset className="po-role-checks" aria-label={label}>{DELIVERY_ROLE_OPTIONS.map((option) => <label className="po-check" key={option.id}><input type="checkbox" checked={value.includes(option.id)} onChange={(event) => onChange(event.target.checked ? [...value, option.id] : value.filter((role) => role !== option.id))} />{option.label}</label>)}</fieldset>
+}
+
 function ProjectMemberRow({ member, project, state, model }: { member: ProjectAgentMembership; project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
   const agent = state.snapshot.agents.find((item) => item.id === member.agentId)
   const workload = agentWorkload(state.snapshot, member.agentId)
@@ -1448,12 +1542,13 @@ function ProjectMemberRow({ member, project, state, model }: { member: ProjectAg
   const [reassigning, setReassigning] = useState(false)
   const [replacementAgentId, setReplacementAgentId] = useState('')
   const [role, setRole] = useState(member.projectRole)
+  const [deliveryRoles, setDeliveryRoles] = useState<DeliveryRole[]>(member.deliveryRoles ?? [])
   const [autoAssignable, setAutoAssignable] = useState(member.autoAssignable)
   const replacements = projectMemberships(state.snapshot, project.id).filter((candidate) => candidate.agentId !== member.agentId && state.snapshot.agents.some((item) => item.id === candidate.agentId && item.status === 'active'))
-  const update = async (setAsLead = false) => { const result = await model.action(() => mutate(`/projects/${project.id}/agents/${member.agentId}`, 'PUT', { projectRole: role, autoAssignable, setAsLead }), setAsLead ? '项目负责人已更新。' : '项目职责已更新。'); if (result) setEditing(false) }
+  const update = async (setAsLead = false) => { const result = await model.action(() => mutate(`/projects/${project.id}/agents/${member.agentId}`, 'PUT', { projectRole: role, deliveryRoles, autoAssignable, setAsLead }), setAsLead ? '项目负责人已更新。' : '项目职责已更新。'); if (result) setEditing(false) }
   const remove = async () => { const reassignTasks = tasks.length > 0; if (reassignTasks && !replacementAgentId) { if (replacements.length === 0) model.reportError('当前没有其他 active 项目成员可接管任务，请先添加智能体。'); else setReassigning(true); return } const clearingLead = project.leadAgentId === member.agentId && !replacementAgentId; const replacementName = replacementAgentId ? agentName(state.snapshot, replacementAgentId) : ''; if (!await model.confirm({ title: '移出项目成员', message: `将 ${agent?.name ?? member.agentId} 移出项目？${reassignTasks ? `${tasks.length} 个当前计划任务会原子重新分配给 ${replacementName}，审批将失效。` : clearingLead ? '项目负责人会同时清空。' : ''}历史 TaskRun 和活动会保留。`, confirmLabel: '移出成员', tone: 'warning' })) return; const result = await model.action(() => mutate(`/projects/${project.id}/agents/${member.agentId}`, 'DELETE', { expectedMemberUpdatedAt: member.updatedAt, expectedProjectRevision: project.revision, assignedTaskPolicy: reassignTasks ? 'reassign' : 'reject', ...(replacementAgentId ? { replacementAgentId } : {}), clearLead: clearingLead }), reassignTasks ? `任务已重新分配给 ${replacementName}，原成员已移出，项目需要重新批准。` : '智能体已移出项目，历史成员记录已保留。'); if (result) setReassigning(false) }
   const leadershipLabel = [isDefaultSquadLeader ? '默认 Squad Leader' : isSquadLeader ? 'Squad Leader' : '', project.leadAgentId === member.agentId ? '项目负责人' : ''].filter(Boolean).join(' · ')
-  return <div className="po-member-row" role="row"><span><strong>{agent?.name ?? member.agentId}</strong>{leadershipLabel ? <span className="po-member-leadership">{leadershipLabel}</span> : null}<small>{agent?.role || '全局角色未设置'} · {agent?.status === 'active' ? 'active' : '已归档'}</small></span><span>{editing ? <><input className="po-input" value={role} maxLength={200} onChange={(event) => setRole(event.target.value)} /><label className="po-check"><input type="checkbox" checked={autoAssignable} onChange={(event) => setAutoAssignable(event.target.checked)} />允许 AI 自动匹配</label></> : <><strong>{member.projectRole || '未设置项目职责'}</strong><small>{member.autoAssignable ? '可自动匹配' : '仅手动分配'}</small></>}</span><span><strong>{agent?.skills?.length ?? 0} Skills · {agent?.toolPolicy === 'read_only' ? '只读' : '可执行'}</strong><small>{sourceLabel || '来源待迁移'} · {workload ? `${availabilityLabel(workload.availability)} · ${workload.occupied}/${workload.maxConcurrency} 占用` : '可用性未知'}</small></span><span><strong>{tasks.filter((task) => !['completed', 'cancelled'].includes(task.status)).length}/{tasks.length}</strong><small>进行中/全部</small></span><span className="po-member-actions">{editing ? <ActionButton size="sm" variant="primary" onClick={() => void update()}>保存职责</ActionButton> : <ActionButton size="sm" variant="outline" onClick={() => setEditing(true)}>编辑职责</ActionButton>}{!isSquadLeader && project.leadAgentId !== member.agentId ? <ActionButton size="sm" variant="ghost" onClick={() => void update(true)}>设为项目负责人</ActionButton> : null}{squadSources.length > 0 ? <ActionButton size="sm" variant="ghost" disabled title="请先在团队编排中解除或同步 Squad">由 Squad 管理</ActionButton> : reassigning ? <><select className="po-select po-compact-select" aria-label="任务接管智能体" value={replacementAgentId} onChange={(event) => setReplacementAgentId(event.target.value)}><option value="">选择任务接管者</option>{replacements.map((candidate) => <option key={candidate.agentId} value={candidate.agentId}>{agentName(state.snapshot, candidate.agentId)}</option>)}</select><ActionButton size="sm" variant="primary" disabled={!replacementAgentId} onClick={() => void remove()}>重新分配并移出</ActionButton><ActionButton size="sm" variant="ghost" onClick={() => { setReassigning(false); setReplacementAgentId('') }}>取消</ActionButton></> : <ActionButton size="sm" variant="ghost" onClick={() => void remove()}>移出项目</ActionButton>}</span></div>
+  return <div className="po-member-row" role="row"><span><strong>{agent?.name ?? member.agentId}</strong>{leadershipLabel ? <span className="po-member-leadership">{leadershipLabel}</span> : null}<small>{agent?.role || '全局角色未设置'} · {agent?.status === 'active' ? 'active' : '已归档'}</small></span><span>{editing ? <><input className="po-input" value={role} maxLength={200} onChange={(event) => setRole(event.target.value)} /><DeliveryRoleChecks value={deliveryRoles} onChange={setDeliveryRoles} label={`${agent?.name ?? member.agentId} 的交付角色`} /><label className="po-check"><input type="checkbox" checked={autoAssignable} onChange={(event) => setAutoAssignable(event.target.checked)} />允许 AI 自动匹配</label></> : <><strong>{member.projectRole || '未设置项目职责'}</strong><small>{(member.deliveryRoles ?? []).join(', ') || '未声明机器角色'} · {member.autoAssignable ? '可自动匹配' : '仅手动分配'}</small></>}</span><span><strong>{agent?.skills?.length ?? 0} Skills · {agent?.toolPolicy === 'read_only' ? '只读' : '可执行'}</strong><small>{sourceLabel || '来源待迁移'} · {workload ? `${availabilityLabel(workload.availability)} · ${workload.occupied}/${workload.maxConcurrency} 占用` : '可用性未知'}</small></span><span><strong>{tasks.filter((task) => !['completed', 'cancelled'].includes(task.status)).length}/{tasks.length}</strong><small>进行中/全部</small></span><span className="po-member-actions">{editing ? <ActionButton size="sm" variant="primary" onClick={() => void update()}>保存职责</ActionButton> : <ActionButton size="sm" variant="outline" onClick={() => setEditing(true)}>编辑职责</ActionButton>}{!isSquadLeader && project.leadAgentId !== member.agentId ? <ActionButton size="sm" variant="ghost" onClick={() => void update(true)}>设为项目负责人</ActionButton> : null}{squadSources.length > 0 ? <ActionButton size="sm" variant="ghost" disabled title="请先在团队编排中解除或同步 Squad">由 Squad 管理</ActionButton> : reassigning ? <><select className="po-select po-compact-select" aria-label="任务接管智能体" value={replacementAgentId} onChange={(event) => setReplacementAgentId(event.target.value)}><option value="">选择任务接管者</option>{replacements.map((candidate) => <option key={candidate.agentId} value={candidate.agentId}>{agentName(state.snapshot, candidate.agentId)}</option>)}</select><ActionButton size="sm" variant="primary" disabled={!replacementAgentId} onClick={() => void remove()}>重新分配并移出</ActionButton><ActionButton size="sm" variant="ghost" onClick={() => { setReassigning(false); setReplacementAgentId('') }}>取消</ActionButton></> : <ActionButton size="sm" variant="ghost" onClick={() => void remove()}>移出项目</ActionButton>}</span></div>
 }
 
 function AddProjectAgentsPanel({ project, state, model, onDone, initialAgentId }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel; onDone: () => void; initialAgentId?: string }) {
@@ -1461,11 +1556,11 @@ function AddProjectAgentsPanel({ project, state, model, onDone, initialAgentId }
   const existing = new Set(projectMemberships(state.snapshot, project.id).map((member) => member.agentId))
   const candidates = state.snapshot.agents.filter((agent) => !existing.has(agent.id) && `${agent.name} ${agent.role} ${(agent.skills ?? []).join(' ')}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()))
   const remainingSlots = Math.max(0, 100 - existing.size)
-  const [selected, setSelected] = useState<Record<string, { projectRole: string; autoAssignable: boolean }>>(() => initialAgentId && remainingSlots > 0 ? { [initialAgentId]: { projectRole: state.snapshot.agents.find((agent) => agent.id === initialAgentId)?.role ?? '', autoAssignable: true } } : {})
+  const [selected, setSelected] = useState<Record<string, { projectRole: string; deliveryRoles: DeliveryRole[]; autoAssignable: boolean }>>(() => initialAgentId && remainingSlots > 0 ? { [initialAgentId]: { projectRole: state.snapshot.agents.find((agent) => agent.id === initialAgentId)?.role ?? '', deliveryRoles: [], autoAssignable: true } } : {})
   const selectedCount = Object.keys(selected).length
-  const toggle = (agent: AgentRecord) => setSelected((current) => current[agent.id] ? Object.fromEntries(Object.entries(current).filter(([id]) => id !== agent.id)) : Object.keys(current).length >= remainingSlots ? current : { ...current, [agent.id]: { projectRole: agent.role, autoAssignable: true } })
+  const toggle = (agent: AgentRecord) => setSelected((current) => current[agent.id] ? Object.fromEntries(Object.entries(current).filter(([id]) => id !== agent.id)) : Object.keys(current).length >= remainingSlots ? current : { ...current, [agent.id]: { projectRole: agent.role, deliveryRoles: [], autoAssignable: true } })
   const submit = async () => { const members = Object.entries(selected).map(([agentId, value]) => ({ agentId, ...value })); if (members.length === 0) return; const result = await model.action(() => members.length === 1 ? mutate(`/projects/${project.id}/agents`, 'POST', { ...members[0], expectedProjectRevision: project.revision }) : mutate(`/projects/${project.id}/agents/batch`, 'POST', { members, expectedProjectRevision: project.revision }), `${members.length} 个智能体已加入项目。`); if (result) onDone() }
-  return <section className="po-add-members-panel" aria-labelledby="po-add-members-title"><div className="po-section-heading"><div><h3 id="po-add-members-title">添加项目智能体</h3><p>不会调用 AI，也不会创建任务或使现有审批失效。每个项目最多 100 个 active 成员，当前还可添加 {remainingSlots} 个。</p></div><ActionButton variant="ghost" size="sm" onClick={onDone}>取消</ActionButton></div><SearchField value={query} onChange={setQuery} placeholder="搜索名称、角色或 Skill" /><div className="po-agent-picker">{candidates.length === 0 ? <p>没有可加入的 active 智能体。</p> : candidates.map((agent) => { const chosen = selected[agent.id]; const workload = agentWorkload(state.snapshot, agent.id); return <div key={agent.id} className={`po-agent-picker-row${agent.status !== 'active' ? ' po-disabled' : ''}`}><label><input type="checkbox" disabled={agent.status !== 'active' || (chosen === undefined && selectedCount >= remainingSlots)} checked={chosen !== undefined} onChange={() => toggle(agent)} /><span><strong>{agent.name}</strong><small>{agent.role} · {agent.skills?.length ?? 0} Skills · {workload ? availabilityLabel(workload.availability) : '状态未知'}{agent.status !== 'active' ? ' · 已归档，不可加入' : ''}</small></span></label>{chosen ? <div className="po-picker-config"><input className="po-input" aria-label={`${agent.name} 的项目职责`} value={chosen.projectRole} maxLength={200} onChange={(event) => setSelected((current) => ({ ...current, [agent.id]: { ...chosen, projectRole: event.target.value } }))} /><label className="po-check"><input type="checkbox" checked={chosen.autoAssignable} onChange={(event) => setSelected((current) => ({ ...current, [agent.id]: { ...chosen, autoAssignable: event.target.checked } }))} />允许 AI 自动匹配</label></div> : null}</div> })}</div><div className="po-panel-actions"><ActionButton variant="primary" disabled={selectedCount === 0 || selectedCount > remainingSlots || state.loading} onClick={() => void submit()}>添加 {Object.keys(selected).length} 个智能体</ActionButton></div></section>
+  return <section className="po-add-members-panel" aria-labelledby="po-add-members-title"><div className="po-section-heading"><div><h3 id="po-add-members-title">添加项目智能体</h3><p>不会调用 AI，也不会创建任务或使现有审批失效。每个项目最多 100 个 active 成员，当前还可添加 {remainingSlots} 个。</p></div><ActionButton variant="ghost" size="sm" onClick={onDone}>取消</ActionButton></div><SearchField value={query} onChange={setQuery} placeholder="搜索名称、角色或 Skill" /><div className="po-agent-picker">{candidates.length === 0 ? <p>没有可加入的 active 智能体。</p> : candidates.map((agent) => { const chosen = selected[agent.id]; const workload = agentWorkload(state.snapshot, agent.id); return <div key={agent.id} className={`po-agent-picker-row${agent.status !== 'active' ? ' po-disabled' : ''}`}><label><input type="checkbox" disabled={agent.status !== 'active' || (chosen === undefined && selectedCount >= remainingSlots)} checked={chosen !== undefined} onChange={() => toggle(agent)} /><span><strong>{agent.name}</strong><small>{agent.role} · {agent.skills?.length ?? 0} Skills · {workload ? availabilityLabel(workload.availability) : '状态未知'}{agent.status !== 'active' ? ' · 已归档，不可加入' : ''}</small></span></label>{chosen ? <div className="po-picker-config"><input className="po-input" aria-label={`${agent.name} 的项目职责`} value={chosen.projectRole} maxLength={200} onChange={(event) => setSelected((current) => ({ ...current, [agent.id]: { ...chosen, projectRole: event.target.value } }))} /><DeliveryRoleChecks value={chosen.deliveryRoles} onChange={(deliveryRoles) => setSelected((current) => ({ ...current, [agent.id]: { ...chosen, deliveryRoles } }))} label={`${agent.name} 的交付角色`} /><label className="po-check"><input type="checkbox" checked={chosen.autoAssignable} onChange={(event) => setSelected((current) => ({ ...current, [agent.id]: { ...chosen, autoAssignable: event.target.checked } }))} />允许 AI 自动匹配</label></div> : null}</div> })}</div><div className="po-panel-actions"><ActionButton variant="primary" disabled={selectedCount === 0 || selectedCount > remainingSlots || state.loading} onClick={() => void submit()}>添加 {Object.keys(selected).length} 个智能体</ActionButton></div></section>
 }
 
 function BatchAssignmentPanel({ project, tasks, state, model, onDone }: { project: ProjectRecord; tasks: TaskRecord[]; state: WorkbenchState; model: WorkbenchModel; onDone: () => void }) {
@@ -1481,9 +1576,10 @@ function AdditionalDecompositionDialog({ project, model, loading, onClose }: { p
   const [technicalDesign, setTechnicalDesign] = useState('')
   const [taskLanguage, setTaskLanguage] = useState<TaskLanguage>(project.taskLanguage ?? 'zh-CN')
   const [error, setError] = useState<string>()
+  const [idempotencyKey] = useState(() => crypto.randomUUID())
   const submit = async () => {
     if (!title.trim() || !prd.trim()) { setError('请填写需求标题和需求文档。'); return }
-    const result = await model.action(() => mutate<ProjectRecord>(`/projects/${project.id}/decompositions`, 'POST', { title, prd, technicalDesign, taskLanguage }), '新增需求已提交，AI 正在追加任务拆分。')
+    const result = await model.action(() => mutate<ProjectRecord>(`/projects/${project.id}/decompositions`, 'POST', { title, prd, technicalDesign, taskLanguage, idempotencyKey }), '新增需求已提交，AI 正在追加任务拆分。')
     if (result) onClose()
   }
   return <div className="po-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
@@ -1870,6 +1966,8 @@ interface ProjectIntakeValue {
   cwd: string
   prd: string
   technicalDesign: string
+  prdSourceBlocks: RequirementSourceBlock[]
+  technicalDesignSourceBlocks: RequirementSourceBlock[]
   taskLanguage: TaskLanguage
 }
 
@@ -1882,8 +1980,8 @@ interface StoredProjectIntakeDraft {
 function ProjectDialog({ state, model, project }: { state: WorkbenchState; model: WorkbenchModel; project?: ProjectRecord | undefined }) {
   const stored = project === undefined ? loadProjectIntakeDraft() : undefined
   const [value, setValue] = useState<ProjectIntakeValue>(() => project ? {
-    mode: project.prd.trim() === '' ? 'empty' : 'ai', sourceKind: 'local_directory', repositoryUrl: '', repositoryRef: '', issueNumbers: [], name: project.name, summary: project.summary, priority: project.priority ?? 'medium', owner: project.owner ?? '', cwd: project.cwd, prd: project.prd, technicalDesign: project.technicalDesign, taskLanguage: project.taskLanguage ?? 'zh-CN',
-  } : stored ?? { mode: 'empty', sourceKind: 'local_directory', repositoryUrl: '', repositoryRef: '', issueNumbers: [], name: '', summary: '', priority: 'medium', owner: '', cwd: '', prd: '', technicalDesign: '', taskLanguage: 'zh-CN' })
+    mode: project.prd.trim() === '' ? 'empty' : 'ai', sourceKind: 'local_directory', repositoryUrl: '', repositoryRef: '', issueNumbers: [], name: project.name, summary: project.summary, priority: project.priority ?? 'medium', owner: project.owner ?? '', cwd: project.cwd, prd: project.prd, technicalDesign: project.technicalDesign, prdSourceBlocks: project.prdSourceBlocks ?? [], technicalDesignSourceBlocks: project.technicalDesignSourceBlocks ?? [], taskLanguage: project.taskLanguage ?? 'zh-CN',
+  } : stored === undefined ? { mode: 'empty', sourceKind: 'local_directory', repositoryUrl: '', repositoryRef: '', issueNumbers: [], name: '', summary: '', priority: 'medium', owner: '', cwd: '', prd: '', technicalDesign: '', prdSourceBlocks: [], technicalDesignSourceBlocks: [], taskLanguage: 'zh-CN' } : { ...stored, prdSourceBlocks: [], technicalDesignSourceBlocks: [] })
   const [nameLocked, setNameLocked] = useState(Boolean(project?.name || stored?.name))
   const [repository, setRepository] = useState<RepositoryInspection>()
   const [repositoryBusy, setRepositoryBusy] = useState(false)
@@ -1908,13 +2006,14 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
     repositoryRequest.current?.controller.abort()
     importRequest.current?.abort()
   }, [])
-  const setBrief = (prd: string) => setValue((current) => ({ ...current, prd, name: nameLocked ? current.name : suggestProjectName(prd) }))
-  const applyImportedText = (text: string, target: 'prd' | 'technicalDesign') => {
+  const setBrief = (prd: string) => setValue((current) => ({ ...current, prd, prdSourceBlocks: [], name: nameLocked ? current.name : suggestProjectName(prd) }))
+  const applyImportedText = (text: string, target: 'prd' | 'technicalDesign', sourceBlocks?: RequirementSourceBlock[]) => {
     setValue((current) => {
       const existing = target === 'prd' ? current.prd : current.technicalDesign
       const imported = appendImport && existing.trim() !== '' ? `${existing.trim()}\n\n${text.trim()}` : text.trim()
-      if (target === 'technicalDesign') return { ...current, technicalDesign: imported }
-      return { ...current, prd: imported, name: nameLocked ? current.name : suggestProjectName(imported) }
+      const nextBlocks = sourceBlocks === undefined ? [] : appendImport ? [...(target === 'prd' ? current.prdSourceBlocks : current.technicalDesignSourceBlocks), ...sourceBlocks] : sourceBlocks
+      if (target === 'technicalDesign') return { ...current, technicalDesign: imported, technicalDesignSourceBlocks: nextBlocks }
+      return { ...current, prd: imported, prdSourceBlocks: nextBlocks, name: nameLocked ? current.name : suggestProjectName(imported) }
     })
   }
   const readFile = async (file: File | undefined, target: 'prd' | 'technicalDesign') => {
@@ -1952,7 +2051,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
         warnings: undefined,
       }, controller.signal)
       if (importRequest.current !== controller) return
-      applyImportedText(result.markdown, target)
+      applyImportedText(result.markdown, target, result.sourceBlocks)
       setImportWarnings([...parsed.warnings, ...result.warnings])
       setImportStatus(`已解析 ${result.pageCount} 页，并生成${target === 'prd' ? '需求文档' : '技术方案草稿'}。`)
     } catch (error) {
@@ -2074,7 +2173,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
         {value.mode === 'ai' || project !== undefined ? <><Field label="交付目标与约束" hint="只有点击“让 AI 规划”时才会提交给 Planner。"><textarea className="po-textarea po-brief-editor" required={value.mode === 'ai'} value={value.prd} onChange={(event) => setBrief(event.target.value)} placeholder="描述结果、范围、规则和验收标准；支持 Markdown。" /></Field><div className="po-intake-file-actions"><span>{value.prd.length.toLocaleString()} 字符</span><label className="po-import-append"><input type="checkbox" checked={appendImport} onChange={(event) => setAppendImport(event.target.checked)} />追加到现有内容</label><button type="button" disabled={importBusy} onClick={() => { importTarget.current = 'prd'; importInput.current?.click() }}>导入需求文件</button><button type="button" disabled={importBusy} onClick={() => { importTarget.current = 'technicalDesign'; importInput.current?.click() }}>导入技术方案</button><input ref={importInput} type="file" accept=".md,.markdown,.txt,.text,.pdf,application/pdf" hidden aria-label="导入 PDF、Markdown 或文本文件" onChange={(event) => { void readFile(event.target.files?.[0], importTarget.current); event.currentTarget.value = '' }} /></div><p className="po-import-disclosure">PDF 会在浏览器中转换为文字和页面图像，再发送给当前 AI 模型归纳；导入本身不会保存项目或启动规划。</p>{importStatus ? <div className="po-import-status" role="status" aria-live="polite">{importBusy ? <IconRefreshOutline16 /> : <IconCheckOutline16 />}<span>{importStatus}</span>{importBusy ? <button type="button" onClick={() => importRequest.current?.abort()}>停止解析</button> : null}</div> : null}{importWarnings.length > 0 ? <div className="po-import-warnings" role="note">{importWarnings.map((warning) => <span key={warning}><IconWarningOutline16 />{warning}</span>)}</div> : null}</> : <div className="po-empty-project-note"><IconFolderOpenOutline16 /><div><strong>不会自动拆任务</strong><p>创建后项目状态为“待规划”，任务数量为 0。你可以直接添加手动任务，或编辑项目补充需求后再启动 AI。</p></div></div>}
         {importError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />{importError}</div> : null}
         {directoryBrowserOpen ? <DirectoryBrowser listing={directoryListing} busy={directoryBusy} error={directoryError} navigate={browseDirectory} select={selectBrowsedDirectory} close={() => { setDirectoryBrowserOpen(false); setDirectoryListing(undefined) }} /> : null}
-        <details className="po-project-constraints"><summary>补充项目资料（可选）</summary><div className="po-project-constraints-body"><Field label="项目摘要"><textarea className="po-textarea" value={value.summary} onChange={(event) => setValue({ ...value, summary: event.target.value })} placeholder="用于项目列表和详情页的简短说明。" /></Field>{value.mode === 'ai' || project !== undefined ? <Field label="技术方案上下文" hint="可以留空，AI 会根据需求和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value })} placeholder="已有模块、接口、数据、测试和发布约束。" /></Field> : null}<div className="po-field-pair"><Field label="任务语言" hint="仅在 AI 生成任务时生效；命令和代码标识不会翻译。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>
+        <details className="po-project-constraints"><summary>补充项目资料（可选）</summary><div className="po-project-constraints-body"><Field label="项目摘要"><textarea className="po-textarea" value={value.summary} onChange={(event) => setValue({ ...value, summary: event.target.value })} placeholder="用于项目列表和详情页的简短说明。" /></Field>{value.mode === 'ai' || project !== undefined ? <Field label="技术方案上下文" hint="可以留空，AI 会根据需求和仓库结构制定方案。"><textarea className="po-textarea" value={value.technicalDesign} onChange={(event) => setValue({ ...value, technicalDesign: event.target.value, technicalDesignSourceBlocks: [] })} placeholder="已有模块、接口、数据、测试和发布约束。" /></Field> : null}<div className="po-field-pair"><Field label="任务语言" hint="仅在 AI 生成任务时生效；命令和代码标识不会翻译。"><select className="po-select" value={value.taskLanguage} onChange={(event) => setValue({ ...value, taskLanguage: event.target.value as TaskLanguage })}><option value="zh-CN">简体中文（默认）</option><option value="en">English</option></select></Field><Field label="优先级"><select className="po-select" value={value.priority} onChange={(event) => setValue({ ...value, priority: event.target.value as Priority })}><PriorityOptions /></select></Field></div><Field label="负责人"><input className="po-input" value={value.owner} onChange={(event) => setValue({ ...value, owner: event.target.value })} placeholder="姓名或团队" /></Field></div></details>
       </div>
     </ModalShell>
   )
@@ -2382,6 +2481,8 @@ function loadProjectIntakeDraft(): ProjectIntakeValue | undefined {
       cwd: '',
       prd: '',
       technicalDesign: '',
+      prdSourceBlocks: [],
+      technicalDesignSourceBlocks: [],
       taskLanguage: stored.taskLanguage === 'en' ? 'en' : 'zh-CN',
     }
   } catch {

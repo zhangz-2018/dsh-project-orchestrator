@@ -707,6 +707,8 @@ body[data-ds-dark-theme] .po-workbench {
 .po-member-actions { display: flex !important; justify-content: flex-end; flex-wrap: wrap; }
 .po-check { min-height: 32px; display: flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; cursor: pointer; }
 .po-check input, .po-agent-picker input { accent-color: var(--po-accent); }
+.po-role-checks { border: 0; padding: 0; margin: 2px 0; display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.po-role-checks .po-check { min-height: 24px; }
 .po-add-members-panel, .po-batch-panel, .po-agent-join-panel { margin-bottom: 18px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 7px; padding: 16px; background: var(--dsw-alias-bg-layer-1, #fafafa); }
 .po-team-plan-panel { margin-bottom: 18px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 7px; padding: 16px; background: var(--dsw-alias-bg-layer-1, #fafafa); }
 .po-team-plan-status { font-size: 12px; font-weight: 650; padding: 4px 8px; border-radius: 999px; }
@@ -728,6 +730,27 @@ body[data-ds-dark-theme] .po-workbench {
 .po-team-coverage-head { color: var(--dsw-alias-label-caption, #6b7280); font-weight: 650; }
 .po-team-coverage-row { border-top: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
 .po-team-coverage-row > span { min-width: 0; overflow-wrap: anywhere; }
+.po-requirement-plan { margin: 0 0 18px; border-block: 1px solid var(--dsw-alias-border-l2, #d4d4d8); padding: 16px 0; }
+.po-requirement-summary { margin: 0 0 12px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.po-requirement-summary > div { padding: 8px 12px; border-inline-end: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
+.po-requirement-summary > div:last-child { border-inline-end: 0; }
+.po-requirement-summary dt { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
+.po-requirement-summary dd { margin: 2px 0 0; font-size: 18px; font-weight: 650; }
+.po-requirement-disclosure { border-top: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
+.po-requirement-disclosure > summary { min-height: 42px; display: flex; align-items: center; cursor: pointer; font-weight: 650; }
+.po-requirement-list { display: grid; }
+.po-requirement-row, .po-decision-row { padding: 12px 4px; border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); display: grid; gap: 8px; }
+.po-requirement-row > div, .po-decision-heading > div { display: flex; justify-content: space-between; gap: 12px; }
+.po-requirement-row p, .po-decision-row p { margin: 0; line-height: 1.5; }
+.po-requirement-row small, .po-requirement-row span, .po-decision-row small, .po-decision-heading span { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
+.po-requirement-row ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+.po-requirement-row li span { display: block; }
+.po-decision-row.is-pending { border-inline-start: 3px solid var(--dsw-alias-state-warn-secondary, #c88c48); padding-inline-start: 10px; }
+.po-decision-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+.po-decision-form label { display: grid; gap: 5px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; }
+.po-decision-form label:nth-child(3) { grid-column: 1 / -1; }
+.po-decision-form .po-textarea { min-height: 72px; }
+.po-decision-form .po-button { justify-self: start; }
 .po-task-candidates { margin: 0 4px 8px 70px; font-size: 12px; color: var(--dsw-alias-label-caption, #6b7280); }
 .po-task-candidates summary { cursor: pointer; color: var(--dsw-alias-label-secondary, #4b5563); }
 .po-task-candidates > div { display: grid; gap: 8px; padding: 8px 0; }
@@ -960,6 +983,7 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-team-role-map { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .po-team-role-map > div { border-block-end: 1px solid var(--dsw-alias-border-l3, #e4e4e7); }
   .po-team-plan-grid { grid-template-columns: 1fr; }
+  .po-requirement-summary, .po-decision-form { grid-template-columns: 1fr 1fr; }
   .po-team-coverage { overflow-x: auto; }
   .po-team-coverage-head, .po-team-coverage-row { min-width: 680px; }
   .po-task-candidates { margin-left: 48px; }

@@ -67,6 +67,11 @@ test('client exposes explicit empty and AI creation actions', async () => {
   assert.match(source, /ProjectPlanningDiagnostic/)
   assert.match(source, /重新运行规划/)
   assert.match(source, /技术详情/)
+  assert.match(source, /project\.status === 'decomposing'.*AI 正在拆解任务/)
+  assert.match(source, /project\.status === 'awaiting_approval'.*当前计划没有可执行任务/)
+  assert.match(source, /project\.status === 'running' && project\.activeRunId !== undefined.*停止运行/)
+  assert.doesNotMatch(source, /\{active \? <ActionButton[^\n]*停止运行/)
+  assert.match(source, /canReplan && \(tasks\.length > 0 \|\| project\.currentPlanSnapshotId !== undefined\).*替换当前计划/)
   assert.doesNotMatch(source, /Next action/)
   assert.match(source, /PROJECT_INTAKE_DRAFT_TTL_MS/)
   assert.match(source, /AbortController/)
@@ -84,6 +89,8 @@ test('client exposes explicit empty and AI creation actions', async () => {
   assert.match(source, /requirements\/import/)
   assert.match(source, /application\/pdf/)
   assert.match(source, /PDF 会在浏览器中转换为文字和页面图像/)
+  assert.match(source, /crypto\.subtle\.digest\('SHA-256'/)
+  assert.match(source, /prdSourceBlocks/)
   assert.match(bundle, /pdf-worker\.mjs/)
 })
 
@@ -111,6 +118,9 @@ test('client bundle exposes project membership and local usage workflows', async
   assert.match(source, /设为项目负责人/)
   assert.doesNotMatch(source, />设为负责人</)
   for (const reviewContract of ['ProjectReviewResolutionPanel', '要求修改', '人工豁免', '豁免 Reviewer 独立性', 'DeliveryResponsibilitySummary', '交付责任链', '交付阶段角色', 'Planner', 'Lead', 'Implementer', 'Verifier', 'Reviewer']) assert.match(source, new RegExp(reviewContract))
+  for (const planningContract of ['teamPlan?.preflight.ready === true', 'RequirementPlanningPanel', '解决需求决策', '局部修订', '/decompositions/${encodeURIComponent(bundle.id)}/revise']) assert.match(source, new RegExp(planningContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  assert.match(source, /block\.documentKind !== 'prd'/)
+  assert.match(source, /block\.documentKind !== 'technical_design'/)
 })
 
 test('client exposes P0 Squad and Runtime management with context binding flows', async () => {

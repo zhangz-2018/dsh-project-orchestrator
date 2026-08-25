@@ -52,10 +52,10 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET' && projectPlanSnapshots !== undefined) return json(res, 200, service.listProjectPlanSnapshots(projectPlanSnapshots))
       const projectRequirements = matchOne(path, /^\/projects\/([^/]+)\/requirements$/u)
       if (method === 'GET' && projectRequirements !== undefined) return json(res, 200, {
-        ...service.getProjectRequirementMatrix(projectRequirements),
+        ...service.getProjectRequirementMatrix(projectRequirements, url.searchParams.get('includeHistory') === 'true'),
       })
       const projectDecisions = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
-      if (method === 'GET' && projectDecisions !== undefined) return json(res, 200, service.listProjectRequirementDecisions(projectDecisions))
+      if (method === 'GET' && projectDecisions !== undefined) return json(res, 200, url.searchParams.get('includeHistory') === 'true' ? service.listProjectRequirementDecisions(projectDecisions) : service.getProjectRequirementMatrix(projectDecisions).decisions)
       const projectDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery$/u)
       if (method === 'GET' && projectDelivery !== undefined) return json(res, 200, service.getProjectDelivery(projectDelivery))
       const projectSquadBindings = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/u)
@@ -128,6 +128,10 @@ export function createHttpHandler(service: OrchestratorService) {
         const project = await service.createProjectFromRequest(await readJson(req))
         return json(res, project.status === 'decomposing' ? 202 : 201, project)
       }
+      const createRequirementDecisionDirect = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
+      if (createRequirementDecisionDirect !== undefined && method === 'POST') return json(res, 201, await service.createProjectRequirementDecision(createRequirementDecisionDirect, await readJson(req)))
+      const resolveRequirementDecisionDirect = matchTwo(path, /^\/projects\/([^/]+)\/requirement-decisions\/([^/]+)\/resolve$/u)
+      if (resolveRequirementDecisionDirect !== undefined && method === 'POST') return json(res, 200, await service.resolveProjectRequirementDecision(resolveRequirementDecisionDirect[0], resolveRequirementDecisionDirect[1], await readJson(req)))
       await service.serializedMutation(async () => {
         if (method === 'POST' && path === '/agents') {
           return json(res, 201, await service.createAgent(await readJson(req)))
@@ -266,10 +270,6 @@ export function createHttpHandler(service: OrchestratorService) {
         if (closeDelivery !== undefined && method === 'POST') {
           return json(res, 200, await service.closeProjectDelivery(closeDelivery, await readJson(req) as { actor: string; note?: string }))
         }
-        const createRequirementDecision = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
-        if (createRequirementDecision !== undefined && method === 'POST') return json(res, 201, await service.createProjectRequirementDecision(createRequirementDecision, await readJson(req)))
-        const resolveRequirementDecision = matchTwo(path, /^\/projects\/([^/]+)\/requirement-decisions\/([^/]+)\/resolve$/u)
-        if (resolveRequirementDecision !== undefined && method === 'POST') return json(res, 200, await service.resolveProjectRequirementDecision(resolveRequirementDecision[0], resolveRequirementDecision[1], await readJson(req)))
         const replan = matchOne(path, /^\/projects\/([^/]+)\/replan$/)
         if (replan !== undefined && method === 'POST') {
           return json(res, 202, await service.replanProject(replan, await readJson(req)))
@@ -281,6 +281,10 @@ export function createHttpHandler(service: OrchestratorService) {
         const appendDecomposition = matchOne(path, /^\/projects\/([^/]+)\/decompositions$/)
         if (appendDecomposition !== undefined && method === 'POST') {
           return json(res, 202, await service.appendDecomposition(appendDecomposition, await readJson(req)))
+        }
+        const reviseDecomposition = matchTwo(path, /^\/projects\/([^/]+)\/decompositions\/([^/]+)\/revise$/)
+        if (reviseDecomposition !== undefined && method === 'POST') {
+          return json(res, 202, await service.reviseDecomposition(reviseDecomposition[0], reviseDecomposition[1], await readJson(req)))
         }
         const openDirectory = matchOne(path, /^\/projects\/([^/]+)\/open-directory$/)
         if (openDirectory !== undefined && method === 'POST') {

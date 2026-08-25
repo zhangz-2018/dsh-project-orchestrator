@@ -19,6 +19,7 @@ export type ProjectAgentMembershipSourceType = 'manual' | 'squad' | 'retained_re
 export type FeatureUsageFeature = 'inbox' | 'issues' | 'projects' | 'delivery' | 'agents' | 'skills' | 'squads' | 'runtimes' | 'local_data'
 export type AssignmentMode = 'single_agent' | 'squad_delegation' | 'review_only'
 export type TaskRiskLevel = 'low' | 'medium' | 'high' | 'critical'
+export type DeliveryRole = 'planner' | 'lead' | 'implementer' | 'verifier' | 'reviewer' | 'specialist' | 'release'
 export interface TaskAssignmentPolicy { mode: AssignmentMode; riskLevel: TaskRiskLevel; requiredRoles: string[]; requiredCapabilities: string[]; allowedAgentIds: string[]; allowedSquadIds: string[]; requiresIndependentReviewer: boolean; maxParallel: number; parallelGroup?: string; conflictKeys: string[]; allowedScope: string[]; forbiddenScope: string[]; escalationConditions: string[] }
 export type EscalationTrigger = 'requirement_conflict' | 'contract_conflict' | 'destructive_change' | 'production_data_change' | 'permission_required' | 'credential_required' | 'verification_unavailable' | 'repeated_failure' | 'scope_expansion' | 'delegation_conflict' | 'source_of_truth_unknown'
 
@@ -51,6 +52,7 @@ export interface ProjectAgentMembership {
   projectId: string
   agentId: string
   projectRole: string
+  deliveryRoles: DeliveryRole[]
   autoAssignable: boolean
   status: ProjectAgentMembershipStatus
   joinedBy: string
@@ -148,7 +150,7 @@ export interface TeamCompositionSnapshot {
   plannerAgentId?: string
   leadAgentId?: string
   reviewerAgentId?: string
-  members: Array<{ agentId: string; projectRole: string; source: ProjectAgentMembershipSourceType; sourceId: string; capabilities: string[]; skillsDigest?: string; personaDigest?: string; runtimeId?: string; runtimeStatus?: RuntimeStatus; maxConcurrency: number; availableSlots?: number }>
+  members: Array<{ agentId: string; projectRole: string; deliveryRoles: DeliveryRole[]; source: ProjectAgentMembershipSourceType; sourceId: string; capabilities: string[]; skillsDigest?: string; personaDigest?: string; runtimeId?: string; runtimeStatus?: RuntimeStatus; maxConcurrency: number; availableSlots?: number }>
   squads: Array<{ squadId: string; isDefault: boolean; leaderAgentId: string; memberAgentIds: string[]; collaborationPolicyVersion?: string; policyDigest?: string; maxParallelDelegations: number; syncedSquadUpdatedAt: string }>
   teamDigest: string
   capturedAt: string
@@ -174,7 +176,7 @@ export interface ProjectTeamPlan {
     criticalPath: { taskIds: string[]; length: number }
     blockedTasks: Array<{ taskId: string; title: string; reasons: string[] }>
     waitProjection: Array<{ taskId: string; title: string; reason: string; queuedAhead: number; availableSlots: number }>
-    coverageMatrix: Array<{ requirementId: string; requirementKey: string; statement: string; roleNames: string[]; taskIds: string[]; acceptanceIds: string[]; evidenceIds: string[]; status: 'covered' | 'partial' | 'uncovered' }>
+    coverageMatrix: Array<{ requirementId: string; requirementKey: string; statement: string; roleNames: string[]; taskIds: string[]; implementationTaskIds: string[]; verificationTaskIds: string[]; acceptanceIds: string[]; evidenceIds: string[]; planningStatus: 'unplanned' | 'partial' | 'planned'; verificationStatus: 'unverified' | 'partial' | 'verified' | 'failed' | 'waived'; status: 'covered' | 'partial' | 'uncovered' }>
   }
 }
 export interface AgentCandidateProjection { agentId: string; eligible: boolean; reasons: string[]; projectRole: string; capabilities: string[]; runtimeId?: string; runtimeStatus: RuntimeStatus | 'unknown'; queued: number; working: number; occupied: number; maxConcurrency: number; availableSlots: number; score: number }
@@ -248,6 +250,13 @@ export interface PlanSnapshotRecord {
   assignmentDigest: string
   requirementDigest?: string
   decisionDigest?: string
+  requirementBundleIds?: string[]
+  sourceManifestDigest?: string
+  requirementAnalysisDigest?: string
+  requirementReviewDigest?: string
+  requirementPromptVersion?: string
+  plannerPromptVersion?: string
+  planningContractVersion?: 2
   taskAssignments?: TaskAssignmentSnapshot[]
   capacityObservation?: TeamCapacityObservation
   reviewerIndependencePolicy?: ReviewerIndependencePolicy
@@ -267,6 +276,9 @@ export interface RequirementBundleRecord {
   prd: string
   technicalDesign: string
   sourceRefs: string[]
+  sourceBlocks?: RequirementSourceBlock[]
+  idempotencyKey?: string
+  requestDigest?: string
   sourceDigest: string
   status: 'active' | 'superseded'
   supersedesId?: string
@@ -274,12 +286,16 @@ export interface RequirementBundleRecord {
   updatedAt: string
 }
 
+export interface RequirementSourceBlock { documentKind: 'prd' | 'technical_design'; locator: string; page: number; block: number; text: string; textDigest: string }
+
 export interface RequirementItemRecord {
   id: string
   projectId: string
   bundleId: string
   key: string
   kind: 'fact' | 'inference' | 'unknown'
+  scope?: 'in_scope' | 'deferred' | 'out_of_scope'
+  dispositionReason?: string
   statement: string
   sourceRefs: string[]
   status: 'active' | 'superseded'
@@ -298,6 +314,7 @@ export interface RequirementDecisionRecord {
   impact: 'low' | 'medium' | 'high' | 'critical'
   affectedRequirementIds: string[]
   affectedTaskIds: string[]
+  sourceRefs?: string[]
   owner?: string
   dueAt?: string
   status: 'pending' | 'resolved' | 'deferred' | 'rejected'
@@ -317,6 +334,8 @@ export interface AcceptanceCriterionRecord {
   key: string
   statement: string
   sourceRefs: string[]
+  required?: boolean
+  scenario?: 'good' | 'business_rejection' | 'boundary' | 'dependency_failure' | 'security' | 'compatibility' | 'recovery'
   taskIds: string[]
   evidenceIds: string[]
   status: 'open' | 'verified' | 'failed' | 'waived'
@@ -436,6 +455,10 @@ export interface DecompositionBatch {
   title: string
   prd: string
   technicalDesign: string
+  sourceBlocks?: RequirementSourceBlock[]
+  idempotencyKey?: string
+  supersedesId?: string
+  requirementBundleId?: string
   taskIds: string[]
   sessionId?: string
   createdAt: string
@@ -449,6 +472,8 @@ export interface ProjectRecord {
   cwd: string
   prd: string
   technicalDesign: string
+  prdSourceBlocks?: RequirementSourceBlock[]
+  technicalDesignSourceBlocks?: RequirementSourceBlock[]
   priority?: Priority
   owner?: string
   taskLanguage?: TaskLanguage
@@ -467,6 +492,8 @@ export interface ProjectRecord {
   assignmentDigest?: string
   currentPlanSnapshotId?: string
   decompositionSessionId?: string
+  activeDecompositionKey?: string
+  activeDecompositionDigest?: string
   activeRunId?: string
   lastError?: string
   createdAt: string
@@ -483,11 +510,14 @@ export interface TaskRecord {
   tags?: string[]
   description: string
   acceptanceCriteria: string[]
+  completionCriteria?: string[]
   dependencies: string[]
   agentId?: string
   testCommand: string
   sourceRequirementIds?: string[]
   acceptanceIds?: string[]
+  decisionIds?: string[]
+  planningContractVersion?: 2
   assignmentPolicy?: { mode: AssignmentMode; riskLevel: TaskRiskLevel; requiredRoles: string[]; requiredCapabilities: string[]; allowedAgentIds: string[]; allowedSquadIds: string[]; requiresIndependentReviewer: boolean; maxParallel: number; parallelGroup?: string; conflictKeys: string[]; allowedScope: string[]; forbiddenScope: string[]; escalationConditions: string[] }
   assignmentSource?: 'planner_recommendation' | 'automatic_match' | 'manual'
   assignmentDigest?: string

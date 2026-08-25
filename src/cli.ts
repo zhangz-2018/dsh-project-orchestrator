@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs'
 
 const VERSION = String(JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version)
-const USAGE = `dsh-project-orchestrator ${VERSION}\n\nUsage:\n  dsh-project-orchestrator snapshot [--url URL]\n  dsh-project-orchestrator inbox [--url URL]\n  dsh-project-orchestrator stats [--url URL]\n  dsh-project-orchestrator team-plan PROJECT_ID [--url URL]\n  dsh-project-orchestrator agent-candidates PROJECT_ID TASK_ID [--url URL]\n  dsh-project-orchestrator team-impact PROJECT_ID [--url URL]\n  dsh-project-orchestrator team-metrics [PROJECT_ID] [--url URL]\n  dsh-project-orchestrator validate-team PROJECT_ID [--url URL]\n  dsh-project-orchestrator reassign-task PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator resolve-team-blocker PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator bind-project-squad PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator sync-project-squad PROJECT_ID SQUAD_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator plan-snapshots PROJECT_ID [--url URL]\n  dsh-project-orchestrator requirements PROJECT_ID [--url URL]\n  dsh-project-orchestrator decisions PROJECT_ID [--url URL]\n  dsh-project-orchestrator delivery PROJECT_ID [--url URL]\n  dsh-project-orchestrator confirm-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n  dsh-project-orchestrator command '<JSON>' [--url URL]\n  dsh-project-orchestrator trigger '<JSON>' [--url URL]\n`
+const USAGE = `dsh-project-orchestrator ${VERSION}\n\nUsage:\n  dsh-project-orchestrator snapshot [--url URL]\n  dsh-project-orchestrator inbox [--url URL]\n  dsh-project-orchestrator stats [--url URL]\n  dsh-project-orchestrator team-plan PROJECT_ID [--url URL]\n  dsh-project-orchestrator agent-candidates PROJECT_ID TASK_ID [--url URL]\n  dsh-project-orchestrator team-impact PROJECT_ID [--url URL]\n  dsh-project-orchestrator team-metrics [PROJECT_ID] [--url URL]\n  dsh-project-orchestrator validate-team PROJECT_ID [--url URL]\n  dsh-project-orchestrator reassign-task PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator resolve-team-blocker PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator bind-project-squad PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator sync-project-squad PROJECT_ID SQUAD_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator plan-snapshots PROJECT_ID [--url URL]\n  dsh-project-orchestrator requirements PROJECT_ID [--url URL]\n  dsh-project-orchestrator revise-decomposition PROJECT_ID BUNDLE_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator decisions PROJECT_ID [--url URL]\n  dsh-project-orchestrator delivery PROJECT_ID [--url URL]\n  dsh-project-orchestrator confirm-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n  dsh-project-orchestrator command '<JSON>' [--url URL]\n  dsh-project-orchestrator trigger '<JSON>' [--url URL]\n`
 
 const args = process.argv.slice(2)
 const command = args.shift()
@@ -66,6 +66,11 @@ try {
     const projectId = args.shift()
     if (projectId === undefined || projectId.trim() === '') throw new Error('requirements requires a PROJECT_ID.')
     print(await request(`/projects/${encodeURIComponent(projectId)}/requirements`))
+  } else if (command === 'revise-decomposition') {
+    const projectId = args.shift()
+    const bundleId = args.shift()
+    if (projectId === undefined || bundleId === undefined || args.length === 0) throw new Error('revise-decomposition requires PROJECT_ID, BUNDLE_ID, and a JSON body.')
+    print(await request(`/projects/${encodeURIComponent(projectId)}/decompositions/${encodeURIComponent(bundleId)}/revise`, parseJsonArgument(args)))
   } else if (command === 'decisions') {
     const projectId = args.shift()
     if (projectId === undefined || projectId.trim() === '') throw new Error('decisions requires a PROJECT_ID.')

@@ -1,7 +1,34 @@
 import assert from 'node:assert/strict'
 import { Readable } from 'node:stream'
 import test from 'node:test'
-import { createHttpHandler, WorkflowError } from '../lib/index.js'
+import { createHttpHandler, OrchestratorService, WorkflowError } from '../lib/index.js'
+
+class MemoryTable {
+  records = new Map()
+  get size() { return this.records.size }
+  get(key) { return this.records.get(key) }
+  entries() { return [...this.records.entries()][Symbol.iterator]() }
+  async put(key, value) { this.records.set(key, structuredClone(value)) }
+  async delete(key) { return this.records.delete(key) }
+}
+
+function realServiceStore() {
+  const store = {
+    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), taskRunConflictLocks: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(), planSnapshots: new MemoryTable(), requirementBundles: new MemoryTable(), requirementItems: new MemoryTable(), requirementDecisions: new MemoryTable(), acceptanceCriteria: new MemoryTable(), verificationEvidence: new MemoryTable(), projectReviews: new MemoryTable(), deliveryRecords: new MemoryTable(),
+    projectTasks(project) { return project.taskIds.map((id) => store.tasks.get(id)) },
+    approvalFor(project) { return store.approvals.get(`${project.id}:${project.revision}`) },
+  }
+  return store
+}
+
+async function within(milliseconds, operation) {
+  let timeout
+  try {
+    return await Promise.race([operation, new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error(`operation exceeded ${milliseconds}ms`)), milliseconds) })])
+  } finally {
+    clearTimeout(timeout)
+  }
+}
 
 class Request extends Readable {
   constructor({ method = 'GET', url = '/', headers = {}, body = '', remoteAddress = '127.0.0.1' }) {
@@ -105,6 +132,7 @@ function service() {
     async openProjectDirectory() { return { ok: true } },
     async replanProject(id, body) { return { id, status: 'decomposing', ...body } },
     async appendDecomposition(id, body) { return { id, status: 'decomposing', ...body } },
+    async reviseDecomposition(id, bundleId, body) { return { id, bundleId, status: 'decomposing', ...body } },
     async approveAndStartExecution(id, body) { return { project: { id, status: 'running' }, run: { id: 'run', projectId: id, status: 'queued', approvalRevision: body.revision, approvalPlanHash: body.planHash, createdAt: 'now' } } },
     async retryExecution(id) { return { project: { id, status: 'running' }, run: { id: 'retry-run', projectId: id, status: 'queued', createdAt: 'now' } } },
     async createTask(projectId, body) { return { id: 'task', projectId, ...body } },
@@ -150,11 +178,32 @@ test('delivery projection and human confirmation use the serialized HTTP boundar
 
 test('requirements projection exposes source bundles and acceptance criteria', async () => {
   const fake = service()
-  fake.getProjectRequirementMatrix = () => ({ project: { id: 'project-1' }, bundles: [{ id: 'bundle-1' }], items: [{ id: 'item-1' }], decisions: [], acceptanceCriteria: [{ id: 'acceptance-1' }], rows: [] })
+  const calls = []
+  fake.getProjectRequirementMatrix = (_projectId, includeHistory) => { calls.push(includeHistory); return { project: { id: 'project-1' }, bundles: [{ id: 'bundle-1' }], items: [{ id: 'item-1' }], decisions: [], acceptanceCriteria: [{ id: 'acceptance-1' }], rows: [] } }
   const res = response()
   await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/requirements', headers: { host: '127.0.0.1:3080' } }), res)
   assert.equal(res.statusCode, 200)
   assert.deepEqual(JSON.parse(res.body), { project: { id: 'project-1' }, bundles: [{ id: 'bundle-1' }], items: [{ id: 'item-1' }], decisions: [], acceptanceCriteria: [{ id: 'acceptance-1' }], rows: [] })
+  const historical = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/requirements?includeHistory=true', headers: { host: '127.0.0.1:3080' } }), historical)
+  assert.equal(historical.statusCode, 200)
+  assert.deepEqual(calls, [false, true])
+})
+
+test('real Requirement Decision HTTP mutations complete without nesting the non-reentrant service lock', async () => {
+  const real = new OrchestratorService({}, realServiceStore())
+  const project = await real.createProject({ name: 'HTTP Decision', cwd: '/tmp', prd: 'Requirement', technicalDesign: '' })
+  const handler = createHttpHandler(real)
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const created = response()
+  await within(500, handler(new Request({ method: 'POST', url: `/project-orchestrator/api/projects/${project.id}/requirement-decisions`, headers, body: JSON.stringify({ key: 'DEC-HTTP', question: 'Proceed?', options: [{ id: 'yes', label: 'Yes' }], impact: 'high', affectedRequirementIds: [], affectedTaskIds: [] }) }), created))
+  assert.equal(created.statusCode, 201)
+  const decision = JSON.parse(created.body)
+
+  const resolved = response()
+  await within(500, handler(new Request({ method: 'POST', url: `/project-orchestrator/api/projects/${project.id}/requirement-decisions/${decision.id}/resolve`, headers, body: JSON.stringify({ status: 'resolved', chosenOption: 'yes', resolution: 'Proceed.', decidedBy: 'owner' }) }), resolved))
+  assert.equal(resolved.statusCode, 200)
+  assert.equal(JSON.parse(resolved.body).status, 'resolved')
 })
 
 test('project creation starts planning and approval starts execution through one route', async () => {
@@ -224,6 +273,20 @@ test('additional requirement decomposition route is same-origin and serialized',
   assert.equal(lockCalls, 1)
 })
 
+test('targeted requirement revision route passes the current bundle id through the serialized boundary', async () => {
+  const fake = service()
+  let received
+  fake.reviseDecomposition = async (id, bundleId, body) => { received = { id, bundleId, body }; return { id, status: 'decomposing' } }
+  const res = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects/project-1/decompositions/bundle-1/revise',
+    headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' },
+    body: JSON.stringify({ title: '权限审计修订', prd: '修订权限变更。', technicalDesign: '', taskLanguage: 'zh-CN', expectedBundleUpdatedAt: '2026-08-26T00:00:00.000Z', idempotencyKey: 'revise-1' }),
+  }), res)
+  assert.equal(res.statusCode, 202)
+  assert.deepEqual(received, { id: 'project-1', bundleId: 'bundle-1', body: { title: '权限审计修订', prd: '修订权限变更。', technicalDesign: '', taskLanguage: 'zh-CN', expectedBundleUpdatedAt: '2026-08-26T00:00:00.000Z', idempotencyKey: 'revise-1' } })
+})
+
 test('repository inspection and project cloning routes run outside the HTTP mutation lock', async () => {
   const fake = service()
   let lockCalls = 0
@@ -259,9 +322,9 @@ test('PDF requirement import is same-origin, JSON-only, and does not hold the mu
   fake.serializedMutation = async (operation) => { lockCalls += 1; return await operation() }
   fake.importRequirementDocument = async (document, signal) => {
     importSignal = signal
-    return { markdown: '# PRD', pageCount: document.pageCount, textPageCount: document.textPageCount, analyzedImagePages: [], warnings: [] }
+    return { markdown: '# PRD', documentHash: document.documentHash, sourceBlocks: [], pageCount: document.pageCount, textPageCount: document.textPageCount, analyzedImagePages: [], warnings: [] }
   }
-  const body = JSON.stringify({ fileName: 'requirements.pdf', documentKind: 'prd', pageCount: 1, textPageCount: 1, visualPageCount: 0, extractedText: 'Requirement', images: [] })
+  const body = JSON.stringify({ fileName: 'requirements.pdf', documentHash: 'a'.repeat(64), documentKind: 'prd', pageCount: 1, textPageCount: 1, visualPageCount: 0, extractedText: 'Requirement', images: [] })
   const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin', 'content-type': 'application/json; charset=utf-8' }
   const res = response()
   await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/requirements/import', headers, body }), res)

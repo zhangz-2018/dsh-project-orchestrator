@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { readFileSync } from 'node:fs'
 import { chmod, mkdir, mkdtemp, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -36,7 +37,7 @@ class MemoryTable {
 
 function memoryStore() {
   const store = {
-    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), taskRunConflictLocks: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(), planSnapshots: new MemoryTable(), requirementBundles: new MemoryTable(), requirementItems: new MemoryTable(), acceptanceCriteria: new MemoryTable(), verificationEvidence: new MemoryTable(), projectReviews: new MemoryTable(), deliveryRecords: new MemoryTable(),
+    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), taskRunConflictLocks: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(), planSnapshots: new MemoryTable(), requirementBundles: new MemoryTable(), requirementItems: new MemoryTable(), requirementDecisions: new MemoryTable(), acceptanceCriteria: new MemoryTable(), verificationEvidence: new MemoryTable(), projectReviews: new MemoryTable(), deliveryRecords: new MemoryTable(),
     projectTasks(project) {
       if (new Set(project.taskIds).size !== project.taskIds.length) throw new Error('duplicate task pointers')
       return project.taskIds.map((id) => {
@@ -47,7 +48,7 @@ function memoryStore() {
       }).sort((a, b) => a.ordinal - b.ordinal)
     },
     approvalFor(project) { return store.approvals.get(`${project.id}:${project.revision}`) },
-    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], projectSquadBindings: [...store.projectSquadBindings.records.values()], projectAgentMembershipSources: [...store.projectAgentMembershipSources.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], planSnapshots: [...store.planSnapshots.records.values()], requirementBundles: [...store.requirementBundles.records.values()], requirementItems: [...store.requirementItems.records.values()], acceptanceCriteria: [...store.acceptanceCriteria.records.values()], verificationEvidence: [...store.verificationEvidence.records.values()], projectReviews: [...store.projectReviews.records.values()], deliveryRecords: [...store.deliveryRecords.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { agents: [...store.agents.records.values()], projects: [...store.projects.records.values()], tasks: [...store.tasks.records.values()], approvals: [...store.approvals.records.values()], runs: [...store.runs.records.values()], planHashes: {}, runtimes: [...store.runtimes.records.values()], resources: [...store.resources.records.values()], issues: [...store.issues.records.values()], taskRuns: [...store.taskRuns.records.values()], activity: [...store.activity.records.values()], comments: [...store.comments.records.values()], decisions: [...store.decisions.records.values()], squads: [...store.squads.records.values()], delegations: [...store.delegations.records.values()], transcripts: [...store.transcripts.records.values()], artifacts: [...store.artifacts.records.values()], commands: [...store.commands.records.values()], externalTriggers: [...store.externalTriggers.records.values()], skills: [...store.skills.records.values()], workspaceLeases: [...store.workspaceLeases.records.values()], localDirectoryLocks: [...store.localDirectoryLocks.records.values()], projectAgentMemberships: [...store.projectAgentMemberships.records.values()], projectSquadBindings: [...store.projectSquadBindings.records.values()], projectAgentMembershipSources: [...store.projectAgentMembershipSources.records.values()], featureUsageDaily: [...store.featureUsageDaily.records.values()], planSnapshots: [...store.planSnapshots.records.values()], requirementBundles: [...store.requirementBundles.records.values()], requirementItems: [...store.requirementItems.records.values()], requirementDecisions: [...store.requirementDecisions.records.values()], acceptanceCriteria: [...store.acceptanceCriteria.records.values()], verificationEvidence: [...store.verificationEvidence.records.values()], projectReviews: [...store.projectReviews.records.values()], deliveryRecords: [...store.deliveryRecords.records.values()], inbox: [], agentWorkloads: [], runStatistics: [] } },
   }
   return store
 }
@@ -726,7 +727,7 @@ test('team plan projects requirement domain, role, task, acceptance, and evidenc
   await store.acceptanceCriteria.put('acc-checkout', { id: 'acc-checkout', projectId: project.id, bundleId: 'bundle', requirementItemId: 'req-checkout', key: 'checkout-protected', statement: 'Checkout is protected.', sourceRefs: ['prd'], taskIds: [task.id], evidenceIds: ['evidence-checkout'], status: 'verified', createdAt: now, updatedAt: now })
 
   const matrix = service.getProjectTeamPlan(project.id).preflight.coverageMatrix
-  assert.deepEqual(matrix.find((row) => row.requirementId === 'req-checkout'), { requirementId: 'req-checkout', requirementKey: 'checkout', statement: 'Checkout must remain protected.', roleNames: ['specialist'], taskIds: [task.id], acceptanceIds: ['acc-checkout'], evidenceIds: ['evidence-checkout'], status: 'covered' })
+  assert.deepEqual(matrix.find((row) => row.requirementId === 'req-checkout'), { requirementId: 'req-checkout', requirementKey: 'checkout', statement: 'Checkout must remain protected.', roleNames: ['specialist'], taskIds: [task.id], implementationTaskIds: [], verificationTaskIds: [], acceptanceIds: ['acc-checkout'], evidenceIds: ['evidence-checkout'], planningStatus: 'partial', verificationStatus: 'verified', status: 'covered' })
   assert.equal(matrix.find((row) => row.requirementId === 'req-uncovered').status, 'uncovered')
 })
 
@@ -1385,14 +1386,42 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
           },
           tools: { guard: (guard) => { observation.guardCalls = (observation.guardCalls ?? 0) + 1; observation.toolGuards = [...(observation.toolGuards ?? []), guard]; return () => {} } },
         })
-        const normalizedResponse = normalizeResponse(responses[Math.min(observation.createCalls - 1, responses.length - 1)])
-        const session = {
-          events: [{ type: 'assistant/message', data: { message: { content: [{ type: 'text', text: normalizedResponse }] } } }],
+        const persona = observation.sections?.at(-1)?.text ?? ''
+        const session = { events: [] }
+        const respond = (promptText) => {
+          let normalizedResponse
+          if (persona.includes('requirements discovery analyst')) {
+          observation.requirementAnalysisCalls = (observation.requirementAnalysisCalls ?? 0) + 1
+          observation.requirementAnalysisPrompts = [...(observation.requirementAnalysisPrompts ?? []), promptText]
+          const manifestText = promptText.match(/Source manifest:\n([^\n]+)/)?.[1]
+          const manifest = JSON.parse(manifestText)
+          const acceptanceAnchors = manifest.anchors.filter((anchor) => anchor.kind === 'acceptance_item')
+          const questionAnchors = manifest.anchors.filter((anchor) => anchor.kind === 'open_question')
+          const basis = acceptanceAnchors.length > 0 ? acceptanceAnchors : [manifest.anchors.find((anchor) => anchor.kind !== 'heading') ?? manifest.anchors[0]]
+          const generated = { status: 'ready', summary: 'Structured requirements.', requirements: basis.map((anchor, index) => ({ key: `REQ-${String(index + 1).padStart(3, '0')}`, kind: 'fact', scope: 'in_scope', statement: `Requirement ${index + 1}`, sourceRefs: [anchor.id], acceptanceCriteria: [{ key: `AC-${String(index + 1).padStart(3, '0')}`, statement: `Acceptance ${index + 1}`, required: true, scenario: 'good', sourceRefs: [anchor.id] }] })), decisions: questionAnchors.map((anchor, index) => ({ key: `DEC-${String(index + 1).padStart(3, '0')}`, question: `Decision ${index + 1}`, options: [{ id: 'proceed', label: 'Proceed' }, { id: 'defer', label: 'Defer' }], impact: 'low', affectedRequirementKeys: basis.length === 0 ? [] : ['REQ-001'], sourceRefs: [anchor.id] })), diagnostics: [] }
+          normalizedResponse = JSON.stringify(typeof observation.requirementAnalysisResponse === 'function' ? observation.requirementAnalysisResponse({ manifest, generated, promptText, call: observation.requirementAnalysisCalls }) : observation.requirementAnalysisResponse ?? generated)
+          } else if (persona.includes('independent requirements reviewer')) {
+          observation.requirementReviewCalls = (observation.requirementReviewCalls ?? 0) + 1
+          observation.requirementReviewPrompts = [...(observation.requirementReviewPrompts ?? []), promptText]
+          const sourceDigest = promptText.match(/"reviewedSourceDigest":"([a-f0-9]{64})"/)?.[1]
+          const analysisDigest = promptText.match(/"reviewedAnalysisDigest":"([a-f0-9]{64})"/)?.[1]
+          const generated = { status: 'approved', reviewedSourceDigest: sourceDigest, reviewedAnalysisDigest: analysisDigest, missingSourceRefs: [], conflicts: [], untestableAcceptanceKeys: [], findings: [] }
+          normalizedResponse = JSON.stringify(typeof observation.requirementReviewResponse === 'function' ? observation.requirementReviewResponse({ generated, call: observation.requirementReviewCalls }) : observation.requirementReviewResponse ?? generated)
+          } else if (persona.includes('senior delivery planner')) {
+          observation.plannerCalls = (observation.plannerCalls ?? 0) + 1
+          const source = responses[Math.min(observation.plannerCalls - 1, responses.length - 1)]
+          const legacy = JSON.parse(normalizeResponse(source))
+          normalizedResponse = legacy.contractVersion === 2 || !Array.isArray(legacy.tasks) ? JSON.stringify(legacy) : JSON.stringify({ contractVersion: 2, status: 'ready', summary: legacy.summary, repositoryEvidence: legacy.repositoryEvidence, tasks: legacy.tasks.map((task) => ({ id: task.id, title: task.title, kind: task.kind, relationship: task.kind === 'code' ? 'implementation' : 'verification', description: task.description, completionCriteria: task.acceptanceCriteria, dependencies: task.dependencies, sourceRequirementKeys: ['REQ-001'], acceptanceKeys: ['AC-001'], decisionKeys: [], assignmentPolicy: { policyVersion: 2, mode: 'single_agent', riskLevel: 'low', requiredRoles: [task.kind === 'code' ? 'implementer' : 'verifier'], requiredCapabilities: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: [], forbiddenScope: [], escalationConditions: [] }, evidenceRefs: task.evidenceRefs, testCommand: task.testCommand })), diagnostics: [] })
+          } else {
+          observation.agentResponseCalls = (observation.agentResponseCalls ?? 0) + 1
+          normalizedResponse = normalizeResponse(responses[Math.min(observation.agentResponseCalls - 1, responses.length - 1)])
+          }
+          session.events = [{ type: 'assistant/message', data: { message: { content: [{ type: 'text', text: normalizedResponse }] } } }]
         }
         return {
           agent: {
             session,
-            followup: (message) => { observation.message = message; observation.prompt = message.content?.[0]?.text },
+            followup: (message) => { observation.message = message; observation.prompt = message.content?.[0]?.text; observation.prompts = [...(observation.prompts ?? []), observation.prompt]; respond(observation.prompt) },
             whenIdle: async () => {},
             cancel: () => {},
           },
@@ -1403,6 +1432,493 @@ function agentContext(responseText = 'Agent work completed.', observation = {}) 
   }
 }
 
+function readyV2Plan(acceptanceKeys = ['AC-001']) {
+  const task = (id, kind, relationship, role, dependencies = []) => ({ id, title: id, kind, relationship, description: id, completionCriteria: [`${id} done`], dependencies, sourceRequirementKeys: acceptanceKeys.map((_, index) => `REQ-${String(index + 1).padStart(3, '0')}`), acceptanceKeys, decisionKeys: [], assignmentPolicy: { policyVersion: 2, mode: 'single_agent', riskLevel: 'low', requiredRoles: [role], requiredCapabilities: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: [], forbiddenScope: [], escalationConditions: [] }, evidenceRefs: ['package.json'], testCommand: 'true' })
+  return JSON.stringify({ contractVersion: 2, status: 'ready', summary: 'V2 plan.', repositoryEvidence: { inspectedPaths: ['package.json'], manifests: ['package.json'], verifiedCommands: ['true'], relevantModules: ['src'], assumptions: [] }, tasks: [task('implement', 'code', 'implementation', 'implementer'), task('verify', 'test', 'verification', 'verifier', ['implement'])], diagnostics: [] })
+}
+
+test('Planning V2 persists source requirements, original acceptance, deterministic mappings, and approvable owners', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-closure-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan(['AC-001', 'AC-002'])), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'V2 closure', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以创建记录\n2. 失败返回业务错误' })
+    const implementer = await service.createAgent({ name: 'Implementer', role: 'Software Engineer', persona: 'Implement.', capabilities: [] })
+    const verifier = await service.createAgent({ name: 'Verifier', role: 'Test Engineer', persona: 'Verify.', capabilities: [] })
+    await service.addProjectAgents(project.id, { members: [{ agentId: implementer.id, projectRole: '软件工程师', deliveryRoles: ['implementer'], autoAssignable: true }, { agentId: verifier.id, projectRole: '自动化测试设计工程师', deliveryRoles: ['verifier'], autoAssignable: true }] })
+    await service.startDecomposition(project.id)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    const snapshot = store.planSnapshots.get(settled.currentPlanSnapshotId)
+    const items = [...store.requirementItems.records.values()]
+    const acceptance = [...store.acceptanceCriteria.records.values()]
+    const tasks = store.projectTasks(settled)
+    assert.equal(snapshot.planningContractVersion, 2)
+    assert.equal(snapshot.status, 'candidate')
+    assert.equal(items.length, 2)
+    assert.equal(items.some((item) => item.key === 'bundle-root'), false)
+    assert.deepEqual(acceptance.map((item) => item.key).sort(), ['AC-001', 'AC-002'])
+    assert.equal(acceptance.every((item) => item.sourceRefs.length === 1 && item.taskIds.length === 2), true)
+    assert.deepEqual(tasks.map((task) => task.agentId), [implementer.id, verifier.id])
+    assert.equal(tasks.every((task) => task.planningContractVersion === 2 && task.sourceRequirementIds.length === 2 && task.acceptanceIds.length === 2), true)
+    assert.equal(service.getProjectTeamPlan(project.id).preflight.ready, true)
+    assert.equal((await service.approveProject(project.id, 'tester')).status, 'approved')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('lscity-nuxt 21 acceptance and 27 open questions survive the complete Service planning and approval path', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-lscity-closure-'))
+  try {
+    const prd = readFileSync(new URL('./fixtures/lscity-nuxt-required-dispositions.md', import.meta.url), 'utf8')
+    const acceptanceKeys = Array.from({ length: 21 }, (_, index) => `AC-${String(index + 1).padStart(3, '0')}`)
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan(acceptanceKeys)), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'lscity-nuxt regression', cwd: root, prd })
+    const implementer = await service.createAgent({ name: 'lscity implementer', role: 'Software Engineer', persona: 'Implement.' })
+    const verifier = await service.createAgent({ name: 'lscity verifier', role: 'Test Engineer', persona: 'Verify.' })
+    await service.addProjectAgents(project.id, { members: [
+      { agentId: implementer.id, projectRole: 'Software Engineer', deliveryRoles: ['implementer'], autoAssignable: true },
+      { agentId: verifier.id, projectRole: 'Test Engineer', deliveryRoles: ['verifier'], autoAssignable: true },
+    ] })
+
+    await service.startDecomposition(project.id)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+
+    const settled = store.projects.get(project.id)
+    const matrix = service.getProjectRequirementMatrix(project.id)
+    const teamPlan = service.getProjectTeamPlan(project.id)
+    assert.equal(matrix.acceptanceCriteria.length, 21)
+    assert.equal(new Set(matrix.acceptanceCriteria.map((criterion) => criterion.sourceRefs[0])).size, 21)
+    assert.equal(matrix.decisions.length, 27)
+    assert.equal(new Set(matrix.decisions.map((decision) => decision.sourceRefs[0])).size, 27)
+    assert.equal(teamPlan.preflight.coverageMatrix.length, 21)
+    assert.equal(teamPlan.preflight.coverageMatrix.every((row) => row.planningStatus === 'planned' && row.verificationStatus === 'unverified'), true)
+    assert.equal(teamPlan.preflight.ready, true)
+    assert.equal(store.projectTasks(settled).every((task) => task.agentId !== undefined), true)
+    assert.equal((await service.approveProject(project.id, 'acceptance-owner')).status, 'approved')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('a requirements review that still rejects the focused repair persists a blocked snapshot and Inbox evidence', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-review-blocked-'))
+  try {
+    const observation = { requirementReviewResponse: ({ generated }) => ({ ...generated, status: 'changes_required', missingSourceRefs: ['prd:line:missing'], findings: [{ severity: 'blocking', message: 'A required workflow remains ambiguous.' }] }) }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan(), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Review blocked', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+
+    await service.startDecomposition(project.id)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+
+    const settled = store.projects.get(project.id)
+    const snapshot = store.planSnapshots.get(settled.currentPlanSnapshotId)
+    assert.equal(observation.requirementReviewCalls, 2)
+    assert.equal(observation.plannerCalls, undefined)
+    assert.equal(settled.status, 'awaiting_approval')
+    assert.equal(snapshot.status, 'blocked')
+    assert.equal(snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'requirement-review-blocked'), true)
+    assert.equal(store.projectTasks(settled).length, 0)
+    assert.equal(service.snapshot().inbox.some((item) => item.id === `planning-blocked:${project.id}:${snapshot.id}`), true)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('an explicitly blocked V2 planner result persists diagnostics without materializing partial tasks', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-planner-blocked-'))
+  try {
+    const blockedPlan = JSON.stringify({ contractVersion: 2, status: 'blocked', summary: 'Repository evidence is insufficient.', repositoryEvidence: { inspectedPaths: [], manifests: [], verifiedCommands: [], relevantModules: [], assumptions: [] }, tasks: [], diagnostics: [{ code: 'verification-command-unconfirmed', severity: 'error', message: 'No repository verification command could be confirmed.' }] })
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(blockedPlan), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Planner blocked', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+
+    await service.startDecomposition(project.id)
+    await new Promise((resolve) => setTimeout(resolve, 30))
+
+    const settled = store.projects.get(project.id)
+    const snapshot = store.planSnapshots.get(settled.currentPlanSnapshotId)
+    assert.equal(settled.status, 'awaiting_approval')
+    assert.equal(snapshot.status, 'blocked')
+    assert.equal(snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'planning-blocked'), true)
+    assert.equal(snapshot.diagnostics.some((diagnostic) => diagnostic.code === 'verification-command-unconfirmed'), true)
+    assert.equal(store.projectTasks(settled).length, 0)
+    await assert.rejects(() => service.approveProject(project.id, 'tester'), (error) => error.code === 'planning-snapshot-blocked')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V2 approval rejects a required acceptance without verification coverage', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-coverage-gate-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan()), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Coverage gate', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+    const implementer = await service.createAgent({ name: 'Implementer', role: 'Engineer', persona: 'Implement.' })
+    const verifier = await service.createAgent({ name: 'Verifier', role: 'Tester', persona: 'Verify.' })
+    await service.addProjectAgents(project.id, { members: [{ agentId: implementer.id, projectRole: 'Engineer', deliveryRoles: ['implementer'], autoAssignable: true }, { agentId: verifier.id, projectRole: 'Tester', deliveryRoles: ['verifier'], autoAssignable: true }] })
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const verify = store.projectTasks(store.projects.get(project.id)).find((task) => task.relationship === 'verification')
+    await store.tasks.put(verify.id, { ...verify, acceptanceIds: [] })
+    const preflight = service.getProjectTeamPlan(project.id).preflight
+    assert.equal(preflight.ready, false)
+    assert.ok(preflight.errors.some((message) => message.includes('has no verification task')))
+    await assert.rejects(() => service.approveProject(project.id, 'tester'), (error) => error.code === 'team-preflight-failed')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V2 persists high-impact Decisions and blocks planning and approval before task generation', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-decision-gate-'))
+  try {
+    const store = memoryStore()
+    const observation = { requirementAnalysisResponse: ({ generated }) => ({ ...generated, status: 'needs_decision', decisions: generated.decisions.map((decision) => ({ ...decision, impact: 'high' })) }) }
+    const service = new OrchestratorService(agentContext(readyV2Plan(), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Decision gate', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存\n## 待确认事项\n1. 失败是否重试？' })
+    await service.replanProject(project.id, { taskLanguage: 'zh-CN' }); await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    assert.equal(observation.plannerCalls, undefined)
+    assert.equal(store.projectTasks(settled).length, 0)
+    assert.equal([...store.requirementDecisions.records.values()].length, 1)
+    assert.equal(store.planSnapshots.get(settled.currentPlanSnapshotId).status, 'blocked')
+    await assert.rejects(() => service.approveProject(project.id, 'tester'), (error) => error.code === 'requirement-decision-pending')
+    const restarted = new OrchestratorService({}, store)
+    await restarted.initialize()
+    assert.equal(restarted.getProjectRequirementMatrix(project.id).decisions.length, 1)
+    assert.equal(restarted.getProjectTeamPlan(project.id).preflight.ready, false)
+    assert.equal(store.projects.get(project.id).currentPlanSnapshotId, settled.currentPlanSnapshotId)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('resolved high-impact Decision supersedes the old plan and is carried into a deterministic replan', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-decision-replan-'))
+  try {
+    const plan = JSON.parse(readyV2Plan())
+    plan.tasks = plan.tasks.map((task) => ({ ...task, decisionKeys: ['DEC-001'] }))
+    const observation = { requirementAnalysisResponse: ({ generated }) => ({ ...generated, status: 'needs_decision', decisions: generated.decisions.map((decision) => ({ ...decision, impact: 'high' })) }) }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(JSON.stringify(plan), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Decision replan', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存\n## 待确认事项\n1. 失败是否重试？' })
+    const implementer = await service.createAgent({ name: 'Implementer', role: 'Engineer', persona: 'Implement.' })
+    const verifier = await service.createAgent({ name: 'Verifier', role: 'Tester', persona: 'Verify.' })
+    await service.addProjectAgents(project.id, { members: [{ agentId: implementer.id, projectRole: 'Engineer', deliveryRoles: ['implementer'], autoAssignable: true }, { agentId: verifier.id, projectRole: 'Tester', deliveryRoles: ['verifier'], autoAssignable: true }] })
+
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const blockedProject = store.projects.get(project.id)
+    const blockedSnapshot = store.planSnapshots.get(blockedProject.currentPlanSnapshotId)
+    const pending = [...store.requirementDecisions.records.values()].find((decision) => decision.bundleId === blockedSnapshot.requirementBundleIds[0])
+    const plannedDecisionDigest = blockedProject.decisionDigest
+
+    await service.resolveProjectRequirementDecision(project.id, pending.id, { status: 'resolved', chosenOption: 'proceed', resolution: 'Retry once with an idempotency key.', decidedBy: 'product-owner' })
+    const staleProject = store.projects.get(project.id)
+    assert.equal(store.planSnapshots.get(blockedSnapshot.id).status, 'superseded')
+    assert.equal(store.planSnapshots.get(blockedSnapshot.id).diagnostics.some((item) => item.code === 'planning-stale'), true)
+    assert.equal(staleProject.decisionDigest, plannedDecisionDigest)
+    assert.equal(service.getProjectTeamPlan(project.id).preflight.ready, false)
+
+    await service.replanProject(project.id, { taskLanguage: 'zh-CN' }); await new Promise((resolve) => setTimeout(resolve, 30))
+    const replanned = store.projects.get(project.id)
+    const snapshot = store.planSnapshots.get(replanned.currentPlanSnapshotId)
+    const carried = [...store.requirementDecisions.records.values()].find((decision) => decision.bundleId === snapshot.requirementBundleIds[0])
+    assert.equal(snapshot.mode, 'revise')
+    assert.equal(snapshot.status, 'candidate')
+    assert.equal(carried.status, 'resolved')
+    assert.equal(carried.chosenOption, 'proceed')
+    assert.equal(store.projectTasks(replanned).every((task) => task.decisionIds.includes(carried.id)), true)
+    assert.match(observation.requirementAnalysisPrompts.at(-1), /Resolved Decisions with frozen contracts/)
+    assert.match(observation.requirementAnalysisPrompts.at(-1), /"chosenOption":"proceed"/)
+    assert.match(observation.requirementReviewPrompts.at(-1), /do not report their already supplied chosenOption or resolution as unresolved/)
+    const currentRequirements = service.getProjectRequirementMatrix(project.id)
+    const requirementHistory = service.getProjectRequirementMatrix(project.id, true)
+    assert.deepEqual(currentRequirements.bundles.map((bundle) => bundle.id), snapshot.requirementBundleIds)
+    assert.equal(currentRequirements.items.length, 1)
+    assert.equal(requirementHistory.bundles.length, 2)
+    assert.equal(requirementHistory.items.length, 2)
+    assert.equal(requirementHistory.decisions.length, 2)
+    assert.equal((await service.approveProject(project.id, 'tester')).status, 'approved')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('a same-source replan repairs a model rewrite and preserves the frozen resolved Decision contract', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-decision-frozen-repair-'))
+  try {
+    const plan = JSON.parse(readyV2Plan())
+    plan.tasks = plan.tasks.map((task) => ({ ...task, decisionKeys: ['DEC-001'] }))
+    const observation = { requirementAnalysisResponse: ({ generated, call }) => ({
+      ...generated,
+      status: 'needs_decision',
+      decisions: generated.decisions.map((decision) => ({
+        ...decision,
+        impact: 'high',
+        question: call === 2 ? `${decision.question} (rewritten by the model)` : decision.question,
+      })),
+    }) }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(JSON.stringify(plan), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Frozen Decision repair', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存\n## 待确认事项\n1. 失败是否重试？' })
+    const implementer = await service.createAgent({ name: 'Implementer', role: 'Engineer', persona: 'Implement.' })
+    const verifier = await service.createAgent({ name: 'Verifier', role: 'Tester', persona: 'Verify.' })
+    await service.addProjectAgents(project.id, { members: [{ agentId: implementer.id, projectRole: 'Engineer', deliveryRoles: ['implementer'], autoAssignable: true }, { agentId: verifier.id, projectRole: 'Tester', deliveryRoles: ['verifier'], autoAssignable: true }] })
+
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const firstSnapshot = store.planSnapshots.get(store.projects.get(project.id).currentPlanSnapshotId)
+    const firstDecision = [...store.requirementDecisions.records.values()].find((decision) => decision.bundleId === firstSnapshot.requirementBundleIds[0])
+    await service.resolveProjectRequirementDecision(project.id, firstDecision.id, { status: 'resolved', chosenOption: 'proceed', resolution: 'Retry once with an idempotency key.', decidedBy: 'owner' })
+
+    await service.replanProject(project.id, { taskLanguage: 'zh-CN' }); await new Promise((resolve) => setTimeout(resolve, 30))
+
+    const replanned = store.projects.get(project.id)
+    const nextSnapshot = store.planSnapshots.get(replanned.currentPlanSnapshotId)
+    const nextDecision = [...store.requirementDecisions.records.values()].find((decision) => decision.bundleId === nextSnapshot.requirementBundleIds[0])
+    assert.equal(observation.requirementAnalysisCalls, 3)
+    assert.match(observation.requirementAnalysisPrompts.at(-1), /must be returned with its frozen question/)
+    assert.equal(nextSnapshot.status, 'candidate')
+    assert.equal(nextDecision.question, firstDecision.question)
+    assert.equal(nextDecision.status, 'resolved')
+    assert.equal(nextDecision.chosenOption, 'proceed')
+    assert.equal(observation.plannerCalls, 1)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('a changed Decision contract does not inherit a previously resolved answer', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-decision-contract-change-'))
+  try {
+    const observation = { requirementAnalysisResponse: ({ generated }) => ({
+      ...generated,
+      status: 'needs_decision',
+      decisions: generated.decisions.map((decision) => ({
+        ...decision,
+        impact: 'high',
+        options: decision.options.map((option) => option.id === 'proceed' && (observation.requirementAnalysisCalls ?? 0) > 1 ? { ...option, label: 'Proceed with a mandatory audit record' } : option),
+      })),
+    }) }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan(), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Decision contract change', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存\n## 待确认事项\n1. 失败是否重试？' })
+
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const firstSnapshot = store.planSnapshots.get(store.projects.get(project.id).currentPlanSnapshotId)
+    const firstDecision = [...store.requirementDecisions.records.values()].find((decision) => decision.bundleId === firstSnapshot.requirementBundleIds[0])
+    await service.resolveProjectRequirementDecision(project.id, firstDecision.id, { status: 'resolved', chosenOption: 'proceed', resolution: 'Proceed.', decidedBy: 'owner' })
+
+    const current = store.projects.get(project.id)
+    await service.replanProject(project.id, { taskLanguage: 'zh-CN', project: {
+      name: current.name,
+      summary: current.summary,
+      cwd: current.cwd,
+      prd: current.prd.replace('失败是否重试？', '失败是否重试并强制记录审计日志？'),
+      technicalDesign: current.technicalDesign,
+      priority: current.priority ?? 'medium',
+      owner: current.owner ?? '',
+      taskLanguage: current.taskLanguage ?? 'zh-CN',
+    } }); await new Promise((resolve) => setTimeout(resolve, 30))
+    const replanned = store.projects.get(project.id)
+    const nextSnapshot = store.planSnapshots.get(replanned.currentPlanSnapshotId)
+    const nextDecision = [...store.requirementDecisions.records.values()].find((decision) => decision.bundleId === nextSnapshot.requirementBundleIds[0])
+    assert.equal(nextSnapshot.status, 'blocked')
+    assert.equal(nextSnapshot.diagnostics.some((diagnostic) => diagnostic.code === 'requirement-decision-pending'), true)
+    assert.equal(nextDecision.status, 'pending')
+    assert.equal(nextDecision.chosenOption, undefined)
+    assert.equal(observation.plannerCalls, undefined)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Decision resolution rolls back the Decision, Project, and snapshot when stale-state persistence fails', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Decision rollback', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const bundleId = 'decision-rollback-bundle'
+  const snapshot = { id: `${project.id}:r1`, projectId: project.id, revision: 1, mode: 'initial', taskIds: [], planHash: 'a'.repeat(64), teamComposition: { members: [], squads: [], teamDigest: 'b'.repeat(64), capturedAt: now }, teamDigest: 'b'.repeat(64), assignmentDigest: 'c'.repeat(64), decisionDigest: 'd'.repeat(64), requirementBundleIds: [bundleId], planningContractVersion: 2, status: 'blocked', createdAt: now }
+  const decision = { id: 'decision-rollback', projectId: project.id, bundleId, key: 'DEC-001', question: 'Proceed?', options: [{ id: 'yes', label: 'Yes' }], impact: 'high', affectedRequirementIds: [], affectedTaskIds: [], sourceRefs: ['prd:line:1'], status: 'pending', createdAt: now, updatedAt: now }
+  await store.planSnapshots.put(snapshot.id, snapshot)
+  await store.requirementDecisions.put(decision.id, decision)
+  await store.projects.put(project.id, { ...project, currentPlanSnapshotId: snapshot.id, decisionDigest: snapshot.decisionDigest })
+  const beforeProject = structuredClone(store.projects.get(project.id))
+  const originalPut = store.projects.put.bind(store.projects)
+  store.projects.put = async (key, value) => { if (value.revision > beforeProject.revision) throw new Error('project persistence failed'); await originalPut(key, value) }
+
+  await assert.rejects(() => service.resolveProjectRequirementDecision(project.id, decision.id, { status: 'resolved', chosenOption: 'yes', resolution: 'Proceed.', decidedBy: 'owner' }), /project persistence failed/)
+  assert.deepEqual(store.requirementDecisions.get(decision.id), decision)
+  assert.deepEqual(store.planSnapshots.get(snapshot.id), snapshot)
+  assert.deepEqual(store.projects.get(project.id), beforeProject)
+})
+
+test('Planning V2 derives bound Squad ownership from collective roles and capabilities', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-squad-'))
+  try {
+    const plan = JSON.parse(readyV2Plan())
+    plan.tasks[0] = { ...plan.tasks[0], assignmentPolicy: { ...plan.tasks[0].assignmentPolicy, mode: 'squad_delegation', requiredRoles: ['implementer', 'specialist'], requiredCapabilities: ['language.typescript'] } }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(JSON.stringify(plan)), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Squad plan', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+    const leader = await service.createAgent({ name: 'Leader', role: 'Lead', persona: 'Coordinate.' })
+    const member = await service.createAgent({ name: 'Engineer', role: 'Engineer', persona: 'Implement.', capabilities: ['language.typescript'] })
+    const verifier = await service.createAgent({ name: 'Verifier', role: 'Tester', persona: 'Verify.' })
+    await service.addProjectAgents(project.id, { members: [{ agentId: leader.id, projectRole: 'Lead', deliveryRoles: ['lead'], autoAssignable: true }, { agentId: member.id, projectRole: 'Engineer', deliveryRoles: ['implementer', 'specialist'], autoAssignable: true }, { agentId: verifier.id, projectRole: 'Tester', deliveryRoles: ['verifier'], autoAssignable: true }] })
+    const squad = await service.createSquad({ name: 'Delivery Squad', leaderAgentId: leader.id, memberAgentIds: [leader.id, member.id], instructions: 'Delegate.', escalationPolicy: 'Escalate.' })
+    await service.bindProjectSquad(project.id, { squadId: squad.id, expectedProjectRevision: store.projects.get(project.id).revision, expectedSquadUpdatedAt: squad.updatedAt, boundBy: 'tester' })
+
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    const snapshot = store.planSnapshots.get(settled.currentPlanSnapshotId)
+    const implementation = store.projectTasks(settled).find((task) => task.relationship === 'implementation')
+    assert.equal(snapshot.status, 'candidate')
+    assert.equal(implementation.agentId, leader.id)
+    assert.deepEqual(implementation.assignmentPolicy.allowedSquadIds, [squad.id])
+    assert.equal(snapshot.taskAssignments.find((assignment) => assignment.taskId === implementation.id).ownerSquadId, squad.id)
+    assert.equal(service.getProjectTeamPlan(project.id).preflight.ready, true)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V2 compensates every candidate record when the final Project pointer write fails', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-pointer-failure-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan()), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Pointer failure', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+    const originalPut = store.projects.put.bind(store.projects)
+    store.projects.put = async (key, value) => { if (value.currentPlanSnapshotId !== undefined) throw new Error('pointer write failed'); await originalPut(key, value) }
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    assert.equal(store.projects.get(project.id).status, 'draft')
+    assert.match(store.projects.get(project.id).lastError, /pointer write failed/)
+    assert.equal(store.tasks.size, 0)
+    assert.equal(store.requirementBundles.size, 0)
+    assert.equal(store.requirementItems.size, 0)
+    assert.equal(store.acceptanceCriteria.size, 0)
+    assert.equal(store.requirementDecisions.size, 0)
+    assert.equal(store.planSnapshots.size, 0)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V2 rolls back requirement records and the first Task when a later Task write fails', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-task-write-failure-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan()), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Task write failure', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+    const originalPut = store.tasks.put.bind(store.tasks)
+    let planningWrites = 0
+    store.tasks.put = async (key, value) => {
+      if (value.planningContractVersion === 2 && value.planSnapshotId === undefined && ++planningWrites === 2) throw new Error('second task write failed')
+      await originalPut(key, value)
+    }
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    assert.equal(settled.status, 'draft')
+    assert.match(settled.lastError, /second task write failed/)
+    assert.equal(store.tasks.size, 0)
+    assert.equal(store.requirementBundles.size, 0)
+    assert.equal(store.requirementItems.size, 0)
+    assert.equal(store.acceptanceCriteria.size, 0)
+    assert.equal(store.requirementDecisions.size, 0)
+    assert.equal(store.planSnapshots.size, 0)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V2 discards an AI result when the Project revision changes during analysis', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-stale-analysis-'))
+  try {
+    const store = memoryStore()
+    let projectId
+    let changed = false
+    const observation = { onAgentCreate: async () => {
+      if (changed || projectId === undefined) return
+      const current = store.projects.get(projectId)
+      if (current?.status !== 'decomposing') return
+      changed = true
+      await store.projects.put(projectId, { ...current, revision: current.revision + 1, updatedAt: new Date().toISOString() })
+    } }
+    const service = new OrchestratorService(agentContext(readyV2Plan(), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Stale analysis', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+    projectId = project.id
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    assert.equal(changed, true)
+    assert.equal(settled.status, 'draft')
+    assert.match(settled.lastError, /changed while requirement analysis was running/i)
+    assert.equal(store.tasks.size, 0)
+    assert.equal(store.requirementBundles.size, 0)
+    assert.equal(store.planSnapshots.size, 0)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Decision resolution wins over a concurrent replan and stale AI output cannot reset the newer Project revision', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-decision-replan-race-'))
+  try {
+    let releaseAnalysis
+    let markAnalysisStarted
+    const analysisStarted = new Promise((resolve) => { markAnalysisStarted = resolve })
+    const analysisGate = new Promise((resolve) => { releaseAnalysis = resolve })
+    const observation = {
+      requirementAnalysisResponse: ({ generated }) => ({ ...generated, status: 'needs_decision', decisions: generated.decisions.map((decision) => ({ ...decision, impact: 'high' })) }),
+      onAgentCreate: async (_options, call) => {
+        if (call !== 3) return
+        markAnalysisStarted()
+        await analysisGate
+      },
+    }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan(), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Decision replan race', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存\n## 待确认事项\n1. 失败是否重试？' })
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const before = store.projects.get(project.id)
+    const pending = [...store.requirementDecisions.records.values()][0]
+    const snapshotCount = store.planSnapshots.size
+    const bundleCount = store.requirementBundles.size
+
+    await service.replanProject(project.id, { taskLanguage: 'zh-CN' })
+    await analysisStarted
+    await service.resolveProjectRequirementDecision(project.id, pending.id, { status: 'resolved', chosenOption: 'proceed', resolution: 'Resolve while planning.', decidedBy: 'owner' })
+    const resolvedProject = structuredClone(store.projects.get(project.id))
+    releaseAnalysis()
+    await new Promise((resolve) => setTimeout(resolve, 30))
+
+    const settled = store.projects.get(project.id)
+    assert.equal(settled.revision, resolvedProject.revision)
+    assert.equal(settled.status, 'awaiting_approval')
+    assert.equal(settled.currentPlanSnapshotId, before.currentPlanSnapshotId)
+    assert.equal(store.requirementDecisions.get(pending.id).status, 'resolved')
+    assert.equal(store.planSnapshots.size, snapshotCount)
+    assert.equal(store.requirementBundles.size, bundleCount)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V2 pointer failure preserves an existing authoritative plan during replan', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-existing-pointer-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan()), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Existing plan', cwd: root, prd: '# 功能\n## 验收标准\n1. 可以保存' })
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const before = structuredClone(store.projects.get(project.id))
+    const beforeTasks = [...store.tasks.records.values()].map((task) => structuredClone(task))
+    const beforeBundles = [...store.requirementBundles.records.values()].map((bundle) => structuredClone(bundle))
+    const beforeSnapshots = [...store.planSnapshots.records.values()].map((snapshot) => structuredClone(snapshot))
+    const originalPut = store.projects.put.bind(store.projects)
+    store.projects.put = async (key, value) => {
+      if (value.currentPlanSnapshotId !== undefined && value.currentPlanSnapshotId !== before.currentPlanSnapshotId) throw new Error('replacement pointer failed')
+      await originalPut(key, value)
+    }
+
+    await service.replanProject(project.id, { taskLanguage: 'zh-CN' }); await new Promise((resolve) => setTimeout(resolve, 30))
+    const settled = store.projects.get(project.id)
+    assert.equal(settled.currentPlanSnapshotId, before.currentPlanSnapshotId)
+    assert.deepEqual(settled.taskIds, before.taskIds)
+    assert.match(settled.lastError, /replacement pointer failed/)
+    assert.deepEqual([...store.tasks.records.values()], beforeTasks)
+    assert.deepEqual([...store.requirementBundles.records.values()], beforeBundles)
+    assert.deepEqual([...store.planSnapshots.records.values()], beforeSnapshots)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('V2 candidate matching uses exact deliveryRoles and declared capability ids, not display role text', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Exact roles', cwd: '/tmp', prd: 'PRD', technicalDesign: 'Design' })
+  const agent = await service.createAgent({ name: 'Similar role', role: 'Implementer', persona: 'Implement.', capabilities: ['coding'] })
+  await service.addProjectAgent(project.id, { agentId: agent.id, projectRole: 'implementer engineer', deliveryRoles: [], autoAssignable: true })
+  const task = await service.createTask(project.id, { title: 'V2 task', kind: 'code', description: 'Implement.', acceptanceCriteria: ['done'], assignmentPolicy: { mode: 'single_agent', riskLevel: 'low', requiredRoles: ['implementer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: false, maxParallel: 1, conflictKeys: [], allowedScope: [], forbiddenScope: [], escalationConditions: [] }, testCommand: 'true' })
+  await store.tasks.put(task.id, { ...task, planningContractVersion: 2 })
+  assert.ok(service.getProjectAgentCandidates(project.id, task.id).candidates.find((candidate) => candidate.agentId === agent.id).reasons.includes('missing_role:implementer'))
+  await service.updateProjectAgent(project.id, agent.id, { deliveryRoles: ['implementer'] })
+  assert.equal(service.getProjectAgentCandidates(project.id, task.id).candidates.find((candidate) => candidate.agentId === agent.id).eligible, true)
+})
+
 test('PDF requirement import sends extracted text and ordered page images to the AI model', async () => {
   const observation = {}
   const context = agentContext('```markdown\n# 产品需求文档\n\n## 背景与目标\n统一审批流程。\n```', observation)
@@ -1412,6 +1928,7 @@ test('PDF requirement import sends extracted text and ordered page images to the
 
   const result = await service.importRequirementDocument({
     fileName: '审批需求.pdf',
+    documentHash: 'a'.repeat(64),
     documentKind: 'prd',
     pageCount: 2,
     textPageCount: 1,
@@ -1425,6 +1942,7 @@ test('PDF requirement import sends extracted text and ordered page images to the
 
   assert.match(result.markdown, /^# 产品需求文档/)
   assert.deepEqual(result.analyzedImagePages, [1, 2])
+  assert.deepEqual(result.sourceBlocks.map((block) => block.locator), [`pdf:${'a'.repeat(64)}:page:1:block:1`, `pdf:${'a'.repeat(64)}:page:2:block:1`])
   assert.equal(observation.validatedImages.length, 2)
   assert.equal(observation.savedImages.length, 2)
   assert.match(observation.prompt, /BEGIN UNTRUSTED EXTRACTED PDF TEXT/)
@@ -1446,7 +1964,7 @@ test('PDF reservation rejects a third concurrent import and releases slots after
     return handle
   }
   const service = new OrchestratorService(context, memoryStore())
-  const input = (name) => ({ fileName: `${name}.pdf`, documentKind: 'prd', pageCount: 1, textPageCount: 1, visualPageCount: 0, extractedText: 'Requirement', images: [] })
+  const input = (name) => ({ fileName: `${name}.pdf`, documentHash: 'b'.repeat(64), documentKind: 'prd', pageCount: 1, textPageCount: 1, visualPageCount: 0, extractedText: 'Requirement', images: [] })
   const first = service.importRequirementDocument(input('one'))
   const second = service.importRequirementDocument(input('two'))
   await new Promise((resolve) => setImmediate(resolve))
@@ -1463,6 +1981,7 @@ test('PDF requirement import rejects an explicitly text-only model before saving
   const service = new OrchestratorService(context, memoryStore())
   await assert.rejects(() => service.importRequirementDocument({
     fileName: 'scan.pdf',
+    documentHash: 'c'.repeat(64),
     documentKind: 'prd',
     pageCount: 1,
     textPageCount: 0,
@@ -1524,15 +2043,17 @@ test('planning mounts the standard preset while enforcing read-only tools', asyn
   const project = await service.createProjectAndStart({ name: 'Tool-aware planning', cwd: '/tmp', prd: 'Build a feature.', technicalDesign: '', taskLanguage: 'en' })
   await new Promise((resolve) => setTimeout(resolve, 30))
 
-  assert.deepEqual(observation.mountedPresets, ['standard'])
-  assert.equal(observation.toolGuards.length, 1)
-  assert.equal(observation.toolGuards[0]({ name: 'run_code' }), undefined)
-  assert.equal(observation.toolGuards[0]({ name: 'read', parent: Symbol('run_code') }), undefined)
-  assert.match(observation.toolGuards[0]({ name: 'write', parent: Symbol('run_code') }), /read-only/)
-  assert.match(observation.prompt, /Every ready task must include assignmentPolicy/)
+  assert.deepEqual(observation.mountedPresets, ['standard', 'standard', 'standard'])
+  assert.equal(observation.toolGuards.length, 3)
+  for (const guard of observation.toolGuards) {
+    assert.equal(guard({ name: 'run_code' }), undefined)
+    assert.equal(guard({ name: 'read', parent: Symbol('run_code') }), undefined)
+    assert.match(guard({ name: 'write', parent: Symbol('run_code') }), /read-only/)
+  }
+  assert.match(observation.prompt, /Delivery Plan V2/)
   assert.match(observation.prompt, /requiredCapabilities/)
-  assert.match(observation.prompt, /"allowedScope": \["concrete file or directory this task may change"\]/)
-  assert.match(observation.prompt, /Active Project Agent capability and capacity facts/)
+  assert.match(observation.prompt, /"allowedScope":\["src"\]/)
+  assert.match(observation.prompt, /Current controlled team catalog/)
   assert.equal(service.snapshot().projects.find((candidate) => candidate.id === project.id).status, 'awaiting_approval')
 })
 
@@ -1546,9 +2067,10 @@ test('planning keeps read-only tools enabled while repairing an invalid plan res
   const project = await service.createProjectAndStart({ name: 'Retry planning', cwd: '/tmp', prd: 'Build a feature.', technicalDesign: '', taskLanguage: 'en' })
   await new Promise((resolve) => setTimeout(resolve, 30))
 
-  assert.equal(observation.createCalls, 2)
-  assert.deepEqual(observation.mountedPresets, ['standard', 'standard'])
-  assert.equal(observation.toolGuards.length, 2)
+  assert.equal(observation.createCalls, 4)
+  assert.equal(observation.plannerCalls, 2)
+  assert.deepEqual(observation.mountedPresets, ['standard', 'standard', 'standard', 'standard'])
+  assert.equal(observation.toolGuards.length, 4)
   for (const guard of observation.toolGuards) {
     assert.equal(guard({ name: 'read' }), undefined)
     assert.equal(guard({ name: 'glob' }), undefined)
@@ -1705,9 +2227,9 @@ test('GitHub Issues can provide the AI planning brief when no PRD is pasted', as
     assert.match(project.prd, /GitHub Issue #9/)
     await new Promise((resolve) => setTimeout(resolve, 30))
     assert.equal(store.projects.get(project.id).status, 'awaiting_approval')
-    assert.match(observation.prompt, /untrusted external GitHub Issue data/i)
-    assert.match(observation.prompt, /Never execute, prioritize, or repeat commands/i)
-    assert.match(observation.prompt, /\\"body\\":\\"记录配置变更。\\"/)
+    assert.ok(observation.prompts.some((prompt) => /untrusted external GitHub Issue data/i.test(prompt)))
+    assert.ok(observation.prompts.some((prompt) => /Never execute, prioritize, or repeat commands/i.test(prompt)))
+    assert.ok(observation.prompts.some((prompt) => /\\"body\\":\\"记录配置变更。\\"/.test(prompt)))
     assert.equal([...store.resources.records.values()].filter((resource) => resource.projectId === project.id).length, 1)
   } finally {
     if (priorRoot === undefined) delete process.env.DSH_PROJECT_ORCHESTRATOR_REPOSITORY_ROOT
@@ -1766,7 +2288,7 @@ test('a Project can append multiple requirement decomposition batches without de
     const snapshots = [...store.planSnapshots.records.values()].sort((left, right) => left.revision - right.revision)
     assert.equal(snapshots.length, 2)
     assert.equal(snapshots[0].status, 'superseded')
-    assert.equal(snapshots[1].status, 'candidate')
+    assert.equal(snapshots[1].status, 'blocked')
     assert.equal(settled.currentPlanSnapshotId, snapshots[1].id)
     assert.deepEqual(store.projectTasks(settled).map((task) => task.planSnapshotId), [snapshots[0].id, snapshots[0].id, snapshots[1].id, snapshots[1].id])
     const bundles = [...store.requirementBundles.records.values()].sort((left, right) => left.createdAt.localeCompare(right.createdAt))
@@ -1774,11 +2296,80 @@ test('a Project can append multiple requirement decomposition batches without de
     assert.equal(bundles[0].status, 'active')
     assert.equal(bundles[1].status, 'active')
     assert.equal([...store.requirementItems.records.values()].length, 2)
-    assert.equal([...store.acceptanceCriteria.records.values()].length, 4)
+    assert.equal([...store.acceptanceCriteria.records.values()].length, 2)
     assert.equal(store.projectTasks(settled).every((task) => (task.acceptanceIds ?? []).length === task.acceptanceCriteria.length), true)
   } finally {
     await rm(root, { recursive: true, force: true })
   }
+})
+
+test('Planning V2 append and targeted revise are idempotent and preserve unaffected bundle and task ids', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-targeted-revise-'))
+  try {
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan()), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Targeted revise', cwd: root, prd: '# 初始需求\n## 验收标准\n1. 初始功能可用' })
+    const implementer = await service.createAgent({ name: 'Implementer', role: 'Engineer', persona: 'Implement.' })
+    const verifier = await service.createAgent({ name: 'Verifier', role: 'Tester', persona: 'Verify.' })
+    await service.addProjectAgents(project.id, { members: [{ agentId: implementer.id, projectRole: 'Engineer', deliveryRoles: ['implementer'], autoAssignable: true }, { agentId: verifier.id, projectRole: 'Tester', deliveryRoles: ['verifier'], autoAssignable: true }] })
+    await service.startDecomposition(project.id); await new Promise((resolve) => setTimeout(resolve, 30))
+    const appendRequest = { title: '追加需求', prd: '# 追加需求\n## 验收标准\n1. 追加功能可用', technicalDesign: '', taskLanguage: 'zh-CN', idempotencyKey: 'append-001' }
+    await service.appendDecomposition(project.id, appendRequest); await new Promise((resolve) => setTimeout(resolve, 30))
+    const appended = store.projects.get(project.id)
+    const appendedSnapshot = store.planSnapshots.get(appended.currentPlanSnapshotId)
+    const [initialBundleId, appendedBundleId] = appendedSnapshot.requirementBundleIds
+    const unaffectedTaskIds = store.projectTasks(appended).filter((task) => task.sourceRequirementIds.some((id) => id.startsWith(`${appendedBundleId}:requirement:`))).map((task) => task.id).sort()
+    const snapshotCountAfterAppend = store.planSnapshots.size
+    assert.equal((await service.appendDecomposition(project.id, appendRequest)).currentPlanSnapshotId, appended.currentPlanSnapshotId)
+    assert.equal(store.planSnapshots.size, snapshotCountAfterAppend)
+
+    const initialBundle = store.requirementBundles.get(initialBundleId)
+    const reviseRequest = { title: '初始需求修订', prd: '# 初始需求\n## 验收标准\n1. 初始功能支持边界条件', technicalDesign: '', taskLanguage: 'zh-CN', expectedBundleUpdatedAt: initialBundle.updatedAt, idempotencyKey: 'revise-001' }
+    const initialTaskId = store.projectTasks(appended).find((task) => task.sourceRequirementIds.some((id) => id.startsWith(`${initialBundleId}:requirement:`))).id
+    const dependent = store.tasks.get(unaffectedTaskIds[0])
+    await store.tasks.put(dependent.id, { ...dependent, dependencies: [initialTaskId] })
+    await assert.rejects(() => service.reviseDecomposition(project.id, initialBundle.id, reviseRequest), (error) => error.code === 'requirement-revision-cross-bundle-dependency')
+    await store.tasks.put(dependent.id, dependent)
+    await service.reviseDecomposition(project.id, initialBundle.id, reviseRequest); await new Promise((resolve) => setTimeout(resolve, 30))
+    const revised = store.projects.get(project.id)
+    const revisedSnapshot = store.planSnapshots.get(revised.currentPlanSnapshotId)
+    const currentBundleIds = revisedSnapshot.requirementBundleIds
+    const currentTaskIds = store.projectTasks(revised).map((task) => task.id)
+    assert.equal(revisedSnapshot.mode, 'revise')
+    assert.equal(currentBundleIds.includes(initialBundleId), false)
+    assert.equal(currentBundleIds.includes(appendedBundleId), true)
+    assert.deepEqual(currentTaskIds.filter((id) => unaffectedTaskIds.includes(id)).sort(), unaffectedTaskIds)
+    assert.equal(store.requirementBundles.get(initialBundleId).status, 'superseded')
+    const replacementBundle = currentBundleIds.map((id) => store.requirementBundles.get(id)).find((bundle) => bundle.supersedesId === initialBundleId)
+    assert.ok(replacementBundle)
+    assert.equal(revised.decompositionBatches.some((batch) => batch.supersedesId !== undefined && batch.requirementBundleId === replacementBundle.id), true)
+    assert.equal(revised.decompositionBatches.find((batch) => batch.requirementBundleId === replacementBundle.id).requestDigest.length, 64)
+    const snapshotCountAfterRevise = store.planSnapshots.size
+    assert.equal((await service.reviseDecomposition(project.id, initialBundle.id, reviseRequest)).currentPlanSnapshotId, revised.currentPlanSnapshotId)
+    assert.equal(store.planSnapshots.size, snapshotCountAfterRevise)
+    await assert.rejects(() => service.reviseDecomposition(project.id, initialBundle.id, { ...reviseRequest, prd: 'different content' }), (error) => error.code === 'decomposition-idempotency-conflict')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('in-flight decomposition idempotency rejects a different request bound to the same key', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v2-inflight-idempotency-'))
+  try {
+    let releaseAnalysis
+    let markAnalysisStarted
+    const analysisStarted = new Promise((resolve) => { markAnalysisStarted = resolve })
+    const analysisGate = new Promise((resolve) => { releaseAnalysis = resolve })
+    const observation = { onAgentCreate: async (_options, call) => { if (call === 1) { markAnalysisStarted(); await analysisGate } } }
+    const store = memoryStore()
+    const service = new OrchestratorService(agentContext(readyV2Plan(), observation), store)
+    const project = await service.createProjectFromRequest({ mode: 'empty', name: 'In-flight key', cwd: root, prd: '# 初始需求' })
+    const first = { title: '追加需求', prd: '# 功能\n## 验收标准\n1. 可以保存', technicalDesign: '', taskLanguage: 'zh-CN', idempotencyKey: 'same-key' }
+    await service.appendDecomposition(project.id, first)
+    await analysisStarted
+    await assert.rejects(() => service.appendDecomposition(project.id, { ...first, prd: '# 不同需求\n## 验收标准\n1. 可以删除' }), (error) => error.code === 'decomposition-idempotency-conflict')
+    releaseAnalysis()
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    assert.equal(store.projects.get(project.id).status, 'awaiting_approval')
+  } finally { await rm(root, { recursive: true, force: true }) }
 })
 
 test('omitted creation mode preserves AI planning compatibility', async () => {
@@ -1848,8 +2439,8 @@ test('planner defaults to Chinese human-facing tasks while preserving technical 
   const settled = store.projects.get(project.id)
   const tasks = store.projectTasks(settled)
   assert.equal(settled.taskLanguage, 'zh-CN')
-  assert.match(observation.prompt, /Human-facing task language: zh-CN/)
-  assert.match(observation.prompt, /never translate commands/)
+  assert.match(observation.prompt, /Simplified Chinese/)
+  assert.match(observation.prompt, /never translate commands/i)
   assert.equal(tasks[0].title, '实现功能变更')
   assert.equal(tasks[0].testCommand, 'mvn -q -DskipTests package')
 })
@@ -1877,7 +2468,7 @@ test('an unexecuted approved project can regenerate a Chinese plan and requires 
   assert.equal(store.approvalFor(settled), undefined)
   assert.deepEqual(store.projectTasks(settled).map((task) => task.title), ['实现中文任务', '验证中文任务'])
   assert.equal(oldTaskIds.every((id) => store.tasks.get(id) === undefined), true)
-  assert.match(observation.prompt, /Human-facing task language: zh-CN/)
+  assert.match(observation.prompt, /Simplified Chinese/)
 })
 
 test('plan regeneration rejects execution history and unsupported language without mutation', async () => {

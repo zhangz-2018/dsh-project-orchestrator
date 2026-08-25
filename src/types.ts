@@ -4,6 +4,8 @@ export const AgentToolPolicySchema = z.enum(['full', 'read_only'])
 export const AgentStatusSchema = z.enum(['active', 'archived'])
 export const AssignmentModeSchema = z.enum(['single_agent', 'squad_delegation', 'review_only'])
 export const TaskRiskLevelSchema = z.enum(['low', 'medium', 'high', 'critical'])
+export const DeliveryRoleSchema = z.enum(['planner', 'lead', 'implementer', 'verifier', 'reviewer', 'specialist', 'release'])
+export const CapabilityIdSchema = z.string().trim().regex(/^[a-z][a-z0-9._-]{0,159}$/)
 export const ProjectDeliveryStageSchema = z.enum(['planning', 'awaiting_approval', 'approved', 'executing', 'review', 'delivery_ready', 'delivered', 'closed'])
 export const PrioritySchema = z.enum(['low', 'medium', 'high', 'urgent'])
 export const TaskLanguageSchema = z.enum(['zh-CN', 'en'])
@@ -77,6 +79,7 @@ export const TaskAssignmentPolicySchema = z.object({
 export const TeamCompositionMemberSchema = z.object({
   agentId: z.string().min(1),
   projectRole: z.string().trim().max(200),
+  deliveryRoles: z.array(DeliveryRoleSchema).max(7).default([]),
   source: z.enum(['manual', 'squad', 'retained_reference']),
   sourceId: z.string().min(1),
   capabilities: z.array(z.string().trim().min(1).max(160)).max(100).default([]),
@@ -149,13 +152,20 @@ export const PlanSnapshotRecordSchema = z.object({
   projectId: z.string().min(1),
   revision: z.number().int().positive(),
   mode: PlanSnapshotModeSchema,
-  taskIds: z.array(z.string().min(1)).min(1).max(1_000),
+  taskIds: z.array(z.string().min(1)).max(1_000),
   planHash: z.string().length(64),
   teamComposition: TeamCompositionSnapshotSchema,
   teamDigest: z.string().length(64),
   assignmentDigest: z.string().length(64),
   requirementDigest: z.string().length(64).optional(),
   decisionDigest: z.string().length(64).optional(),
+  requirementBundleIds: z.array(z.string().min(1)).max(100).optional(),
+  sourceManifestDigest: z.string().length(64).optional(),
+  requirementAnalysisDigest: z.string().length(64).optional(),
+  requirementReviewDigest: z.string().length(64).optional(),
+  requirementPromptVersion: z.string().trim().min(1).max(100).optional(),
+  plannerPromptVersion: z.string().trim().min(1).max(100).optional(),
+  planningContractVersion: z.literal(2).optional(),
   taskAssignments: z.array(TaskAssignmentSnapshotSchema).max(1_000).optional(),
   capacityObservation: TeamCapacityObservationSchema.optional(),
   reviewerIndependencePolicy: ReviewerIndependencePolicySchema.optional(),
@@ -165,6 +175,15 @@ export const PlanSnapshotRecordSchema = z.object({
   supersedesId: z.string().min(1).optional(),
   createdAt: z.string().min(1),
   approvedAt: z.string().min(1).optional(),
+}).strict()
+
+export const RequirementSourceBlockSchema = z.object({
+  documentKind: z.enum(['prd', 'technical_design']),
+  locator: z.string().regex(/^pdf:[a-f0-9]{64}:page:\d+:block:\d+$/),
+  page: z.number().int().positive().max(1_000),
+  block: z.number().int().positive().max(10_000),
+  text: z.string().trim().min(1).max(20_000),
+  textDigest: z.string().length(64),
 }).strict()
 
 export const RequirementBundleModeSchema = z.enum(['initial', 'append', 'revise'])
@@ -177,6 +196,8 @@ export const RequirementBundleRecordSchema = z.object({
   prd: z.string().min(1).max(500_000),
   technicalDesign: z.string().max(500_000),
   sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  sourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).optional(),
+  idempotencyKey: z.string().trim().min(1).max(200).optional(),
   sourceDigest: z.string().length(64),
   status: RequirementBundleStatusSchema,
   supersedesId: z.string().min(1).optional(),
@@ -191,6 +212,8 @@ export const RequirementItemRecordSchema = z.object({
   bundleId: z.string().min(1),
   key: z.string().trim().min(1).max(240),
   kind: RequirementItemKindSchema,
+  scope: z.enum(['in_scope', 'deferred', 'out_of_scope']).optional(),
+  dispositionReason: z.string().trim().min(1).max(2_000).optional(),
   statement: z.string().trim().min(1).max(20_000),
   sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
   status: RequirementItemStatusSchema,
@@ -215,6 +238,7 @@ export const RequirementDecisionRecordSchema = z.object({
   impact: RequirementDecisionImpactSchema,
   affectedRequirementIds: z.array(z.string().min(1)).max(100),
   affectedTaskIds: z.array(z.string().min(1)).max(100),
+  sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100).optional(),
   owner: z.string().trim().max(240).optional(),
   dueAt: z.string().min(1).optional(),
   status: RequirementDecisionStatusSchema,
@@ -255,6 +279,8 @@ export const AcceptanceCriterionRecordSchema = z.object({
   key: z.string().trim().min(1).max(240),
   statement: z.string().trim().min(1).max(2_000),
   sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  required: z.boolean().optional(),
+  scenario: z.enum(['good', 'business_rejection', 'boundary', 'dependency_failure', 'security', 'compatibility', 'recovery']).optional(),
   taskIds: z.array(z.string().min(1)).max(100),
   evidenceIds: z.array(z.string().min(1)).max(100),
   status: AcceptanceCriterionStatusSchema,
@@ -412,6 +438,7 @@ export const ProjectAgentMembershipRecordSchema = z.object({
   projectId: z.string().min(1),
   agentId: z.string().min(1),
   projectRole: z.string().trim().max(200),
+  deliveryRoles: z.array(DeliveryRoleSchema).max(7).default([]),
   autoAssignable: z.boolean(),
   status: ProjectAgentMembershipStatusSchema,
   joinedBy: z.string().trim().min(1).max(240),
@@ -866,6 +893,11 @@ export const DecompositionBatchSchema = z.object({
   title: z.string().min(1).max(160),
   prd: z.string().min(1).max(500_000),
   technicalDesign: z.string().max(500_000),
+  sourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).optional(),
+  idempotencyKey: z.string().trim().min(1).max(200).optional(),
+  requestDigest: z.string().length(64).optional(),
+  supersedesId: z.string().min(1).optional(),
+  requirementBundleId: z.string().min(1).optional(),
   taskIds: z.array(z.string().min(1)).max(1_000),
   sessionId: z.string().min(1).optional(),
   createdAt: z.string().min(1),
@@ -879,6 +911,8 @@ export const ProjectRecordSchema = z.object({
   cwd: z.string().min(1).max(4_096),
   prd: z.string().max(500_000),
   technicalDesign: z.string().max(500_000),
+  prdSourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).optional(),
+  technicalDesignSourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).optional(),
   priority: PrioritySchema.optional(),
   owner: OwnerSchema.optional(),
   taskLanguage: TaskLanguageSchema.optional(),
@@ -899,6 +933,8 @@ export const ProjectRecordSchema = z.object({
   decisionDigest: z.string().length(64).optional(),
   currentPlanSnapshotId: z.string().min(1).optional(),
   decompositionSessionId: z.string().optional(),
+  activeDecompositionKey: z.string().trim().min(1).max(200).optional(),
+  activeDecompositionDigest: z.string().length(64).optional(),
   activeRunId: z.string().optional(),
   lastError: z.string().max(20_000).optional(),
   createdAt: z.string().min(1),
@@ -922,6 +958,7 @@ export const TaskRecordSchema = z.object({
   kind: TaskKindSchema,
   description: z.string().min(1).max(20_000),
   acceptanceCriteria: z.array(z.string().min(1).max(2_000)).min(1).max(100),
+  completionCriteria: z.array(z.string().min(1).max(2_000)).min(1).max(100).optional(),
   dependencies: z.array(z.string().min(1)).max(100),
   priority: PrioritySchema.optional(),
   tags: TagsSchema.optional(),
@@ -929,6 +966,8 @@ export const TaskRecordSchema = z.object({
   testCommand: z.string().min(1).max(10_000),
   sourceRequirementIds: z.array(z.string().min(1)).max(100).optional(),
   acceptanceIds: z.array(z.string().min(1)).max(100).optional(),
+  decisionIds: z.array(z.string().min(1)).max(100).optional(),
+  planningContractVersion: z.literal(2).optional(),
   assignmentPolicy: TaskAssignmentPolicySchema.optional(),
   assignmentSource: z.enum(['planner_recommendation', 'automatic_match', 'manual']).optional(),
   assignmentDigest: z.string().length(64).optional(),
@@ -1018,6 +1057,130 @@ export const GeneratedPlanSchema = z.object({
   tasks: z.array(GeneratedTaskSchema).min(2).max(200),
 })
 
+export const RequirementSourceAnchorSchema = z.object({
+  id: z.string().trim().min(1).max(500),
+  kind: z.enum(['heading', 'acceptance_item', 'open_question', 'table_row', 'paragraph']),
+  textDigest: z.string().length(64),
+  locator: z.string().trim().min(1).max(4_096),
+  requiredDisposition: z.boolean(),
+}).strict()
+
+export const RequirementSourceManifestSchema = z.object({
+  sourceDigest: z.string().length(64),
+  anchors: z.array(RequirementSourceAnchorSchema).max(10_000),
+}).strict()
+
+const RequirementAnalysisAcceptanceSchema = z.object({
+  key: z.string().trim().regex(/^AC-[A-Z0-9_-]+$/).max(100),
+  statement: z.string().trim().min(1).max(2_000),
+  required: z.boolean(),
+  scenario: z.enum(['good', 'business_rejection', 'boundary', 'dependency_failure', 'security', 'compatibility', 'recovery']),
+  sourceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(100),
+}).strict()
+
+export const RequirementAnalysisResultSchema = z.object({
+  status: z.enum(['ready', 'needs_decision', 'blocked']),
+  summary: z.string().trim().min(1).max(5_000),
+  requirements: z.array(z.object({
+    key: z.string().trim().regex(/^REQ-[A-Z0-9_-]+$/).max(100),
+    kind: RequirementItemKindSchema,
+    scope: z.enum(['in_scope', 'deferred', 'out_of_scope']),
+    dispositionReason: z.string().trim().min(1).max(2_000).optional(),
+    statement: z.string().trim().min(1).max(20_000),
+    sourceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(100),
+    acceptanceCriteria: z.array(RequirementAnalysisAcceptanceSchema).max(200),
+  }).strict().superRefine((value, context) => {
+    if (value.scope !== 'in_scope' && value.dispositionReason === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['dispositionReason'], message: 'Deferred and out-of-scope requirements require an auditable disposition reason.' })
+  })).max(1_000),
+  decisions: z.array(z.object({
+    key: z.string().trim().regex(/^DEC-[A-Z0-9_-]+$/).max(100),
+    question: z.string().trim().min(1).max(20_000),
+    options: z.array(RequirementDecisionOptionSchema).min(1).max(20),
+    recommendedOption: z.string().trim().min(1).max(100).optional(),
+    impact: RequirementDecisionImpactSchema,
+    affectedRequirementKeys: z.array(z.string().trim().min(1).max(100)).max(100),
+    sourceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(100),
+  }).strict()).max(1_000),
+  diagnostics: z.array(z.object({
+    code: z.string().trim().min(1).max(100),
+    severity: z.enum(['info', 'warning', 'error']),
+    message: z.string().trim().min(1).max(2_000),
+    sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  }).strict()).max(1_000),
+}).strict()
+
+export const RequirementReviewResultSchema = z.object({
+  status: z.enum(['approved', 'changes_required', 'blocked']),
+  reviewedSourceDigest: z.string().length(64),
+  reviewedAnalysisDigest: z.string().length(64),
+  missingSourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(1_000),
+  conflicts: z.array(z.object({
+    sourceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(100),
+    statement: z.string().trim().min(1).max(2_000),
+    impact: z.string().trim().min(1).max(2_000),
+  }).strict()).max(1_000),
+  untestableAcceptanceKeys: z.array(z.string().trim().min(1).max(100)).max(1_000),
+  findings: z.array(z.object({
+    severity: z.enum(['blocking', 'important', 'advisory']),
+    message: z.string().trim().min(1).max(2_000),
+  }).strict()).max(1_000),
+}).strict()
+
+export const GeneratedTaskV2Schema = z.object({
+  id: z.string().regex(/^[a-z][a-z0-9_-]{0,63}$/),
+  title: z.string().min(1).max(240),
+  kind: TaskKindSchema,
+  relationship: z.enum(['implementation', 'verification', 'review', 'handoff']),
+  description: z.string().min(1).max(20_000),
+  completionCriteria: z.array(z.string().min(1).max(2_000)).min(1).max(100),
+  dependencies: z.array(z.string()).max(100),
+  sourceRequirementKeys: z.array(z.string().trim().min(1).max(100)).min(1).max(100),
+  acceptanceKeys: z.array(z.string().trim().min(1).max(100)).min(1).max(100),
+  decisionKeys: z.array(z.string().trim().min(1).max(100)).max(100),
+  assignmentPolicy: z.object({
+    policyVersion: z.literal(2),
+    mode: AssignmentModeSchema,
+    riskLevel: TaskRiskLevelSchema,
+    requiredRoles: z.array(DeliveryRoleSchema).min(1).max(7),
+    requiredCapabilities: z.array(CapabilityIdSchema).max(50),
+    requiresIndependentReviewer: z.boolean(),
+    maxParallel: z.number().int().positive().max(32),
+    parallelGroup: z.string().trim().min(1).max(160).optional(),
+    conflictKeys: z.array(z.string().trim().min(1).max(200)).max(50),
+    allowedScope: z.array(z.string().trim().min(1).max(2_000)).max(100),
+    forbiddenScope: z.array(z.string().trim().min(1).max(2_000)).max(50),
+    escalationConditions: z.array(z.string().trim().min(1).max(2_000)).max(50),
+  }).strict(),
+  evidenceRefs: z.array(z.string().trim().min(1).max(4_096)).min(1).max(50),
+  testCommand: z.string().min(1).max(10_000),
+}).strict()
+
+const PartialRepositoryEvidenceSchema = z.object({
+  inspectedPaths: z.array(z.string().trim().min(1).max(4_096)).max(500),
+  manifests: z.array(z.string().trim().min(1).max(4_096)).max(100),
+  verifiedCommands: z.array(z.string().trim().min(1).max(10_000)).max(100),
+  relevantModules: z.array(z.string().trim().min(1).max(4_096)).max(500),
+  assumptions: z.array(z.string().trim().min(1).max(2_000)).max(50),
+}).strict()
+
+export const GeneratedPlanV2Schema = z.object({
+  contractVersion: z.literal(2),
+  status: z.enum(['ready', 'needs_decision', 'blocked']),
+  summary: z.string().trim().min(1).max(5_000),
+  repositoryEvidence: PartialRepositoryEvidenceSchema,
+  tasks: z.array(GeneratedTaskV2Schema).max(200),
+  diagnostics: z.array(z.object({ code: z.string().trim().min(1).max(100), severity: z.enum(['info', 'warning', 'error']), message: z.string().trim().min(1).max(2_000) }).strict()).max(200).default([]),
+}).strict().superRefine((value, context) => {
+  if (value.status === 'ready') {
+    if (value.repositoryEvidence.inspectedPaths.length === 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['repositoryEvidence', 'inspectedPaths'], message: 'A ready plan requires inspected repository paths.' })
+    if (value.repositoryEvidence.manifests.length === 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['repositoryEvidence', 'manifests'], message: 'A ready plan requires an inspected manifest.' })
+    if (value.repositoryEvidence.verifiedCommands.length === 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['repositoryEvidence', 'verifiedCommands'], message: 'A ready plan requires a verified command.' })
+    return
+  }
+  if (value.tasks.length > 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['tasks'], message: 'A blocked or decision-pending plan cannot contain executable tasks.' })
+  if (!value.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) context.addIssue({ code: z.ZodIssueCode.custom, path: ['diagnostics'], message: 'A blocked or decision-pending plan requires an error diagnostic.' })
+})
+
 export const BlockedGeneratedPlanSchema = z.object({
   status: z.literal('blocked'),
   reasonCode: z.enum(['repository_unavailable', 'manifest_missing', 'verification_command_unconfirmed', 'requirement_conflict']),
@@ -1098,6 +1261,7 @@ const ImportedPdfPageImageSchema = z.object({
 
 export const RequirementDocumentImportSchema = z.object({
   fileName: z.string().trim().min(1).max(240),
+  documentHash: z.string().regex(/^[a-f0-9]{64}$/),
   documentKind: z.enum(['prd', 'technical_design']),
   pageCount: z.number().int().positive().max(1_000),
   textPageCount: z.number().int().nonnegative().max(1_000),
@@ -1121,6 +1285,8 @@ export const RequirementDocumentImportSchema = z.object({
 
 export const RequirementDocumentImportResultSchema = z.object({
   markdown: z.string().trim().min(1).max(500_000),
+  documentHash: z.string().regex(/^[a-f0-9]{64}$/),
+  sourceBlocks: z.array(RequirementSourceBlockSchema).min(1).max(10_000),
   pageCount: z.number().int().positive(),
   textPageCount: z.number().int().nonnegative(),
   analyzedImagePages: z.array(z.number().int().positive()).max(20),
@@ -1133,6 +1299,8 @@ const ProjectEditableInputSchema = z.object({
   cwd: z.string().trim().min(1).max(4_096),
   prd: z.string().trim().max(500_000).default(''),
   technicalDesign: z.string().trim().max(500_000).default(''),
+  prdSourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).optional(),
+  technicalDesignSourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).optional(),
   priority: PrioritySchema.default('medium'),
   owner: OwnerSchema.default(''),
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
@@ -1186,6 +1354,12 @@ export const ProjectDecompositionRequestSchema = z.object({
   technicalDesign: z.string().trim().max(500_000).default(''),
   taskLanguage: TaskLanguageSchema.default('zh-CN'),
   sourceRefs: z.array(z.string().trim().min(1).max(4_096)).max(100).default([]),
+  sourceBlocks: z.array(RequirementSourceBlockSchema).max(10_000).default([]),
+  idempotencyKey: z.string().trim().min(1).max(200).optional(),
+}).strict()
+
+export const ProjectDecompositionRevisionRequestSchema = ProjectDecompositionRequestSchema.extend({
+  expectedBundleUpdatedAt: z.string().min(1),
 }).strict()
 
 export const ProjectApprovalRequestSchema = z.object({
@@ -1362,6 +1536,7 @@ export const TaskInputSchema = z.object({
 export const ProjectAgentMembershipInputSchema = z.object({
   agentId: z.string().min(1),
   projectRole: z.string().trim().max(200).default(''),
+  deliveryRoles: z.array(DeliveryRoleSchema).max(7).default([]),
   autoAssignable: z.boolean().default(true),
   setAsLead: z.boolean().default(false),
   joinedBy: z.string().trim().min(1).max(240).default('Harness user'),
@@ -1370,6 +1545,7 @@ export const ProjectAgentMembershipInputSchema = z.object({
 
 export const ProjectAgentMembershipUpdateSchema = z.object({
   projectRole: z.string().trim().max(200).optional(),
+  deliveryRoles: z.array(DeliveryRoleSchema).max(7).optional(),
   autoAssignable: z.boolean().optional(),
   setAsLead: z.boolean().optional(),
   expectedMemberUpdatedAt: z.string().min(1).optional(),
@@ -1648,6 +1824,7 @@ export type TaskRecord = z.infer<typeof TaskRecordSchema>
 export type AssignmentMode = z.infer<typeof AssignmentModeSchema>
 export type TaskAssignmentPolicy = z.infer<typeof TaskAssignmentPolicySchema>
 export type TaskRiskLevel = z.infer<typeof TaskRiskLevelSchema>
+export type DeliveryRole = z.infer<typeof DeliveryRoleSchema>
 export type TeamCompositionSnapshot = z.infer<typeof TeamCompositionSnapshotSchema>
 export type TeamCompositionMember = z.infer<typeof TeamCompositionMemberSchema>
 export type TeamCompositionSquad = z.infer<typeof TeamCompositionSquadSchema>
@@ -1656,6 +1833,7 @@ export type TeamCapacityObservation = z.infer<typeof TeamCapacityObservationSche
 export type ReviewerIndependencePolicy = z.infer<typeof ReviewerIndependencePolicySchema>
 export type PlanSnapshotRecord = z.infer<typeof PlanSnapshotRecordSchema>
 export type RequirementBundleRecord = z.infer<typeof RequirementBundleRecordSchema>
+export type RequirementSourceBlock = z.infer<typeof RequirementSourceBlockSchema>
 export type RequirementItemRecord = z.infer<typeof RequirementItemRecordSchema>
 export type RequirementDecisionRecord = z.infer<typeof RequirementDecisionRecordSchema>
 export type RequirementDecisionInput = z.infer<typeof RequirementDecisionInputSchema>
@@ -1673,6 +1851,10 @@ export type ApprovalRecord = z.infer<typeof ApprovalRecordSchema>
 export type RunRecord = z.infer<typeof RunRecordSchema>
 export type GeneratedPlan = z.infer<typeof GeneratedPlanSchema>
 export type PlannerResult = z.infer<typeof PlannerResultSchema>
+export type RequirementSourceManifest = z.infer<typeof RequirementSourceManifestSchema>
+export type RequirementAnalysisResult = z.infer<typeof RequirementAnalysisResultSchema>
+export type RequirementReviewResult = z.infer<typeof RequirementReviewResultSchema>
+export type GeneratedPlanV2 = z.infer<typeof GeneratedPlanV2Schema>
 export type RepositoryEvidence = z.infer<typeof RepositoryEvidenceSchema>
 export type AgentInput = z.infer<typeof AgentInputSchema>
 export type AgentBuilderMessage = z.infer<typeof AgentBuilderMessageSchema>
