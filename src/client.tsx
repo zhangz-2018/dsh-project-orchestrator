@@ -25,12 +25,13 @@ import {
   IconUserOutline16,
   IconWarningOutline16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { loadSnapshot, mutate } from './api-client.js'
+import { loadDomainEvents, loadSnapshot, mutate } from './api-client.js'
 import type {
   AgentBuilderMessage,
   AgentBuilderResponse,
   AgentDraft,
   AgentRecord,
+  AgentCapabilityClaimRecord,
   AgentWorkload,
   BoardStage,
   FeatureUsageFeature,
@@ -57,6 +58,8 @@ import type {
   RequirementSourceBlock,
   RequirementBundleRecord,
   ProjectTeamPlan,
+  ProjectPlanningV3View,
+  PlanSnapshotRecord,
   ProjectTaskCandidates,
   ProjectTeamImpact,
   Snapshot,
@@ -322,6 +325,8 @@ class WorkbenchModel {
   private listeners = new Set<() => void>()
   private interval: number | undefined
   private refreshGeneration = 0
+  private eventCursor: string | undefined
+  private silentPollsSinceSnapshot = 0
   private actionPending = false
   private returnFocus: HTMLElement | null = null
   private panelReturnFocus: HTMLElement | null = null
@@ -432,13 +437,22 @@ class WorkbenchModel {
 
   private dialogResolver: ((confirmed: boolean) => void) | undefined
 
-  async refresh(silent = false): Promise<void> {
+  async refresh(silent = false, forceSnapshot = false): Promise<void> {
     const generation = ++this.refreshGeneration
     if (!silent) this.patch({ loading: true })
     try {
+      if (silent && !forceSnapshot && this.eventCursor !== undefined && this.silentPollsSinceSnapshot < 15) {
+        const page = await loadDomainEvents(this.eventCursor)
+        if (generation !== this.refreshGeneration) return
+        this.eventCursor = page.nextCursor
+        this.silentPollsSinceSnapshot += 1
+        if (page.events.length === 0 && !page.hasMore) return
+      }
       const loaded = await loadSnapshot()
       const snapshot: Snapshot = { ...loaded, projectAgentMemberships: loaded.projectAgentMemberships ?? [], projectSquadBindings: loaded.projectSquadBindings ?? [], projectAgentMembershipSources: loaded.projectAgentMembershipSources ?? [], featureUsageDaily: loaded.featureUsageDaily ?? [] }
       if (generation !== this.refreshGeneration) return
+      this.eventCursor = snapshot.eventCursor
+      this.silentPollsSinceSnapshot = 0
       const selectedProjectId = keepOrUndefined(this.state.selectedProjectId, snapshot.projects)
       const selectedTaskId = keepOrUndefined(this.state.selectedTaskId, snapshot.tasks)
       const selectedAgentId = keepOrUndefined(this.state.selectedAgentId, snapshot.agents)
@@ -465,7 +479,7 @@ class WorkbenchModel {
     try {
       const result = await operation()
       if (recordMeaningfulAction) void recordUsage(featureForView(this.state.view), 'action')
-      await this.refresh(true)
+      await this.refresh(true, true)
       this.patch({ loading: false, notice })
       return result
     } catch (error) {
@@ -1214,20 +1228,45 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const active = isProjectActive(project)
   const approvalCurrent = isApprovalCurrent(state.snapshot, project)
   const planHash = state.snapshot.planHashes[project.id]
+  const isPlanningV3 = project.planningContractVersion === 3
   const [teamPlan, setTeamPlan] = useState<ProjectTeamPlan>()
   const [teamPlanError, setTeamPlanError] = useState<string>()
+  const [planningV3, setPlanningV3] = useState<ProjectPlanningV3View>()
+  const [planningV3Error, setPlanningV3Error] = useState<string>()
   useEffect(() => {
     const controller = new AbortController()
     setTeamPlan(undefined)
     setTeamPlanError(undefined)
-    void readApi<ProjectTeamPlan>(`/projects/${encodeURIComponent(project.id)}/team-plan`)
-      .then((plan) => { if (!controller.signal.aborted) setTeamPlan(plan) })
-      .catch((reason) => { if (!controller.signal.aborted) setTeamPlanError(messageOf(reason)) })
+    setPlanningV3(undefined)
+    setPlanningV3Error(undefined)
+    if (isPlanningV3) {
+      void readApi<ProjectPlanningV3View>(`/projects/${encodeURIComponent(project.id)}/planning`)
+        .then((view) => { if (!controller.signal.aborted) setPlanningV3(view) })
+        .catch((reason) => { if (!controller.signal.aborted) setPlanningV3Error(messageOf(reason)) })
+    } else {
+      void readApi<ProjectTeamPlan>(`/projects/${encodeURIComponent(project.id)}/team-plan`)
+        .then((plan) => { if (!controller.signal.aborted) setTeamPlan(plan) })
+        .catch((reason) => { if (!controller.signal.aborted) setTeamPlanError(messageOf(reason)) })
+    }
     return () => controller.abort()
-  }, [project.id, project.revision])
+  }, [isPlanningV3, project.id, project.revision, project.status, project.currentPlanSnapshotId, project.currentDeliveryConvergenceReviewId])
   const assignmentsComplete = unassignedTasks.length === 0 && ineligibleTaskAssignments.length === 0
   const planComplete = tasks.some((task) => task.kind === 'code') && tasks.some((task) => task.kind === 'test') && tasks.every((task) => task.testCommand.trim() !== '') && assignmentsComplete
-  const canApprove = project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent && teamPlan?.preflight.ready === true
+  const canApprove = !isPlanningV3 && project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent && teamPlan?.preflight.ready === true
+  const currentPlanSnapshot = state.snapshot.planSnapshots?.find((snapshot) => snapshot.id === project.currentPlanSnapshotId)
+  const canApproveV3 = isPlanningV3 && planningV3?.planHealth.approvable === true && currentPlanSnapshot?.planningContractVersion === 3
+  const dispatchTaskIds = tasks.filter((task) => task.planSnapshotId === project.currentPlanSnapshotId && !['completed', 'cancelled'].includes(task.status)).map((task) => task.id)
+  const canDispatchV3 = isPlanningV3 && project.status === 'approved' && planningV3?.approval !== undefined && dispatchTaskIds.length > 0
+  const canRepairConvergenceV3 = isPlanningV3 && planningV3?.deliveryConvergence?.status === 'changes_required' && planningV3.convergenceRepairBaseline !== undefined
+  const planningRepairV3 = !['blocked', 'failed'].includes(planningV3?.operation?.status ?? '') ? undefined : planningV3?.repairAttempts
+    ?.filter((repair) => (repair.operationId === planningV3.operation?.id || repair.successorOperationId === planningV3.operation?.id) && ['requested', 'blocked', 'failed'].includes(repair.status))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0]
+  const canRetryPlanningV3 = isPlanningV3 && project.status === 'draft' && planningRepairV3 !== undefined
+  const canRetryPlanningOperationV3 = isPlanningV3
+    && project.status === 'draft'
+    && ['failed', 'blocked'].includes(planningV3?.operation?.status ?? '')
+    && planningRepairV3 === undefined
+    && (planningV3?.operation?.diagnostics ?? []).some((diagnostic) => ['agent-empty-response', 'planning-v3-failed'].includes(diagnostic.code))
   const canRetry = approvalCurrent && ['approved', 'failed', 'cancelled'].includes(project.status)
   const canReplan = project.prd.trim() !== '' && ['draft', 'awaiting_approval', 'approved'].includes(project.status) && latestRun === undefined
   const canAppendDecomposition = ['draft', 'awaiting_approval'].includes(project.status) && latestRun === undefined && !active
@@ -1280,16 +1319,24 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <ol className="po-lifecycle-stepper" aria-label="项目交付阶段">
           {(['understanding', 'planning', 'approval', 'execution', 'verification'] as const).map((phase) => <li key={phase} className={lifecyclePhaseState(project, phase)} aria-current={lifecyclePhaseState(project, phase) === 'current' ? 'step' : undefined}><span>{lifecyclePhaseIcon(phase)}</span><strong>{lifecyclePhaseLabel(phase)}</strong></li>)}
         </ol>
-        {project.status === 'awaiting_approval' && teamPlan?.preflight.ready === true ? <div className="po-approval-summary"><strong>全部审批门禁已通过</strong><span>{tasks.filter((task) => task.kind === 'code').length} 个代码任务 · {tasks.filter((task) => task.kind === 'test').length} 个测试任务 · 需求覆盖、团队资格、分派与独立评审均已校验</span></div> : null}
+        {isPlanningV3 && planningV3 !== undefined ? <PlanningV3HealthPanel view={planningV3} /> : null}
+        {isPlanningV3 && planningV3 === undefined && planningV3Error === undefined ? <div className="po-intervention-panel" role="status"><strong>正在读取 V3 计划健康度</strong><span>服务端门禁返回前不会开放批准或派发操作。</span></div> : null}
+        {isPlanningV3 && planningV3Error !== undefined ? <div className="po-intervention-panel" role="alert"><strong>V3 计划健康度读取失败</strong><span>{planningV3Error}</span></div> : null}
+        {!isPlanningV3 && project.status === 'awaiting_approval' && teamPlan?.preflight.ready === true ? <div className="po-approval-summary"><strong>全部审批门禁已通过</strong><span>{tasks.filter((task) => task.kind === 'code').length} 个代码任务 · {tasks.filter((task) => task.kind === 'test').length} 个测试任务 · 需求覆盖、团队资格、分派与独立评审均已校验</span></div> : null}
         {project.teamComposition ? <div className="po-context-row" data-testid="project-team-snapshot"><strong>交付团队快照</strong><span>{project.teamComposition.members.length} 个成员 · {project.teamComposition.squads.length} 个 Squad · Team Digest {project.teamDigest?.slice(0, 10) ?? 'unknown'}</span></div> : null}
-        {project.status === 'awaiting_approval' && !assignmentsComplete ? <div className="po-intervention-panel" role="alert"><strong>计划还不能批准</strong><span>{unassignedTasks.length > 0 ? `${unassignedTasks.length} 个任务未分配执行者。` : ''}{ineligibleTaskAssignments.length > 0 ? `${ineligibleTaskAssignments.length} 个任务的执行者已不具备项目资格。` : ''}</span><ActionButton size="sm" variant="outline" onClick={() => model.setProjectTab('tasks')}>检查任务分配</ActionButton></div> : null}
-        {project.status === 'awaiting_approval' && teamPlan !== undefined && !teamPlan.preflight.ready && assignmentsComplete ? <div className="po-intervention-panel" role="alert"><strong>审批门禁未通过</strong><span>{teamPlan.preflight.errors[0] ?? '需求覆盖、团队资格或计划快照需要处理。'}</span><ActionButton size="sm" variant="outline" onClick={() => model.setProjectTab('tasks')}>查看全部门禁</ActionButton></div> : null}
-        {project.status === 'awaiting_approval' && teamPlan === undefined && teamPlanError === undefined ? <div className="po-intervention-panel" role="status"><strong>正在校验审批门禁</strong><span>校验完成前不会开放批准操作。</span></div> : null}
+        {!isPlanningV3 && project.status === 'awaiting_approval' && !assignmentsComplete ? <div className="po-intervention-panel" role="alert"><strong>计划还不能批准</strong><span>{unassignedTasks.length > 0 ? `${unassignedTasks.length} 个任务未分配执行者。` : ''}{ineligibleTaskAssignments.length > 0 ? `${ineligibleTaskAssignments.length} 个任务的执行者已不具备项目资格。` : ''}</span><ActionButton size="sm" variant="outline" onClick={() => model.setProjectTab('tasks')}>检查任务分配</ActionButton></div> : null}
+        {!isPlanningV3 && project.status === 'awaiting_approval' && teamPlan !== undefined && !teamPlan.preflight.ready && assignmentsComplete ? <div className="po-intervention-panel" role="alert"><strong>审批门禁未通过</strong><span>{teamPlan.preflight.errors[0] ?? '需求覆盖、团队资格或计划快照需要处理。'}</span><ActionButton size="sm" variant="outline" onClick={() => model.setProjectTab('tasks')}>查看全部门禁</ActionButton></div> : null}
+        {!isPlanningV3 && project.status === 'awaiting_approval' && teamPlan === undefined && teamPlanError === undefined ? <div className="po-intervention-panel" role="status"><strong>正在校验审批门禁</strong><span>校验完成前不会开放批准操作。</span></div> : null}
         {project.status === 'failed' ? <div className="po-intervention-panel" role="alert"><strong>AI 已暂停，保留了已通过的任务</strong><span>{project.lastError || '执行未完成，请检查失败任务的测试证据。'}</span></div> : null}
         <div className="po-gate-actions">
           {currentReview?.status === 'approved' || currentReview?.status === 'waived' ? currentDelivery?.status === 'ready' ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={confirmDelivery}>确认交付</ActionButton> : null : null}
           {currentDelivery?.status === 'delivered' ? <ActionButton variant="outline" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={closeDelivery}>关闭交付</ActionButton> : null}
           {canApprove ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={() => void approveAndExecuteProject(model, project, planHash)}>批准计划并开始实施</ActionButton> : null}
+          {canApproveV3 ? <ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={active || state.loading} onClick={() => void approvePlanningV3(model, project, currentPlanSnapshot!)}>批准计划</ActionButton> : null}
+          {canDispatchV3 ? <ActionButton variant="primary" icon={<IconPlayOutline16 />} disabled={active || state.loading} onClick={() => void dispatchPlanningV3(model, project, planningV3!.approval!.id, dispatchTaskIds)}>派发可运行任务</ActionButton> : null}
+          {canRetryPlanningV3 ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void retryPlanningRepairV3(model, project, planningRepairV3)}>按 Review 问题修复规划</ActionButton> : null}
+          {canRetryPlanningOperationV3 ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void retryPlanningOperationV3(model, project, planningV3!.operation!)}>重试当前规划阶段</ActionButton> : null}
+          {canRepairConvergenceV3 ? <ActionButton variant="primary" icon={<IconRefreshOutline16 />} disabled={active || state.loading} onClick={() => void repairConvergenceV3(model, project, planningV3!.convergenceRepairBaseline!)}>按收敛问题重新规划</ActionButton> : null}
           {project.status === 'draft' && tasks.length === 0 ? <ActionButton variant="primary" icon={<IconEditOutline16 />} disabled={state.loading} onClick={() => model.openProjectForm(project.id)}>补充需求并让 AI 拆解</ActionButton> : null}
           {canAppendDecomposition && tasks.length > 0 ? <ActionButton variant="primary" icon={<IconChecklistOutline14 />} disabled={state.loading} onClick={() => setAppendDialogOpen(true)}>新增需求并拆分任务</ActionButton> : null}
           {canReplan && (tasks.length > 0 || project.currentPlanSnapshotId !== undefined) ? <ActionButton variant="outline" icon={<IconChecklistOutline14 />} disabled={active || state.loading} onClick={() => void regenerateProjectPlan(model, project, 'zh-CN')}>替换当前计划</ActionButton> : null}
@@ -1315,6 +1362,56 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
       {appendDialogOpen ? <AdditionalDecompositionDialog project={project} model={model} loading={state.loading} onClose={() => setAppendDialogOpen(false)} /> : null}
     </section>
   )
+}
+
+function PlanningV3HealthPanel({ view }: { view: ProjectPlanningV3View }) {
+  const health = view.planHealth
+  const planningStatus = view.operation?.status === 'committed' ? '候选计划已提交' : view.operation?.status === 'blocked' ? '规划已阻塞' : view.operation?.status === 'failed' ? '规划失败' : view.operation?.status ?? '等待规划'
+  const gateSummary = view.operation?.status === 'committed'
+    ? { title: '服务端门禁已通过', description: '审批只冻结当前计划，不会创建 Run；批准后仍需单独派发。' }
+    : view.operation?.status === 'running'
+      ? { title: '服务端门禁检查中', description: '规划完成前不会开放批准，也不会创建 Run 或派发任务。' }
+      : { title: '服务端门禁尚未通过', description: '只有候选计划提交并通过全部门禁后才会开放批准。' }
+  const policyStatus = view.policy?.fixedPointStatus === 'converged' && view.policy.status === 'ready'
+    ? `已收敛 · 第 ${view.repositoryPolicyBaseline?.iteration ?? view.operation?.repositoryPolicyIteration ?? 0} 轮`
+    : view.policy?.fixedPointStatus === 'delta_found' ? '发现新规则，等待重规划' : view.repositoryPolicyBaseline?.status === 'blocked' ? '规则基线阻塞' : '等待规则闭环'
+  const lineageStatus = view.operationLineage.entries.length <= 1
+    ? '初始规划'
+    : `${view.operationLineage.entries.length} 轮规划 · ${view.operationLineage.complete ? 'lineage 完整' : 'lineage 不完整'} · ${view.repairAttempts?.length ?? 0} 次 Review 修复 · ${view.operationLineage.entries.map((entry) => `#${entry.operation.repositoryPolicyIteration} ${entry.operation.status}`).join(' <- ')}`
+  const approvalStatus = view.approval === undefined ? '尚未批准' : '计划已批准'
+  const providerStatus = view.stackProfile === undefined ? '等待检测' : view.stackProfile.supportStatus === 'supported'
+    ? `${view.stackProfile.providerCoverage.filter((item) => item.status === 'covered').length} 项能力已覆盖`
+    : view.stackProfile.supportStatus === 'partial' ? 'Provider 覆盖不完整' : '技术栈未支持'
+  const dispatchStatus = view.latestDispatch === undefined ? planningDispatchStatusLabel(health.executionDispatchStatus) : planningDispatchOutcomeLabel(view.latestDispatch.outcome)
+  const integrationStatus = view.deliveryIntegration === undefined ? '尚未开始' : planningIntegrationStatusLabel(view.deliveryIntegration.status)
+  const convergenceStatus = view.deliveryConvergence === undefined ? '尚未评审' : planningConvergenceStatusLabel(view.deliveryConvergence.status)
+  return <section className={`po-v3-plan-health ${health.approvable ? 'is-ready' : 'is-blocked'}`} aria-label="V3 计划健康度">
+    <div className="po-section-heading"><div><h3>Plan Health</h3><p>{health.taskCount} 个任务 · {health.dependencyCount} 条依赖 · {health.waitingTaskCount} 个等待</p></div><span>{health.approvable ? '可批准' : view.approval ? '已批准' : '不可批准'}</span></div>
+    <dl className="po-v3-stage-grid">
+      <div><dt>规划</dt><dd>{planningStatus}</dd></div>
+      <div><dt>仓库规则</dt><dd>{policyStatus}</dd></div>
+      <div><dt>语义 Provider</dt><dd>{providerStatus}</dd></div>
+      <div><dt>审批</dt><dd>{approvalStatus}</dd></div>
+      <div><dt>派发</dt><dd>{dispatchStatus}</dd></div>
+      <div><dt>集成</dt><dd>{integrationStatus}</dd></div>
+      <div><dt>收敛</dt><dd>{convergenceStatus}</dd></div>
+    </dl>
+    <p className="po-v3-lineage">{lineageStatus}</p>
+    {health.topIssues.length > 0 ? <div className="po-v3-health-issues" role="alert"><strong>主要阻塞</strong><ol>{health.topIssues.slice(0, 3).map((issue) => <li key={`${issue.code}:${issue.subjectIds.join(':')}`}><span>{issue.message}</span><small>{issue.code}</small></li>)}</ol></div> : <div className="po-approval-summary"><strong>{gateSummary.title}</strong><span>{gateSummary.description}</span></div>}
+  </section>
+}
+
+function planningDispatchStatusLabel(status: ProjectPlanningV3View['planHealth']['executionDispatchStatus']): string {
+  return ({ dispatchable: '可派发', partially_dispatchable: '部分可派发', waiting_dependency: '等待依赖', waiting_runtime: '等待运行环境', waiting_capacity: '等待容量', waiting_conflict: '等待冲突解除', blocked: '派发阻塞' } as const)[status]
+}
+function planningDispatchOutcomeLabel(outcome: NonNullable<ProjectPlanningV3View['latestDispatch']>['outcome']): string {
+  return ({ started: '已启动', partially_started: '已部分启动', waiting: '等待中', blocked: '派发阻塞', stale: '派发已失效' } as const)[outcome]
+}
+function planningIntegrationStatusLabel(status: NonNullable<ProjectPlanningV3View['deliveryIntegration']>['status']): string {
+  return ({ pending: '等待集成', integrating: '正在集成', ready: '集成完成', blocked: '集成阻塞', failed: '集成失败', stale: '集成已失效' } as const)[status]
+}
+function planningConvergenceStatusLabel(status: NonNullable<ProjectPlanningV3View['deliveryConvergence']>['status']): string {
+  return ({ converged: '已收敛', changes_required: '需要修改', blocked: '评审阻塞', failed: '评审失败', stale: '评审已失效' } as const)[status]
 }
 
 function ProjectReviewResolutionPanel({ project, review, acceptanceCriteria, model, loading }: { project: ProjectRecord; review: ProjectReviewRecord; acceptanceCriteria: AcceptanceCriterionRecord[]; model: WorkbenchModel; loading: boolean }) {
@@ -1520,7 +1617,31 @@ function ProjectAgentsTab({ project, state, model }: { project: ProjectRecord; s
   const unassigned = state.snapshot.tasks.filter((task) => task.projectId === project.id && !task.agentId)
   const [adding, setAdding] = useState(active.length === 0)
   const [batchOpen, setBatchOpen] = useState(false)
-  return <div className="po-project-tab-body"><ProjectSquadBindingsSection project={project} state={state} model={model} /><section className="po-project-members-section"><div className="po-section-heading"><div><h2>项目成员</h2><p>{active.length} 个 active 成员，Task 执行者只能从这里选择。</p></div><div className="po-inline-actions">{unassigned.length > 0 ? <ActionButton variant="outline" onClick={() => setBatchOpen((open) => !open)}>批量分配未分配任务</ActionButton> : null}<ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => setAdding((open) => !open)}>添加智能体</ActionButton></div></div>{adding ? <AddProjectAgentsPanel project={project} state={state} model={model} onDone={() => setAdding(false)} /> : null}{batchOpen ? <BatchAssignmentPanel project={project} tasks={unassigned} state={state} model={model} onDone={() => setBatchOpen(false)} /> : null}{active.length === 0 ? <EmptyState title="项目还没有成员" body="绑定 Squad 或添加智能体后，才能为任务选择执行者。" /> : <div className="po-member-list" role="table" aria-label="项目智能体列表"><div className="po-member-head" role="row"><span>智能体</span><span>项目职责</span><span>能力与来源</span><span>任务</span><span>操作</span></div>{active.map((member) => <ProjectMemberRow key={member.id} member={member} project={project} state={state} model={model} />)}</div>}{removed.length > 0 ? <details className="po-history-members"><summary>历史成员（{removed.length}）</summary>{removed.map((member) => <div key={member.id}><strong>{agentName(state.snapshot, member.agentId)}</strong><span>{member.projectRole || '未设置职责'} · {member.removedAt ? formatDate(member.removedAt) : '已移出'}</span></div>)}</details> : null}</section></div>
+  return <div className="po-project-tab-body"><ProjectSquadBindingsSection project={project} state={state} model={model} /><ProjectCapabilityClaimsSection project={project} state={state} model={model} /><section className="po-project-members-section"><div className="po-section-heading"><div><h2>项目成员</h2><p>{active.length} 个 active 成员，Task 执行者只能从这里选择。</p></div><div className="po-inline-actions">{unassigned.length > 0 ? <ActionButton variant="outline" onClick={() => setBatchOpen((open) => !open)}>批量分配未分配任务</ActionButton> : null}<ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => setAdding((open) => !open)}>添加智能体</ActionButton></div></div>{adding ? <AddProjectAgentsPanel project={project} state={state} model={model} onDone={() => setAdding(false)} /> : null}{batchOpen ? <BatchAssignmentPanel project={project} tasks={unassigned} state={state} model={model} onDone={() => setBatchOpen(false)} /> : null}{active.length === 0 ? <EmptyState title="项目还没有成员" body="绑定 Squad 或添加智能体后，才能为任务选择执行者。" /> : <div className="po-member-list" role="table" aria-label="项目智能体列表"><div className="po-member-head" role="row"><span>智能体</span><span>项目职责</span><span>能力与来源</span><span>任务</span><span>操作</span></div>{active.map((member) => <ProjectMemberRow key={member.id} member={member} project={project} state={state} model={model} />)}</div>}{removed.length > 0 ? <details className="po-history-members"><summary>历史成员（{removed.length}）</summary>{removed.map((member) => <div key={member.id}><strong>{agentName(state.snapshot, member.agentId)}</strong><span>{member.projectRole || '未设置职责'} · {member.removedAt ? formatDate(member.removedAt) : '已移出'}</span></div>)}</details> : null}</section></div>
+}
+
+function ProjectCapabilityClaimsSection({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
+  const [claims, setClaims] = useState<AgentCapabilityClaimRecord[]>([])
+  const [loading, setLoading] = useState(true)
+  const reload = async () => {
+    setLoading(true)
+    try { setClaims(await readApi<AgentCapabilityClaimRecord[]>(`/projects/${encodeURIComponent(project.id)}/capability-claims`)) }
+    catch (error) { model.reportError(error) }
+    finally { setLoading(false) }
+  }
+  useEffect(() => { void reload() }, [project.id])
+  const pending = claims.filter((claim) => claim.status === 'pending' && claim.source === 'legacy_pending_mapping')
+  const grouped = [...new Set(pending.map((claim) => claim.agentId))].map((agentId) => ({ agentId, claims: pending.filter((claim) => claim.agentId === agentId) }))
+  const confirmClaims = async (selected: AgentCapabilityClaimRecord[]) => {
+    if (selected.length === 0) return
+    const names = [...new Set(selected.map((claim) => agentName(state.snapshot, claim.agentId)))]
+    if (!await model.confirm({ title: selected.length === 1 ? '确认智能体能力' : '批量确认智能体能力', message: `确认 ${names.join('、')} 的 ${selected.length} 项受控能力？只有在你已核对这些智能体确实具备对应能力时才确认。确认后当前 V3 计划会失效，需要重新规划。`, confirmLabel: selected.length === 1 ? '确认能力' : `确认 ${selected.length} 项`, tone: 'warning' })) return
+    const result = await model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/capability-claims/confirm`, 'POST', { actor: 'Harness user', reason: 'Human reviewed each mapped capability against the controlled project capability catalog.', claims: selected.map((claim) => ({ claimId: claim.id, expectedClaimDigest: claim.claimDigest })) }), `${selected.length} 项能力已确认。请重新运行规划，使新的可信能力参与任务分派。`)
+    if (result !== undefined) await reload()
+  }
+  if (loading) return <section className="po-capability-confirmation" aria-label="能力声明确认"><div className="po-section-heading"><div><h2>能力声明</h2><p>正在读取受控能力声明…</p></div></div></section>
+  if (pending.length === 0) return null
+  return <section className="po-capability-confirmation" aria-label="能力声明确认" data-testid="project-capability-confirmation"><div className="po-section-heading"><div><h2>待确认能力</h2><p>{pending.length} 项旧能力映射尚未成为可信分派事实。Persona 和 Skill 文本不会自动获得能力。</p></div><ActionButton variant="primary" icon={<IconCheckOutline16 />} disabled={state.loading} data-testid="confirm-all-capability-claims" onClick={() => void confirmClaims(pending)}>全部确认</ActionButton></div><div className="po-capability-agent-list">{grouped.map((group) => <div className="po-capability-agent" key={group.agentId}><div><strong>{agentName(state.snapshot, group.agentId)}</strong><small>{state.snapshot.agents.find((agent) => agent.id === group.agentId)?.role ?? group.agentId}</small></div><ul>{group.claims.map((claim) => <li key={claim.id}><code>{claim.capabilityId}</code><span>目录版本 {claim.capabilityVersion}</span><ActionButton size="sm" variant="outline" disabled={state.loading} data-testid={`confirm-capability-${claim.id}`} onClick={() => void confirmClaims([claim])}>确认</ActionButton></li>)}</ul></div>)}</div><p className="po-helper-copy">确认只建立可审计的可信能力声明，不会批准计划或启动任务。完成后回到概览重新运行规划。</p></section>
 }
 
 function DeliveryRoleChecks({ value, onChange, label }: { value: DeliveryRole[]; onChange: (roles: DeliveryRole[]) => void; label: string }) {
@@ -1656,10 +1777,10 @@ const PROJECT_INTAKE_STORAGE_KEY = 'project-orchestrator:project-intake-draft:v2
 const PROJECT_INTAKE_LEGACY_STORAGE_KEY = 'project-orchestrator:project-intake-draft:v1'
 const PROJECT_INTAKE_DRAFT_TTL_MS = 30 * 60 * 1_000
 const AGENT_PROMPT_TEMPLATES = [
-  { label: '代码审查', prompt: '创建一个代码审查智能体。它需要识别业务回归、边界条件和缺失测试，引用具体证据，并给出按严重程度排序的结论。' },
-  { label: '任务拆解', prompt: '创建一个工程任务规划智能体。它需要把 PRD 和技术方案拆成依赖清晰的代码任务与测试任务，并为每项任务定义可执行的验收门禁。' },
-  { label: '研究分析', prompt: '创建一个研究分析智能体。它需要区分事实、推断和待验证假设，保留来源，并输出结论、风险和下一步验证建议。' },
-  { label: '测试设计', prompt: '创建一个测试设计智能体。它需要从需求和实现中识别关键路径、失败路径与边界条件，并产出可自动化的测试方案。' },
+  { label: '代码审查', prompt: '创建一个只读代码审查智能体。对照原始需求，检查实际差异、相关调用链和测试证据，优先识别业务回归、权限、错误路径和边界问题。每项发现给出严重程度、触发条件、影响和文件位置；不凑问题数量，不擅自修复，没有发现时说明验证范围和缺口。' },
+  { label: '任务拆解', prompt: '创建一个只读工程任务规划智能体。保留原始需求、验收标准和待确认事项，结合仓库入口、业务逻辑和已有测试拆出可独立验收的任务，逐条建立需求与任务映射，检查遗漏和依赖冲突。仅按项目真实角色、声明能力和工具权限提出分派；没有候选、证据不足或关键决策未定时明确阻塞，不虚构路径、命令或能力，不自动启动实施。' },
+  { label: '研究分析', prompt: '创建一个只读研究分析智能体。围绕具体问题收集相关来源，区分事实、推断和待验证假设，遇到矛盾证据要说明差异。先给结论，再给来源、局限和下一步验证建议；无法访问来源时明确缺口，不编造引用，不把研究请求扩展成代码或数据修改。' },
+  { label: '测试设计', prompt: '创建一个只读测试设计智能体。对照原始验收标准和实际实现，设计正常、业务拒绝、异常、边界、权限及回归场景，逐项写明前置条件、输入、操作、预期结果和验证层级。标出未覆盖项，区分模拟与真实环境证据，不宣称已运行测试；只交付方案，编写或执行测试需另有明确任务和权限。' },
 ]
 
 function AgentManualPage({ state, model, agent }: { state: WorkbenchState; model: WorkbenchModel; agent?: AgentRecord }) {
@@ -2148,7 +2269,7 @@ function ProjectDialog({ state, model, project }: { state: WorkbenchState; model
       try {
         const workspace = await model.ensureWorkspace(result.cwd)
         const linked = await mutate<ProjectRecord>(`/projects/${result.id}/workspace`, 'POST', { workspaceId: workspace.workspaceId })
-        await model.refresh(true)
+        await model.refresh(true, true)
         model.openProject(linked.id)
         model.reportNotice('项目已创建并关联 DeepSeek Harness Workspace。')
       } catch (error) {
@@ -2323,6 +2444,51 @@ async function regenerateProjectPlan(model: WorkbenchModel, project: ProjectReco
 async function approveAndExecuteProject(model: WorkbenchModel, project: ProjectRecord, planHash: string | undefined) {
   if (!planHash) return
   await model.action(() => mutate(`/projects/${project.id}/approve`, 'POST', { revision: project.revision, planHash, actor: 'Harness user' }), '计划已批准，AI 正在自动实施。')
+}
+async function approvePlanningV3(model: WorkbenchModel, project: ProjectRecord, snapshot: PlanSnapshotRecord) {
+  if (snapshot.accessGrantSnapshotId === undefined || snapshot.accessGrantDigest === undefined) {
+    model.reportError('当前 V3 计划缺少冻结的访问授权快照，不能批准。')
+    return
+  }
+  await model.action(() => mutate(`/projects/${project.id}/approvals`, 'POST', {
+    planSnapshotId: snapshot.id,
+    planDigest: snapshot.planHash,
+    projectRevision: project.revision,
+    accessGrantSnapshotId: snapshot.accessGrantSnapshotId,
+    accessGrantDigest: snapshot.accessGrantDigest,
+    approverId: project.owner?.trim() || '项目负责人',
+    idempotencyKey: crypto.randomUUID(),
+  }), '计划已批准；尚未启动执行，请确认后单独派发可运行任务。')
+}
+async function dispatchPlanningV3(model: WorkbenchModel, project: ProjectRecord, approvalId: string, taskIds: string[]) {
+  if (taskIds.length === 0) {
+    model.reportError('当前计划没有可派发的未完成任务。')
+    return
+  }
+  await model.action(() => mutate(`/projects/${project.id}/execution-dispatches`, 'POST', {
+    approvalId,
+    expectedProjectRevision: project.revision,
+    taskIds,
+    idempotencyKey: crypto.randomUUID(),
+  }), '派发评估已完成；仅可运行任务会启动，等待任务不会创建 Run。')
+}
+async function repairConvergenceV3(model: WorkbenchModel, project: ProjectRecord, baseline: NonNullable<ProjectPlanningV3View['convergenceRepairBaseline']>) {
+  await model.action(() => mutate(`/projects/${project.id}/convergence-repair`, 'POST', {
+    expectedBaselineDigest: baseline.baselineDigest,
+    idempotencyKey: crypto.randomUUID(),
+  }), '已基于冻结的收敛问题和最终提交启动修复规划。')
+}
+async function retryPlanningRepairV3(model: WorkbenchModel, project: ProjectRecord, repair: NonNullable<ProjectPlanningV3View['repairAttempts']>[number]) {
+  await model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/planning-repairs/${encodeURIComponent(repair.id)}/retry`, 'POST', {
+    expectedRepairDigest: repair.repairDigest,
+    idempotencyKey: crypto.randomUUID(),
+  }), `已从 ${repair.restartStage} 阶段按 Review 问题启动修复规划。`)
+}
+async function retryPlanningOperationV3(model: WorkbenchModel, project: ProjectRecord, operation: NonNullable<ProjectPlanningV3View['operation']>) {
+  await model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/planning-operations/${encodeURIComponent(operation.id)}/retry`, 'POST', {
+    expectedOperationUpdatedAt: operation.updatedAt,
+    idempotencyKey: crypto.randomUUID(),
+  }), `已从 ${operation.stage} 阶段重试规划；已冻结且未变化的上游证据会被复用。`)
 }
 async function retryProject(model: WorkbenchModel, project: ProjectRecord) {
   await model.action(() => mutate(`/projects/${project.id}/retry`, 'POST'), 'AI 已继续处理未通过的任务。')

@@ -35,6 +35,8 @@ jobs:
         run: corepack enable
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: Verify tag matches package version
         shell: bash
         run: |
@@ -46,6 +48,8 @@ jobs:
           }
       - name: Verify release artifact
         run: pnpm verify
+      - name: Verify planning release qualification
+        run: pnpm eval:planning
       - name: Verify protected main ancestry and changelog
         shell: bash
         run: |

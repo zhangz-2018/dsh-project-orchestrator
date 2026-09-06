@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "runId": "run-4",
+  "executionKind": "fixture",
+  "status": "blocked",
+  "repositoryEvidenceIds": [
+    "zz/sample-collection-service.ts",
+    "zz/sample-collection-service.test.ts"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-SAMPLE"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-SAMPLE",
+      "evidenceIds": [
+        "zz/sample-collection-service.ts"
+      ],
+      "ownerPaths": [
+        "zz/sample-collection-service.ts"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "TASK-IMPLEMENT",
+      "acceptanceKeys": [
+        "AC-SAMPLE-CREATE"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "pnpm test"
+      ]
+    },
+    {
+      "key": "TASK-VERIFY",
+      "acceptanceKeys": [
+        "AC-SAMPLE-CREATE"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "pnpm test"
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "taskKey": "TASK-IMPLEMENT",
+      "outcome": "selected",
+      "agentId": "agent-implementer"
+    },
+    {
+      "taskKey": "TASK-VERIFY",
+      "outcome": "blocked"
+    }
+  ],
+  "substantiveRewriteRequired": false
+}

@@ -1,8 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import {
   OrchestratorService,
   OrchestratorStore,
+  AcceptanceCriterionRecordSchema,
+  RequirementAnalysisProposalRecordSchema,
+  RequirementSourceManifestRecordSchema,
+  digestObject,
+  orchestratorDomain,
   planDigest,
 } from '../lib/index.js'
 
@@ -16,6 +24,12 @@ class MemoryTable {
   entries() { return this.records.entries() }
   async put(key, value) { this.records.set(key, structuredClone(value)) }
   async delete(key) { return this.records.delete(key) }
+  async update(key, fn) {
+    if (!this.records.has(key)) throw new Error('missing key')
+    const next = fn(this.records.get(key))
+    this.records.set(key, structuredClone(next))
+    return next
+  }
 }
 
 function createStore({ agents = [], projects = [], tasks = [], approvals = [], runs = [], projectAgentMemberships = [], projectSquadBindings = [], projectAgentMembershipSources = [], featureUsageDaily = [], planSnapshots = [], verificationEvidence = [], projectReviews = [], deliveryRecords = [] } = {}) {
@@ -25,6 +39,7 @@ function createStore({ agents = [], projects = [], tasks = [], approvals = [], r
     tasks: new MemoryTable(tasks),
     approvals: new MemoryTable(approvals),
     runs: new MemoryTable(runs),
+    workspace_writer_leases: new MemoryTable(),
     project_agent_memberships: new MemoryTable(projectAgentMemberships),
     project_squad_bindings: new MemoryTable(projectSquadBindings),
     project_agent_membership_sources: new MemoryTable(projectAgentMembershipSources),
@@ -101,6 +116,55 @@ test('service snapshot exposes the current authoritative plan digest', () => {
   const snapshot = service.snapshot()
   assert.equal(snapshot.planHashes[currentProject.id], expected)
   assert.equal(snapshot.planHashes[currentProject.id], snapshot.approvals[0].planHash)
+})
+
+test('production Store fences every table mutation before writer acquisition and after release', async () => {
+  const lockDirectory = await mkdtemp(join(tmpdir(), 'po-store-writer-'))
+  const store = createStore()
+  const service = new OrchestratorService({}, store, undefined, undefined, { workspaceWriter: { workspaceIdentity: 'guarded-store', lockDirectory } })
+  try {
+    await assert.rejects(() => store.projects.delete('missing-before-init'), (error) => error.code === 'workspace-writer-fenced')
+    await service.initialize()
+    assert.equal(await store.projects.delete('missing-while-held'), false)
+    await service.close()
+    await assert.rejects(() => store.projects.delete('missing-after-close'), (error) => error.code === 'workspace-writer-fenced')
+  } finally {
+    await service.close()
+    await rm(lockDirectory, { recursive: true, force: true })
+  }
+})
+
+test('storage startup accepts legacy oversized section paths while canonical writes remain strict', () => {
+  const oversized = String.raw`heading\n\n## requirement`.repeat(30)
+  assert.ok(oversized.length > 500)
+  const anchor = { id: 'src:heading:prd:line:1:legacy', kind: 'heading', documentKind: 'prd', sectionPath: [oversized], ordinal: 0, text: oversized, textDigest: digestObject(oversized), locator: 'prd:line:1', normativeHints: [], contentClassification: 'context', classificationReason: 'Historical candidate record.', requiredDisposition: false }
+  const core = { projectId: 'p1', operationId: 'op1', sourceDigest: 'a'.repeat(64), sourceProfileIds: ['profile1'], sourceCompletenessDigest: 'b'.repeat(64), parserVersion: 'v3.3.0', anchors: [anchor], anchorIds: [anchor.id], sourceBlockCount: 1, classifiedBlockCount: 1, requiredAnchorCount: 0, classificationDigest: 'c'.repeat(64), dispositionDigest: 'd'.repeat(64), status: 'accepted' }
+  const record = { id: 'manifest1', ...core, manifestDigest: digestObject(core), createdAt: now }
+
+  assert.throws(() => RequirementSourceManifestRecordSchema.parse(record), /<=500 characters/)
+  const loaded = orchestratorDomain.tables.requirement_source_manifests.valueSchema.parse(record)
+  assert.deepEqual(loaded, record)
+  assert.equal(loaded.manifestDigest, digestObject(core))
+})
+
+test('storage startup preserves legacy good scenarios while canonical V3.3 writes require happy_path', () => {
+  const analysis = {
+    status: 'ready',
+    summary: 'Legacy requirement analysis.',
+    requirements: [{ key: 'REQ-001', kind: 'fact', scope: 'in_scope', statement: 'Save a record.', sourceRefs: ['source-1'], acceptanceCriteria: [{ key: 'AC-001', statement: 'The record is saved.', required: true, scenario: 'good', sourceRefs: ['source-1'] }] }],
+    decisions: [],
+    diagnostics: [],
+  }
+  const proposal = { id: 'proposal-legacy-good', projectId: 'p1', operationId: 'op1', stageAttemptId: 'attempt-1', sourceManifestId: 'manifest-1', sourceManifestDigest: 'a'.repeat(64), analysis, analysisDigest: digestObject(analysis), promptVersion: 'legacy-v3.3', createdAt: now }
+  const criterion = { id: 'criterion-legacy-good', projectId: 'p1', bundleId: 'bundle-1', requirementItemId: 'requirement-1', key: 'AC-001', statement: 'The record is saved.', sourceRefs: ['source-1'], required: true, scenario: 'good', taskIds: [], evidenceIds: [], status: 'open', createdAt: now, updatedAt: now }
+
+  assert.throws(() => RequirementAnalysisProposalRecordSchema.parse(proposal), /happy_path/)
+  assert.throws(() => AcceptanceCriterionRecordSchema.parse(criterion), /happy_path/)
+  const loadedProposal = orchestratorDomain.tables.requirement_analysis_proposals.valueSchema.parse(proposal)
+  const loadedCriterion = orchestratorDomain.tables.acceptance_criteria.valueSchema.parse(criterion)
+  assert.deepEqual(loadedProposal, proposal)
+  assert.deepEqual(loadedCriterion, criterion)
+  assert.equal(digestObject(loadedProposal.analysis), proposal.analysisDigest)
 })
 
 test('snapshot includes durable memberships, Squad bindings, sources, and local usage aggregates', async () => {

@@ -4,6 +4,27 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-09-06
+
+### Added
+
+- Add evidence-grounded Planning Contract V3 with all-block source disposition, immutable Requirement/Acceptance Scenario/Decision facts, repository stack profiling and code binding, policy fixed-point handling, controlled capability derivation, assignment evaluation, and deterministic Task Preflight.
+- Add authoritative workspace writer fencing, immutable planning operations and repair lineage, approval/dispatch separation, runnable-frontier dispatch, canonical delivery integration, final repository convergence review, and convergence repair carry validation.
+- Add responsive Planning V3 health, lineage, gate, assignment, preflight, integration, and convergence projections to the Web workbench and loopback API.
+
+### Fixed
+
+- Reject fabricated repository references, unsupported stacks, incomplete impact chains, uncovered scenario categories, uncontrolled overlapping write scopes, non-browser UI verification, zero eligible candidates, stale repository/access facts, and incomplete delivery evidence instead of publishing a superficially ready plan.
+- Derive browser, framework, verification, release, and other execution capabilities from frozen repository and task facts rather than Planner-authored free text.
+- Bound every Agent turn to ten minutes; a timeout now cancels the session, records a retryable Planning failure, restores the Project, and creates no Task, Approval, or Dispatch side effects.
+- Resume a repair successor's retryable generated-output failure from its actual failed stage, preserving immutable upstream facts and injecting the exact deterministic diagnostic into the first retry instead of replaying the original earlier repair stage.
+
+### Changed
+
+- Move TypeScript, Vue SFC, and Prisma semantic parsers into runtime dependencies so clean package installations preserve the supported repository analysis boundary.
+- Tighten Agent Builder, default Agent, Issue, and Project Task prompts around explicit authorization, repository evidence, original acceptance criteria, declared capabilities, escalation, and honest verification reporting.
+- Expand release verification to 346 Node regression tests plus production-package clean install, dependency audit, real-model canaries, unsupported-stack rejection, and desktop/mobile workbench regression.
+
 ## [1.6.0] - 2026-08-26
 
 ### Added

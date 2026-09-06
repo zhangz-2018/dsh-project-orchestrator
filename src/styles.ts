@@ -322,6 +322,23 @@ body[data-ds-dark-theme] .po-workbench {
 .po-approval-summary span, .po-intervention-panel span { color: var(--dsw-alias-label-secondary, #52525b); font-size: 12px; }
 .po-intervention-panel { border-color: var(--dsw-alias-state-warn-secondary, #c88c48); background: var(--po-warn-surface); }
 .po-intervention-panel strong { color: var(--po-warn-ink); }
+.po-v3-plan-health { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--dsw-alias-border-l2, #d4d4d8); }
+.po-v3-plan-health .po-section-heading h3 { margin: 0; font-size: 14px; line-height: 20px; }
+.po-v3-plan-health .po-section-heading > span { padding: 2px 7px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 4px; }
+.po-v3-plan-health.is-ready .po-section-heading > span { border-color: var(--po-success); color: var(--po-success-ink); background: var(--po-success-surface); }
+.po-v3-plan-health.is-blocked .po-section-heading > span { border-color: var(--dsw-alias-state-warn-secondary, #c88c48); color: var(--po-warn-ink); background: var(--po-warn-surface); }
+.po-v3-stage-grid { margin: 12px 0 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--dsw-alias-border-l2, #e5e7eb); border-radius: 6px; overflow: hidden; }
+.po-v3-stage-grid > div { min-width: 0; min-height: 58px; padding: 10px; border-right: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
+.po-v3-stage-grid > div:last-child { border-right: 0; }
+.po-v3-stage-grid dt { color: var(--dsw-alias-label-caption, #6b7280); font-size: 11px; }
+.po-v3-stage-grid dd { margin: 5px 0 0; overflow-wrap: anywhere; color: var(--dsw-alias-label-primary, #18181b); font-size: 12px; font-weight: 650; }
+.po-v3-lineage { margin: 7px 0 0; overflow-wrap: anywhere; color: var(--dsw-alias-label-caption, #6b7280); font-size: 10px; }
+.po-v3-health-issues { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--dsw-alias-state-warn-secondary, #c88c48); border-radius: 6px; background: var(--po-warn-surface); }
+.po-v3-health-issues > strong { color: var(--po-warn-ink); font-size: 12px; }
+.po-v3-health-issues ol { margin: 8px 0 0; padding-left: 20px; }
+.po-v3-health-issues li { margin-top: 5px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 12px; }
+.po-v3-health-issues li span { overflow-wrap: anywhere; }
+.po-v3-health-issues li small { margin-left: 6px; color: var(--dsw-alias-label-caption, #6b7280); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 .po-project-review-resolution { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--dsw-alias-border-l2, #d4d4d8); }
 .po-project-review-resolution h3 { margin: 0; font-size: 14px; }
 .po-review-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -678,6 +695,16 @@ body[data-ds-dark-theme] .po-workbench {
 .po-team-impact { margin: 0 0 14px; border: 1px solid var(--dsw-alias-border-l3, #eeeeef); padding: 10px 12px; display: grid; gap: 4px; background: var(--dsw-alias-fill-l1, #fafafa); font-size: 12px; }
 .po-team-impact span, .po-team-impact small { color: var(--dsw-alias-label-secondary, #52525b); }
 .po-project-members-section { padding-top: 20px; }
+.po-capability-confirmation { margin-top: 20px; border-block: 1px solid var(--dsw-alias-state-warn-secondary, #c88c48); padding: 16px 0; }
+.po-capability-confirmation .po-section-heading p { max-width: 72ch; }
+.po-capability-agent-list { display: grid; }
+.po-capability-agent { border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); padding: 12px 4px; display: grid; grid-template-columns: minmax(180px, .7fr) minmax(0, 2fr); gap: 16px; }
+.po-capability-agent > div { display: grid; align-content: start; gap: 4px; }
+.po-capability-agent small, .po-capability-agent li span { color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; }
+.po-capability-agent ul { margin: 0; padding: 0; display: grid; list-style: none; }
+.po-capability-agent li { min-height: 40px; border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; }
+.po-capability-agent li:first-child { border-top: 0; }
+.po-capability-agent code { min-width: 0; overflow-wrap: anywhere; font-size: 11px; }
 .po-binding-list { border-top: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
 .po-binding-row { min-height: 72px; border-bottom: 1px solid var(--dsw-alias-border-l3, #eeeeef); padding: 10px 0; display: grid; grid-template-columns: minmax(220px, 1fr) minmax(130px, .45fr) auto; align-items: center; gap: 14px; }
 .po-binding-row > span { min-width: 0; display: grid; gap: 4px; }
@@ -922,6 +949,9 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-orchestration-strip button:nth-of-type(even) { border-left: 1px solid var(--dsw-alias-border-l3, #eeeeef); }
   .po-project-tab-body { padding: 16px 14px 30px; }
   .po-project-tab-body > .po-section-heading, .po-project-squad-bindings > .po-section-heading, .po-project-members-section > .po-section-heading { align-items: stretch; flex-direction: column; }
+  .po-capability-agent { grid-template-columns: 1fr; gap: 8px; }
+  .po-capability-agent li { grid-template-columns: minmax(0, 1fr) auto; }
+  .po-capability-agent li span { grid-column: 1; }
   .po-binding-row { min-height: 0; padding: 14px 0; grid-template-columns: 1fr; gap: 8px; }
   .po-binding-actions { justify-content: flex-start; }
   .po-binding-actions .po-button { min-height: 44px; }
@@ -948,6 +978,9 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-project-diagnostic-actions details { width: 100%; }
   .po-project-diagnostic-actions pre { position: static; width: auto; max-height: 180px; margin-top: 8px; }
   .po-approval-summary, .po-intervention-panel { flex-direction: column; gap: 4px; }
+  .po-v3-stage-grid { grid-template-columns: 1fr; }
+  .po-v3-stage-grid > div { min-height: 0; border-right: 0; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
+  .po-v3-stage-grid > div:last-child { border-bottom: 0; }
   .po-review-fields { grid-template-columns: 1fr; }
   .po-review-note { grid-column: auto; }
   .po-delivery-gate, .po-document-section, .po-project-task-section, .po-run-summary { margin: 14px 14px 0; padding: 14px; }

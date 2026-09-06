@@ -146,6 +146,21 @@ export interface AgentRecord {
   updatedAt: string
 }
 
+export interface AgentCapabilityClaimRecord {
+  id: string
+  projectId?: string
+  agentId: string
+  capabilityId: string
+  capabilityVersion: number
+  source: 'human_confirmed' | 'managed_registry' | 'legacy_pending_mapping'
+  status: 'active' | 'pending' | 'revoked' | 'expired'
+  confirmedBy?: string
+  evidenceRef?: string
+  validFrom: string
+  validUntil?: string
+  claimDigest: string
+}
+
 export interface TeamCompositionSnapshot {
   plannerAgentId?: string
   leadAgentId?: string
@@ -256,7 +271,13 @@ export interface PlanSnapshotRecord {
   requirementReviewDigest?: string
   requirementPromptVersion?: string
   plannerPromptVersion?: string
-  planningContractVersion?: 2
+  planningContractVersion?: 2 | 3
+  planningOperationId?: string
+  metricPolicyId?: string
+  metricPolicyVersion?: string
+  metricPolicyDigest?: string
+  accessGrantSnapshotId?: string
+  accessGrantDigest?: string
   taskAssignments?: TaskAssignmentSnapshot[]
   capacityObservation?: TeamCapacityObservation
   reviewerIndependencePolicy?: ReviewerIndependencePolicy
@@ -486,11 +507,16 @@ export interface ProjectRecord {
   issueIds?: string[]
   workspaceId?: string
   leadAgentId?: string
-  deliveryStage?: 'planning' | 'awaiting_approval' | 'approved' | 'executing' | 'review' | 'delivery_ready' | 'delivered' | 'closed'
+  deliveryStage?: 'planning' | 'awaiting_approval' | 'approved' | 'executing' | 'verifying' | 'integrating' | 'final_repository_snapshot' | 'convergence_reviewing' | 'changes_required' | 'blocked' | 'failed' | 'review' | 'delivery_ready' | 'delivered' | 'closed'
   teamComposition?: TeamCompositionSnapshot
   teamDigest?: string
   assignmentDigest?: string
   currentPlanSnapshotId?: string
+  currentDeliveryIntegrationSnapshotId?: string
+  currentDeliveryConvergenceReviewId?: string
+  currentConvergenceRepairBaselineId?: string
+  planningContractVersion?: 2 | 3
+  activePlanningOperationId?: string
   decompositionSessionId?: string
   activeDecompositionKey?: string
   activeDecompositionDigest?: string
@@ -517,7 +543,8 @@ export interface TaskRecord {
   sourceRequirementIds?: string[]
   acceptanceIds?: string[]
   decisionIds?: string[]
-  planningContractVersion?: 2
+  planningContractVersion?: 2 | 3
+  planSnapshotId?: string
   assignmentPolicy?: { mode: AssignmentMode; riskLevel: TaskRiskLevel; requiredRoles: string[]; requiredCapabilities: string[]; allowedAgentIds: string[]; allowedSquadIds: string[]; requiresIndependentReviewer: boolean; maxParallel: number; parallelGroup?: string; conflictKeys: string[]; allowedScope: string[]; forbiddenScope: string[]; escalationConditions: string[] }
   assignmentSource?: 'planner_recommendation' | 'automatic_match' | 'manual'
   assignmentDigest?: string
@@ -537,6 +564,84 @@ export interface TaskRecord {
   attempts?: Array<{ attempt: number; sessionId?: string; exitCode?: number; output?: string; failureReason?: string; createdAt: string }>
   createdAt: string
   updatedAt: string
+}
+
+export interface ProjectPlanningV3View {
+  projectId: string
+  planningContractVersion: 3 | 'legacy'
+  operation?: {
+    id: string
+    status: string
+    stage: string
+    predecessorOperationId?: string
+    repositoryPolicyBaselineId?: string
+    repositoryPolicyBaselineDigest?: string
+    repositoryPolicyIteration: number
+    policySnapshotId?: string
+    metricPolicyId?: string
+    metricPolicyVersion?: string
+    updatedAt: string
+    completedAt?: string
+    diagnostics: Array<{ code: string; severity: 'info' | 'warning' | 'error' | 'blocking'; message: string; subjectIds: string[] }>
+  }
+  operationLineage: {
+    complete: boolean
+    entries: Array<{
+      operation: {
+        id: string
+        status: string
+        stage: string
+        predecessorOperationId?: string
+        repositoryPolicyIteration: number
+      }
+      repositoryPolicyBaseline?: { id: string; baselineDigest: string; iteration: number; status: 'ready' | 'needs_confirmation' | 'blocked' }
+      policy?: { id: string; fixedPointStatus: 'converged' | 'delta_found'; status: 'ready' | 'requires_replan' | 'needs_confirmation' | 'blocked' | 'stale'; policyDigest: string }
+    }>
+  }
+  metricPolicy?: { id: string; version: string; policyDigest: string }
+  repositoryPolicyBaseline?: {
+    id: string
+    predecessorBaselineId?: string
+    iteration: number
+    baselineDigest: string
+    status: 'ready' | 'needs_confirmation' | 'blocked'
+  }
+  policy?: {
+    id: string
+    comparedRepositoryPolicyBaselineId?: string
+    fixedPointStatus: 'converged' | 'delta_found'
+    status: 'ready' | 'requires_replan' | 'needs_confirmation' | 'blocked' | 'stale'
+    policyDigest: string
+  }
+  stackProfile?: {
+    supportStatus: 'supported' | 'partial' | 'unsupported'
+    providerCoverage: Array<{ capability: string; providerId?: string; providerVersion?: string; status: 'covered' | 'partial' | 'missing'; reason?: string }>
+  }
+  providerSupportMatrix: Array<{ providerId: string; providerVersion: string; stackTags: string[]; capabilities: string[]; support: 'supported' | 'unsupported'; limitation?: string }>
+  planHealth: {
+    approvable: boolean
+    executionDispatchStatus: 'dispatchable' | 'partially_dispatchable' | 'waiting_dependency' | 'waiting_runtime' | 'waiting_capacity' | 'waiting_conflict' | 'blocked'
+    topIssues: Array<{ code: string; severity: 'info' | 'warning' | 'error' | 'blocking'; message: string; subjectIds: string[] }>
+    requiredUserAction?: string
+    taskCount: number
+    dependencyCount: number
+    waitingTaskCount: number
+  }
+  approval?: { id: string; planSnapshotId: string; projectRevision: number; executionDispatchStatusAtApproval: string; approvedAt: string }
+  latestDispatch?: { id: string; outcome: 'started' | 'partially_started' | 'waiting' | 'blocked' | 'stale'; requestedTaskIds: string[]; createdTaskRunIds: string[]; createdAt: string }
+  deliveryIntegration?: { id: string; status: 'pending' | 'integrating' | 'ready' | 'blocked' | 'failed' | 'stale'; finalCommit?: string }
+  deliveryConvergence?: { id: string; status: 'converged' | 'changes_required' | 'blocked' | 'failed' | 'stale'; findingIds: string[]; repairRequestStatus: string }
+  convergenceRepairBaseline?: { id: string; baselineDigest: string; findingIds: string[]; carryItemIds: string[]; finalCommit: string }
+  repairAttempts?: Array<{
+    id: string
+    operationId: string
+    status: 'requested' | 'repairing' | 'revalidated' | 'resolved' | 'blocked' | 'failed' | 'superseded'
+    repairDigest: string
+    restartStage: string
+    successorOperationId?: string
+    createdAt: string
+  }>
+  actions: string[]
 }
 
 export interface ApprovalRecord {
@@ -623,6 +728,7 @@ export interface TaskRunRecord {
   agentId?: string
   runtimeId?: string
   runtimeNameSnapshot?: string
+  claimVersion?: number
   status: TaskRunStatus
   trigger: 'assignment' | 'mention' | 'approval' | 'retry' | 'autopilot' | 'system'
   attempt: number
@@ -692,6 +798,29 @@ export interface ActivityEvent {
   message: string
   metadata: Record<string, unknown>
   createdAt: string
+}
+
+export interface DomainEventRecord {
+  eventId: string
+  sequence: number
+  aggregateType: string
+  aggregateId: string
+  eventType: string
+  occurredAt: string
+  actor: string
+  projectId?: string
+  operationId?: string
+  taskRunId?: string
+  payloadRef?: string
+  payloadDigest: string
+  schemaVersion: 1
+}
+
+export interface DomainEventPage {
+  events: DomainEventRecord[]
+  nextCursor: string
+  latestCursor: string
+  hasMore: boolean
 }
 
 export interface DecisionRecord {
@@ -779,6 +908,7 @@ export interface Snapshot {
   issues: IssueRecord[]
   taskRuns: TaskRunRecord[]
   activity: ActivityEvent[]
+  eventCursor?: string
   comments: CommentRecord[]
   decisions: DecisionRecord[]
   squads: SquadRecord[]

@@ -8,7 +8,7 @@ A **DeepSeek Harness plugin** for local-first AI project management and task orc
 
 **Use this when** you want a local DeepSeek Harness workflow for planning coding tasks, importing GitHub Issues, executing in isolated Git worktrees, and requiring human approval before repository changes.
 
-> **Compatibility:** v1.6.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** v1.7.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
 
 ## See it in action
 
@@ -45,6 +45,7 @@ Brief or GitHub Issues -> read-only planning -> reviewable Tasks
 ## DeepSeek Harness plugin capabilities
 
 - **AI coding agent orchestration:** plan delivery work into dependency-aware code and test Tasks, then track TaskRuns and verification evidence.
+- **Evidence-grounded Planning V3:** preserve source requirements, acceptance scenarios, and decisions; bind work to supported repository semantics; derive controlled capabilities; and fail closed before approval when coverage, ownership, assignment, or preflight evidence is incomplete.
 - **Approval-gated AI planning:** human approval is required before execution or repository changes.
 - **GitHub Issues and local repositories:** import selected Issues or work from an existing local repository.
 - **Git worktree isolation:** execute with bounded diffs, commit evidence, cleanup records, and workspace leases.
@@ -89,7 +90,7 @@ Install pnpm first because the Harness profile plugin manager owns and supplies 
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.6.0
+dsh plugin --profile web add dsh-project-orchestrator@1.7.0
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
@@ -119,7 +120,11 @@ dsh-project-orchestrator snapshot
 dsh-project-orchestrator inbox
 dsh-project-orchestrator stats
 dsh-project-orchestrator command '{"type":"autopilot_tick","actorType":"human","payload":{"agentId":"...","limit":10}}'
+dsh-project-orchestrator capture-planning-eval PROJECT_ID OPERATION_ID CASE_ID RUN_ID --output planning-evals/cases/CASE_ID/runs/RUN_ID.json
+dsh-project-orchestrator capture-release-canary PROJECT_ID --output planning-evals/canary/release.json
 ```
+
+The two capture commands validate service-produced evidence and atomically create a new file; they never overwrite an existing evaluation or canary artifact.
 
 Override the local API only when the Harness still listens on loopback:
 
@@ -140,7 +145,7 @@ DSH_PROJECT_ORCHESTRATOR_URL=http://127.0.0.1:3080/project-orchestrator/api \
 8. Workspace cleanup and evidence settle before a TaskRun becomes terminal.
 9. Human review approval is the only Issue completion path.
 
-Runtime records are local Harness Host facts. v1.5.4 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
+Runtime records are local Harness Host facts. v1.7.0 does **not** provide remote Agent execution, active/active Hosts, distributed locks, remote branch push, or provider-authenticated pull-request creation.
 
 ## Security model
 

@@ -34,6 +34,12 @@ jobs:
         run: corepack enable
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install Chromium (Linux)
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium (macOS)
+        if: runner.os == 'macOS'
+        run: pnpm exec playwright install chromium
       - name: Verify source, tests, bundles, and package
         run: pnpm verify
       - name: Audit production dependencies

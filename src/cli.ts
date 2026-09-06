@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
+import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { link, mkdir, open, unlink } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { PlanningEvaluationCandidateSchema, PlanningReleaseCanarySchema } from './types.js'
 
 const VERSION = String(JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version)
 const USAGE = `dsh-project-orchestrator ${VERSION}\n\nUsage:\n  dsh-project-orchestrator snapshot [--url URL]\n  dsh-project-orchestrator inbox [--url URL]\n  dsh-project-orchestrator stats [--url URL]\n  dsh-project-orchestrator team-plan PROJECT_ID [--url URL]\n  dsh-project-orchestrator agent-candidates PROJECT_ID TASK_ID [--url URL]\n  dsh-project-orchestrator team-impact PROJECT_ID [--url URL]\n  dsh-project-orchestrator team-metrics [PROJECT_ID] [--url URL]\n  dsh-project-orchestrator validate-team PROJECT_ID [--url URL]\n  dsh-project-orchestrator reassign-task PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator resolve-team-blocker PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator bind-project-squad PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator sync-project-squad PROJECT_ID SQUAD_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator plan-snapshots PROJECT_ID [--url URL]\n  dsh-project-orchestrator requirements PROJECT_ID [--url URL]\n  dsh-project-orchestrator revise-decomposition PROJECT_ID BUNDLE_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator decisions PROJECT_ID [--url URL]\n  dsh-project-orchestrator delivery PROJECT_ID [--url URL]\n  dsh-project-orchestrator confirm-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n  dsh-project-orchestrator command '<JSON>' [--url URL]\n  dsh-project-orchestrator trigger '<JSON>' [--url URL]\n`
@@ -8,7 +12,7 @@ const USAGE = `dsh-project-orchestrator ${VERSION}\n\nUsage:\n  dsh-project-orch
 const args = process.argv.slice(2)
 const command = args.shift()
 const baseUrl = takeOption(args, '--url') ?? process.env.DSH_PROJECT_ORCHESTRATOR_URL ?? 'http://127.0.0.1:3080/project-orchestrator/api'
-const DELIVERY_USAGE = "  dsh-project-orchestrator resolve-review PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator close-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n"
+const DELIVERY_USAGE = "  dsh-project-orchestrator resolve-review PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator close-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n  dsh-project-orchestrator capture-planning-eval PROJECT_ID OPERATION_ID CASE_ID RUN_ID --output PATH [--url URL]\n  dsh-project-orchestrator capture-release-canary PROJECT_ID --output PATH [--url URL]\n"
 
 try {
   if (command === '--help' || command === '-h' || command === undefined) {
@@ -93,6 +97,20 @@ try {
     const actor = args.shift()
     if (projectId === undefined || projectId.trim() === '' || actor === undefined || actor.trim() === '') throw new Error('close-delivery requires PROJECT_ID and ACTOR.')
     print(await request(`/projects/${encodeURIComponent(projectId)}/delivery/close`, { actor, ...(args.length === 0 ? {} : { note: args.join(' ') }) }))
+  } else if (command === 'capture-planning-eval') {
+    const output = takeOption(args, '--output')
+    const [projectId, operationId, caseId, runId] = args
+    if (projectId === undefined || operationId === undefined || caseId === undefined || runId === undefined || output === undefined || args.length !== 4) throw new Error('capture-planning-eval requires PROJECT_ID, OPERATION_ID, CASE_ID, RUN_ID, and --output PATH.')
+    const artifact = PlanningEvaluationCandidateSchema.parse(await request(`/projects/${encodeURIComponent(projectId)}/planning-operations/${encodeURIComponent(operationId)}/evaluation-export?caseId=${encodeURIComponent(caseId)}&runId=${encodeURIComponent(runId)}`))
+    if (artifact.runId !== runId || artifact.provenance.caseId !== caseId || artifact.provenance.planningOperationId !== operationId) throw new Error('Harness evaluation artifact identity does not match the requested case, run, and Planning operation.')
+    print({ path: await writeArtifactExclusive(output, artifact), runId: artifact.runId, planningOperationId: artifact.provenance.planningOperationId })
+  } else if (command === 'capture-release-canary') {
+    const output = takeOption(args, '--output')
+    const projectId = args.shift()
+    if (projectId === undefined || output === undefined || args.length !== 0) throw new Error('capture-release-canary requires PROJECT_ID and --output PATH.')
+    const artifact = PlanningReleaseCanarySchema.parse(await request(`/projects/${encodeURIComponent(projectId)}/release-canary?releaseVersion=${encodeURIComponent(VERSION)}`))
+    if (artifact.releaseVersion !== VERSION) throw new Error(`Harness canary releaseVersion does not match package version ${VERSION}.`)
+    print({ path: await writeArtifactExclusive(output, artifact), releaseVersion: artifact.releaseVersion, evidenceBundleDigest: artifact.evidenceBundleDigest })
   } else if (command === 'command') {
     print(await request('/commands', parseJsonArgument(args)))
   } else if (command === 'trigger') {
@@ -138,4 +156,26 @@ async function request(path: string, body?: unknown): Promise<unknown> {
 
 function print(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`)
+}
+
+async function writeArtifactExclusive(path: string, value: unknown): Promise<string> {
+  const target = resolve(path)
+  await mkdir(dirname(target), { recursive: true })
+  const temporary = `${target}.${process.pid}.${randomUUID()}.tmp`
+  let handle: Awaited<ReturnType<typeof open>> | undefined
+  try {
+    handle = await open(temporary, 'wx', 0o600)
+    await handle.writeFile(`${JSON.stringify(value, null, 2)}\n`, 'utf8')
+    await handle.sync()
+    await handle.close()
+    handle = undefined
+    await link(temporary, target)
+    return target
+  } catch (error: any) {
+    if (error?.code === 'EEXIST') throw new Error(`Refusing to overwrite existing artifact: ${target}`)
+    throw error
+  } finally {
+    await handle?.close().catch(() => undefined)
+    await unlink(temporary).catch(() => undefined)
+  }
 }

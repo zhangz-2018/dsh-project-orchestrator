@@ -45,6 +45,7 @@ test('client styles follow Harness theme tokens', async () => {
 
 test('client exposes explicit empty and AI creation actions', async () => {
   const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
+  const clientTypes = await readFile(new URL('../src/client-types.ts', import.meta.url), 'utf8')
   const bundle = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
   assert.match(source, /空项目/)
   assert.match(source, /AI 智能拆解/)
@@ -66,6 +67,16 @@ test('client exposes explicit empty and AI creation actions', async () => {
   assert.doesNotMatch(source, /window\.prompt\(/)
   assert.match(source, /ProjectPlanningDiagnostic/)
   assert.match(source, /重新运行规划/)
+  assert.match(source, /按 Review 问题修复规划/)
+  assert.match(source, /planning-repairs\/\$\{encodeURIComponent\(repair\.id\)\}\/retry/)
+  assert.match(source, /planning-operations\/\$\{encodeURIComponent\(operation\.id\)\}\/retry/)
+  assert.match(source, /expectedRepairDigest: repair\.repairDigest/)
+  assert.match(clientTypes, /status: 'requested' \| 'repairing' \| 'revalidated' \| 'resolved'/)
+  for (const lineageContract of ['predecessorOperationId', 'repositoryPolicyBaselineId', 'repositoryPolicyIteration', 'policySnapshotId', 'repositoryPolicyBaseline', 'fixedPointStatus', 'operationLineage']) assert.match(clientTypes, new RegExp(lineageContract))
+  for (const lineageSurface of ['仓库规则', '已收敛 · 第', '发现新规则，等待重规划', 'lineageStatus', 'lineage 完整', 'operationLineage.entries', '次 Review 修复']) assert.match(source, new RegExp(lineageSurface))
+  assert.match(source, /view\.operation\?\.status === 'committed'[\s\S]*服务端门禁已通过/)
+  assert.match(source, /view\.operation\?\.status === 'running'[\s\S]*服务端门禁检查中/)
+  assert.match(source, /服务端门禁尚未通过/)
   assert.match(source, /技术详情/)
   assert.match(source, /project\.status === 'decomposing'.*AI 正在拆解任务/)
   assert.match(source, /project\.status === 'awaiting_approval'.*当前计划没有可执行任务/)
@@ -119,8 +130,19 @@ test('client bundle exposes project membership and local usage workflows', async
   assert.doesNotMatch(source, />设为负责人</)
   for (const reviewContract of ['ProjectReviewResolutionPanel', '要求修改', '人工豁免', '豁免 Reviewer 独立性', 'DeliveryResponsibilitySummary', '交付责任链', '交付阶段角色', 'Planner', 'Lead', 'Implementer', 'Verifier', 'Reviewer']) assert.match(source, new RegExp(reviewContract))
   for (const planningContract of ['teamPlan?.preflight.ready === true', 'RequirementPlanningPanel', '解决需求决策', '局部修订', '/decompositions/${encodeURIComponent(bundle.id)}/revise']) assert.match(source, new RegExp(planningContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  for (const capabilityContract of ['ProjectCapabilityClaimsSection', '待确认能力', 'Persona 和 Skill 文本不会自动获得能力', '/capability-claims/confirm', 'expectedClaimDigest: claim.claimDigest', '全部确认', '请重新运行规划']) assert.match(source, new RegExp(capabilityContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
   assert.match(source, /block\.documentKind !== 'prd'/)
   assert.match(source, /block\.documentKind !== 'technical_design'/)
+})
+
+test('client bootstraps from a snapshot, consumes event cursors, and forces post-mutation reconciliation', async () => {
+  const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
+  const api = await readFile(new URL('../src/api-client.ts', import.meta.url), 'utf8')
+  assert.match(api, /\/events\?after=/)
+  assert.match(source, /loadDomainEvents\(this\.eventCursor\)/)
+  assert.match(source, /this\.eventCursor = snapshot\.eventCursor/)
+  assert.match(source, /this\.silentPollsSinceSnapshot < 15/)
+  assert.match(source, /await this\.refresh\(true, true\)/)
 })
 
 test('client exposes P0 Squad and Runtime management with context binding flows', async () => {

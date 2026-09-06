@@ -130,6 +130,6 @@ This policy intentionally rejects remote API clients and reverse proxies unless 
 - `1`: transport, JSON, policy, or API failure;
 - `2`: invalid CLI verb or missing required JSON argument.
 
-The CLI prints successful payloads as formatted JSON and failures to stderr. It never writes the storage file directly.
+The CLI prints successful payloads as formatted JSON and failures to stderr. It never writes the storage file directly. `capture-planning-eval` and `capture-release-canary` are the only artifact-writing commands: they validate the service response, atomically create the requested file, and refuse overwrite.
 
-Team and delivery CLI commands are `team-plan`, `agent-candidates`, `team-impact`, `team-metrics`, `validate-team`, `reassign-task`, `resolve-team-blocker`, `bind-project-squad`, `sync-project-squad`, `plan-snapshots`, `requirements`, `decisions`, `delivery`, `resolve-review`, `confirm-delivery`, and `close-delivery`. All commands connect only to a loopback Harness API.
+Team and delivery CLI commands are `team-plan`, `agent-candidates`, `team-impact`, `team-metrics`, `validate-team`, `reassign-task`, `resolve-team-blocker`, `bind-project-squad`, `sync-project-squad`, `plan-snapshots`, `requirements`, `decisions`, `delivery`, `resolve-review`, `confirm-delivery`, `close-delivery`, `capture-planning-eval`, and `capture-release-canary`. All commands connect only to a loopback Harness API.

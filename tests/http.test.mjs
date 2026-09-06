@@ -14,9 +14,10 @@ class MemoryTable {
 
 function realServiceStore() {
   const store = {
-    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), taskRunConflictLocks: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(), planSnapshots: new MemoryTable(), requirementBundles: new MemoryTable(), requirementItems: new MemoryTable(), requirementDecisions: new MemoryTable(), acceptanceCriteria: new MemoryTable(), verificationEvidence: new MemoryTable(), projectReviews: new MemoryTable(), deliveryRecords: new MemoryTable(),
+    agents: new MemoryTable(), projects: new MemoryTable(), tasks: new MemoryTable(), approvals: new MemoryTable(), runs: new MemoryTable(), runtimes: new MemoryTable(), resources: new MemoryTable(), issues: new MemoryTable(), taskRuns: new MemoryTable(), activity: new MemoryTable(), domainEvents: new MemoryTable(), comments: new MemoryTable(), decisions: new MemoryTable(), squads: new MemoryTable(), delegations: new MemoryTable(), transcripts: new MemoryTable(), artifacts: new MemoryTable(), commands: new MemoryTable(), externalTriggers: new MemoryTable(), skills: new MemoryTable(), localDirectoryLocks: new MemoryTable(), workspaceLeases: new MemoryTable(), taskRunConflictLocks: new MemoryTable(), projectAgentMemberships: new MemoryTable(), projectSquadBindings: new MemoryTable(), projectAgentMembershipSources: new MemoryTable(), featureUsageDaily: new MemoryTable(), planSnapshots: new MemoryTable(), requirementBundles: new MemoryTable(), requirementItems: new MemoryTable(), requirementDecisions: new MemoryTable(), acceptanceCriteria: new MemoryTable(), verificationEvidence: new MemoryTable(), projectReviews: new MemoryTable(), deliveryRecords: new MemoryTable(),
     projectTasks(project) { return project.taskIds.map((id) => store.tasks.get(id)) },
     approvalFor(project) { return store.approvals.get(`${project.id}:${project.revision}`) },
+    async appendDomainEvent(input) { const sequence = store.domainEvents.size + 1; const event = { ...input, eventId: `event:${sequence}`, sequence, occurredAt: input.occurredAt ?? new Date().toISOString(), schemaVersion: 1 }; await store.domainEvents.put(event.eventId, event); return event },
   }
   return store
 }
@@ -63,7 +64,10 @@ function response() {
 
 function service() {
   return {
-    snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [] } },
+    snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], eventCursor: '0', comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [] } },
+    getStorageCapabilities() { return { transactions: false, compareAndSwap: false, uniqueConstraints: false, orderedAppend: false, serializedDomainWrites: true, durableBeforeMemory: true } },
+    listStorageMutationIntents() { return [] },
+    listDomainEvents(after, limit, projectId) { return { events: [], nextCursor: String(after), latestCursor: '0', hasMore: false, limit, projectId } },
      async getInbox(query) { return query?.kind ? [{ id: 'filtered', kind: query.kind }] : [] },
      async getAgentWorkloads() { return [] },
      listProjectAgents(projectId) { return [{ id: `${projectId}:agent`, projectId, agentId: 'agent', status: 'active' }] },
@@ -97,6 +101,33 @@ function service() {
      listProjectAcceptanceCriteria() { return [] },
      listProjectRequirementDecisions() { return [] },
      getProjectRequirementMatrix(projectId) { return { project: { id: projectId }, bundles: [], items: [], decisions: [], acceptanceCriteria: [], rows: [] } },
+     listProjectCapabilityClaims(projectId) { return [{ id: 'claim-1', projectId, status: 'active' }] },
+     listPlanningApprovalsV3(projectId) { return [{ id: 'approval-1', projectId, planSnapshotId: 'plan-1' }] },
+     listExecutionDispatchesV3(projectId) { return [{ id: 'dispatch-1', projectId, outcome: 'waiting' }] },
+     getProjectPlanningV3(projectId) { return { projectId, planningContractVersion: 3, planHealth: { approvable: true }, actions: ['approve_plan'] } },
+     getPlanningMetricPolicyV3(projectId) { return { id: 'metric-policy-1', scopeProjectId: projectId, version: 'v3.3' } },
+     listPlanningMetricPoliciesV3(projectId) { return [{ id: 'metric-policy-1', scopeProjectId: projectId, version: 'v3.3' }] },
+     listPlanningShadowEvaluationsV3(projectId) { return [{ id: 'shadow-1', projectId, planningOutcome: 'would_commit' }] },
+     listExpectedAssignmentFixturesV3(projectId) { return [{ id: 'fixture-1', projectId, expectedOutcome: 'selected' }] },
+     listPlanningMetricReleaseReportsV3(projectId, releaseId) { return [{ id: 'report-1', ...(projectId === undefined ? {} : { projectId }), releaseId: releaseId ?? 'release-1' }] },
+     listPlanningMetricReleaseReportCreatesV3(scopeKey, idempotencyKey) { return [{ id: 'report-command-1', scopeKey: scopeKey ?? 'global', idempotencyKey: idempotencyKey ?? 'report-key' }] },
+     listPlanningOperationsV3(projectId) { return [{ id: 'operation-1', projectId, status: 'committed' }] },
+     getPlanningOperationV3(projectId, operationId) { return { id: operationId, projectId, status: 'committed' } },
+     exportPlanningEvaluationV3(projectId, operationId, body) { return { kind: 'planning-evaluation', projectId, operationId, ...body } },
+     exportPlanningReleaseCanaryV3(projectId, body) { return { kind: 'release-canary', projectId, ...body } },
+     async publishPlanningMetricPolicyV3(projectId, body) { return { command: { id: 'metric-policy-command-1', scopeProjectId: projectId, outcome: 'published' }, policy: { id: 'metric-policy-1', scopeProjectId: projectId, ...body } } },
+     async createExpectedAssignmentFixtureV3(projectId, body) { return { id: 'fixture-1', projectId, ...body } },
+     async createPlanningMetricReleaseReportV3(body) { return { command: { id: 'report-command-1', outcome: 'created' }, report: { id: 'report-1', ...body } } },
+     async confirmProjectCapabilityClaim(projectId, claimId, body) { return { id: claimId, projectId, status: 'active', ...body } },
+     async confirmProjectCapabilityClaims(projectId, body) { return { project: { id: projectId }, claims: body.claims.map((claim) => ({ id: claim.claimId, projectId, status: 'active' })) } },
+     async retryPlanningRepairV3(projectId, repairAttemptId, body) { return { id: projectId, status: 'decomposing', repairAttemptId, ...body } },
+     async retryPlanningOperationV3(projectId, operationId, body) { return { id: projectId, status: 'decomposing', operationId, ...body } },
+     async startConvergenceRepairV3(projectId, body) { return { id: projectId, status: 'decomposing', deliveryStage: 'planning', ...body } },
+     async approvePlanningV3(projectId, body) { return { id: 'approval-1', projectId, ...body } },
+     async dispatchPlanningV3(projectId, body) {
+       const waiting = body.idempotencyKey === 'waiting-dispatch'
+       return { dispatch: { id: 'dispatch-1', projectId, outcome: waiting ? 'waiting' : 'started', requestedTaskIds: body.taskIds }, project: { id: projectId, status: waiting ? 'approved' : 'running' } }
+     },
      getProjectDelivery(projectId) { return { project: { id: projectId, deliveryStage: 'delivery_ready' }, evidence: [], ready: false, blockers: ['No evidence.'] } },
      async confirmProjectDelivery(projectId, body) { return { id: `${projectId}:delivery`, status: 'delivered', ...body } },
      listEligibleSquads(projectId) { return [{ projectId, squadId: 'squad', eligible: true }] },
@@ -148,9 +179,30 @@ test('snapshot endpoint returns no-store JSON', async () => {
   assert.equal(res.statusCode, 200)
   assert.equal(res.headers.get('cache-control'), 'no-store')
   assert.deepEqual(JSON.parse(res.body), {
-     runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [],
+     runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], eventCursor: '0', comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [],
     projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {},
   })
+})
+
+test('event cursor and storage diagnostics endpoints validate pagination and expose operational state', async () => {
+  const fake = service()
+  const events = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/events?after=12&limit=50&projectId=project-1', headers: { host: '127.0.0.1:3080' } }), events)
+  assert.equal(events.statusCode, 200)
+  assert.deepEqual(JSON.parse(events.body), { events: [], nextCursor: '12', latestCursor: '0', hasMore: false, limit: 50, projectId: 'project-1' })
+
+  for (const url of ['/project-orchestrator/api/events?after=-1', '/project-orchestrator/api/events?limit=501']) {
+    const invalid = response()
+    await createHttpHandler(fake)(new Request({ url, headers: { host: '127.0.0.1:3080' } }), invalid)
+    assert.equal(invalid.statusCode, 400)
+  }
+
+  const capabilities = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/admin/storage-capabilities', headers: { host: '127.0.0.1:3080' } }), capabilities)
+  assert.equal(JSON.parse(capabilities.body).transactions, false)
+  const reconciliation = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/admin/storage-reconciliation?projectId=project-1', headers: { host: '127.0.0.1:3080' } }), reconciliation)
+  assert.deepEqual(JSON.parse(reconciliation.body), [])
 })
 
 test('read routes reject non-loopback peers before exposing project data', async () => {
@@ -162,6 +214,43 @@ test('read routes reject non-loopback peers before exposing project data', async
   }), res)
   assert.equal(res.statusCode, 403)
   assert.equal(JSON.parse(res.body).error.code, 'invalid-origin')
+})
+
+test('planning evaluation and release canary exports validate query inputs and preserve encoded identifiers', async () => {
+  const fake = service()
+  const evaluation = response()
+  await createHttpHandler(fake)(new Request({
+    url: '/project-orchestrator/api/projects/project%20one/planning-operations/operation%3Fone/evaluation-export?caseId=case%20one&runId=run%2Fone',
+    headers: { host: '127.0.0.1:3080' },
+  }), evaluation)
+  assert.equal(evaluation.statusCode, 200)
+  assert.deepEqual(JSON.parse(evaluation.body), { kind: 'planning-evaluation', projectId: 'project one', operationId: 'operation?one', caseId: 'case one', runId: 'run/one' })
+
+  const canary = response()
+  await createHttpHandler(fake)(new Request({
+    url: '/project-orchestrator/api/projects/project%20one/release-canary?releaseVersion=1.7.0-rc.1',
+    headers: { host: '127.0.0.1:3080' },
+  }), canary)
+  assert.equal(canary.statusCode, 200)
+  assert.deepEqual(JSON.parse(canary.body), { kind: 'release-canary', projectId: 'project one', releaseVersion: '1.7.0-rc.1' })
+
+  for (const url of [
+    '/project-orchestrator/api/projects/project-1/planning-operations/operation-1/evaluation-export?runId=run-1',
+    '/project-orchestrator/api/projects/project-1/planning-operations/operation-1/evaluation-export?caseId=case-1',
+    '/project-orchestrator/api/projects/project-1/release-canary',
+  ]) {
+    const invalid = response()
+    await createHttpHandler(fake)(new Request({ url, headers: { host: '127.0.0.1:3080' } }), invalid)
+    assert.equal(invalid.statusCode, 400)
+  }
+
+  const remote = response()
+  await createHttpHandler(fake)(new Request({
+    url: '/project-orchestrator/api/projects/project-1/release-canary?releaseVersion=1.7.0',
+    remoteAddress: '203.0.113.8',
+    headers: { host: '127.0.0.1:3080' },
+  }), remote)
+  assert.equal(remote.statusCode, 403)
 })
 
 test('delivery projection and human confirmation use the serialized HTTP boundary', async () => {
@@ -188,6 +277,107 @@ test('requirements projection exposes source bundles and acceptance criteria', a
   await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/requirements?includeHistory=true', headers: { host: '127.0.0.1:3080' } }), historical)
   assert.equal(historical.statusCode, 200)
   assert.deepEqual(calls, [false, true])
+})
+
+test('Planning V3 read routes expose current health, audit records, and reachable dispatch history', async () => {
+  const fake = service()
+  const headers = { host: '127.0.0.1:3080' }
+  const cases = [
+    ['/project-orchestrator/api/projects/project-1/planning', 'projectId', 'project-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-operations', '0.id', 'operation-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-operations/operation-1', 'id', 'operation-1'],
+    ['/project-orchestrator/api/projects/project-1/capability-claims', '0.id', 'claim-1'],
+    ['/project-orchestrator/api/projects/project-1/approvals', '0.id', 'approval-1'],
+    ['/project-orchestrator/api/projects/project-1/execution-dispatches', '0.id', 'dispatch-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-metric-policy', 'id', 'metric-policy-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-metric-policies', '0.id', 'metric-policy-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-shadow-evaluations', '0.id', 'shadow-1'],
+    ['/project-orchestrator/api/projects/project-1/assignment-evaluation-fixtures', '0.id', 'fixture-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-metric-release-reports?releaseId=release-1', '0.id', 'report-1'],
+    ['/project-orchestrator/api/admin/planning-metric-release-reports?releaseId=release-1', '0.id', 'report-1'],
+    ['/project-orchestrator/api/admin/planning-metric-release-report-creates?scopeKey=global&idempotencyKey=report-key', '0.id', 'report-command-1'],
+  ]
+  for (const [url, path, expected] of cases) {
+    const res = response()
+    await createHttpHandler(fake)(new Request({ url, headers }), res)
+    assert.equal(res.statusCode, 200, url)
+    const value = path.split('.').reduce((current, key) => current[Number.isNaN(Number(key)) ? key : Number(key)], JSON.parse(res.body))
+    assert.equal(value, expected, url)
+  }
+})
+
+test('Planning V3 mutations keep approval separate and preserve waiting versus started dispatch status', async () => {
+  const fake = service()
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+
+  const confirmed = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/capability-claims/claim-1/confirm', headers, body: JSON.stringify({ confirmedBy: 'owner' }) }), confirmed)
+  assert.equal(confirmed.statusCode, 201)
+  assert.equal(JSON.parse(confirmed.body).status, 'active')
+
+  const confirmedBatch = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/capability-claims/confirm', headers, body: JSON.stringify({ actor: 'owner', reason: 'reviewed', claims: [{ claimId: 'claim-1', expectedClaimDigest: 'a'.repeat(64) }] }) }), confirmedBatch)
+  assert.equal(confirmedBatch.statusCode, 201)
+  assert.equal(JSON.parse(confirmedBatch.body).claims.length, 1)
+
+  const approved = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/approvals', headers, body: JSON.stringify({ planSnapshotId: 'plan-1', planDigest: 'a'.repeat(64), projectRevision: 3, accessGrantSnapshotId: 'access-1', accessGrantDigest: 'b'.repeat(64), approverId: 'owner', idempotencyKey: 'approve-plan' }) }), approved)
+  assert.equal(approved.statusCode, 201)
+  assert.equal(JSON.parse(approved.body).id, 'approval-1')
+
+  const waiting = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/execution-dispatches', headers, body: JSON.stringify({ approvalId: 'approval-1', expectedProjectRevision: 3, taskIds: ['task-1'], idempotencyKey: 'waiting-dispatch' }) }), waiting)
+  assert.equal(waiting.statusCode, 202)
+  assert.equal(JSON.parse(waiting.body).dispatch.outcome, 'waiting')
+
+  const started = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/execution-dispatches', headers, body: JSON.stringify({ approvalId: 'approval-1', expectedProjectRevision: 3, taskIds: ['task-1'], idempotencyKey: 'started-dispatch' }) }), started)
+  assert.equal(started.statusCode, 201)
+  assert.equal(JSON.parse(started.body).dispatch.outcome, 'started')
+
+  const repair = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/planning-repairs/repair-1/retry', headers, body: JSON.stringify({ expectedRepairDigest: 'c'.repeat(64), idempotencyKey: 'retry-repair' }) }), repair)
+  assert.equal(repair.statusCode, 202)
+  assert.equal(JSON.parse(repair.body).repairAttemptId, 'repair-1')
+  assert.equal(JSON.parse(repair.body).status, 'decomposing')
+
+  const operationRetry = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/planning-operations/operation-1/retry', headers, body: JSON.stringify({ expectedOperationUpdatedAt: 'now', idempotencyKey: 'retry-operation' }) }), operationRetry)
+  assert.equal(operationRetry.statusCode, 202)
+  assert.equal(JSON.parse(operationRetry.body).operationId, 'operation-1')
+  assert.equal(JSON.parse(operationRetry.body).status, 'decomposing')
+
+  const convergenceRepair = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/convergence-repair', headers, body: JSON.stringify({ expectedBaselineDigest: 'd'.repeat(64), idempotencyKey: 'convergence-repair' }) }), convergenceRepair)
+  assert.equal(convergenceRepair.statusCode, 202)
+  assert.equal(JSON.parse(convergenceRepair.body).status, 'decomposing')
+  assert.equal(JSON.parse(convergenceRepair.body).expectedBaselineDigest, 'd'.repeat(64))
+})
+
+test('Planning V3 governance mutations publish immutable policy, Gold fixture, and release report records', async () => {
+  const fake = service()
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const cases = [
+    ['/project-orchestrator/api/projects/project-1/planning-metric-policies', { version: 'v3.3-project', metrics: [{ key: 'planning_would_commit_rate' }], approvedBy: 'owner', approvalReason: 'candidate', idempotencyKey: 'policy-key' }, 'policy.id', 'metric-policy-1'],
+    ['/project-orchestrator/api/projects/project-1/assignment-evaluation-fixtures', { responsibilityKey: 'owner:service', repositoryDigest: 'a'.repeat(64), teamDigest: 'b'.repeat(64), metricPolicyId: 'metric-policy-1', expectedOutcome: 'selected', allowedOwnerIds: ['agent-1'], allowedSquadMemberIds: [], expectedAbstentionReasonCodes: [], critical: true, rationaleEvidenceIds: ['evidence-1'], idempotencyKey: 'fixture-key' }, 'id', 'fixture-1'],
+    ['/project-orchestrator/api/admin/planning-metric-release-reports', { projectId: 'project-1', releaseId: 'release-1', metricPolicyId: 'metric-policy-1', operationIds: ['operation-1'], observationIds: ['shadow-1'], idempotencyKey: 'report-key' }, 'report.id', 'report-1'],
+  ]
+  for (const [url, body, path, expected] of cases) {
+    const res = response()
+    await createHttpHandler(fake)(new Request({ method: 'POST', url, headers, body: JSON.stringify(body) }), res)
+    assert.equal(res.statusCode, 201, url)
+    const value = path.split('.').reduce((current, key) => current[key], JSON.parse(res.body))
+    assert.equal(value, expected, url)
+  }
+})
+
+test('Planning V3 stale approval fails closed with the stable conflict code', async () => {
+  const fake = service()
+  fake.approvePlanningV3 = async () => { throw new WorkflowError('plan-approval-stale', 'The candidate changed.', 409) }
+  const res = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/approvals', headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }, body: JSON.stringify({ planSnapshotId: 'plan-1' }) }), res)
+  assert.equal(res.statusCode, 409)
+  assert.deepEqual(JSON.parse(res.body), { error: { code: 'plan-approval-stale', message: 'The candidate changed.' } })
 })
 
 test('real Requirement Decision HTTP mutations complete without nesting the non-reentrant service lock', async () => {

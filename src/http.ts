@@ -18,6 +18,13 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET') assertLoopbackRead(req)
       if (method === 'GET' && path === '/pdf-worker.mjs') return javascript(res, await pdfWorkerSource)
       if (method === 'GET' && path === '/snapshot') return json(res, 200, service.snapshot())
+      if (method === 'GET' && path === '/events') {
+        const after = parseCursor(url.searchParams.get('after'))
+        const limit = parseEventLimit(url.searchParams.get('limit'))
+        return json(res, 200, service.listDomainEvents(after, limit, url.searchParams.get('projectId') ?? undefined))
+      }
+      if (method === 'GET' && path === '/admin/storage-capabilities') return json(res, 200, service.getStorageCapabilities())
+      if (method === 'GET' && path === '/admin/storage-reconciliation') return json(res, 200, service.listStorageMutationIntents(url.searchParams.get('projectId') ?? undefined))
       if (method === 'GET' && path === '/inbox') return json(res, 200, await service.getInbox(queryObject(url)))
       if (method === 'GET' && path === '/agents/workload') return json(res, 200, await service.getAgentWorkloads())
       if (method === 'GET' && path === '/issues') return json(res, 200, service.snapshot().issues)
@@ -27,6 +34,7 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET' && path === '/artifacts') return json(res, 200, service.snapshot().artifacts)
       if (method === 'GET' && path === '/commands') return json(res, 200, service.snapshot().commands)
       if (method === 'GET' && path === '/stats') return json(res, 200, service.snapshot().runStatistics)
+      if (method === 'GET' && path === '/planning/provider-support') return json(res, 200, service.getRepositoryProviderSupportMatrixV3())
       if (method === 'GET' && path === '/team-metrics') return json(res, 200, service.getTeamCollaborationMetrics())
       const taskRunTranscript = matchOne(path, /^\/task-runs\/([^/]+)\/transcript$/)
       if (method === 'GET' && taskRunTranscript !== undefined) return json(res, 200, service.snapshot().transcripts.filter((entry) => entry.taskRunId === taskRunTranscript))
@@ -56,8 +64,47 @@ export function createHttpHandler(service: OrchestratorService) {
       })
       const projectDecisions = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
       if (method === 'GET' && projectDecisions !== undefined) return json(res, 200, url.searchParams.get('includeHistory') === 'true' ? service.listProjectRequirementDecisions(projectDecisions) : service.getProjectRequirementMatrix(projectDecisions).decisions)
+      const projectCapabilityClaims = matchOne(path, /^\/projects\/([^/]+)\/capability-claims$/u)
+      if (method === 'GET' && projectCapabilityClaims !== undefined) return json(res, 200, service.listProjectCapabilityClaims(projectCapabilityClaims))
+      const projectApprovalsV3 = matchOne(path, /^\/projects\/([^/]+)\/approvals$/u)
+      if (method === 'GET' && projectApprovalsV3 !== undefined) return json(res, 200, service.listPlanningApprovalsV3(projectApprovalsV3))
+      const projectExecutionDispatchesV3 = matchOne(path, /^\/projects\/([^/]+)\/execution-dispatches$/u)
+      if (method === 'GET' && projectExecutionDispatchesV3 !== undefined) return json(res, 200, service.listExecutionDispatchesV3(projectExecutionDispatchesV3))
+      const projectPlanningV3 = matchOne(path, /^\/projects\/([^/]+)\/planning$/u)
+      if (method === 'GET' && projectPlanningV3 !== undefined) return json(res, 200, service.getProjectPlanningV3(projectPlanningV3))
+      const projectMetricPolicyV3 = matchOne(path, /^\/projects\/([^/]+)\/planning-metric-policy$/u)
+      if (method === 'GET' && projectMetricPolicyV3 !== undefined) return json(res, 200, service.getPlanningMetricPolicyV3(projectMetricPolicyV3))
+      const projectMetricPoliciesV3 = matchOne(path, /^\/projects\/([^/]+)\/planning-metric-policies$/u)
+      if (method === 'GET' && projectMetricPoliciesV3 !== undefined) return json(res, 200, service.listPlanningMetricPoliciesV3(projectMetricPoliciesV3))
+      const projectShadowEvaluationsV3 = matchOne(path, /^\/projects\/([^/]+)\/planning-shadow-evaluations$/u)
+      if (method === 'GET' && projectShadowEvaluationsV3 !== undefined) return json(res, 200, service.listPlanningShadowEvaluationsV3(projectShadowEvaluationsV3))
+      const projectAssignmentFixturesV3 = matchOne(path, /^\/projects\/([^/]+)\/assignment-evaluation-fixtures$/u)
+      if (method === 'GET' && projectAssignmentFixturesV3 !== undefined) return json(res, 200, service.listExpectedAssignmentFixturesV3(projectAssignmentFixturesV3))
+      const projectMetricReportsV3 = matchOne(path, /^\/projects\/([^/]+)\/planning-metric-release-reports$/u)
+      if (method === 'GET' && projectMetricReportsV3 !== undefined) return json(res, 200, service.listPlanningMetricReleaseReportsV3(projectMetricReportsV3, url.searchParams.get('releaseId') ?? undefined))
+      if (method === 'GET' && path === '/admin/planning-metric-release-reports') return json(res, 200, service.listPlanningMetricReleaseReportsV3(undefined, url.searchParams.get('releaseId') ?? undefined))
+      if (method === 'GET' && path === '/admin/planning-metric-release-report-creates') return json(res, 200, service.listPlanningMetricReleaseReportCreatesV3(url.searchParams.get('scopeKey') ?? undefined, url.searchParams.get('idempotencyKey') ?? undefined))
+      const projectPlanningOperationsV3 = matchOne(path, /^\/projects\/([^/]+)\/planning-operations$/u)
+      if (method === 'GET' && projectPlanningOperationsV3 !== undefined) return json(res, 200, service.listPlanningOperationsV3(projectPlanningOperationsV3))
+      const projectPlanningEvaluationExportV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-operations\/([^/]+)\/evaluation-export$/u)
+      if (method === 'GET' && projectPlanningEvaluationExportV3 !== undefined) {
+        const caseId = url.searchParams.get('caseId')
+        const runId = url.searchParams.get('runId')
+        if (caseId === null || caseId.trim() === '' || runId === null || runId.trim() === '') return json(res, 400, { error: { code: 'planning-evaluation-query-required', message: 'caseId and runId query parameters are required.' } })
+        return json(res, 200, service.exportPlanningEvaluationV3(projectPlanningEvaluationExportV3[0], projectPlanningEvaluationExportV3[1], { caseId, runId }))
+      }
+      const projectPlanningStageAttemptsV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-operations\/([^/]+)\/stage-attempts$/u)
+      if (method === 'GET' && projectPlanningStageAttemptsV3 !== undefined) return json(res, 200, service.listPlanningStageAttemptsV3(projectPlanningStageAttemptsV3[0], projectPlanningStageAttemptsV3[1]))
+      const projectPlanningOperationV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-operations\/([^/]+)$/u)
+      if (method === 'GET' && projectPlanningOperationV3 !== undefined) return json(res, 200, service.getPlanningOperationV3(projectPlanningOperationV3[0], projectPlanningOperationV3[1]))
       const projectDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery$/u)
       if (method === 'GET' && projectDelivery !== undefined) return json(res, 200, service.getProjectDelivery(projectDelivery))
+      const projectReleaseCanaryV3 = matchOne(path, /^\/projects\/([^/]+)\/release-canary$/u)
+      if (method === 'GET' && projectReleaseCanaryV3 !== undefined) {
+        const releaseVersion = url.searchParams.get('releaseVersion')
+        if (releaseVersion === null || releaseVersion.trim() === '') return json(res, 400, { error: { code: 'release-version-required', message: 'releaseVersion query parameter is required.' } })
+        return json(res, 200, service.exportPlanningReleaseCanaryV3(projectReleaseCanaryV3, { releaseVersion }))
+      }
       const projectSquadBindings = matchOne(path, /^\/projects\/([^/]+)\/squad-bindings$/u)
       if (method === 'GET' && projectSquadBindings !== undefined) return json(res, 200, service.listProjectSquadBindings(projectSquadBindings))
       const projectMembershipSources = matchOne(path, /^\/projects\/([^/]+)\/agent-membership-sources$/u)
@@ -74,6 +121,10 @@ export function createHttpHandler(service: OrchestratorService) {
         return json(res, 200, service.getAgentRuntimeImpact(runtimeImpact, runtimeId === null || runtimeId === 'default' ? undefined : runtimeId))
       }
       if (method === 'GET' && path === '/health') return json(res, 200, { ok: true })
+      if (method === 'GET' && path === '/admin/workspace-writer') {
+        const status = service.workspaceWriterStatus()
+        return json(res, status?.health === 'healthy' ? 200 : 503, status ?? { health: 'unconfigured' })
+      }
       if (method === 'GET') return json(res, 404, { error: { code: 'route-not-found', message: 'Project orchestrator route was not found.' } })
 
       assertSameOrigin(req)
@@ -130,8 +181,31 @@ export function createHttpHandler(service: OrchestratorService) {
       }
       const createRequirementDecisionDirect = matchOne(path, /^\/projects\/([^/]+)\/requirement-decisions$/u)
       if (createRequirementDecisionDirect !== undefined && method === 'POST') return json(res, 201, await service.createProjectRequirementDecision(createRequirementDecisionDirect, await readJson(req)))
+      if (method === 'POST' && path === '/admin/planning-metric-policies') return json(res, 201, await service.publishPlanningMetricPolicyV3(undefined, await readJson(req)))
+      const publishProjectMetricPolicyV3 = matchOne(path, /^\/projects\/([^/]+)\/planning-metric-policies$/u)
+      if (publishProjectMetricPolicyV3 !== undefined && method === 'POST') return json(res, 201, await service.publishPlanningMetricPolicyV3(publishProjectMetricPolicyV3, await readJson(req)))
+      if (method === 'POST' && path === '/admin/planning-metric-release-reports') return json(res, 201, await service.createPlanningMetricReleaseReportV3(await readJson(req)))
+      const createAssignmentFixtureV3 = matchOne(path, /^\/projects\/([^/]+)\/assignment-evaluation-fixtures$/u)
+      if (createAssignmentFixtureV3 !== undefined && method === 'POST') return json(res, 201, await service.createExpectedAssignmentFixtureV3(createAssignmentFixtureV3, await readJson(req)))
       const resolveRequirementDecisionDirect = matchTwo(path, /^\/projects\/([^/]+)\/requirement-decisions\/([^/]+)\/resolve$/u)
       if (resolveRequirementDecisionDirect !== undefined && method === 'POST') return json(res, 200, await service.resolveProjectRequirementDecision(resolveRequirementDecisionDirect[0], resolveRequirementDecisionDirect[1], await readJson(req)))
+      const confirmCapabilityClaim = matchTwo(path, /^\/projects\/([^/]+)\/capability-claims\/([^/]+)\/confirm$/u)
+      if (confirmCapabilityClaim !== undefined && method === 'POST') return json(res, 201, await service.confirmProjectCapabilityClaim(confirmCapabilityClaim[0], confirmCapabilityClaim[1], await readJson(req)))
+      const confirmCapabilityClaims = matchOne(path, /^\/projects\/([^/]+)\/capability-claims\/confirm$/u)
+      if (confirmCapabilityClaims !== undefined && method === 'POST') return json(res, 201, await service.confirmProjectCapabilityClaims(confirmCapabilityClaims, await readJson(req)))
+      const retryPlanningRepairV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-repairs\/([^/]+)\/retry$/u)
+      if (retryPlanningRepairV3 !== undefined && method === 'POST') return json(res, 202, await service.retryPlanningRepairV3(retryPlanningRepairV3[0], retryPlanningRepairV3[1], await readJson(req)))
+      const retryPlanningOperationV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-operations\/([^/]+)\/retry$/u)
+      if (retryPlanningOperationV3 !== undefined && method === 'POST') return json(res, 202, await service.retryPlanningOperationV3(retryPlanningOperationV3[0], retryPlanningOperationV3[1], await readJson(req)))
+      const startConvergenceRepairV3 = matchOne(path, /^\/projects\/([^/]+)\/convergence-repair$/u)
+      if (startConvergenceRepairV3 !== undefined && method === 'POST') return json(res, 202, await service.startConvergenceRepairV3(startConvergenceRepairV3, await readJson(req)))
+      const approvePlanningV3 = matchOne(path, /^\/projects\/([^/]+)\/approvals$/u)
+      if (approvePlanningV3 !== undefined && method === 'POST') return json(res, 201, await service.approvePlanningV3(approvePlanningV3, await readJson(req)))
+      const executionDispatchV3 = matchOne(path, /^\/projects\/([^/]+)\/execution-dispatches$/u)
+      if (executionDispatchV3 !== undefined && method === 'POST') {
+        const result = await service.dispatchPlanningV3(executionDispatchV3, await readJson(req))
+        return json(res, result.dispatch.outcome === 'waiting' ? 202 : 201, result)
+      }
       await service.serializedMutation(async () => {
         if (method === 'POST' && path === '/agents') {
           return json(res, 201, await service.createAgent(await readJson(req)))
@@ -363,6 +437,22 @@ async function readJson(req: IncomingMessage, maxBytes = MAX_BODY_BYTES): Promis
 
 function assertLoopbackRead(req: IncomingMessage): void {
   assertLoopbackHost(req)
+}
+
+function parseCursor(value: string | null): number {
+  if (value === null || value === '') return 0
+  if (!/^\d+$/u.test(value)) throw new WorkflowError('invalid-event-cursor', 'Event cursor must be a non-negative decimal sequence.', 400)
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed)) throw new WorkflowError('invalid-event-cursor', 'Event cursor exceeds the supported sequence range.', 400)
+  return parsed
+}
+
+function parseEventLimit(value: string | null): number {
+  if (value === null || value === '') return 100
+  if (!/^\d+$/u.test(value)) throw new WorkflowError('invalid-event-limit', 'Event limit must be an integer from 1 to 500.', 400)
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 500) throw new WorkflowError('invalid-event-limit', 'Event limit must be an integer from 1 to 500.', 400)
+  return parsed
 }
 
 function assertSameOrigin(req: IncomingMessage): void {

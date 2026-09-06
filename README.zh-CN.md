@@ -8,7 +8,7 @@
 
 **适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
 
-> **兼容性：** 当前 `1.6.0` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+> **兼容性：** 当前 `1.7.0` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
 
 ## 先看界面
 
@@ -45,6 +45,7 @@
 ## DeepSeek Harness 插件能力
 
 - **AI 编程任务编排：**把交付简报拆成有依赖关系的代码任务和测试任务，并追踪 TaskRun 与验证证据。
+- **证据驱动 Planning V3：**保留来源需求、验收场景和决策，按受支持的仓库语义绑定代码，由 Service 推导受控能力；覆盖、owner、分派或 Preflight 证据不完整时在审批前失败关闭。
 - **人工审批驱动执行：**计划生成后必须由人明确批准，才会开始执行或修改仓库。
 - **GitHub Issues 与本地仓库：**导入选定的 Issue，或直接使用已有本地代码仓库。
 - **Git worktree 隔离：**记录受限差异、提交证据、清理结果和工作区租约。
@@ -122,7 +123,7 @@ Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm
 
 ```bash
 npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.6.0
+dsh plugin --profile web add dsh-project-orchestrator@1.7.0
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
@@ -152,7 +153,11 @@ dsh-project-orchestrator snapshot
 dsh-project-orchestrator inbox
 dsh-project-orchestrator stats
 dsh-project-orchestrator command '{"type":"autopilot_tick","actorType":"human","payload":{"agentId":"...","limit":10}}'
+dsh-project-orchestrator capture-planning-eval PROJECT_ID OPERATION_ID CASE_ID RUN_ID --output planning-evals/cases/CASE_ID/runs/RUN_ID.json
+dsh-project-orchestrator capture-release-canary PROJECT_ID --output planning-evals/canary/release.json
 ```
+
+两个采集命令都会校验 Service 生成的证据，并原子创建新文件；已有评测或 canary 证据不会被覆盖。
 
 只有 Harness 仍监听本机回环地址时，才可以覆盖默认 API 地址：
 

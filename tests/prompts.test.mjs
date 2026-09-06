@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { compileIssuePrompt, compileTaskPrompt } from '../lib/index.js'
+import { AgentInputSchema, DEFAULT_AGENT_SEEDS, compileIssuePrompt, compileTaskPrompt } from '../lib/index.js'
 
 const now = '2026-03-18T00:00:00.000Z'
 const project = { id: 'project-1', name: 'Prompt project', summary: 'Summary', cwd: '/tmp/project', prd: 'Build the feature.', technicalDesign: 'Use existing modules.', status: 'draft', revision: 1, taskIds: [], createdAt: now, updatedAt: now }
@@ -18,7 +18,7 @@ test('Prompt Compiler emits deterministic ordered Leader prompt evidence', () =>
   const first = compileIssuePrompt(context())
   const second = compileIssuePrompt(context())
   assert.equal(first.operation, 'squad-leader')
-  assert.equal(first.version, 'squad-leader.v1')
+  assert.equal(first.version, 'squad-leader.v2')
   assert.equal(first.digest, second.digest)
   assert.equal(first.contextDigest, second.contextDigest)
   assert.deepEqual(first.sections.map((section) => section.order), [0, 10, 20, 30, 50])
@@ -53,7 +53,7 @@ test('Project Task compiler includes approved dependency evidence and stable dig
   const task = { id: 'task-1', projectId: project.id, ordinal: 1, title: 'Implement', kind: 'code', description: 'Implement it.', acceptanceCriteria: ['Works'], dependencies: ['task-0'], planSnapshotId: 'plan-1', assignmentPolicy: { mode: 'single_agent', riskLevel: 'high', requiredRoles: ['Engineer'], requiredCapabilities: ['coding'], allowedAgentIds: [], allowedSquadIds: [], requiresIndependentReviewer: true, maxParallel: 1, conflictKeys: ['src'], allowedScope: ['src/feature'], forbiddenScope: ['secrets'], escalationConditions: ['scope expansion'] }, attempts: [{ attempt: 1, exitCode: 1, output: 'failed once', failureReason: 'Regression failed', createdAt: now }], testCommand: 'pnpm test', status: 'draft', createdAt: now, updatedAt: now }
   const dependency = { ...task, id: 'task-0', ordinal: 0, title: 'Prepare', dependencies: [], status: 'completed', resultSummary: 'Prepared.', testExitCode: 0 }
   const compiled = compileTaskPrompt({ project, task, dependencies: [dependency], agent: member, dependencyEvidence: [{ taskId: dependency.id, evidenceIds: ['evidence-1'] }], workspace: { cwd: '/tmp/project-worktree', baseCommit: 'abc123', branch: 'task-branch' } })
-  assert.equal(compiled.version, 'project-task.v2')
+  assert.equal(compiled.version, 'project-task.v3')
   assert.match(compiled.userPrompt, /Prepared\./)
   assert.match(compiled.userPrompt, /approvedVerificationCommand/)
   assert.match(compiled.userPrompt, /"planSnapshotId": "plan-1"/)
@@ -66,4 +66,67 @@ test('Project Task compiler includes approved dependency evidence and stable dig
   assert.match(compiled.userPrompt, /"forbiddenScope": \[\s+"secrets"/)
   assert.equal(compiled.digest.length, 64)
   assert.equal(compiled.contextDigest.length, 64)
+})
+
+test('Issue instructions respect task intent and expose actual permissions without inferring capabilities', () => {
+  const readonly = { ...member, toolPolicy: 'read_only', capabilities: [] }
+  const compiled = compileIssuePrompt(context({ squad: undefined, agent: readonly }))
+  const core = compiled.sections.find((section) => section.name === 'orchestrator:core').text
+  const operation = compiled.sections.find((section) => section.name === 'orchestrator:operation').text
+  assert.match(core, /read_only/)
+  assert.match(core, /Persona.*cannot expand permissions/)
+  assert.match(operation, /Research, diagnosis, review and design/)
+  assert.match(operation, /do not authorize implementation/)
+  assert.match(compiled.userPrompt, /"toolPolicy": "read_only"/)
+  assert.match(compiled.userPrompt, /"capabilities": \[\]/)
+  const full = compileIssuePrompt(context({ squad: undefined, agent: member }))
+  assert.notEqual(compiled.contextDigest, full.contextDigest)
+})
+
+test('Member escalation does not require Leader-only tools', () => {
+  const child = { ...parent, id: 'child', parentIssueId: parent.id }
+  const compiled = compileIssuePrompt(context({
+    issue: child, agent: member,
+    delegation: { id: 'delegation', instruction: 'Review only', contract: {} },
+  }))
+  const instructions = compiled.sections.map((section) => section.text).join('\n')
+  assert.doesNotMatch(instructions, /use request_decision/i)
+  assert.match(instructions, /Escalation.*Leader/)
+})
+
+test('Task truncation is visible while original acceptance and assignment constraints remain intact', () => {
+  const acceptance = 'Original acceptance criterion at the end'
+  const task = { id: 'task-review', kind: 'test', title: 'Review tests', description: 'Review only',
+    acceptanceCriteria: [acceptance], dependencies: [], testCommand: 'pnpm test',
+    assignmentPolicy: { mode: 'review_only' } }
+  const compiled = compileTaskPrompt({
+    project: { ...project, prd: 'x'.repeat(30_000) }, task, dependencies: [],
+    agent: { ...member, toolPolicy: 'read_only' },
+  })
+  assert.ok(compiled.diagnostics.some((diagnostic) => diagnostic.code === 'context_truncated'))
+  assert.match(compiled.userPrompt, new RegExp(acceptance))
+  assert.match(compiled.userPrompt, /"toolPolicy": "read_only"/)
+  const operation = compiled.sections.find((section) => section.name === 'orchestrator:operation').text
+  assert.match(operation, /review_only/)
+  assert.match(operation, /approved verification command/)
+  const output = compiled.sections.find((section) => section.name === 'orchestrator:output-contract').text
+  assert.match(output, /not_run.*reason/)
+  assert.match(output, /mock.*real/i)
+})
+
+test('Default personas retain role-specific source, review and verification boundaries', () => {
+  for (const seed of DEFAULT_AGENT_SEEDS) {
+    assert.doesNotThrow(() => AgentInputSchema.parse(seed.input))
+    assert.match(seed.input.persona, /# 使命/)
+    assert.match(seed.input.persona, /# 输出门禁/)
+    assert.match(seed.input.persona, /# 边界与升级/)
+  }
+  const byRole = (role) => DEFAULT_AGENT_SEEDS.find((seed) => seed.input.role === role).input
+  assert.match(byRole('Delivery Planner').persona, /逐条映射本期必需需求和验收标准/)
+  assert.match(byRole('Delivery Planner').persona, /声明能力.*工具权限/)
+  assert.match(byRole('Delivery Planner').persona, /blocked/)
+  assert.equal(byRole('Delivery Planner').toolPolicy, 'read_only')
+  assert.match(byRole('Requirements Reviewer').persona, /改写建议单列/)
+  assert.match(byRole('Test Engineer').persona, /模拟输出与真实模型效果/)
+  assert.match(byRole('Release Reliability Engineer').persona, /代码回滚与数据恢复/)
 })

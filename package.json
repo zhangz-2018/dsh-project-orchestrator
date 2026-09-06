@@ -1,6 +1,6 @@
 {
   "name": "dsh-project-orchestrator",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Local-first AI project orchestration workbench and CLI plugin for DeepSeek Harness: approval-gated planning, Git worktrees, task execution, Issues, and auditable evidence.",
   "license": "MIT",
   "author": "zhangz-2018",
@@ -54,11 +54,14 @@
     "typecheck": "tsc --noEmit",
     "check": "pnpm run typecheck",
     "test": "pnpm run build && node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
+    "eval:planning": "node planning-evals/run.mjs --release",
+    "eval:planning:subset": "node planning-evals/run.mjs",
     "docs:check": "node scripts/docs-smoke.mjs",
     "smoke:package": "node scripts/package-smoke.mjs",
-    "verify": "pnpm run typecheck && pnpm run docs:check && pnpm run test && pnpm run smoke:package",
+    "verify": "pnpm run typecheck && pnpm run docs:check && pnpm run test && pnpm run test:browser && pnpm run eval:planning:subset && pnpm run smoke:package",
     "prepack": "pnpm run build",
-    "prepublishOnly": "pnpm run verify"
+    "prepublishOnly": "pnpm run verify && pnpm run eval:planning"
   },
   "repository": {
     "type": "git",
@@ -95,15 +98,18 @@
     "node": ">=22"
   },
   "dependencies": {
+    "@prisma/get-dmmf": "^7.10.0",
+    "@vue/compiler-sfc": "^3.5.42",
     "pdfjs-dist": "^6.2.108",
+    "typescript": "^5.8.0",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-agent": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-attachment": "0.1.0-rc.6",
     "@deepseek-ai/dsh-agent-default-model": "0.1.0-rc.6",
     "@deepseek-ai/dsh-agent-presets": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-attachment": "0.1.0-rc.6",
     "@deepseek-ai/dsh-client-locale": "0.1.0-rc.6",
     "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
     "@deepseek-ai/dsh-client-ui-layout": "0.1.0-rc.6",
@@ -181,9 +187,9 @@
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-agent": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-attachment": "0.1.0-rc.6",
     "@deepseek-ai/dsh-agent-default-model": "0.1.0-rc.6",
     "@deepseek-ai/dsh-agent-presets": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-attachment": "0.1.0-rc.6",
     "@deepseek-ai/dsh-client-locale": "0.1.0-rc.6",
     "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
     "@deepseek-ai/dsh-client-ui-layout": "0.1.0-rc.6",
@@ -197,11 +203,11 @@
     "@deepseek-ai/dsh-storage-domain": "0.1.0-rc.6",
     "@deepseek-ai/dsh-system-prompt": "0.1.0-rc.6",
     "@deepseek-ai/dsh-tools": "0.1.0-rc.6",
+    "@playwright/test": "1.63.0",
     "@types/node": "^22.15.0",
     "@types/react": "~18.3.1",
     "esbuild": "^0.28.2",
-    "react": "^18.2.0",
-    "typescript": "^5.8.0"
+    "react": "^18.2.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

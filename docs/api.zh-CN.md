@@ -130,6 +130,6 @@ Review 驳回会创建可审计的 Decision/Inbox 待办；waiver 会写入 Acce
 - `1`：传输、JSON、策略或 API 失败；
 - `2`：CLI verb 无效，或缺少必需的 JSON 参数。
 
-CLI 会把成功 payload 以格式化 JSON 输出，把失败信息输出到 stderr。CLI 绝不会直接写入存储文件。
+CLI 会把成功 payload 以格式化 JSON 输出，把失败信息输出到 stderr。CLI 绝不会直接写入存储文件。只有 `capture-planning-eval` 和 `capture-release-canary` 会写 Artifact：它们先校验 Service 响应，再原子创建目标文件，并拒绝覆盖已有文件。
 
-团队和交付 CLI 命令包括 `team-plan`、`agent-candidates`、`team-impact`、`team-metrics`、`validate-team`、`reassign-task`、`resolve-team-blocker`、`bind-project-squad`、`sync-project-squad`、`plan-snapshots`、`requirements`、`decisions`、`delivery`、`resolve-review`、`confirm-delivery` 和 `close-delivery`。所有命令只连接 loopback Harness API。
+团队和交付 CLI 命令包括 `team-plan`、`agent-candidates`、`team-impact`、`team-metrics`、`validate-team`、`reassign-task`、`resolve-team-blocker`、`bind-project-squad`、`sync-project-squad`、`plan-snapshots`、`requirements`、`decisions`、`delivery`、`resolve-review`、`confirm-delivery`、`close-delivery`、`capture-planning-eval` 和 `capture-release-canary`。所有命令只连接 loopback Harness API。

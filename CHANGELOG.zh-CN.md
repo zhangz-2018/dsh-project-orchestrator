@@ -4,6 +4,27 @@
 
 本项目的所有重要变更均记录于此。格式遵循 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)，项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
+## [1.7.0] - 2026-09-06
+
+### 新增
+
+- 新增证据驱动 Planning Contract V3：全 block 来源 disposition、不可变 Requirement/Acceptance Scenario/Decision、仓库技术栈画像与代码绑定、策略固定点、受控能力推导、分派评估和确定性 Task Preflight。
+- 新增权威 Workspace Writer fencing、不可变 PlanningOperation 与 repair lineage、Approval/Dispatch 分离、可运行前沿派发、canonical delivery integration、最终仓库收敛 Review 和 convergence repair carry validation。
+- 在响应式 Web 工作台和回环 API 中增加 Planning V3 健康度、lineage、门禁、分派、Preflight、集成与收敛投影。
+
+### 修复
+
+- 伪造仓库引用、不支持的技术栈、不完整影响链、未覆盖场景类别、无冲突控制的重叠写范围、非浏览器 UI 验证、零合格候选、过期仓库/授权事实和不完整交付证据统一失败关闭，不再发布表面 ready 的计划。
+- 浏览器、框架、验证、发布等执行能力由冻结的仓库与任务事实推导，不再接受 Planner 自由生成的能力文本。
+- 所有 Agent turn 统一限制为 10 分钟；超时会取消会话、记录可重试的 Planning 失败、恢复 Project，且不产生 Task、Approval 或 Dispatch 副作用。
+- repair successor 遇到可重试的生成输出失败时，从实际失败阶段继承不可变上游事实，并把精确的确定性诊断注入首次 retry；不再退回原 Review 的更早修复阶段重复执行。
+
+### 变更
+
+- TypeScript、Vue SFC 和 Prisma 语义解析器改为运行时依赖，保证 clean package 安装后仍具备声明的仓库分析支持边界。
+- 收紧 Agent Builder、默认 Agent、Issue 和 Project Task 提示词契约：显式约束授权、仓库证据、原始验收标准、声明能力、升级路径和如实验证报告。
+- 发布验证扩展为 346 个 Node 回归测试，并包含生产包 clean install、依赖审计、真实模型 canary、unsupported-stack 拒绝和桌面/移动端工作台回归。
+
 ## [1.6.0] - 2026-08-26
 
 ### 新增

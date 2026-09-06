@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "large-typescript-owner",
+  "repository": { "fixture": "tests/repository-evidence.test.mjs", "baseCommit": "fixture-generated" },
+  "requiredRequirementKeys": ["REQ-SAMPLE"],
+  "requiredAcceptanceKeys": ["AC-SAMPLE-CREATE"],
+  "allowedBindingOwnerPathsByRequirement": { "REQ-SAMPLE": [["zz/sample-collection-service.ts"]] },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": { "taskKey": "TASK-IMPLEMENT", "hasEligibleMember": true, "allowedAgentIds": ["agent-implementer"] },
+    "TASK-VERIFY": { "taskKey": "TASK-VERIFY", "hasEligibleMember": false, "allowedAgentIds": [] }
+  }
+}

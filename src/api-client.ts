@@ -1,9 +1,13 @@
-import type { ProjectTeamImpact, Snapshot, TeamCollaborationMetrics } from './client-types.js'
+import type { DomainEventPage, ProjectTeamImpact, Snapshot, TeamCollaborationMetrics } from './client-types.js'
 
 const API = '/project-orchestrator/api'
 
 export async function loadSnapshot(signal?: AbortSignal): Promise<Snapshot> {
   return request<Snapshot>('/snapshot', signal === undefined ? undefined : { signal })
+}
+
+export async function loadDomainEvents(after: string, signal?: AbortSignal): Promise<DomainEventPage> {
+  return request<DomainEventPage>(`/events?after=${encodeURIComponent(after)}&limit=500`, signal === undefined ? undefined : { signal })
 }
 
 export async function loadProjectTeamPlan<T = unknown>(projectId: string, signal?: AbortSignal): Promise<T> {

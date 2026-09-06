@@ -10,6 +10,8 @@ coverage/
 !.env.example
 .dsh-worktrees/
 .playwright-cli/
+test-results/
+playwright-report/
 graphify-out/
 output/
 tmp/
