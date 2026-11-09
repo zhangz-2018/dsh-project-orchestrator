@@ -53,7 +53,7 @@
 | mitt-listener-count | `672cc618-adea-4ff3-8893-0ae9de91d926` | 11 |
 | mitt-once-reentrancy-resolved | `39d62a69-382c-4578-8d59-1e3fc7e67d88` | 11 |
 
-合计 204 条项目限定声明。精确 claimId、capabilityId、成员及 expectedClaimDigest 见 [机器清单](../output/acceptance/release-projects-2026-10-16.json)，SHA256：`de4d0c0342a6525df57cfc1efdafd102b2be08366eb41c4e90681d4126b128d2`。不得登记机器清单以外的成员或能力，不将原来的 9 项确认复制到这些项目。
+合计 204 条项目限定声明。精确 claimId、capabilityId、成员及 expectedClaimDigest 见仅原验收机器保留的机器清单 `output/acceptance/release-projects-2026-10-16.json`（路径从仓库根目录计算，不随源码或 npm 包分发），SHA256：`de4d0c0342a6525df57cfc1efdafd102b2be08366eb41c4e90681d4126b128d2`。不得登记机器清单以外的成员或能力，不将原来的 9 项确认复制到这些项目。
 
 ## 验收与拒绝边界
 

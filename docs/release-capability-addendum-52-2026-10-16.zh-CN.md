@@ -12,7 +12,7 @@ v12 独立 Gold 审阅退回 trim 样本，指出缺少 data.change，与更早�
 
 这是基于源码的声明准备依据，不是实际规划派生的最小能力集合，也不证明成员已经具备能力。实际计划仍须独立审阅和 Service 校验，不会为获得通过而取消影响面、修改需求或把 ready 预期改成 blocked。
 
-审阅证据：[专项结论](../output/acceptance/zod-capability-boundary-v13-2026-10-16/review.json)。只产生诊断，没有规划候选或人工确认。
+审阅证据：仅原验收机器保留的专项结论 `output/acceptance/zod-capability-boundary-v13-2026-10-16/review.json`（路径从仓库根目录计算，不随源码或 npm 包分发）。只产生诊断，没有规划候选或人工确认。
 
 ## 精确新增范围
 
@@ -27,7 +27,7 @@ v12 独立 Gold 审阅退回 trim 样本，指出缺少 data.change，与更早�
 
 ## 合并清单与登记方式
 
-[52 项机器清单](../output/acceptance/release-capability-addendum-52-2026-10-16.json)包含每项 projectId、agentId、capabilityId、pending claimId、expectedClaimDigest 和理由。SHA256：`ec3e3f5a4e7302a426c129a60be3a27f64967f62401fadf3912fa0605c5052b4`。
+仅原验收机器保留的 52 项机器清单 `output/acceptance/release-capability-addendum-52-2026-10-16.json` 包含每项 projectId、agentId、capabilityId、pending claimId、expectedClaimDigest 和理由，不随源码或 npm 包分发。SHA256：`ec3e3f5a4e7302a426c129a60be3a27f64967f62401fadf3912fa0605c5052b4`。
 
 原 12 个项目的 48 项保持原 pending 记录；另通过正式 prepare 接口准备了两个 Zod 项目的 4 项 pending。人工可信声明未增加。只有用户明确确认这份 52 项合并清单并允许登记，才可通过正式 confirm 接口写入 human_confirmed。接口会校验精确 claimId 和 expectedClaimDigest。
 

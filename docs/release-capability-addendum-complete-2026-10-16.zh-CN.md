@@ -36,7 +36,7 @@ p-limit 包装计数已有真实规划记录证明其中 4 项缺口。为避免
 | mitt-listener-count | `672cc618-adea-4ff3-8893-0ae9de91d926` | `data.change` | 2 |
 | mitt-once-reentrancy-resolved | `39d62a69-382c-4578-8d59-1e3fc7e67d88` | `data.change` | 2 |
 
-合计 48 条。精确 claimId、expectedClaimDigest、项目、成员、能力、源码路径与逐项理由见[机器清单](../output/acceptance/release-capability-addendum-48-2026-10-16.json)。SHA256：`38753a03c6ba7d1ba8473381acea78a7e067a518478cb6a011a0da8b19ccd056`。
+合计 48 条。精确 claimId、expectedClaimDigest、项目、成员、能力、源码路径与逐项理由见仅原验收机器保留的机器清单 `output/acceptance/release-capability-addendum-48-2026-10-16.json`（路径从仓库根目录计算，不随源码或 npm 包分发）。SHA256：`38753a03c6ba7d1ba8473381acea78a7e067a518478cb6a011a0da8b19ccd056`。
 
 ## 责任依据
 

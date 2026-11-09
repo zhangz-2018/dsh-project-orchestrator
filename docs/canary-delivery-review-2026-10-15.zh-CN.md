@@ -92,13 +92,15 @@ diff --git a/tests/greeting.test.ts b/tests/greeting.test.ts
 
 ## 可复核证据
 
-- [首次技术验收 JSON](../output/acceptance/canary-delivery-verified-2026-10-15.json)：完整实际 diff、Integration、Convergence、两个验证链、当时待审 Review、Delivery、实际 npm 与原始需求断言输出；保留审阅前历史。
-- [最终人工确认记录](../output/acceptance/canary-delivery-confirmed-2026-10-15.json)：明确授权、正式 API 请求与响应、approved Review、delivered Delivery，审计无待处理事件。
-- [确认后技术复验](../output/acceptance/canary-delivery-post-confirmation-2026-10-15.json)：实际 npm test 4/4、原始断言与范围检查通过，`finalHumanConfirmationRequired=false`。
-- [正式 CLI 导出的 V2 canary](../output/acceptance/greeting-release-canary-v2-2026-10-15.json)、[导出核验证据](../output/acceptance/canary-export-verified-2026-10-15.json)：两条 Invocation/Evidence、人工最终确认以及整个 evidenceBundleDigest 与实时记录一致。
-- [执行与审批记录](../output/acceptance/canary-delivery-execution-2026-10-15.json)：审批、派发、历史拒绝、完成任务及交付记录。
-- [技术验收命令结果](../output/acceptance/verify-canary-delivery-technical-2026-10-15.log)、[完整本地验证](../output/acceptance/verify-startup-v3-2026-10-15.log)。
-- [独立验证观察日志](../output/acceptance/canary-verify-observation-recovered-2026-10-15.log)、[隔离 Host 日志](../output/acceptance/certified-host-startup-v3-2026-10-15.log)。
+以下路径均从仓库根目录计算，仅保存在原验收机器的 `output/` 中，不随源码或 npm 包分发；干净检出不能据此复验，也不能将历史结论当作当前版本验收。
+
+- 首次技术验收 JSON `output/acceptance/canary-delivery-verified-2026-10-15.json`：完整实际 diff、Integration、Convergence、两个验证链、当时待审 Review、Delivery、实际 npm 与原始需求断言输出；保留审阅前历史。
+- 最终人工确认记录 `output/acceptance/canary-delivery-confirmed-2026-10-15.json`：明确授权、正式 API 请求与响应、approved Review、delivered Delivery，审计无待处理事件。
+- 确认后技术复验 `output/acceptance/canary-delivery-post-confirmation-2026-10-15.json`：实际 npm test 4/4、原始断言与范围检查通过，`finalHumanConfirmationRequired=false`。
+- 正式 CLI 导出的 V2 canary `output/acceptance/greeting-release-canary-v2-2026-10-15.json`、导出核验证据 `output/acceptance/canary-export-verified-2026-10-15.json`：两条 Invocation/Evidence、人工最终确认以及整个 evidenceBundleDigest 与实时记录一致。
+- 执行与审批记录 `output/acceptance/canary-delivery-execution-2026-10-15.json`：审批、派发、历史拒绝、完成任务及交付记录。
+- 技术验收命令结果 `output/acceptance/verify-canary-delivery-technical-2026-10-15.log`、完整本地验证 `output/acceptance/verify-startup-v3-2026-10-15.log`。
+- 独立验证观察日志 `output/acceptance/canary-verify-observation-recovered-2026-10-15.log`、隔离 Host 日志 `output/acceptance/certified-host-startup-v3-2026-10-15.log`。
 - [已批准计划及范围](canary-plan-approval-2026-10-15.zh-CN.md)、[整体验收与剩余发布工作](project-acceptance-2026-10-14.zh-CN.md)。
 
 ## 已登记的最终事实与剩余范围
