@@ -2248,6 +2248,27 @@ export const VerificationToolEvidenceV3Schema = z.object({
   binName: z.string().min(1).max(240),
   entryPath: z.string().min(1).max(4_096),
   files: z.array(z.object({ path: z.string().min(1).max(4_096), digest: Sha256Schema, content: z.string().max(65_536), truncated: z.boolean() }).strict()).max(24),
+  /** 大文件的完整 AST 节点摘录；不代表整文件可见，不代替未提供的依赖或执行结果。旧快照可省略。 */
+  sourceExcerpts: z.array(z.object({
+    /** 相对已核验包根的源码路径；不授权修改该文件。 */
+    path: z.string().min(1).max(4_096),
+    /** 完整文件的 SHA-256，未摘录部分发生变化也会使冻结证据失效。 */
+    sourceDigest: Sha256Schema,
+    /** 完整 UTF-8 源码字节数；采集器最多解析 8 MiB。 */
+    sourceBytes: z.number().int().positive().max(8_388_608),
+    /** 以 AST 精确匹配的声明或诊断符号名称。 */
+    symbol: z.string().min(1).max(240),
+    /** 源码字符串 UTF-16 起始偏移，包含该位置。 */
+    startOffset: z.number().int().nonnegative(),
+    /** 源码字符串 UTF-16 结束偏移，不包含该位置。 */
+    endOffset: z.number().int().positive(),
+    /** 原文件中从 1 开始的起止行，均包含。 */
+    startLine: z.number().int().positive(),
+    endLine: z.number().int().positive(),
+    /** 完整节点的原样文本和文本摘要；全部摘录与 files 共用原 96 KiB 预算。 */
+    content: z.string().min(1).max(65_536),
+    digest: Sha256Schema,
+  }).strict()).max(24).optional(),
   unavailablePaths: z.array(z.string().max(4_096)).max(1_000),
 }).strict()
 

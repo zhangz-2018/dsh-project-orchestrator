@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-stage-disclaimer-v41",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "70b8ef0b4fc7d2cb7c70b58a43a5c33dbb5e9e808ff560cd794b75492d799565",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4663d88e94923727b6048f4417de201d16086068e78f2700cc1cad411b4709c9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03db4d33e961017a016af2067b564087d0b780957249cc5cbe:independent-gold-review:386ca5a6-56d6-4977-9d56-ddeb8d33d425",
+    "reviewedAt": "2026-11-09T17:44:41.007Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only bundle. REQ-001 and AC-001 through AC-003 preserve the PRD's notification-time semantics, control-symbol exclusions, error handling, compatibility boundaries, and type-inference requirements. The complete implementation and declaration evidence supports the exact four-file writable scope; package.json establishes xo, ava, and tsd as the verification entry point without requiring a configuration edit. The test excerpts are explicitly truncated, not represented as complete files. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the specification, and their allowed agents have the supplied active project-scoped capability claims, including data.change, domain.state, integration.async, and integration.consumer, with testing.verification additionally present for the verifier. A separate active project Reviewer satisfies the stated non-executing review prerequisite. No unresolved material Decision is supplied for this case, so ready with no blocking reasons is consistent; any material unresolved DEC-001 in B must instead block at decisions, and hypothetical C must not be treated as a human Decision. Gold and preview release fingerprints agree across repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. The provenance explains the distinct source digest domains and PRD whitespace normalization. The original specification's runnable=false and remaining preparation items describe preparation state, not permission to execute or dispatch tasks. Independence is supported by the supplied isolation facts stating that Gold precedes every candidate and that no historical candidates or operations are supplied. This approval reviews the supplied evidence only: it does not constitute human attestation, execution verification, or independent digest recomputation.",
+    "goldDigest": "04456671d7bc563e986a24b8fcc9b5d20ca971f6fcbbd0b8e173e8d7f260f27a"
+  }
+}

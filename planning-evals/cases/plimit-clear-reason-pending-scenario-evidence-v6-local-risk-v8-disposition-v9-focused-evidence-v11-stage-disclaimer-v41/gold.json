@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-stage-disclaimer-v41",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-disclaimer-v41",
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4663d88e94923727b6048f4417de201d16086068e78f2700cc1cad411b4709c9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0208f67a03f0904c016af2062bfce487d08b0f7da691707e93:independent-gold-review:dee120f4-3a0d-4775-9de0-ae1488bae0b8",
+    "reviewedAt": "2026-11-09T17:43:20.474Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The complete PRD explicitly leaves material DEC-001 unresolved: AC-001 and AC-002 describe a conditional recommendation, not an authorized choice. Consequently, blocked readiness at decisions, the requirement-decision-pending reason keyed to DEC-001, and evidence stages repository/requirements/decisions are appropriate. REQ-001 and AC-001 through AC-003 match the original specification; empty task and assignment expectations correctly avoid generating assignable work. The supplied source establishes index.js as the runtime owner and index.d.ts as the maintained public declaration owner; package.json exports both and provides no declaration-generation build. The limitFunction forwarding and Pick-based declaration reuse require inspection, not separate mandatory edits. Runtime and type verification scopes match test.js, index.test-d.ts, and the configured xo && ava && tsd entry point. Empty team membership and capability claims do not invalidate this intentional earlier decision block because later reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and original/saved PRD whitespace normalization. The original specification's null releaseInput and remaining-work list describe its earlier preparation state, while the preview supplies the frozen release inputs. The isolation evidence reports that Gold precedes all candidates on this bundle and supplies no historical candidate outputs. This approval relies on the Service's mechanical digest bindings; I did not recompute digests, execute code, or provide human decision or capability attestation.",
+    "goldDigest": "4729ec62008b86aff816063d07dd4c3fc75a28b558820bf38681d7526436d478"
+  }
+}

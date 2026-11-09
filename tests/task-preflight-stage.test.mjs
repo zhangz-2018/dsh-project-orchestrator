@@ -94,7 +94,8 @@ test('TaskPreflightStage hands off complete scenario variants and installed veri
   const { store, input } = await fixture()
   const scenario = { key: 'SCN-BOUNDARY', projectId: 'project-1', operationId: 'operation-1', trigger: 'maxQueued: -1, NaN, 0.5, -Infinity, undefined, null, "1", MAX_SAFE_INTEGER + 1', scenarioDigest: '3'.repeat(64) }
   const unrelated = { ...scenario, key: 'SCN-UNRELATED', trigger: 'unrelated-scenario-do-not-disclose' }
-  const verificationTools = [{ packageName: 'nz', binName: 'nz', files: [{ path: 'distribution/index.js', content: 'checkProject("test-d/index.test-d.ts")', truncated: false }] }]
+  const verificationTools = [{ packageName: 'nz', binName: 'nz', files: [{ path: 'distribution/index.js', content: 'checkProject("test-d/index.test-d.ts")', truncated: false }],
+    sourceExcerpts: [{ path: 'distribution/compiler.js', symbol: 'diagnostics', sourceDigest: '4'.repeat(64), sourceBytes: 70_000, startOffset: 0, endOffset: 25, startLine: 1, endLine: 1, content: 'function diagnostics() {}', digest: '5'.repeat(64) }], unavailablePaths: ['distribution/compiler.js'] }]
   input.tasks[0].scenarioKeys = [scenario.key]
   await new TaskPreflightStage(store).run({ ...input, scenarios: [scenario, unrelated], verificationTools, runReadOnly: async prompt => {
     const scenarios = JSON.parse(prompt.split('Frozen acceptance scenarios:\n')[1].split('\n\nInstalled verification tool evidence:')[0])
@@ -103,6 +104,8 @@ test('TaskPreflightStage hands off complete scenario variants and installed veri
     assert.deepEqual(tools, verificationTools)
     assert.doesNotMatch(prompt, /unrelated-scenario-do-not-disclose/u)
     assert.match(prompt, /not proof of successful execution/u)
+    assert.match(prompt, /complete AST nodes at exact offsets and lines/u)
+    assert.match(prompt, /do not establish unseen code, dependencies, or successful execution/u)
     return JSON.stringify(report())
   } })
 })

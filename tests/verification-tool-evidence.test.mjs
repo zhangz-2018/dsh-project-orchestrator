@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -90,5 +91,57 @@ test('Verification tool evidence does not mark captured duplicate imports unavai
     assert.ok(evidence.unavailablePaths.length > 0, 'Unvisited files must remain explicit gaps')
     for (const file of evidence.files) assert.ok(!evidence.unavailablePaths.includes(file.path), `${file.path} was already captured`)
     assert.ok(evidence.unavailablePaths.includes('part-29.js'))
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Verification tool evidence freezes bounded AST excerpts of an oversized installed compiler without execution', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-compiler-excerpts-'))
+  try {
+    const tool = join(root, 'node_modules/typescript')
+    await mkdir(join(tool, 'lib'), { recursive: true })
+    await mkdir(join(root, 'node_modules/.bin'))
+    await writeFile(join(tool, 'package.json'), JSON.stringify({ name: 'typescript', version: '6.0.3', bin: { tsc: './cli.js' } }))
+    await writeFile(join(tool, 'cli.js'), "require('./lib/compiler.js');\n")
+    await symlink('../typescript/cli.js', join(root, 'node_modules/.bin/tsc'))
+    const body = 'function getMergedBindAndCheckDiagnostics() { throw new Error("MUST_NOT_EXECUTE"); }'
+    const source = `// ${'unselected '.repeat(9000)}\n${body}\nfunction unrelated() { return 'NOT_CAPTURED'; }\n`
+    await writeFile(join(tool, 'lib/compiler.js'), source)
+    const manifest = { devDependencies: { typescript: '^6.0.3' }, scripts: { typecheck: 'tsc -p tsconfig.json' } }
+    const [evidence] = await plugin.captureVerificationToolEvidenceV3(root, manifest)
+    assert.equal(evidence.sourceExcerpts?.length, 1)
+    const excerpt = evidence.sourceExcerpts[0]
+    assert.equal(excerpt.content, body)
+    assert.equal(excerpt.symbol, 'getMergedBindAndCheckDiagnostics')
+    assert.equal(excerpt.path, 'lib/compiler.js')
+    assert.equal(excerpt.sourceDigest, createHash('sha256').update(source).digest('hex'))
+    assert.equal(excerpt.sourceBytes, Buffer.byteLength(source))
+    assert.equal(excerpt.digest, createHash('sha256').update(body).digest('hex'))
+    assert.equal(source.slice(excerpt.startOffset, excerpt.endOffset), body)
+    assert.equal(excerpt.startLine, 2)
+    assert.equal(excerpt.endLine, 2)
+    assert.ok(evidence.unavailablePaths.includes('lib/compiler.js'), 'The complete compiler remains unavailable; excerpts prove only their own content.')
+    assert.ok(!JSON.stringify(evidence).includes('NOT_CAPTURED'))
+    assert.ok(evidence.files.reduce((sum, file) => sum + Buffer.byteLength(file.content), 0) + Buffer.byteLength(excerpt.content) <= 98_304)
+    plugin.VerificationToolEvidenceV3Schema.parse(evidence)
+    await writeFile(join(tool, 'lib/compiler.js'), source.replace('NOT_CAPTURED', 'CHANGED_OUTSIDE_EXCERPT'))
+    const [changed] = await plugin.captureVerificationToolEvidenceV3(root, manifest)
+    assert.equal(changed.sourceExcerpts[0].digest, excerpt.digest)
+    assert.notEqual(changed.sourceExcerpts[0].sourceDigest, excerpt.sourceDigest, 'Unselected source drift must invalidate the evidence too.')
+    const budgetSource = ['executeCommandLine', 'performCompilation', 'createCommentDirectivesMap']
+      .map(name => `function ${name}() { return '${'x'.repeat(48_000)}'; }`).join('\n')
+    await writeFile(join(tool, 'lib/compiler.js'), budgetSource)
+    const [bounded] = await plugin.captureVerificationToolEvidenceV3(root, manifest)
+    assert.ok(bounded.sourceExcerpts.length > 0 && bounded.sourceExcerpts.length < 3)
+    assert.ok([...bounded.files, ...bounded.sourceExcerpts].reduce((sum, file) => sum + Buffer.byteLength(file.content), 0) <= 98_304)
+    for (const item of bounded.sourceExcerpts) assert.equal(item.content, budgetSource.slice(item.startOffset, item.endOffset), 'Keep entire AST nodes within the shared budget.')
+    await writeFile(join(tool, 'lib/compiler.js'), `// ${'x'.repeat(8_388_608)}\n${body}`)
+    const [oversized] = await plugin.captureVerificationToolEvidenceV3(root, manifest)
+    assert.equal(oversized.sourceExcerpts, undefined, 'Bound the local parser input as well as the supplied text.')
+    await rm(join(tool, 'lib/compiler.js'))
+    await writeFile(join(root, 'outside.js'), `// ${'x'.repeat(70_000)}\nfunction executeCommandLine() { return 'OUTSIDE_COMPILER_SENTINEL'; }`)
+    await symlink(join(root, 'outside.js'), join(tool, 'lib/compiler.js'))
+    const [escaped] = await plugin.captureVerificationToolEvidenceV3(root, manifest)
+    assert.equal(escaped.sourceExcerpts, undefined)
+    assert.ok(!JSON.stringify(escaped).includes('OUTSIDE_COMPILER_SENTINEL'), 'Excerpt fallback must preserve package-root isolation.')
   } finally { await rm(root, { recursive: true, force: true }) }
 })

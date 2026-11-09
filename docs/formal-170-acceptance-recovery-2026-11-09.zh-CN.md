@@ -129,15 +129,31 @@ p-retry 的源码与现行 `v3.3.14` 能力规则复核确认需要 `data.change
 
 `stage-disclaimer-v41` 的 bundle SHA-256 为 `4663d88e94923727b6048f4417de201d16086068e78f2700cc1cad411b4709c9`，隔离安装与本地构建一致。完整 `pnpm verify` 退出 0，549 条 Node 测试、7 条浏览器测试及其余检查通过；8 项真实隔离 Host 兼容检查也通过，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794245663192.json`。
 
-保留旧版全部终态后，核对 61 个项目与历史证据，p-queue 和 p-retry 两份独立 Gold 均先批准，再启动该版真实 fresh-1；目前正在观察，不能引用旧版候选作为本版成绩。此前 `event-phase-v40` 的其余 Gold 仍保留为旧版已审阅未用于候选。
+保留旧版全部终态后，核对 61 个项目与历史证据，p-queue 和 p-retry 两份独立 Gold 均先批准，再启动该版真实 fresh-1。p-retry `planning-v3:b2834ba7-a045-4906-9449-5cea81b3fd4f` 已 committed，全部适用指标通过；p-queue 的终态见下节。此前 `event-phase-v40` 的其余 Gold 仍保留为旧版已审阅未用于候选。
 
 追加本机证据：`event-phase-domain-facts.json`、`domain-before-stage-disclaimer-install.json`、`stage-disclaimer-installed.json`、`stage-disclaimer-historical-observation.json`、`gold-stage-disclaimer-focused/`、`candidates-stage-disclaimer-focused.json`。完整回归日志为 `output/formal-170-stage-disclaimer-verify-2026-11-10.log`。
 
 Hono 的编译器可用性证据另行冻结为 `hono-tool-proof/evidence.json`，包含实际文件大小、内容摘要、完整源码归档摘要及真实启动探针；大文件正文不插入提示词，也不提高源码采集预算。Gold 工具允许首次审阅补充材料直接声明 `proposedGoldSha256`，旧材料仍兼容原 `previousIndependentReview.proposedGoldSha256`，均强制绑定未修改的 Gold。错误摘要的实际负向预检在模型调用前拒绝，语法检查通过。补充材料没有宣称目标实现、项目测试或交付通过。
 
-`gold-stage-disclaimer-hono/` 的独立审阅在任何本版 Hono 候选启动前批准，原 insufficient_evidence 保留。本版 Hono expose-function 真实 fresh-1 已启动，账本为 `candidates-stage-disclaimer-hono.json`，目前等待结果。该版其余 22 个样本尚未重新冻结 Gold 或运行候选，不引用旧版 24 份批准作为本版资格。
+`gold-stage-disclaimer-hono/` 的独立审阅在任何本版 Hono 候选启动前批准，原 insufficient_evidence 保留。本版 Hono expose-function 的终态见下节，账本为 `candidates-stage-disclaimer-hono.json`。同版随后共 17 份 Gold 批准：16 个 ready 样本及 1 个 blocked 样本。其余 8 个 blocked 样本因本地快照并发变化预检停止，没有发出对应模型审阅请求；不放宽预检，不把这些样本记为批准。Gold 及候选历史均保留。
 
 提交 `b0a4123` 的 Linux CI 和 CodeQL 通过，macOS 作业没有执行步骤，等待约 15 分钟后因 hosted runner 未分配而取消；GitHub annotations 明确报告 macOS arm64 容量约束。后续提交 `0d1bcc6` 的 Linux/macOS CI 和 CodeQL 均通过。本版后续提交仍须各自核对，不能继承上述结论。
+
+### 大型编译器的有界源码摘录
+
+`stage-disclaimer-v41` 的另两个真实 fresh-1 均在 TaskPreflight 阻塞：p-queue `planning-v3:825acc38-fbf3-4777-9c59-e2438efe35ec` 与 Hono `planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd`。预检已经收到工具入口与完整场景，但 TypeScript 的 `lib/_tsc.js` 超过原单文件预算，无法核实项目编译、诊断指令消费和 unused `@ts-expect-error` 报错行为。Hono 的补充 Gold 启动证明只能证明工具可启动，不会自动进入候选预检，也没有证明编译语义。两个失败均保留，没有修改 Gold 或强制接受预检。
+
+修复归属为仓库工具证据采集及冻结交接。针对已安装、版本匹配且脚本实际引用的 `typescript/tsc`，用现有 TypeScript AST 解析器选择命令行、配置加载、编译及诊断指令处理链的完整节点，不执行目标包。每段原样文本附完整文件摘要、文件字节数、节点摘要、UTF-16 偏移和从 1 开始的行号。所有正文仍共享原 98,304 字节预算；每个节点不超过 65,536 字节，本机解析输入最多 8 MiB。完整文件继续列为 unavailable，摘录只证明其直接展示的事实，未展示依赖与执行结果仍是未知。新增字段可省略，旧快照仍按原结构解释；旧程序不应读取包含新增字段的新快照。
+
+新增回归先失败再通过，覆盖不执行包、原样完整节点、未选源码变化使完整摘要失效、总预算、超大输入及包根外符号链接拒绝。实际安装的 TypeScript 6.0.3 采集到 13 个节点，文件及摘录正文合计 19,720 字节，完整源码摘要与此前可用性探针一致。该检查只证明静态证据采集，不是目标测试通过。
+
+`compiler-excerpts-v42` 的 bundle SHA-256 为 `df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345`，隔离安装与本地构建一致。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，550 条 Node 测试、7 条浏览器测试、类型与文档检查、固定样本及 clean install/package smoke（169 文件）通过。8 项真实隔离 Host 兼容检查通过，使用确定性模型，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794246913317.json`。首次兼容预检早于安装完成，因 bundle 摘要不一致而拒绝；未发送模型请求，该失败日志保留，安装完成后另行验证通过。
+
+上一版累计 25 个规划操作全部终态，领域核验确认没有审批、任务执行或交付；260 条已确认能力保持一致。新版保持原始需求、61 个项目 ID 和能力事实，仅隔离样本版本标识。7 组历史证明及 3 个旧自动后继均在新安装前得到终态核验，没有推断后继版本。当前先冻结 25 个样本的新版独立 Gold，完成后才启动对应真实候选；旧版成绩不能计为本版成绩。
+
+本机追加证据：`stage-disclaimer-focused-domain-facts.json`、`stage-disclaimer-hono-domain-facts.json`、`domain-before-compiler-excerpts-install.json`、`hono-compiler-excerpt-capture.json`、`compiler-excerpts-installed.json`、`compiler-excerpts-historical-observation.json`、`gold-compiler-excerpts-ready/`、`gold-compiler-excerpts-blocked/`。回归日志为 `output/formal-170-compiler-excerpts-verify-2026-11-10.log`，兼容日志为 `output/formal-170-compiler-excerpts-host-compatibility-2-2026-11-10.log`。以上仍用于验收与恢复，保留本机，不提交原始日志、领域快照或凭据。
+
+提交 `329bcd8` 的 Linux/macOS CI 和 CodeQL 均已通过；上述摘录修复仍需自身提交的 CI。正式 1.7.0 仍未通过发布验收，未合并、未创建 tag、未发布 npm 或 GitHub Release。
 
 ## 实际验证
 
