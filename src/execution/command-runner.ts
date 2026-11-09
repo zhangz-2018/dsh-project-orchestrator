@@ -78,26 +78,21 @@ export class CommandRunner {
     const outputLimit = Math.min(10_000_000, Math.max(1_000, input.outputLimit ?? DEFAULT_OUTPUT_LIMIT))
     if (!Number.isFinite(timeoutMs) || !Number.isFinite(outputLimit)) throw new WorkflowError('command-limits-invalid', 'Command limits must be finite.', 400)
     if (this.subprocess !== undefined) return await this.runHost(input, execution, timeoutMs, outputLimit)
-    let executable: string
-    let args: string[]
-    if (typeof input.command === 'string') {
-      // 字符串本身是已授权的 shell 程序；数组参数始终保持字面量，不参与 shell 拼接。
-      executable = process.platform === 'win32' ? process.env.ComSpec ?? 'cmd.exe' : '/bin/sh'
-      args = process.platform === 'win32' ? ['/d', '/s', '/c', input.command] : ['-c', input.command]
-    } else {
-      executable = input.command[0]
-      args = input.command.slice(1)
-    }
-
     return await new Promise((resolve, reject) => {
       const useProcessGroup = process.platform !== 'win32'
-      const child = spawn(executable, args, {
+      const options = {
         cwd: input.cwd,
         shell: false,
         env: execution.env,
-        stdio: ['ignore', 'pipe', 'pipe'],
+        stdio: ['ignore', 'pipe', 'pipe'] as ['ignore', 'pipe', 'pipe'],
         detached: useProcessGroup,
-      })
+      }
+      // 两种调用保持独立 spawn 边界；数组分支不隐式拼接或包装为 shell 命令。
+      const child = typeof input.command !== 'string'
+        ? spawn(input.command[0], input.command.slice(1), options)
+        : process.platform === 'win32'
+          ? spawn(process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', input.command], options)
+          : spawn('/bin/sh', ['-c', input.command], options)
       let captured = Buffer.alloc(0)
       let truncated = false
       let timedOut = false

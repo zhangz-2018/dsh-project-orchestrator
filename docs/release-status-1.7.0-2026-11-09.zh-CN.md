@@ -37,6 +37,14 @@
 
 重新打包并校验安装包产物 SHA-256 后，隔离 rc.1 Host 的 8 项兼容性检查再次通过；使用本地确定性模型，没有调用外部模型。报告为 `output/compatibility/dsh-0.2.2-rc.1-1794222658350.json`。
 
+## GitHub CI 复验与安全修复
+
+首次 CI 发现历史文档链接依赖本机未提交的 `output/`；已将它们改为明确标注的本机证据路径，保留历史事实，不打包原始日志。干净目录的文档检查、冻结锁文件安装与完整 `pnpm verify` 通过；随后 Linux/macOS CI 均通过。
+
+CodeQL 首轮结果报告 12 个 high 和 1 个 medium 告警，集中在来源/路径文本解析的正则回溯、别名通配符替换及动态 shell 分支。已按实际归属修复：完整 token 扫描与定界裁剪、单通配符校验及字面量替换、Node 后端显式区分 shell 程序与字面量 argv；未关闭扫描或登记忽略。长路径、连续空白、PDF 换行及特殊字符 argv 回归已补充。
+
+安全修复后，本机完整 `pnpm verify` 再次退出 0：541 个 Node 测试（0 失败、0 跳过）、7 个浏览器测试及其余检查通过，安装包 167 个文件。报告 `output/release-security-verify-2026-11-09.log`。CodeQL 是否清除告警以 PR 最新提交的结果为准，不以修复完成推定扫描通过。
+
 ## 发布顺序与恢复
 
 先提交分支和 PR，运行 CI；GitHub Release 只能准备为 draft。正式门禁通过后，更新发布日期、合并 main，再按[发布手册](releasing.zh-CN.md)推送版本 tag，由 `release.yml` 完成 npm provenance 发布及正式 GitHub Release。当前不推送正式 tag、不直接调用 npm publish。

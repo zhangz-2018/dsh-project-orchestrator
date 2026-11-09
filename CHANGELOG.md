@@ -16,6 +16,7 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Fixed
 
 - Update Zod and source-map-js to patched versions for the production dependency audit.
+- Replace backtracking-prone source parsing with token scans, preserve literal argv execution, and validate TypeScript alias wildcard shapes following CodeQL findings.
 - Reject fabricated repository references, unsupported stacks, incomplete impact chains, uncovered scenario categories, uncontrolled overlapping write scopes, non-browser UI verification, zero eligible candidates, stale repository/access facts, and incomplete delivery evidence instead of publishing a superficially ready plan.
 - Derive browser, framework, verification, release, and other execution capabilities from frozen repository and task facts rather than Planner-authored free text.
 - Bound every Agent turn to ten minutes; a timeout now cancels the session, records a retryable Planning failure, restores the Project, and creates no Task, Approval, or Dispatch side effects.
@@ -25,7 +26,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Move TypeScript, Vue SFC, and Prisma semantic parsers into runtime dependencies so clean package installations preserve the supported repository analysis boundary.
 - Tighten Agent Builder, default Agent, Issue, and Project Task prompts around explicit authorization, repository evidence, original acceptance criteria, declared capabilities, escalation, and honest verification reporting.
-- Expand local verification to 538 Node regression tests, seven browser tests, production-package clean install, and isolated Harness compatibility checks. Formal real-model release evaluation remains a separate mandatory gate and has not passed for this candidate.
+- Expand local verification to 541 Node regression tests, seven browser tests, production-package clean install, and isolated Harness compatibility checks. Formal real-model release evaluation remains a separate mandatory gate and has not passed for this candidate.
 
 ## [1.6.0] - 2026-08-26
 
