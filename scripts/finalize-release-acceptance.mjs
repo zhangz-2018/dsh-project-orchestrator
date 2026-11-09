@@ -5,10 +5,12 @@ import { join, resolve } from 'node:path'
 
 // Observe the authorized collector, then run the existing formal checks. No
 // model calls, approval, task dispatch, publication or domain writes here.
-const [directoryArgument, tag, mode] = process.argv.slice(2)
+const [directoryArgument, tag, mode, canaryArgument, technicalArgument] = process.argv.slice(2)
 assert.ok(directoryArgument && tag)
 assert.match(tag, /^[a-z][a-z0-9-]+$/u)
-assert.ok(mode === undefined || mode === '--archive-failed')
+assert.ok(mode === undefined || ['--archive-failed', '--complete'].includes(mode))
+assert.ok([canaryArgument, technicalArgument].every(Boolean) || ![canaryArgument, technicalArgument].some(Boolean))
+const canaryPath = canaryArgument ?? 'output/acceptance/greeting-release-canary-v2-2026-10-15.json'
 const archiveFailed = mode === '--archive-failed'
 const directory = resolve(directoryArgument)
 const run = args => new Promise((done, reject) => {
@@ -36,8 +38,8 @@ const canaryVerificationPath = resolve('output/acceptance', `${tag}-canary-verif
 const gatePath = resolve('output/acceptance', `${tag}-gate.json`)
 assert.equal(await run(['scripts/combine-release-collections.mjs', tag, ledgerPath, manifestPath, ...inputs]), 0)
 assert.equal(await run(['scripts/verify-release-domain-facts.mjs', ledgerPath, domainFactsPath]), 0)
-assert.equal(await run(['scripts/verify-canary-export.mjs', canaryVerificationPath]), 0)
-const exitCode = await run(['planning-evals/run.mjs', '--release', '--manifest', manifestPath, '--canary', 'output/acceptance/greeting-release-canary-v2-2026-10-15.json', '--output', gatePath])
+assert.equal(await run(['scripts/verify-canary-export.mjs', canaryVerificationPath, ...(canaryArgument === undefined ? [] : [canaryPath, technicalArgument])]), 0)
+const exitCode = await run(['planning-evals/run.mjs', '--release', '--manifest', manifestPath, '--canary', canaryPath, '--output', gatePath])
 const gate = JSON.parse(await readFile(gatePath, 'utf8'))
 assert.equal(exitCode === 0, gate.releaseQualification.passed && gate.aggregate.passed)
 const report = { observedAt: new Date().toISOString(), status: exitCode === 0 ? 'formal_release_gate_passed' : 'formal_release_gate_failed', exitCode,

@@ -10,6 +10,29 @@ type ToolEvidence = NonNullable<RepositoryContextSnapshotV3Record['verificationT
 const hash = (content: string) => createHash('sha256').update(content).digest('hex')
 const safePath = (path: string) => !isAbsolute(path) && !path.split(/[\\/]/u).includes('..') && !path.includes('\0')
 
+/** 只追踪已声明的显式子脚本调用；循环用已访问集合收敛，不执行脚本或推断生命周期钩子。 */
+function verificationScriptTokens(manifest: RepositoryCommandManifest | undefined): Set<string> {
+  const scripts = manifest?.scripts ?? {}
+  const queue = Object.keys(scripts).filter(name => /^(?:test|check|verify|build|lint|typecheck)(?::|$)/u.test(name))
+  const seen = new Set<string>()
+  const tokens = new Set<string>()
+  while (queue.length) {
+    const name = queue.shift()!
+    if (seen.has(name) || typeof scripts[name] !== 'string') continue
+    seen.add(name)
+    const command = scripts[name] as string
+    for (const token of command.match(/[A-Za-z0-9@/_.-]+/gu) ?? []) tokens.add(token)
+    // 仅识别完整命令段的静态脚本名；变量、引号和通配符等未解析形式继续保留为证据缺口。
+    for (const segment of command.split(/&&|\|\||[;|]/u)) {
+      const run = /^\s*(?:npm|pnpm|yarn|bun|nub)\s+run\s+([A-Za-z0-9:_-]+)(?:\s|$)/u.exec(segment)
+      if (run) queue.push(run[1]!)
+      const all = /^\s*(?:npm-run-all|run-s|run-p)\s+([A-Za-z0-9:_\s-]+)$/u.exec(segment)
+      if (all) queue.push(...all[1]!.trim().split(/\s+/u).filter(token => !token.startsWith('-')))
+    }
+  }
+  return tokens
+}
+
 /** 仅选择 tsc 命令发现及诊断指令处理链；符号缺失时保留缺口，禁止以摘要补猜实现。 */
 const compilerEvidenceSymbols = new Set([
   'executeCommandLine', 'executeCommandLineWorker', 'parseCommandLine', 'parseCommandLineWorker',
@@ -49,12 +72,13 @@ function captureCompilerExcerpts(path: string, content: string, budget: number):
 
 /** 只读冻结已安装且与声明最低版本一致的脚本工具；不安装或执行包，未解析依赖保留为证据缺口。 */
 export async function captureVerificationToolEvidenceV3(root: string, manifest: RepositoryCommandManifest | undefined): Promise<ToolEvidence[]> {
-  const scripts = Object.entries(manifest?.scripts ?? {}).filter(([name, value]) => /^(?:test|check|verify|build|lint|typecheck)(?::|$)/u.test(name) && typeof value === 'string')
-  const tokens = new Set(scripts.flatMap(([, value]) => (value as string).match(/[A-Za-z0-9@/_.-]+/gu) ?? []))
+  const tokens = verificationScriptTokens(manifest)
+  // 使用命令的实际出现次序分配既有四工具预算，避免包名字母顺序挤掉较早调用的编译器。
+  const priorities = new Map([...tokens].map((token, index) => [token, index]))
+  const priority = (tool: ToolEvidence) => priorities.get(tool.binName)!
   const dependencies = { ...manifest?.dependencies, ...manifest?.devDependencies }
   const result: ToolEvidence[] = []
   for (const [name, range] of Object.entries(dependencies).sort(([a], [b]) => a.localeCompare(b))) {
-    if (result.length === 4) break
     if (!/^(?:@[A-Za-z0-9_.-]+\/)?[A-Za-z0-9_.-]+$/u.test(name) || typeof range !== 'string' || !/^[~^]?\d+\.\d+\.\d+$/u.test(range)) continue
     let directory = resolve(root)
     while (true) {
@@ -87,6 +111,7 @@ export async function captureVerificationToolEvidenceV3(root: string, manifest: 
         const bins = typeof installed.bin === 'string' ? { [name.split('/').at(-1)!]: installed.bin } : installed.bin ?? {}
         for (const [binName, binPath] of Object.entries(bins).sort(([a], [b]) => a.localeCompare(b))) {
           if (!tokens.has(binName) || typeof binPath !== 'string' || !safePath(binPath)) continue
+          if (result.length === 4 && priorities.get(binName)! >= Math.max(...result.map(priority))) continue
           if (await realpath(join(modules, '.bin', binName)) !== await realpath(join(packageRoot, binPath))) continue
           const files: ToolEvidence['files'] = [{ path: 'package.json', digest: hash(packageText), content: packageText, truncated: false }]
           // 大型编译器只补充原样节点；完整文件仍列为 unavailable，局部证据与普通文件共享文本预算。
@@ -138,11 +163,13 @@ export async function captureVerificationToolEvidenceV3(root: string, manifest: 
           if (!files.some(file => file.path === relative(packageRoot, resolve(packageRoot, binPath)))) continue
           result.push({ packageName: name, declaredRange: range, version: installed.version, binName, entryPath: relative(packageRoot, resolve(packageRoot, binPath)).split(sep).join('/'), files: files.sort((a, b) => a.path.localeCompare(b.path)),
             ...(sourceExcerpts.length ? { sourceExcerpts } : {}), unavailablePaths: [...new Set(unavailablePaths)].sort() })
+          result.sort((left, right) => priority(left) - priority(right))
+          if (result.length > 4) result.pop()
           break
         }
       } catch { /* Absent or unsupported tools do not establish discovery. */ }
       break
     }
   }
-  return result
+  return result.sort((left, right) => left.packageName.localeCompare(right.packageName))
 }

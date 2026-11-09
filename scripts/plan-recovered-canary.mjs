@@ -38,7 +38,7 @@ if (journal === undefined) {
   const snapshot = await request('/snapshot')
   const project = snapshot.projects.find(item => item.id === projectId)
   assert.equal(project?.cwd, context.workspace)
-  assert.equal(project.status, 'draft')
+  assert.ok(['draft', 'awaiting_approval'].includes(project.status))
   for (const key of ['planApprovalsV3', 'executionDispatches', 'taskRuns', 'deliveryRecords']) assert.equal(snapshot[key].length, 0)
   const previous = previousJournalPath === undefined ? undefined : JSON.parse(await readFile(resolve(previousJournalPath), 'utf8'))
   if (previous) {
@@ -46,10 +46,14 @@ if (journal === undefined) {
     assert.equal(previous.projectId, projectId)
     assert.equal(previous.baselineCommit, context.baselineCommit)
     assert.notEqual(previous.bundleSha256, bundle, 'A failed same-bundle request must not be retried for a better score')
-    assert.ok(previous.operations.every(item => item.status === 'blocked' || item.status === 'superseded'))
+    // 新构建可替换从未批准或执行的候选；保留旧账本，通过正式 revise 重算全部阶段。
+    assert.ok(previous.operations.every(item => ['blocked', 'superseded', 'committed'].includes(item.status)))
     assert.deepEqual(snapshot.planningOperations.map(item => item.id).sort(), [...previous.previousOperationIds, ...previous.operations.map(item => item.id)].sort())
     assert.ok(snapshot.planningOperations.every(item => item.status !== 'running'))
-  } else assert.equal(snapshot.planningOperations.length, 0)
+  } else {
+    assert.equal(project.status, 'draft')
+    assert.equal(snapshot.planningOperations.length, 0)
+  }
   const receipts = JSON.parse(await readFile('output/acceptance/canary-capabilities-confirmed-2026-10-15.json', 'utf8'))
   for (const claim of receipts.result.claims) assert.deepEqual(snapshot.agentCapabilityClaims.find(item => item.id === claim.id), claim)
   assert.equal(project.prd, receipts.result.project.prd)
@@ -57,13 +61,29 @@ if (journal === undefined) {
   const run = promisify(execFile)
   assert.equal((await run('git', ['rev-parse', 'HEAD'], { cwd: context.workspace })).stdout.trim(), context.baselineCommit)
   assert.equal((await run('git', ['status', '--porcelain'], { cwd: context.workspace })).stdout.trim(), '')
+  let revisionInput
+  let revisionBundleId
+  if (project.status === 'awaiting_approval') {
+    const plan = snapshot.planSnapshots.find(item => item.id === project.currentPlanSnapshotId)
+    assert.equal(plan?.planningOperationId, previous.currentOperationId)
+    const matrix = await request(`/projects/${projectId}/requirements?includeHistory=true`)
+    const requirementBundle = matrix.bundles.find(item => item.id === plan.requirementBundleIds[0])
+    assert.ok(requirementBundle)
+    revisionBundleId = requirementBundle.id
+    revisionInput = {
+      title: project.name, prd: project.prd, technicalDesign: project.technicalDesign, taskLanguage: project.taskLanguage,
+      sourceRefs: [], sourceBlocks: [...(project.prdSourceBlocks ?? []), ...(project.technicalDesignSourceBlocks ?? [])],
+      expectedBundleUpdatedAt: requirementBundle.updatedAt, idempotencyKey: `reconstructed-canary:${bundle}`,
+    }
+  }
   // 意图先持久化；POST 超时也不代表未执行，必须从领域状态观察。
   journal = { projectId, baseUrl: base, bundleSha256: bundle, baselineCommit: context.baselineCommit,
     startedAt: new Date().toISOString(), state: 'request_reserved', previousOperationIds: snapshot.planningOperations.map(item => item.id),
     ...(previousJournalPath === undefined ? {} : { previousJournalPath: resolve(previousJournalPath) }), originalClaimsVerified: 9 }
   await writeFile(journalPath, JSON.stringify(journal, null, 2), { flag: 'wx', mode: 0o600 })
   try {
-    await request(`/projects/${projectId}/decompose`, {})
+    if (project.status === 'draft') await request(`/projects/${projectId}/decompose`, {})
+    else await request(`/projects/${projectId}/decompositions/${encodeURIComponent(revisionBundleId)}/revise`, revisionInput)
     journal.state = 'request_accepted'
   } catch (error) {
     journal.state = 'request_requires_observation'

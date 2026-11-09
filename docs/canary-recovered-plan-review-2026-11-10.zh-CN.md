@@ -10,13 +10,13 @@
 | 项目 | `ac9fafa7-c07b-4802-a177-6f4c986130bc` |
 | 工作目录 | `output/acceptance/formal-170-20261109/canary-workspace` |
 | 重建基线 commit | `77aa9a174da47c111f190d8cc52dfb91c8b00635` |
-| 当前规划操作 | `planning-v3:b755a836-cd28-440a-abdd-daae3e5ecea9` |
-| Project revision | `2` |
-| Plan digest | `e0468ba8d593b9283b12f32aa08f48d103258602aba22355178a0f33c2a2525c` |
-| Access grant digest | `38614a71a12e37f37fd9bd1f261a0c9aa1c4e4ffec30997b3361252e520a3e75` |
-| 执行 bundle SHA-256 | `bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf` |
+| 当前规划操作 | `planning-v3:64d3076b-164f-4323-ae54-e1fa8f602afb` |
+| Project revision | `3` |
+| Plan digest | `3533b9be10e516dd30b9078f70e0189e373617ff81872cc5c3fe66a23cff4e50` |
+| Access grant digest | `fceedac3b59e4514e7728e71e985bf8e49f181da8e50cd4ec1d346818dd7b151` |
+| 执行 bundle SHA-256 | `1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4` |
 
-完整 PlanSnapshot ID 为 `ac9fafa7-c07b-4802-a177-6f4c986130bc:v3:planning-v3:b755a836-cd28-440a-abdd-daae3e5ecea9:plan`；AccessGrantSnapshot ID 为 `access-snapshot:planning-v3:b755a836-cd28-440a-abdd-daae3e5ecea9`。批准必须绑定这些当前事实；任一摘要或 revision 改变须拒绝旧输入。
+完整 PlanSnapshot ID 为 `ac9fafa7-c07b-4802-a177-6f4c986130bc:v3:planning-v3:64d3076b-164f-4323-ae54-e1fa8f602afb:plan`；AccessGrantSnapshot ID 为 `access-snapshot:planning-v3:64d3076b-164f-4323-ae54-e1fa8f602afb`。批准必须绑定这些当前事实；任一摘要或 revision 改变须拒绝旧输入。revision 2 的候选未获批准或执行，已通过正式 revise 被当前构建替换，原账本保留。
 
 旧临时环境已经丢失，用户确认无备份。本仓库明确标记为重建基线，不沿用旧计划批准、旧任务结果或旧交付批准。原项目的九条人工能力声明逐项与原登记回执一致，无新增能力事实。
 
@@ -41,6 +41,6 @@ REQ-TRIM: 在 src/greeting.ts 的 greet(name: string) 中去除姓名首尾空�
 
 ## 已有证据与批准边界
 
-本机完整证据：`output/acceptance/formal-170-20261109/canary-recovery/planning-preserved-contract.json`，包含原请求、自动策略后继、完整快照、场景、任务、成员资格、预检与 readiness。原兼容策略拒绝记录保存在相邻的 `planning-handoff-reservations.json`，没有覆盖。
+本机完整证据：`output/acceptance/formal-170-20261109/canary-recovery/planning-script-tool-closure.json`，包含原请求、完整快照、场景、任务、成员资格、预检与 readiness。只读即时复核记录为同目录的 `plan-review-script-tool-closure.json`，确认四项审阅均 approved、两项预检 accepted、readiness 均 ready，且无审批、派发、执行或交付记录。原候选 `planning-preserved-contract.json` 与原兼容策略拒绝记录 `planning-handoff-reservations.json` 均保留，没有覆盖。
 
-批准本文件表示允许正式登记当前 revision 2 计划的人工批准，并依赖顺序派发本隔离项目的实现与独立验证。它不等于批准尚未产生的最终 diff，不批准向上游仓库提交，也不代表满足 npm/GitHub 正式发布门禁。最终交付须依据实际 commit、验证和收敛审阅另行确认。
+批准本文件表示允许正式登记当前 revision 3 计划的人工批准，并依赖顺序派发本隔离项目的实现与独立验证。它不等于批准尚未产生的最终 diff，不批准向上游仓库提交，也不代表满足 npm/GitHub 正式发布门禁。最终交付须依据实际 commit、验证和收敛审阅另行确认。

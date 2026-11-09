@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "15801d93cb0cff38c3bdd9c36f8cafb9432f8657925a4b8684cd889d2145b03a",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03f5712572404fa8016af223d1786c87d1b7857cab1bf6881d:independent-gold-review:4101b9cb-1149-474c-857d-33e9494dd49b",
+    "reviewedAt": "2026-11-09T19:49:53.569Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this frozen pending-decision case. The original PRD explicitly leaves the material DEC-001 unresolved: AC-001 and AC-002 describe conditional recommended behavior, not authorization to select OPT-1. Accordingly, blocked readiness with requirement-decision-pending on DEC-001, evidence through repository/requirements/decisions, and no assignable task or assignment expectations are appropriate. REQ-001, AC-001 through AC-003, DEC-001, repository identity, base commit, and paired-case identifier are consistent. The complete supplied owner contents support index.js and the maintained index.d.ts as the binding owner set; limitFunction forwards the existing clearQueue function and derives its declaration through Pick, so it does not introduce another separately maintained owner. Runtime and compile-time verification scopes are supported by test.js, index.test-d.ts, package.json, and the supplied tool discovery/compiler evidence. No execution or complete transitive tool closure is needed to establish this decisions-stage block. The empty team and capability claims do not require an additional later-stage blocker because the unresolved material Decision gate precedes Scenario Coverage and assignment. Gold and preview release fingerprints agree across repository, source, team, decisions, executing prompt module, model, sampling, policy, and budgets. Supplied provenance explains the distinct manifest/evaluation source digest domains, trim-only PRD persistence, and bundled prompt fingerprint domain. The original specification's null releaseInput and remaining preparation items are historical preparation state, while the preview and Gold supply the frozen release input. Historical project operations are not treated as candidate results or capability attestations, and the paired hypothetical case does not resolve this case's Decision. This review relies on the Service's stated mechanical digest bindings; I did not recompute digests, execute code, or provide human attestation. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "5dab7faeeef33a25c8c4303f75deeab339b13d296c4372326c59da7daa619da0"
+  }
+}

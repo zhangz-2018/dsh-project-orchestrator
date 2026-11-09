@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cf694f7f0073559016af223e37b3c87d29c356e4674933b56:independent-gold-review:ae304fbf-15d5-4c0c-a667-abf025172b06",
+    "reviewedAt": "2026-11-09T19:50:08.458Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD and Gold agree on repository identity and base commit, stable REQ-001 and AC-001 through AC-003 keys, owner scope, paired case, and blocked readiness. DEC-001 materially controls exception propagation and abort-versus-throw precedence; neither the recommended option nor conditional acceptance language resolves it. Blocking at decisions with requirement-decision-pending for DEC-001, requiring only repository/requirements/decisions evidence, and generating no assignable tasks is therefore appropriate. The empty team and capability claims do not create an earlier blocker because the unresolved-decision gate precedes Scenario Coverage and assignment. Supplied source establishes index.js as the runtime owner and index.d.ts as the maintained public declaration owner; package.json establishes separate AVA runtime and tsd type-checking paths. The delay and cancellation acceptance criteria are consistent with the existing implementation. Gold and preview release fingerprints match, and supplied provenance explains the distinct manifest/evaluation source digest domains, trimmed saved PRD, and bundled prompt-version fingerprint. Historical operation presence does not imply a candidate run on this bundle or capability evidence. The truncated test.js excerpt does not prevent assessing this decisions-stage expectation, but does not establish complete regression coverage or successful execution. This approval relies on the supplied Service-bound fingerprint provenance; I did not recompute digests, execute code, or provide human decision attestation.",
+    "goldDigest": "002f2fdf7e016a5f8af01abb50357c99ccb05f19b8a91c61f994dae03d200bb5"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-preserved-contract-v45-completion-7-2026-10-16",
+  "createdAt": "2026-11-09T19:33:00.525Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+      "goldDigest": "c597c878bd3dd63584215bbcb6a838905aa57ef1cc29a8110d9962d3a5efb849"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+      "attemptId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45/fresh-1",
+      "operationId": "planning-v3:3b1c8982-f22d-48b9-8c7d-2db24d283696",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45/runs/fresh-1.json",
+      "startedAt": "2026-11-09T19:33:00.595Z",
+      "completedAt": "2026-11-09T19:41:14.294Z"
+    }
+  ]
+}

@@ -225,6 +225,32 @@ p-retry 的实现任务预检需要核对后继独立验证任务，但原交接
 
 最终修复完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：562 项 Node 测试、7 项浏览器测试、类型与文档检查、固定样本和 169 文件安装包 smoke 通过。新版隔离 Host 的八项兼容检查也通过。`preserved-contract-v45` 源码与安装 bundle SHA-256 同为 `bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf`；39 个旧正式操作均已终态，历史隔离只读核验覆盖 61 项目、16 组证据及五个旧自动后继证明。本版独立 Gold 审阅及新 greeting 规划已开始，尚未取得完整正式成绩。最终回归日志为 `output/formal-170-preserved-contract-verify-final-2026-11-10.log`，安装证明为 `preserved-contract-installed.json`，新 canary 请求账本为 `canary-recovery/planning-preserved-contract.json`。
 
+### 验证工具子脚本与隔离环境补齐
+
+`preserved-contract-v45` 的 25 份 Gold 全部在新版候选前独立批准。随后 7 个独立根请求全部终态：Hono expose、p-retry abort、p-limit wrapper、p-limit resolved、p-queue resolved 均 committed，p-limit pending 按预期 blocked，这六项适用指标均通过；p-map completion 在 TaskPreflight blocked，`falseBlockedRate=1`、`firstPassApprovableRate=0`。原始失败、候选和领域核验全部保留，完整批次已停止，没有重发失败请求或把它计作通过。
+
+p-map 的冻结工具证据为空：隔离目录未安装声明版本的 AVA/tsd。按原声明安装 `ava@5.2.0`、`tsd@0.29.0`、`xo@0.56.0`，禁用生命周期脚本，不修改 package.json、锁文件或 tracked 源码。固定基线的离线 `npm run test` 退出 0，424 项现有测试通过且 tsd 检查成功；这只证明工具及既有基线可运行，不是目标需求已经实现。
+
+对其余评测环境的核查还发现两项证据采集缺口：`npm-run-all` 引用的 `mocha`、`test-types` 等非标准命名子脚本未被追踪；四工具预算按依赖包名字母顺序选择，会将较早调用的 TypeScript 挤出。修复位于 `captureVerificationToolEvidenceV3`：只追踪已声明的静态 runner 调用，用已访问集合处理循环，依命令出现顺序分配原四工具预算，最终结果仍按包名稳定排序。没有执行脚本或隐式加载生命周期钩子，原路径隔离、版本匹配和文件/字节预算不变。两个回归分别先失败后通过，相关六项测试全部通过。
+
+补齐 p-limit、ky、mitt 的原声明验证工具；Zod 在独立工具目录安装原声明的 Vitest，再通过隔离 node_modules 使用。Zod 首次 npm peer 求解器失败已保留，独立工具目录禁用 peer 自动安装后成功；未在 Host 安装中使用该选项。八个固定仓库 tracked 工作树全部干净，未实现评测需求或写入上游。所有未采集工具文件仍明确保留为缺口，不把本地实验注入候选成绩。
+
+修改后完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：564 项 Node 测试、7 项浏览器测试及其余检查通过，170 文件安装包 smoke 通过。源码和隔离安装 bundle SHA-256 同为 `1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4`，8 项真实隔离 Host 兼容检查通过。`script-tool-closure-v46` 沿用原需求、项目和能力登记，23 组历史证据覆盖 61 项目及五个旧自动后继证明；新版 Gold 审阅和 greeting 规划已启动，尚未形成正式通过成绩。
+
+greeting 前版计划通过了全部规划审核及两项 TaskPreflight，但未登记人工批准或派发任务。更换构建后仅允许对从未批准、从未执行的候选通过正式 revise 接口重算，保留旧账本，不继承旧审批事实。p-retry 本次用户确认的 4 条能力与原 256 条均已持久核对，无须重复登记。
+
+本机新增证据：`preserved-contract-completion/` 内七份账本及七份 `domain-facts-*.json`、`script-tool-closure-tooling.json`、`script-tool-closure-installed.json`、`script-tool-closure-historical-observation.json`、`pmap-tools-baseline.log`、`gold-script-tool-closure-*`、`canary-recovery/planning-script-tool-closure.json`。完整验证日志为 `output/formal-170-script-tool-closure-verify-final-2026-11-10.log`，Host 报告为 `output/compatibility/dsh-0.2.2-rc.1-1794253720981.json`。这些材料仍用于验收及恢复，保留本机。提交 `17096c4` 和 `4419408` 的 Linux/macOS CI 与 CodeQL 均已通过；本次新修改仍需独立检查。
+
+### v46 独立审阅补证与重建计划
+
+首轮 25 份独立 Gold 审阅有 24 份 approved，Zod trim 为 insufficient_evidence：缺少继承的 `.configs/tsconfig.base.json`、两个 setup 文件、`vitest.root.mjs` 和大型 Vitest CLI 的配置/类型检查链。原拒绝记录保留在 `gold-script-tool-closure-ready-b/`。
+
+`prepare-vitest-gold-evidence.mjs` 只读核对上述配置与固定 commit 完全一致，归档实际安装的 Vitest 4.1.5 源码，并使用 TypeScript AST 保留完整关键声明，明确区分完整模块和声明摘录。总正文 269,153 bytes，110 项原样文件或声明，未执行评测仓库、未派发任务。补证 `zod-script-tool-closure-supplement.json` 绑定原 Gold 摘要及原审阅；独立补审 approved，原需求和 Gold 均未修改。至此当前构建 25 份 Gold 均在候选前获批，单一正式采集器已在 `script-tool-closure-completion/` 启动，尚无完整正式成绩。
+
+同版 greeting 操作 `planning-v3:64d3076b-164f-4323-ae54-e1fa8f602afb` committed，四项规划审阅均 approved、两项成员预检均 accepted，readiness 均 ready。当前 revision 3、Plan digest `3533b9be10e516dd30b9078f70e0189e373617ff81872cc5c3fe66a23cff4e50`；即时只读复核为 `canary-recovery/plan-review-script-tool-closure.json`。尚未登记审批或派发任务，具体计划已更新至 `docs/canary-recovered-plan-review-2026-11-10.zh-CN.md`。
+
+验收脚本显式接收重建上下文、当前审阅、输出位置及最终技术验收材料，保留旧流程默认值和全部摘要、成员、独立验证及交付门禁。执行脚本的只读 snapshot 已实际验证当前两项任务仍为 draft，TaskRun 为零；未将旧人工批准或最终 commit 带入当前环境。生产工具采集的六项回归再次全部通过，文档检查通过；脚本及审阅材料变化不改变当前产品 bundle。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

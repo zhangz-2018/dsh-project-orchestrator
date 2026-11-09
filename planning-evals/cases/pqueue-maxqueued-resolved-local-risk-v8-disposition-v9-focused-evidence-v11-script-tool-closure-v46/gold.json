@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "4dde9a7060578c08fe1cd0ea6a9a98e4bcdad7be8a99200b0ea3899d616214e0",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_027bf9184f1d61fd016af2242fc10c87d094843684fe462b53:independent-gold-review:ed31e9e8-000b-4baf-94eb-1674f92fbf6e",
+    "reviewedAt": "2026-11-09T19:51:25.557Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The original PRD explicitly fixes OPT-1 as a hypothetical benchmark input without asserting a human Decision; the empty resolved-decision fingerprint is therefore consistent. This does not waive the requirement that unresolved material DEC-001 block paired B at decisions. REQ-001, AC-001 through AC-003, DEC-001 and the two task keys remain stable. The exact five-file binding scope covers the implementation, option contract, runtime regressions and type tests without requiring edits to already-correct files or separately maintained generated declarations. The supplied package configuration and nz implementation establish distinct runtime, build and non-executing type-test verification paths. TASK-VERIFY depends on TASK-IMPLEMENT and requires independent verification of every required AC. The designated agents have matching delivery roles, available slots and supplied active project-scoped trusted claims, including data.change and integration.consumer, with testing.verification additionally held by the verifier. The selected planning reviewer is consistent with the frozen selection policy. Historical project reuse preserves the original claim scope and does not count old-version operations as candidates on this bundle. Gold and preview release fingerprints agree; the supplied provenance explains the different source digest domains, PRD trimming and bundled prompt fingerprint. Earlier specification preparation placeholders do not override the subsequently supplied frozen release inputs. Approval concerns expectation coherence, not implementation correctness, task dispatch or execution readiness. I used only the supplied review data, executed no code, independently recomputed no digests and created no human attestation.",
+    "goldDigest": "8adf0f82413222d67b0b8a190774eba6c0af329cdc1825eed836c327185a5f55"
+  }
+}

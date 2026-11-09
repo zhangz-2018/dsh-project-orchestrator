@@ -6,6 +6,37 @@ import { join } from 'node:path'
 import test from 'node:test'
 import * as plugin from '../lib/index.js'
 
+test('Verification tool evidence follows declared script runners without executing scripts or unrelated lifecycle hooks', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-script-graph-'))
+  try {
+    const modules = join(root, 'node_modules')
+    await mkdir(join(modules, '.bin'), { recursive: true })
+    for (const name of ['runtime-checker', 'type-checker', 'publish-checker']) {
+      await mkdir(join(modules, name))
+      await writeFile(join(modules, name, 'package.json'), JSON.stringify({ name, version: '1.2.3', bin: './cli.js' }))
+      await writeFile(join(modules, name, 'cli.js'), "throw new Error('SCRIPT_MUST_NOT_EXECUTE');\n")
+      await symlink(`../${name}/cli.js`, join(modules, '.bin', name))
+    }
+    const evidence = await plugin.captureVerificationToolEvidenceV3(root, {
+      devDependencies: { 'runtime-checker': '1.2.3', 'type-checker': '1.2.3', 'publish-checker': '1.2.3' },
+      scripts: {
+        test: 'npm-run-all --silent unit compile-types',
+        unit: 'runtime-checker && npm run nested',
+        'compile-types': 'pnpm run nested',
+        nested: 'type-checker && npm run unit',
+        postinstall: 'publish-checker',
+      },
+    })
+    assert.deepEqual(evidence.map(tool => tool.packageName), ['runtime-checker', 'type-checker'])
+    assert.ok(evidence.every(tool => tool.files.some(file => file.content.includes('SCRIPT_MUST_NOT_EXECUTE'))))
+    const direct = await plugin.captureVerificationToolEvidenceV3(root, {
+      devDependencies: { 'runtime-checker': '1.2.3', 'publish-checker': '1.2.3' },
+      scripts: { test: 'echo unit', unit: 'runtime-checker', postinstall: 'publish-checker' },
+    })
+    assert.deepEqual(direct, [], 'Text naming a script does not prove a runner invokes it.')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Verification tool evidence freezes installed entry closure, rejects drift and never treats it as repository ownership', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-tool-evidence-'))
   try {
@@ -42,6 +73,27 @@ test('Verification tool evidence freezes installed entry closure, rejects drift 
     assert.deepEqual(await plugin.captureVerificationToolEvidenceV3(repository, { ...manifest, scripts: { test: 'node --test' } }), [])
     await rm(tool, { recursive: true })
     assert.deepEqual(await capture(), [])
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Verification tool evidence keeps command-order compiler evidence within the four-tool budget', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-priority-'))
+  try {
+    await mkdir(join(root, 'node_modules/.bin'), { recursive: true })
+    const dependencies = {}
+    for (const [name, binName] of [['typescript', 'tsc'], ['a-checker', 'a-checker'], ['b-checker', 'b-checker'], ['c-checker', 'c-checker'], ['d-checker', 'd-checker']]) {
+      const tool = join(root, 'node_modules', name)
+      await mkdir(tool)
+      await writeFile(join(tool, 'package.json'), JSON.stringify({ name, version: '1.2.3', bin: { [binName]: './cli.js' } }))
+      await writeFile(join(tool, 'cli.js'), 'module.exports = {};\n')
+      await symlink(`../${name}/cli.js`, join(root, 'node_modules/.bin', binName))
+      dependencies[name] = '1.2.3'
+    }
+    const tools = await plugin.captureVerificationToolEvidenceV3(root, {
+      devDependencies: dependencies, scripts: { test: 'tsc && a-checker && b-checker && c-checker && d-checker' },
+    })
+    assert.equal(tools.length, 4)
+    assert.deepEqual(tools.map(tool => tool.packageName), ['a-checker', 'b-checker', 'c-checker', 'typescript'])
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 

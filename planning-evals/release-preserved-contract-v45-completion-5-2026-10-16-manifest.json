@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-preserved-contract-v45-completion-5-2026-10-16",
+  "createdAt": "2026-11-09T19:30:13.061Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+      "goldDigest": "069ddf28d2e6437fa82f23a5ba838056c2375e5f5cdc97da23e85c8d64d7e6d2"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+      "attemptId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45/fresh-1",
+      "operationId": "planning-v3:ad229158-3b6e-4c43-84d4-0b816c442cd9",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45/runs/fresh-1.json",
+      "startedAt": "2026-11-09T19:30:13.123Z",
+      "completedAt": "2026-11-09T19:38:27.454Z"
+    }
+  ]
+}
