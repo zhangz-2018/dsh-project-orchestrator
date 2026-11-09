@@ -3360,6 +3360,34 @@ test('Planning V3 task Decision refs come only from frozen resolved records, not
   assert.doesNotMatch(resolved, /Allowed task decisionKeys: \[[^\]]*DEC-001/)
 })
 
+test('Planning V3 does not infer security from a local API removal restriction', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-local-api-restriction-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    const samples = [
+      { text: 'off(type, originalHandler) 仍仅移除匹配原函数的普通注册；既有允许省略 handler 的 off(type) 清空该 key。保留 wildcard off 的现有类型限制。', security: false },
+      { text: '只有管理员允许执行删除，普通用户无权操作；权限不足时拒绝请求。', security: true },
+    ]
+    for (const sample of samples) {
+      const store = memoryStore()
+      const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+        const anchors = manifest.anchors.filter(a => a.requiredDisposition)
+        return { ...generated, requirements: [{ ...generated.requirements[0], sourceRefs: anchors.map(a => a.id),
+          acceptanceCriteria: [{ key: 'AC-001', statement: sample.text, required: true, scenario: 'happy_path', sourceRefs: anchors.map(a => a.id) }] }] }
+      } }
+      const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+      try {
+        const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Local API restriction', cwd: repository, prd: `# Contract\n\n${sample.text}` })
+        await service.startDecomposition(project.id)
+        await waitForPlanning(store, project.id)
+        const policy = [...store.acceptanceScenarioCoveragePolicies.records.values()][0]
+        for (const category of ['security', 'business_rejection']) assert.equal(policy.categories.find(c => c.category === category).applicability, sample.security ? 'required' : 'not_applicable', `${category}: ${sample.text}`)
+        assert.equal(store.executionDispatches.size, 0)
+      } finally { await service.close() }
+    }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 dependency policy distinguishes error contracts from actual dependency faults', async () => {
   const cases = [
     { text: 'DEC-001: 等待队列已满时，拒绝值使用原生 RangeError，还是 name 为 QueueCapacityError 的普通 Error？调用方依赖错误类型分支，未选择前不能固定错误契约。', required: false },
@@ -3375,6 +3403,8 @@ test('Planning V3 dependency policy distinguishes error contracts from actual de
     { text: 'Propagate upstream errors unchanged.', required: true },
     { text: '依赖服务抛出错误对象时原样传播。', required: true },
     { text: 'The dependency throws the same error object; preserve its identity.', required: true },
+    { text: 'The handler throws the original error; preserve synchronous propagation.', required: false },
+    { text: 'AC-001 [dependency_failure, required]: handler 抛错前已注销，emit 同步传播同一异常，不添加异步调度。', required: true },
     { text: 'AC-001 [dependency_failure, required]: 验证约定的结果。', required: true },
   ]
   const root = await mkdtemp(join(tmpdir(), 'po-v3-dependency-contract-'))
@@ -3399,6 +3429,8 @@ test('Planning V3 dependency policy distinguishes error contracts from actual de
         const category = policies[0].categories.find(c => c.category === 'dependency_failure')
         assert.equal(category.applicability, sample.required ? 'required' : 'not_applicable', sample.text)
         assert.equal(observation.requirementReviewCalls, 1)
+        assert.match(observation.requirementAnalysisPrompts[0], /A dependency can be a source-declared user-supplied handler or callback/)
+        assert.match(service.scenarioCompletionPromptV3({ requirements: [] }, {}, { anchors: [] }, new Map(), false), /connect a callback throwing a concrete sentinel error through the public registration\/invocation API/)
         assert.equal(store.executionDispatches.size, 0)
       } finally { await service.close() }
     }

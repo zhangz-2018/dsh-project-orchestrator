@@ -524,8 +524,11 @@ export class BindingStage {
         slicesByPath.set(path, slices)
         return source.bytes.byteLength <= limit ? text : content
       }
-      const largeClassPaths = new Set(explicitPaths.filter(path => Buffer.byteLength(sources.get(path)!.excerpt) > 24_576 && focusedDeclarations(path, sources.get(path)!.bytes.toString('utf8'), focus)
-        .some(({ node }) => ts.isClassDeclaration(node) && Buffer.byteLength(node.getText()) > 24_576)))
+      // 实际符号引用到的间接核心类同样需要完整声明，不能因未在 PRD 点名而落入 16 KiB 后整段消失。
+      // 仅采用已选符号图，先去注释并检查单文件上限；未引用的大类不获得额外额度。
+      const largeClassPaths = new Set([...declaringPaths].filter(path => [...selected].some(node => node.getSourceFile().fileName === frozenPath(path)
+        && ts.isClassDeclaration(node) && Buffer.byteLength(node.getText()) > 24_576)
+        && Buffer.byteLength(excerptFor(path, 32_768)) > 24_576))
       // An intact large class plus its independent normalization/type owners
       // cannot share the ordinary 96 KB envelope. One bounded 32 KB allowance
       // covers this case; adding more classes never multiplies the allowance.

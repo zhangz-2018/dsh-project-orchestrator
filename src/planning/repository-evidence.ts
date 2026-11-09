@@ -4,20 +4,22 @@ import ts from 'typescript'
 import type { RepositoryContextSnapshotV3Record, RepositoryEvidenceRetrievalReport } from '../types.js'
 import { digestObject } from '../workflow.js'
 
-const INDEX_VERSION = 'repository-evidence-index-v3.6.6'
+const INDEX_VERSION = 'repository-evidence-index-v3.6.7'
 const DEFAULT_SELECTION_LIMIT = 2_000
 const PER_REQUIREMENT_LIMIT = 80
 const MAX_INDEXED_SOURCE_BYTES = 512 * 1024
 const DEFAULT_INDEX_FILE_LIMIT = 20_000
 const DEFAULT_INDEX_BYTE_LIMIT = 64 * 1024 * 1024
 const EXCLUDED_PATH = /(?:^|\/)(?:node_modules|vendor|dist|build|coverage|\.next|\.nuxt|\.output|target|out|generated|__generated__)(?:\/|$)/iu
-const TEXT_EVIDENCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|json|ya?ml|toml|md|prisma|java|kt|kts|py|go|rs|sql|graphql|gql)$|(?:^|\/)(?:\.gitignore|\.npmignore|\.dockerignore)$/iu
+// 无扩展名的 ESLint 配置也约束原验证入口；仍不开放任意隐藏文件。
+const TEXT_EVIDENCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|json|ya?ml|toml|md|prisma|java|kt|kts|py|go|rs|sql|graphql|gql)$|(?:^|\/)(?:\.gitignore|\.npmignore|\.dockerignore|\.eslintrc)$/iu
 const SOURCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|java|kt|kts|py|go|rs)$/iu
 const STOP_TERMS = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'must', 'should', 'when', 'then', 'into', '需求', '必须', '需要', '实现', '支持', '功能', '系统', '任务', '正确'])
 
-/** 识别运行器默认、命名 profile 及共享 root/workspace 配置；仅保留原样源码，不推定配置被命令加载或测试已执行。 */
+/** 识别运行器及 ESLint 的验证配置；仅保留原样源码，不推定配置被命令加载或测试已执行。 */
 export function isVerificationConfigPathV3(path: string): boolean {
   return /(?:^|\/)(?:vite|vitest|jest|playwright|cypress)\.(?:(?:[A-Za-z0-9_-]+\.)?config|root|workspace)\.(?:[cm]?[jt]s|json)$/iu.test(path)
+    || /(?:^|\/)(?:\.eslintrc(?:\.(?:[cm]?js|json|ya?ml))?|eslint\.config\.[cm]?[jt]s)$/iu.test(path)
 }
 
 /** 只读提取运行器配置中的静态文件字面量及 resolve/join(__dirname, ...literals)；仅返回冻结库存内的文件，不执行配置或展开变量、glob。 */

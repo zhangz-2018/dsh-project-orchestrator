@@ -370,7 +370,7 @@ function requirementSectionPathSegment(title: string): string {
   return `${title.slice(0, REQUIREMENT_SECTION_PATH_SEGMENT_MAX_LENGTH - digestSuffix.length)}${digestSuffix}`
 }
 
-/** 只依据业务描述推导来源提示；路径名称不代表数据、状态或权限行为。 */
+/** 只依据业务描述推导来源提示；路径名称及普通 API 的允许/限制措辞不代表权限边界。 */
 function sourceNormativeHints(text: string, section: 'acceptance' | 'questions' | 'other'): NonNullable<RequirementSourceManifest['anchors'][number]['normativeHints']> {
   // Keep the source and its identity intact; filenames are inspection targets,
   // not evidence of data/state/security behavior in the surrounding prose.
@@ -381,7 +381,8 @@ function sourceNormativeHints(text: string, section: 'acceptance' | 'questions' 
   if (/业务规则|规则|约束|invariant|business rule/iu.test(text)) hints.add('business_rule')
   if (/数据|字段|表|数据库|schema|migration|索引|唯一/iu.test(text)) hints.add('data')
   if (/状态|流转|state|status|transition/iu.test(text)) hints.add('state')
-  if (/权限|授权|角色|认证|管理员|操作员|仅.{0,20}(?:可以|允许)|permission|access|auth|administrator/iu.test(text)) hints.add('permission')
+  // 权限必须有身份或访问控制对象；“仅移除原函数，允许省略参数”属于 API 契约。
+  if (/权限|授权|角色|认证|管理员|操作员|permission|access|auth|administrator/iu.test(text)) hints.add('permission')
   if (/失败|错误|异常|超时|重试|回滚|降级|failure|error|timeout|retry/iu.test(text)) hints.add('failure')
   if (/性能|安全|可用性|并发|幂等|审计|performance|security|availability|concurrency|idempot/iu.test(text)) hints.add('non_functional')
   if (/迁移|migration|backfill|数据修复/iu.test(text)) hints.add('migration')

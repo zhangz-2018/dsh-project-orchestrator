@@ -145,6 +145,22 @@ test('Repository Evidence retains runner discovery configurations when unrelated
   } finally { await rm(context.root, { recursive: true, force: true }) }
 })
 
+test('Repository Evidence retains lint configuration and local inheritance without indexing arbitrary dotfiles', async () => {
+  const context = await fixture({
+    'src/api.ts': 'export const value = true',
+    '.eslintrc': '{"extends":"./config/lint-base.json","parserOptions":{"sourceType":"module"}}',
+    'config/lint-base.json': '{"rules":{"semi":[2,"always"]}}',
+    '.credentials': 'never-index-this-value',
+  })
+  try {
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
+      requirements: [{ key: 'REQ-LINT', statement: 'Change value in src/api.ts.', acceptanceStatements: [] }] })
+    assert.ok(report.selectedEvidenceIds.includes('.eslintrc'))
+    assert.ok(report.selectedEvidenceIds.includes('config/lint-base.json'))
+    assert.equal(report.selectedEvidenceIds.includes('.credentials'), false)
+  } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
 test('Verification configuration references require static paths inside the frozen inventory', () => {
   const files = new Set(['scripts/setup.ts', 'scripts/check.ts', 'vitest.root.mjs', 'private.key', 'src/ordinary.ts'])
   const source = "import root from './vitest.root.mjs'; export default { setupFiles: [resolve(__dirname, 'scripts', 'setup.ts'), './scripts/check.ts', resolve(otherRoot, 'scripts', 'setup.ts'), variable, './scripts/*.ts', '../outside.ts', '/private.key'] };"

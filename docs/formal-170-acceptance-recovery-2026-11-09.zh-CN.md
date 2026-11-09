@@ -321,6 +321,47 @@ Zod 自动后继 `planning-v3:e00c6c46-ae88-4356-af63-ac5996639da8` 在 scenario
 
 完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：571 项 Node、7 项浏览器测试、类型及文档检查、固定样本和 170 文件安装包 smoke 通过，日志为 `output/formal-170-coarse-config-final-verify-2026-11-10.log`。修复先通过三项针对性回归，包括原重复消费持续拒绝。新版隔离 bundle 为 `093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174`；65 个主环境历史规划、7 个 canary 历史规划及全部人工确认在安装后领域快照中逐字一致。新样本版本为 `config-barrel-v50`，历史证明覆盖 35 组终态证据，原 25 份需求及全部项目 ID 保持原样。正式成绩仍待本版真实请求完成。
 
+### v50 独立 Gold 与当前交付计划
+
+提交 `eadb08f` 的 Linux、macOS 回归及 CodeQL 均已通过。当前 `config-barrel-v50` 的 25 份独立 Gold 已全部 approved；其中 Ky 和 mitt 首审为 insufficient_evidence，原记录保留，补证后另行独立审阅，不修改原需求、Gold 或写入边界。
+
+Ky 补充固定 commit 的公开导出、类型守卫、完整 HTTPError 测试及继承的已安装 TypeScript 配置；mitt 补充固定 `.eslintrc`、继承的已安装配置和实际解析的 Jest recommended 规则。仓库文件逐字核对固定 commit，外部配置仅作检查证据，不作为仓库 owner、人工确认或测试执行结果。补证正文分别为 44,390 和 31,115 bytes；原两份 proposedGoldSha256 均保持不变。汇总为本机 `gold-config-barrel-all-summary.json`，两份原拒绝和两份补审均有独立回执。
+
+v50 greeting 操作 `planning-v3:763656a7-cc4d-4bdf-bb45-47c02eba82d8` 已 committed，revision 5，planDigest `49ef698c3c94c3da072200279c63ac75e25947de6bb6e49ebb482746d95c958a`。四项审核 approved、两项成员分配 selected、两项 TaskPreflight accepted。计划仅覆盖 `src/greeting.ts` 和 `tests/greeting.test.ts` 的姓名 trim、空白拒绝及既有行为回归；尚未登记批准或派发。具体计划见 `docs/canary-recovered-plan-review-v50-2026-11-10.zh-CN.md`。随后 v50 的质量失败需要修改构建，该计划暂不登记批准；稳定构建上的新计划须重新提供具体材料，不继承旧计划或旧最终 commit 的批准。
+
+上述补证和材料仍供本版真实验收及恢复使用，保留本机；不以独立 Gold 批准代替生产规划或执行通过。以下真实根候选均在全部 Gold 终态后启动。
+
+### v50 终态与本地边界修复
+
+四个根请求已全部终态，无 supersede、模型或基础设施失败；三个质量失败保留，一个有效通过，不能将本批次宣称为正式通过：
+
+| 样本 | 实际 operationId | 结果 |
+| --- | --- | --- |
+| Zod trim | `planning-v3:13bdecb3-0093-48e6-aab0-2c7dab3e0135` | `blocked / task_preflight`，缺少测量入口行为证据 |
+| mitt once resolved | `planning-v3:4d17c859-4aad-4256-b03a-e613160af6cc` | `blocked / scenario_completion`，错误认为显式 handler 故障必须依赖外部系统 |
+| Ky HTTPError.status | `planning-v3:031eb430-483c-4b35-bb5b-dc669e0531fd` | `blocked / scenario_completion`，间接引用的大型核心类未提供正文 |
+| p-map completion observer | `planning-v3:4e0a5214-7de0-4db5-af26-c186e4ab20d9` | `committed`，全部适用指标通过；仅为规划候选 |
+
+源码提示分类删除将“仅移除……既有允许省略 handler”跨语句识别为 permission 的宽泛模式；明确权限、身份及授权词仍形成相应类别。场景生成及独立审核契约统一说明：源显式要求的用户 handler 抛错可以是本地依赖失败，必须保留同步异常身份及清理时机；普通 callback 提及不自动产生新的故障类别。对应版本为 `requirements-v2.14`、`scenario-coverage-policy-v3.3.11`、`scenario-coverage-review-v3.3.22`，防止沿用旧协议的结果。
+
+BindingStage 使已选 AST 符号图实际引用的间接大型类获得原单次 32 KiB 额度；未引用的大类不获额外额度，总上限仍为 131,072 bytes。仓库检索同时支持无扩展名 `.eslintrc` 及其现有静态本地继承规则，不开放任意隐藏文件。
+
+前三项回归已在旧构建先红、修复后绿。真实冻结库存只读复查提供 Ky 完整核心类 26,736 bytes，总证据 131,072 bytes；mitt 新检索包含 `.eslintrc`。这属于本地证据捕获，不是新版安装 Host 的真实候选通过证据。
+
+完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：574 项 Node、7 项浏览器测试及 171 文件 package smoke 通过。随后共用审核提示词补齐后，重新 build、运行受影响的 Binding/Repository Evidence/Workflow 和 Service 回归及 typecheck 均通过；最后版本号调整的结果须以最终验证为准，不沿用修改前结果。
+
+Zod 进一步只读核查发现真实采样方法与当前候选存在冲突：`init.ts` 经 `metabench.ts` 默认使用固定时长循环，不能作为仓库要求的固定次数、GC、最小值计时证明。原精确写入边界未包含测量文件。具体证据、与 retained-heap 口径的区别，以及建议新增单一测量文件和命令的范围见 [Zod 测量范围调整草案](zod-measurement-scope-review-2026-11-10.zh-CN.md)。未确认前不修改原需求、Gold、Zod 文件或发布门槛；不能将缺证或冲突改标成功。
+
+追加本机证据为 `candidates-config-barrel-zod-first.json`、`candidates-config-barrel-risk-first.json` 及各自 `*-domain-facts.json`、`local-boundary-production-capture.json`。回归日志为 `output/formal-170-v51-regressions-before.log`、`output/formal-170-v51-regressions-after.log`、`output/formal-170-v51-local-boundary-verify-2026-11-10.log` 及 `output/formal-170-v51-final-*.log`。领域核验确认无批准、派发、TaskRun 或交付。
+
+最后版本号调整后，完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 再次退出 0：574 项 Node、7 项浏览器测试、类型及文档检查、固定样本和 172 文件 package smoke 通过，日志为 `output/formal-170-v51-release-boundary-verify-2026-11-10.log`。`pnpm audit --json` 退出 0，五级漏洞计数均为 0；该结论仅适用于本仓库依赖，不覆盖独立 Host 的既有传递依赖告警。
+
+新安装 bundle SHA-256 为 `839d0590c548dc3c21c39e675a046085c87d2a67783d79822292e6196ab1fe6e`，通过 `npm pack --ignore-scripts` 与普通隔离安装，四个关键文件逐字匹配。8 项真实 Host 兼容检查通过，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794262913631.json`；其模型为确定性适配器，不计真实候选。
+
+首次严格重启比对失败，不能记作完整领域无变更：现有 `migrateLegacyRecords` 对主环境新 p-map 计划和 canary 新 greeting 计划分别补建 2 个 `todo` 子 issue，更新对应 Task 的 `issueId/updatedAt` 和 Project 的 `issueIds/updatedAt`。实际增量已按固定项目、任务、父 issue、标题、描述、成员、状态及关联逐项核对；除此之外的记录正文均一致。后续再次重启完整快照原样一致，证明此投影未重复创建。69 个主环境历史规划、260 项人工确认及 canary 的 8 个历史规划、9 项人工确认保留，无批准、派发、TaskRun 或交付。两 Host 均已正常停止，日常 Host 未修改。
+
+该阶段追加证据为 `config-barrel-final-domain-proof.json`、两环境的 `domain-after-config-barrel-final.json`、`domain-after-local-boundary-restart-3.json`、`domain-after-local-boundary-restart-4.json` 及 `local-boundary-installed.json`。首次严格检查及本地核验脚本断言修正的失败日志均保留，不覆盖成通过记录。没有在此 bundle 上启动新 Gold 或模型候选；Zod 原样本范围的调整仍待用户决定。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

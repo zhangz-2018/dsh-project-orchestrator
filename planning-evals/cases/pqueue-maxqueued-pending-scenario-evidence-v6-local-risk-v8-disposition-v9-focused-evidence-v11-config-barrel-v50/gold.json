@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e74a81ed65aa837016af23f0f60dc87d28a6be9aafc58c376:independent-gold-review:88fb30ce-ca21-4b7d-ba4f-2a77548cc8b4",
+    "reviewedAt": "2026-11-09T21:46:02.593Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. REQ-001, AC-001 through AC-003, DEC-001, repository identity, base commit, and paired-case identity agree with the original PRD. DEC-001 materially affects the rejection contract and is explicitly unresolved without human confirmation, so blocked readiness at decisions, evidence stages repository/requirements/decisions, and no assignable tasks or assignment expectations are appropriate. The deterministic decision gate precedes scenario review and assignment, so the empty team and absent reviewer do not introduce an earlier prerequisite failure. The complete implementation-owner contents support source/index.ts and source/options.ts as the required owner set; forwarding consumers do not require edits. Build configuration supports treating dist declarations as generated rather than separately maintained owners. Runtime regression and compile-time verification are correctly distinguished: tsconfig covers source, while the supplied nz implementation discovers test-d files and invokes the compiler without executing their assertions. The release fingerprints match between Gold and preview; supplied provenance explains the distinct original/saved PRD, manifest/evaluation source, and bundled-module prompt digest domains. The empty frozen decision input is consistent with an unresolved decision. Historical project operations are not treated as current capability evidence or candidate results, and no hypothetical paired-case resolution is treated as a human Decision. This approval concerns the frozen planning expectation, not execution or task authorization. I used only the supplied review data and did not execute code or independently recompute digests.",
+    "goldDigest": "3ae80a4bd63213932951c9ee7b987c976c7def93ca19343500aac5e9277b4f6e"
+  }
+}

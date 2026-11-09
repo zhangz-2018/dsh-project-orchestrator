@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "test/http-error.ts",
+        "test-d/http-error-status.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "5ea88bc258dc4693f3b831532f0e6e98b4476bc05ce6fe27e6275fd29ed013e7",
+    "sourceDigest": "36bcce1ca3e97fee760a0ef83ea455fd3af4c246b751fd09baf9277096f010bf",
+    "teamCatalogDigest": "9a57e48b0d86f2c94e16643f14e00587cd580c0fc4c63fa87bda65468063fce5",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d6fb243e9b6b97a016af23fceb24887d1b0f87494f42d5d17:independent-gold-review:d224faef-ab5f-4e86-827e-f33c5a06c75e",
+    "reviewedAt": "2026-11-09T21:49:16.077Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation. The original PRD and frozen Gold agree on REQ-001, AC-001 through AC-003, the exact three-file writable binding scope, required evidence stages, and ready status. The current HTTPError owner permits response reassignment and supports adding a read-only getter that reads the current response.status without changing existing constructor behavior. The complete supplemental sources resolve the earlier evidence gaps: source/index.ts forwards HTTPError and isHTTPError, and the type guard uses existing class/brand/name behavior unaffected by the requested getter. These are inspection consumers, not additional mandatory edit owners. The installed configuration explicitly enables declaration emission, and the supplied build configuration generates distribution declarations from source; those declarations are not separately maintained owners. The implementation and dependent independent-verification task expectations are coherent, with all required acceptance criteria requiring both relationships. The named distinct agents have matching delivery roles, available slots, auto-assignable memberships, and supplied active project-scoped trusted capability records, including testing.verification for the verifier; eligibility does not depend on Persona or pending claims. The configured planning reviewer satisfies the supplied read-only review policy. No material unresolved DEC-001 or B/C variant is present in this case, so no decision-stage block is indicated. Gold and preview release fingerprints agree, and the supplied provenance explains PRD normalization, manifest versus evaluation source digest domains, team claim projection, and executing-bundle prompt fingerprint. Model, sampling, policy, and budget fingerprints are consistently frozen. The original draft preparation markers do not contradict the subsequently supplied frozen release inputs. This assessment uses no candidate results and does not create human attestations, authorize task dispatch, or assert successful implementation or verification. No tools or code were executed, and digests were accepted as Service-calculated bindings, not independently recomputed.",
+    "goldDigest": "d49d5ba47165eaa9152ed982fb2c7d0f47619f09e79d91fb790fb8a0dca406dc"
+  }
+}

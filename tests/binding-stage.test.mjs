@@ -388,6 +388,33 @@ test('BindingStage reserves intact named owners before large regression excerpts
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage preserves an indirectly referenced large request class within the existing single-class envelope', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-indirect-class-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const inputs = {
+      'index.ts': "import { Client } from './Client.js';\nexport const request = () => Client.create();\n",
+      'Client.ts': `export class Client {\n${Array.from({ length: 600 }, (_, i) => `  // ${'request documentation '.repeat(4)}\n  operation${i}(value: number) { return value + ${i}; }`).join('\n')}\n  static create() { return new Client().fetch(); }\n  fetch() { throw new Error('HTTP request failed'); }\n}\n`,
+      'Unrelated.ts': `export class Unrelated { ${'/* unused */'.repeat(4000)} }`,
+      'package.json': '{"scripts":{"test":"node --test"}}',
+    }
+    const files = []
+    for (const [path, content] of Object.entries(inputs)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((f, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: f.path, artifactDigest: f.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Inspect request in index.ts and preserve the HTTP failure contract.')
+    const owner = evidence.find(c => c.path === 'Client.ts')
+    for (const fact of ['export class Client', 'static create()', 'operation599(', "throw new Error('HTTP request failed')"]) assert.ok(owner.content.includes(fact), `Missing indirect class fact ${fact}`)
+    assert.equal(owner.truncated, true)
+    assert.ok(Buffer.byteLength(owner.content) <= 32_768)
+    assert.ok(evidence.reduce((n, c) => n + Buffer.byteLength(c.content), 0) <= 131_072)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage reserves command and compiler manifests before large code declaration closures', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-config-reservation-'))
   try {
