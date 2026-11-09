@@ -137,6 +137,36 @@ test('BindingStage preserves complete runner discovery configuration without req
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage reserves a requested regression owner before broad small-module evidence exhausts the shared budget', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-test-reservation-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const regression = `const callback = () => 'existing';\n${Array.from({ length: 370 }, (_, i) => `test('existing CORS regression ${i}', () => {});`).join('\n')}\n`
+    assert.ok(Buffer.byteLength(regression) > 16_384 && Buffer.byteLength(regression) < 24_576)
+    const inputs = { 'cors.test.ts': regression, 'vitest.config.ts': "export default { test: { include: ['**/*.test.ts'] } };\n" }
+    for (let i = 0; i < 16; i++) inputs[`helper-${i}.ts`] = `export const callback = '${'x'.repeat(7_000)}';\n`
+    const files = []
+    const references = []
+    for (const [path, content] of Object.entries(inputs)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      const digest = digestObject({ path, blob: stdout.trim() })
+      files.push({ path, digest })
+      references.push({ ref: `ref-${files.length}`, kind: 'repository_evidence', artifactId: path, artifactDigest: digest })
+    }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(
+      { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
+      { projectId: 'project', operationId: 'operation', references },
+      `Inspect callback behavior and preserve regression ownership in ${Object.keys(inputs).join(' ')}.`,
+    )
+    assert.equal(evidence.find(item => item.path === 'cors.test.ts').content, regression)
+    assert.equal(evidence.find(item => item.path === 'cors.test.ts').truncated, false)
+    assert.equal(evidence.find(item => item.path === 'vitest.config.ts').content, inputs['vitest.config.ts'])
+    assert.ok(evidence.some(item => item.path.startsWith('helper-') && item.truncated))
+    assert.ok(evidence.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage exposes complete focused JSON members with source locations without inventing absent exports', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-json-members-'))
   try {

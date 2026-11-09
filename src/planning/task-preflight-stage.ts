@@ -44,7 +44,7 @@ function stripMarkdownFence(text: string): string {
   return match?.[1] ?? trimmed
 }
 
-/** 构造只读交接，保留当前任务的完整场景及工具证据；引用缺失或跨操作时拒绝调用模型。 */
+/** 构造只读交接，保留候选覆盖关系、当前任务场景及工具证据；引用缺失或跨操作时拒绝调用模型。 */
 export function buildTaskPreflightPromptV3(
   task: GeneratedPlanV3['tasks'][number],
   assignment: AssignmentDraftRecord,
@@ -58,7 +58,10 @@ export function buildTaskPreflightPromptV3(
     /** 与 repositoryDigest 同属当前操作的权威基线，供首写前比对使用；旧调用方可不提供。 */
     repository?: TaskPreflightRepository
     sourceEvidence?: BindingEvidenceContent[]
+    /** 同一候选计划的完整任务集合；投影覆盖和依赖关系，不授予其他任务的执行权限。 */
     planTasks?: GeneratedPlanV3['tasks']
+    /** 同一操作已选成员，仅投影 taskKey 与执行者以检查独立验证关系；不代表已派发。 */
+    planAssignments?: AssignmentDraftRecord[]
     /** 当前操作已冻结的场景；提供时必须能解析任务引用的每个场景。 */
     scenarios?: AcceptanceScenarioRecord[]
     /** 同一仓库快照捕获的本地验证工具源码，仅用于核对发现规则，不代表测试已执行。 */
@@ -68,6 +71,13 @@ export function buildTaskPreflightPromptV3(
   if (input.repository !== undefined && (input.repository.projectId !== manifest.projectId || input.repository.operationId !== manifest.operationId || input.repository.repositoryDigest !== input.repositoryDigest)) {
     throw new WorkflowError('task-preflight-stale', 'TaskPreflight repository identity does not match its frozen operation and digest.', 409)
   }
+  if (input.planAssignments?.some(item => item.projectId !== manifest.projectId || item.operationId !== manifest.operationId)) {
+    throw new WorkflowError('task-preflight-stale', 'TaskPreflight plan assignments do not belong to the frozen operation.', 409)
+  }
+  const planCoverage = input.planTasks?.map(item => ({ key: item.key, kind: item.kind, relationship: item.relationship,
+    requirementKeys: item.requirementKeys, acceptanceKeys: item.acceptanceKeys, scenarioKeys: item.scenarioKeys,
+    dependencyKeys: item.dependencyKeys, completionCriteria: item.completionCriteria,
+    selectedAgentId: input.planAssignments?.find(draft => draft.taskKey === item.key)?.executingAgentId }))
   const dependencies: GeneratedPlanV3['tasks'] = []
   if (input.planTasks !== undefined) {
     const byKey = new Map(input.planTasks.map(item => [item.key, item]))
@@ -135,6 +145,8 @@ export function buildTaskPreflightPromptV3(
 
 Dependency semantics: dependencyKeys define execution order inside this unapproved candidate plan. Dependency Tasks are expected to be unexecuted during preflight. Do not require dependency completion, output, status, or target files as a precondition for accepting this handoff; assess whether their frozen contracts and ordering make this Task executable when it becomes runnable.
 
+Candidate-plan semantics: the coverage projection preserves actual task relationships, requirement/acceptance/scenario coverage, dependency edges, completion criteria and selected Agents across this same unapproved plan, including successor verification Tasks. It neither authorizes another Task's writes nor proves any Task has executed. Use these facts when the current Task requires inspecting independent coverage; do not invent a missing edge, verification task or independent executor.
+
 Measurement semantics: distinguish a frozen baseline revision from measurements of that revision. When this Task or a supplied dependency contract explicitly owns capturing comparable measurements before implementation, those values and artifacts are planned execution work, not facts that must already exist during preflight. Verify the actual producer, ordering, confirmed commands, comparison environment and evidence handoff. Do not infer a capture owner from an id alone, invent baseline numbers, treat a repository digest as measured data, or bypass a prohibition on baseline changes. A Task that merely assumes an external baseline without a supplied artifact or an authorized capture contract still has a concrete blocking gap.
 
 Repository identity semantics: the supplied frozen repository identity names the authoritative expected headCommit and tree/dirty digests captured for this operation. Actual checkout verification remains execution-time work; this projection neither proves the checkout still matches nor permits writes before that check. Do not infer a commit SHA from a repository digest. If no identity is supplied and the Task requires an external fixed baseline, retain that missing fact.
@@ -149,6 +161,9 @@ Evidence semantics: full frozen acceptance scenarios below preserve the required
 
 Shape:
 {"agentId":"...","agentReportedStatus":"accepted|needs_clarification|rejected","identityAuditable":true,"structuralEligible":true,"accessCurrent":true,"contextCurrent":true,"evidenceRead":true,"objectiveRestated":true,"startingPointCovered":true,"allowedScopeCovered":true,"forbiddenScopeAcknowledged":true,"verificationCovered":true,"escalationCovered":true,"noBlockingUnknowns":true,"missingFacts":[]}
+
+Candidate plan coverage (unapproved):
+${JSON.stringify(planCoverage ?? null)}
 
 Frozen repository identity:
 ${JSON.stringify(input.repository === undefined ? null : { snapshotId: input.repository.id, repositoryDigest: input.repository.repositoryDigest,
@@ -222,6 +237,7 @@ export class TaskPreflightStage {
         repositoryDigest: input.repositoryDigest,
         ...(input.repository === undefined ? {} : { repository: input.repository }),
         planTasks: input.tasks,
+        planAssignments: input.assignments,
         ...(input.scenarios === undefined ? {} : { scenarios: input.scenarios }),
         ...(input.verificationTools === undefined ? {} : { verificationTools: input.verificationTools }),
         ...(input.sourceEvidence === undefined ? {} : { sourceEvidence: input.sourceEvidence }),

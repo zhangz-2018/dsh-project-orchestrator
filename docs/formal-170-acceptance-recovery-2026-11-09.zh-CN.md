@@ -197,6 +197,20 @@ GitHub 提交 `2c6a253` 的 CI/CodeQL 首轮均无 job，CI 页面标注 `Intern
 
 补证回执为本机 `gold-runner-identity-provenance/`，完整回归日志为 `output/formal-170-provenance-verify-2026-11-10.log`；采集器目录为 `runner-identity-completion/`。所有文件仍用于正式验收和恢复，保留本机。
 
+### v43 终态与交接证据修复（2026-11-10）
+
+`runner-identity-completion/` 四本账本均已收齐终态并与领域记录交叉核验。p-map completion observer、p-queue maxqueued resolved 均 committed，全部适用指标通过。Hono 的原操作在 policy_snapshot 被 superseded，自动后继在 code_binding 阻塞；后继不计 fresh。p-retry 在 task_preflight 阻塞。单一采集器已停止，未重发原请求，四本账本与后继证明全部保留。
+
+Hono 原冻结快照明确包含目标测试路径，但正文为空且 truncated=true：候选预算排序把辅助模块放在完整显式测试之前。Binding 现在在原总预算和单文件上限内，优先保留明确指定的完整测试文件；运行器配置仍有最高优先级。原 Hono 快照的只读复现保留完整 16,799 bytes 测试和 vitest.config.ts，总正文保持 98,304 bytes，不放宽缺证据拒绝。
+
+p-retry 的实现任务预检需要核对后继独立验证任务，但原交接仅包含当前任务和前置依赖。TaskPreflight 现在附同项目、同操作候选任务的覆盖键、依赖、完成标准及选择成员；任何跨项目或操作的 assignment 在模型调用前拒绝。此投影不授予其他任务写权限，不证明执行成功，也不增加能力事实。
+
+新增预算压力与交接回归均先失败、修复后通过；完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，561 项 Node 测试、7 项浏览器测试和包检查通过。补齐方法注释后重新 build 与 36 项相关测试通过。新包已安装，源码与隔离安装 bundle SHA-256 同为 `d607bc5026ced39a86e368028027005e23eb40615fa5c2f2238c50271aab3a96`，新版本标记为 `evidence-grounded-v3.3.33`，尚未取得新版真实候选成绩。
+
+旧 greeting home 丢失且无备份。`prepare-canary-recovery.mjs` 已在持久验收目录重建独立仓库与草稿 home，保留原项目的九条完整能力记录及原登记回执，不恢复旧审批、任务或交付成绩。重建基线 commit 为 `77aa9a174da47c111f190d8cc52dfb91c8b00635`，基线测试一项通过；该结果不代表交付验收。新计划和最终 diff 仍须按实际产物审阅。
+
+本机追加证据为 `runner-identity-completion/domain-facts-1.json` 至 `domain-facts-4.json`、`domain-before-handoff-reservations-install.json`、`hono-regression-reservation-reproduction.json`、`handoff-reservations-installed.json`、`canary-recovery/context.json`。完整回归日志为 `output/formal-170-handoff-reservations-verify-2026-11-10.log`。本版隔离 Host 初次重启发现 npm legacy-peer 安装后缺少 Host 所需 peer 包；启动在模型请求前失败，正在修复隔离依赖，不涉及日常 Host。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

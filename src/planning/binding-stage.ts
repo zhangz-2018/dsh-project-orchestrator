@@ -242,6 +242,7 @@ function bindingPromptV3Base(analysis: RequirementAnalysisResult, scenarios: Acc
 export class BindingStage {
   constructor(private readonly store: BindingStageStore, /** Git 读取使用调用方所属的 Host/CLI 后端。 */ private readonly runGit: typeof gitProcess = gitProcess) {}
 
+  /** 校验同操作的冻结文件并在共享预算内提供证据；优先保留验证配置和明确回归 owner，越界、漂移或超大源码拒绝读取。 */
   async loadFrozenEvidence(repository: RepositoryContextSnapshotV3Record, manifest: PlanningPromptReferenceManifestRecord, focus?: string): Promise<BindingEvidenceContent[]> {
     if (manifest.projectId !== repository.projectId || manifest.operationId !== repository.operationId) throw new WorkflowError('repository-evidence-report-stale', 'Binding evidence belongs to another Planning operation.', 409)
     const root = await realpath(repository.canonicalRoot)
@@ -543,6 +544,13 @@ export class BindingStage {
           candidates.push({ path, content: source.excerpt, priority: -1_000_000, whole: true })
           continue
         }
+        // 明确指定且在单文件上限内的回归文件是独立验证 owner，先于广泛的辅助声明保留其完整 fixture/断言。
+        // 仍受共享总预算限制，不能以测试路径为由扩容或把其他被省略内容标成已证明。
+        const completeRegression = explicitPaths.includes(path) && /(?:^|[/.])(?:tests?|spec)(?:[/.]|$)/iu.test(path) && source.bytes.byteLength <= fileLimit(path)
+        if (completeRegression) {
+          candidates.push({ path, content: source.bytes.toString('utf8'), priority: -800_000, whole: true })
+          continue
+        }
         if (!declaringPaths.has(path)) {
           if (explicitPaths.includes(path)) candidates.push({ path, content: source.excerpt, priority: -100_000, whole: true })
           continue
@@ -551,8 +559,7 @@ export class BindingStage {
         const rank = Math.min(...nodes.map(node => statementPriority.get(node)!))
         const smallExplicitModule = explicitPaths.includes(path) && source.bytes.byteLength <= 8_192
         const shortContract = source.bytes.byteLength <= 8_192 && program.getSourceFile(frozenPath(path))?.statements.every(node => ts.isImportDeclaration(node) || ts.isExportDeclaration(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node))
-        const completeRegression = explicitPaths.includes(path) && /(?:^|[/.])(?:tests?|spec)(?:[/.]|$)/iu.test(path) && source.bytes.byteLength <= fileLimit(path)
-        if (source.bytes.byteLength <= 1_024 || smallExplicitModule || completeRegression || shortContract) {
+        if (source.bytes.byteLength <= 1_024 || smallExplicitModule || shortContract) {
           candidates.push({ path, content: source.bytes.toString('utf8'), priority: smallExplicitModule || (shortContract && explicitPaths.includes(path)) ? -750_000 : rank, whole: true })
         } else {
           for (const slice of slicesByPath.get(path) ?? []) candidates.push({ path, ...slice, whole: false })

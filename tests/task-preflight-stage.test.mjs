@@ -139,6 +139,33 @@ test('TaskPreflightStage hands off complete scenario variants and installed veri
   } })
 })
 
+test('TaskPreflightStage exposes successor verification coverage without claiming execution or authorizing its writes', async () => {
+  const { store, input } = await fixture()
+  const implement = { ...input.tasks[0], relationship: 'implementation', kind: 'code', requirementKeys: ['REQ-1'], acceptanceKeys: ['AC-1'], scenarioKeys: ['SCN-1'], dependencyKeys: [], completionCriteria: ['Implement the behavior.'] }
+  const verifier = { ...implement, key: 'TASK-VERIFY', relationship: 'verification', kind: 'test', dependencyKeys: [implement.key], completionCriteria: ['Independently verify AC-1.'], contextPack: { ...implement.contextPack, objective: 'Unrelated private context must not be projected here.' } }
+  const otherAssignment = { ...input.assignments[0], id: 'assignment-2', taskKey: verifier.key, executingAgentId: 'agent-2' }
+  await store.agents.put('agent-2', { id: 'agent-2', status: 'active' })
+  await new TaskPreflightStage(store).run({ ...input, tasks: [implement, verifier], assignments: [...input.assignments, otherAssignment], runReadOnly: async (prompt, agent) => {
+    const coverage = JSON.parse(prompt.split('Candidate plan coverage (unapproved):\n')[1].split('\n\nFrozen repository identity:')[0])
+    assert.deepEqual(coverage, [implement, verifier].map((task, index) => ({ key: task.key, kind: task.kind, relationship: task.relationship,
+      requirementKeys: task.requirementKeys, acceptanceKeys: task.acceptanceKeys, scenarioKeys: task.scenarioKeys, dependencyKeys: task.dependencyKeys,
+      completionCriteria: task.completionCriteria, selectedAgentId: index === 0 ? 'agent-1' : 'agent-2' })))
+    if (agent.id === 'agent-1') assert.doesNotMatch(prompt, /Unrelated private context/u)
+    assert.match(prompt, /neither authorizes another Task's writes nor proves any Task has executed/u)
+    return JSON.stringify({ ...report(), agentId: agent.id })
+  } })
+})
+
+test('TaskPreflightStage rejects a foreign successor assignment before any current-task model call', async () => {
+  const { store, input } = await fixture()
+  let calls = 0
+  await assert.rejects(() => new TaskPreflightStage(store).run({ ...input,
+    assignments: [...input.assignments, { ...input.assignments[0], taskKey: 'TASK-VERIFY', projectId: 'other-project' }],
+    runReadOnly: async () => { calls++; return JSON.stringify(report()) },
+  }), error => error.code === 'task-preflight-stale')
+  assert.equal(calls, 0)
+})
+
 test('TaskPreflightStage rejects missing or foreign scenario contracts before the model handoff', async () => {
   const { store, input } = await fixture()
   input.tasks[0].scenarioKeys = ['SCN-BOUNDARY']

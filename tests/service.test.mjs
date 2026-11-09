@@ -2063,6 +2063,12 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(preflightPrompts.length, 2)
     const preflightRepository = store.repositorySnapshotsV3.get(committedOperation.repositorySnapshotId)
     for (const preflightPrompt of preflightPrompts) {
+      const handedCoverage = JSON.parse(preflightPrompt.split('Candidate plan coverage (unapproved):\n')[1].split('\n\nFrozen repository identity:')[0])
+      const frozenProposal = [...store.planningProposalPacks.records.values()].find(item => item.operationId === committedOperation.id)
+      assert.deepEqual(handedCoverage, frozenProposal.plan.tasks.map(item => ({ key: item.key, kind: item.kind, relationship: item.relationship,
+        requirementKeys: item.requirementKeys, acceptanceKeys: item.acceptanceKeys, scenarioKeys: item.scenarioKeys,
+        dependencyKeys: item.dependencyKeys, completionCriteria: item.completionCriteria,
+        selectedAgentId: [...store.assignmentDrafts.records.values()].find(draft => draft.operationId === committedOperation.id && draft.taskKey === item.key)?.executingAgentId })))
       const handedRepository = JSON.parse(preflightPrompt.split('Frozen repository identity:\n')[1].split('\n\nAssignment:')[0])
       assert.deepEqual(handedRepository, { snapshotId: preflightRepository.id, repositoryDigest: preflightRepository.repositoryDigest,
         headCommit: preflightRepository.headCommit, trackedTreeDigest: preflightRepository.trackedTreeDigest, dirtyDigest: preflightRepository.dirtyDigest })
