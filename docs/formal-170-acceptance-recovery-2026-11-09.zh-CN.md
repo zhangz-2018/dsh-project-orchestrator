@@ -309,6 +309,18 @@ Zod 自动后继 `planning-v3:e00c6c46-ae88-4356-af63-ac5996639da8` 在 scenario
 
 提交 `b01fa1b` 的 Linux/macOS CI 与 CodeQL 已全部通过，原多项式回溯告警未被压制。当前配置闭包修复仍需独立 CI。升级前主 Host 的 64 个历史规划和 260 条人工确认、canary 的六个历史规划和九条人工确认均已保存；两个环境无运行规划、审批、TaskRun、派发或交付，已正常停止，仅升级隔离 runtime，日常 Host 不变。
 
+### v49 终态与配置转发边界修复
+
+`e16a382` 的 Linux/macOS CI 与 CodeQL 全部通过。隔离安装核对发现 `pnpm pack` 会移除发布脚本及 pnpm 专用 manifest 字段；tar 与安装内容一致，但不符合本任务逐字核对。改用项目 package smoke 已采用的 `npm pack --ignore-scripts` 后，四个文件逐字一致，bundle 为 `b983a57f9b1fcbc66af1d3b9cb8164cf214136befb25e50da893f5abbab842ef`。8 项真实 Host 兼容检查通过；主环境 61 项目、64 个历史规划、260 条人工确认和 canary 的 1 项目、6 个历史规划、9 条人工确认在重启后整个领域快照原样一致，无审批、派发或交付。
+
+`config-closure-v49` 的 Zod/p-map 独立 Gold 均 approved。Zod 首个根请求 `planning-v3:bd961cbe-5c9a-44e1-92b3-93d0173ee21b` 在 scenario_completion blocked，属于保留的质量失败，不能记作通过样本。其拒绝说明配置及编译入口已补齐，但 classic/mini factory、exports 和 core 解析链仍缺源码。根因是 setup 导入 barrel 后，配置依赖遍历又将其大量生产重导出提升为完整配置，耗尽证据字节预算。现在保留转发文件原文，停止在该处提升其重导出依赖；生产声明继续由现有 TypeScript 符号图按实际用途分配。原 98,304 bytes 上限、文件真实性及证据不足门禁均保留。压力回归先红后绿；原 Zod 冻结库存只读复查已提供两套 factory、external、core/schema/parse 及原样配置/setup，未执行仓库或调用模型。
+
+同版 canary `planning-v3:538afb52-389c-4adc-9978-7bec3f830038` 在 requirement_analysis failed：生成结果将同一段落锚点重复分配给三个验收项。分析协议现在明确：粗粒度锚点内的所有具名条款、预期结果、拒绝、兼容、范围及验证义务须完整保留在一个复合验收项，后续按真实类别形成场景；不得拆造锚点或重复消费。既有重复消费校验继续拒绝错误结果；未决业务选择仍须保留并阻塞。恢复脚本仅允许更换 bundle 后接续已失败终态，原账本及禁止同 bundle 重发约束保留。相应协议回归与原重复消费拒绝测试通过，尚需新版真实验证。
+
+本机证据为 `config-closure-installed.json`、`config-closure-restart-domain-facts.json`、`config-closure-historical-observation.json`、`gold-config-closure-{zod,pmap}/`、`candidates-config-closure-zod-first.json` 及其领域核验、`canary-recovery/planning-config-closure.json`、`zod-config-barrel-production-capture.json`。真实 Host 报告为 `output/compatibility/dsh-0.2.2-rc.1-1794259961327.json`。原失败账本和材料保留用于验收、恢复和复现，不以本轮回归代替正式成绩。
+
+完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：571 项 Node、7 项浏览器测试、类型及文档检查、固定样本和 170 文件安装包 smoke 通过，日志为 `output/formal-170-coarse-config-final-verify-2026-11-10.log`。修复先通过三项针对性回归，包括原重复消费持续拒绝。新版隔离 bundle 为 `093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174`；65 个主环境历史规划、7 个 canary 历史规划及全部人工确认在安装后领域快照中逐字一致。新样本版本为 `config-barrel-v50`，历史证明覆盖 35 组终态证据，原 25 份需求及全部项目 ID 保持原样。正式成绩仍待本版真实请求完成。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

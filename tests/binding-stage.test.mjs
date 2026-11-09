@@ -195,6 +195,37 @@ test('BindingStage reserves a requested regression owner before broad small-modu
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage setup barrel imports cannot promote unrelated production modules over requested declarations', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-config-barrel-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const inputs = {
+      'vitest.config.ts': "export default { test: { setupFiles: ['./setup.ts'] } };\n",
+      'setup.ts': "import * as runtime from './barrel.js';\nconsole.log(runtime.context);\n",
+      'barrel.ts': Array.from({ length: 12 }, (_, i) => `export * from './unrelated-${i}.js';`).join('\n'),
+      'factory.ts': `export function requestedFactory(input: string) { return input.trim(); }\n${'// unrelated context\n'.repeat(1500)}`,
+    }
+    for (let i = 0; i < 12; i++) inputs[`unrelated-${i}.ts`] = `export const context${i} = '${'x'.repeat(15_000)}';\n`
+    const files = []
+    const references = []
+    for (const [path, content] of Object.entries(inputs)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      const digest = digestObject({ path, blob: stdout.trim() })
+      files.push({ path, digest })
+      references.push({ ref: `ref-${files.length}`, kind: 'repository_evidence', artifactId: path, artifactDigest: digest })
+    }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(
+      { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
+      { projectId: 'project', operationId: 'operation', references },
+      'Inspect requestedFactory in factory.ts and its test configuration.',
+    )
+    for (const path of ['vitest.config.ts', 'setup.ts', 'barrel.ts']) assert.equal(evidence.find(c => c.path === path).content, inputs[path])
+    assert.match(evidence.find(c => c.path === 'factory.ts').content, /export function requestedFactory\(input: string\)/)
+    assert.ok(evidence.reduce((sum, c) => sum + Buffer.byteLength(c.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage exposes complete focused JSON members with source locations without inventing absent exports', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-json-members-'))
   try {

@@ -47,7 +47,8 @@ if (journal === undefined) {
     assert.equal(previous.baselineCommit, context.baselineCommit)
     assert.notEqual(previous.bundleSha256, bundle, 'A failed same-bundle request must not be retried for a better score')
     // 新构建可替换从未批准或执行的候选；保留旧账本，通过正式 revise 重算全部阶段。
-    assert.ok(previous.operations.every(item => ['blocked', 'superseded', 'committed'].includes(item.status)))
+    // 新构建也可修复已失败的生成协议；原失败完整保留，仍禁止同 bundle 重发。
+    assert.ok(previous.operations.every(item => ['blocked', 'failed', 'superseded', 'committed'].includes(item.status)))
     assert.deepEqual(snapshot.planningOperations.map(item => item.id).sort(), [...previous.previousOperationIds, ...previous.operations.map(item => item.id)].sort())
     assert.ok(snapshot.planningOperations.every(item => item.status !== 'running'))
   } else {

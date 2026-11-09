@@ -3070,6 +3070,35 @@ test('Planning V3 repairs competing source dispositions with the invalid output 
   }
 })
 
+test('Planning V3 preserves all clauses in a coarse source anchor without duplicating its disposition', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-compound-anchor-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    const store = memoryStore()
+    const source = 'REQ-TRIM: Trim the name. AC-TRIM: padded names are normalized. AC-REJECT: empty names throw TypeError. AC-COMPAT: existing names retain their result.'
+    const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+      assert.equal(manifest.anchors.length, 1)
+      generated.requirements[0].statement = source
+      generated.requirements[0].acceptanceCriteria[0].statement = source
+      return generated
+    } }
+    const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+    try {
+      const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Compound anchor', cwd: repository, prd: source })
+      await service.startDecomposition(project.id)
+      await waitForPlanning(store, project.id)
+      const prompt = observation.requirementAnalysisPrompts[0]
+      assert.match(prompt, /A single source anchor can contain several explicitly labelled acceptance clauses/)
+      assert.match(prompt, /Preserve every clause, its label and concrete expected outcome inside one compound acceptance criterion/)
+      assert.match(prompt, /Never duplicate-consume that anchor or invent sub-anchor ids/)
+      const proposal = [...store.requirementAnalysisProposals.records.values()][0]
+      assert.equal(proposal.analysis.requirements[0].acceptanceCriteria[0].statement, source)
+      assert.equal(observation.requirementAnalysisCalls, 1)
+      assert.equal(store.executionDispatches.size, 0)
+    } finally { await service.close() }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 scenario policy keeps sibling recovery out of synchronous constructor and type checks', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-v3-local-recovery-'))
   try {

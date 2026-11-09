@@ -323,6 +323,15 @@ export class BindingStage {
         const current = configQueue.shift()!
         if (visitedConfigs.has(current.path) || current.depth >= 3) continue
         visitedConfigs.add(current.path)
+        // setup 可导入生产 barrel，但重导出并不使所有产品模块变成完整配置。
+        // 保留该转发文件原文，声明依赖仍由下方 TypeScript 符号图按实际用途收集。
+        const currentSource = sources.get(current.path)
+        if (currentSource !== undefined && !isVerificationConfigPathV3(current.path)) {
+          const statements = ts.createSourceFile(current.path, currentSource.bytes.toString('utf8'), ts.ScriptTarget.Latest).statements
+          const forwarding = statements.some(ts.isExportDeclaration) && statements.every(node => ts.isExportDeclaration(node)
+            || ts.isImportDeclaration(node) && node.importClause !== undefined)
+          if (forwarding) continue
+        }
         for (const dependency of sources.get(current.path)?.dependencies ?? []) {
           configurationPaths.add(dependency.path)
           configQueue.push({ path: dependency.path, depth: current.depth + 1 })
