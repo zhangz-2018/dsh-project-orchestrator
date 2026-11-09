@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "af1759aceac798bbc1a720e9a258f436c6734166a2fe7166cc8a1b6ae319cd2a",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f24c0d7dacfbfc5016af21ce90ce087d1ade414208854cbaf:independent-gold-review:572bb83c-e6e4-438f-8127-89f16575ca06",
+    "reviewedAt": "2026-11-09T19:20:24.227Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001 through AC-003, the exact four-file writable binding scope, and the implementation/independent-verification task split agree with the specification and supplied source owners. The shared runtime engine and shared declaration options make isolation of onMapped to default pMap necessary; the acceptance criteria explicitly cover that risk, notification-time boundaries, control symbols, error aggregation, and awaited value inference without widening results. The supplied project-scoped active capability claims support the two distinct eligible agents, including data.change, domain.state, integration.consumer, and verifier-only testing.verification; pending legacy claims and Persona are not used as eligibility evidence. The configured selected verifier can satisfy the stated independent planning-review prerequisite. Ready with no blocking reasons is appropriate for this planning-only input, which contains no material unresolved Decision; an unresolved DEC-001 in B would instead block at decisions, and hypothetical C would not constitute a human Decision. Repository identity, file fingerprints, and releaseInput values are consistent across the supplied records. The manifest/evaluation source digest distinction, PRD trim normalization, executing-bundle prompt fingerprint, and team claim projection are explicitly documented. Historical project reuse does not invalidate the preserved scoped claims or imply candidates ran on this bundle. I rely on the supplied Service-calculated digest bindings and provenance, not independent digest recomputation, code execution, or a new human attestation. Truncated test excerpts and absent installed verification tools do not establish execution success, which this planning expectation does not require. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "e7deb4907fafcd96794293982ed71d361c643359a920098affaeb19aaec531d1"
+  }
+}

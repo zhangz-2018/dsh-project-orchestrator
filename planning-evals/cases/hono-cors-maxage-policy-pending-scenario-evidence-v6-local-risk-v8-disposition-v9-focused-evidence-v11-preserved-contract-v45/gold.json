@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "f755133c3198823a7f080a0d60aa1e5f20f85fdd4a3086bf50bf9888259f895e",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d6cff1110b7cc76016af21cff695487d0adf1a397adce7ac7:independent-gold-review:4b1b5a5a-ea91-4434-961f-0ea1aa212ce5",
+    "reviewedAt": "2026-11-09T19:20:46.396Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and implementation-owner binding agree with the original PRD. AC-001 explicitly remains conditional and does not authorize OPT-1. The material unresolved DEC-001 therefore correctly blocks B at decisions, after repository and requirements evidence, without requiring later Scenario Coverage reviewer or assignment prerequisites. Empty task and assignment expectations are appropriate because this scenario must not produce assignable tasks; TASK-IMPLEMENT and TASK-VERIFY apply only after resolution. The supplied source identifies src/middleware/cors/index.ts as the maintained implementation owner and index.test.ts as the regression/type-validation scope. Configuration establishes separate compiler and runtime checks and generation of dist/types declarations, so generated declarations and read-only forwarding consumers need not become mandatory edit owners. The empty team catalog and trusted-claim projection support no assignments and do not invalidate the earlier decision block. Gold and preview releaseInput fingerprints agree; supplied provenance explains the distinct manifest/evaluation source digest domains, persistence trimming, and executing-bundle prompt fingerprint. The originalSpecification readiness bookkeeping is preparatory context, while the supplied preview and Gold provide the frozen release inputs. Historical operation presence is not candidate-output or capability evidence. Approval is limited to this supplied pending case and does not establish a human decision for the paired hypothetical case. This review used only the supplied evidence, with no execution, independent digest recomputation, or human attestation.",
+    "goldDigest": "04078783c1bb7ccd5508f78ca90963b8cbaba4c4c25491dbd4e6fe07fdb3c382"
+  }
+}

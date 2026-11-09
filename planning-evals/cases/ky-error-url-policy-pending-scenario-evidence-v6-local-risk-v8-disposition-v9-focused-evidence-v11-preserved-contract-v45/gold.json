@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_027d22f8851084f6016af21cf082c487d092b80e8aab3de966:independent-gold-review:395dab30-93da-41ef-8e02-ec4ec6793289",
+    "reviewedAt": "2026-11-09T19:20:29.637Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001 through AC-003, and DEC-001, and correctly expects blocked readiness at decisions with requirement-decision-pending for DEC-001. Neither conditional acceptance language nor the paired hypothetical case authorizes resolving that Decision. Empty task and assignment expectations match the explicit prohibition on generating assignable tasks before resolution. The nine source owners cover message construction, option declarations and normalization, filtering, inheritance, public forwarding, and hook consumers; inspection does not require edits to already-correct generic forwarding or declaration consumers. The supplied build configuration establishes distribution declarations as generated artifacts rather than separately maintained owners, and distinguishes runtime tests from test-d compilation. The empty team and capability claims do not invalidate this earlier deterministic Decision block because later scenario-review and assignment prerequisites are not reached. Gold and preview release fingerprints agree; the supplied provenance coherently distinguishes manifest and evaluation source digests, original and trimmed saved PRD digests, and executing-bundle and unbundled policy-source digests. Repository identity, base commit, file fingerprints, model settings, budgets, and metric-policy identifiers are consistently frozen. Historical project reuse is not treated as current capability evidence, and no candidate output is used. Test excerpts are partly truncated, but the complete relevant owners, configuration, original PRD, and frozen input provenance suffice for this blocked planning expectation. This review is based solely on supplied evidence; I did not execute code or independently recompute digests.",
+    "goldDigest": "01dab3439fba962cfc27c879b4ea05f38c24afe19f8f48a8f654c585b9c31ecb"
+  }
+}

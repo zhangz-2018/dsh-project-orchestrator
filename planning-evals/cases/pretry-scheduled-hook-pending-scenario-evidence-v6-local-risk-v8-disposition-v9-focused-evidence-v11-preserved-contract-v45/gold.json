@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0fceafe9a26d33e8016af21cc445ac87d1b416ed507ac4eb85:independent-gold-review:444ec29c-7843-45d0-9e4c-9c6067566e3e",
+    "reviewedAt": "2026-11-09T19:19:44.461Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD preserves REQ-001, AC-001 through AC-003, and DEC-001 consistently. DEC-001 materially changes exception propagation and simultaneous abort/throw precedence, remains explicitly unresolved and not human-confirmed, and must block B at decisions without selecting the recommended option. The blocked readiness, requirement-decision-pending reason, repository/requirements/decisions evidence stages, and empty task and assignment expectations match that contract. TASK-IMPLEMENT and dependent TASK-VERIFY apply only after resolution. The complete runtime and declaration owner evidence supports index.js and index.d.ts as the binding owner pair; package exports and the absence of a declaration-generation build support treating index.d.ts as maintained source. The specified delay reuse, decreasing backoff, zero-delay handling, termination exclusions, and post-hook cancellation checks are consistent with the existing implementation. Package configuration and supplied tool sources establish separate AVA runtime and tsd compile-time verification paths, without establishing any test execution. The empty team and capability claims do not introduce an earlier blocker because the unresolved Decision gate precedes Scenario Coverage and assignment. Gold and preview release fingerprints agree; supplied provenance explains the distinct manifest/evaluation source digest domains, PRD trimming, and executing-bundle prompt fingerprint. Historical project reuse supplies no candidate output or capability evidence here. Approval concerns this frozen pending case only, not a human decision, the paired hypothetical case, task dispatch, or implementation readiness. I used no tools, executed no code, and relied on the Service's supplied mechanical digest bindings without independently recomputing them. The explicitly truncated runtime-test excerpt does not undermine the supported owner identification or deterministic decision-stage expectation.",
+    "goldDigest": "478cddbe84dcaf459609db1804f28faaa296eb53dc83edbcf0c8cadfd2ac648e"
+  }
+}

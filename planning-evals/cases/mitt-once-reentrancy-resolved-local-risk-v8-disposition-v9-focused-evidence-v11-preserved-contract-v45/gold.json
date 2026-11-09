@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "6ab490c790258a276d8a589a2976c1faa513adb7794fa13865cde3d82bfd0edc",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_012f6b7a941b6f5f016af21d2daf1887d29313392020429841:independent-gold-review:5642cb17-5645-49b9-9019-432542a8b120",
+    "reviewedAt": "2026-11-09T19:21:37.395Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. The original PRD explicitly fixes OPT-1 as hypothetical input, not a human Decision, so ready status and an empty human-decision input are consistent; an unresolved material DEC-001 in B must still block at decisions. REQ-001, AC-001 through AC-003, task keys, exact writable owner scopes, and required evidence stages agree across the specification and Gold. The selected branch covers per-registration fired protection against stale snapshots, ordinary and wildcard reentrancy, synchronous exception propagation, registration independence, preserved off behavior, and positive and negative overload checks without requiring OPT-2 implementation. Source and build evidence support src/index.ts as the maintained implementation/declaration owner and the two test files as regression owners; generated root declarations are not separately maintained owners. Build-before-test and separate compile-time checks are explicitly planned, not claimed executed. The designated implementer and distinct verifier have matching roles, availability, auto-assignment eligibility, and supplied original project-scoped active trusted claims for the bounded work, including data.change and verifier-only testing.verification. The configured verifier can satisfy the supplied read-only planning-review prerequisite. The manifest, evaluation-source, original/saved PRD, team, decision, executing-bundle, model, sampling, budget, and policy fingerprints have consistent supplied domains and matching release-input values. The original preparation-time remaining items do not contradict the later supplied freeze evidence. No candidate evidence was used, no human attestation was created, and no code execution or independent digest recomputation is claimed.",
+    "goldDigest": "41595031aa73ecdfc26e00acd7aa34ff9676e2a2bf69e3bf0cd3a3b017329f78"
+  }
+}
