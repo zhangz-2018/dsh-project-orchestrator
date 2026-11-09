@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "c946b5827a416306cee0d4c35bd808e8d61ca815b5a9872626ff920cfdfd57c3",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_040b020eba3b9ee4016af1ecf3feb887d2bedf41b7e2931c59:independent-gold-review:04dc211b-3645-4cc5-8152-e84240f39b4e",
+    "reviewedAt": "2026-11-09T15:55:52.645Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001 through AC-003, the exact four-file writable binding scope, and the implementation/independent-verification task split agree with the specification and supplied source evidence. index.js owns construction and preserves originalError unwrapping; index.d.ts is the directly maintained exported declaration, with no generation evidence. The shown runtime regressions and complete type-test/configuration evidence support the stated verification scope and xo && ava && tsd entry point. The omitted tail of test.js does not leave a material ambiguity in these bounded ownership or contract expectations. The change concerns an invocation-local error reference, not shared data or a new state-management contract, so the absence of trusted data.change or domain.state claims does not invalidate the assignments. Both allowed agents have the relevant active project-scoped trusted contract, language, failure-handling, integration and testing claims; the verifier additionally has testing.verification. Roles, membership and availability support the distinct assignments without relying on personas or pending claims. A configured independent reviewer is also present. No material unresolved Decision is supplied, so ready with no blocking reasons is appropriate for planning, not execution or dispatch. The original specification's null releaseInput and remaining preparation items describe its earlier preparation state; the supplied frozen releaseInput and team facts provide the subsequent inputs. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct source-manifest/evaluation digest domains and whitespace-only PRD normalization. Repository, team, decision, prompt, model, sampling, policy and budget fingerprints are accepted as Service-calculated bindings to saved inputs, not independently recomputed hashes. The isolation evidence states that this Gold precedes every candidate on this bundle, with no historical operations or candidate outputs supplied. No tools or code were executed, and this review creates no human attestation.",
+    "goldDigest": "f5c004a5f54929770bb5f13a76c7ed8be68fb92a2970034dc39f14d27bdce38b"
+  }
+}

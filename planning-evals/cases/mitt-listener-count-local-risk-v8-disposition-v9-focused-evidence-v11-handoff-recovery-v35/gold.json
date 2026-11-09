@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "1ac60bbc995a5f5941c07ac76db2bf8090d6a3c29851c96f48ac32d2387b0b06",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_073d7d4ab40528b9016af1ecdf615887d29cc02af06e95662b:independent-gold-review:88386cda-c12d-494a-9fa1-75faf9e06f6d",
+    "reviewedAt": "2026-11-09T15:55:27.911Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, repository identity/base commit, exact writable owner scope, and implementation/verification task keys agree across the specification and Gold. The source supports computing exact-key counts from the current handler map without a second counter, while preserving existing on/off/emit and snapshot behavior. The build configuration and supplied upstream declaration-generation evidence support treating index.d.ts and dist as generated outputs rather than separately maintained owners; configuration and root-entry consumers require inspection, not mandatory edits. TASK-VERIFY must remain independent, depend on TASK-IMPLEMENT, and cover every required acceptance criterion alongside implementation coverage. The supplied project team facts support the two eligible assignments through active human-confirmed capability claims, including data.change, domain.state, integration.consumer, and verifier-only testing.verification; the configured independent reviewer satisfies the stated earlier review prerequisite without requiring execution claims. No material unresolved Decision is supplied, so ready with no blocking reasons is appropriate for this planning-only case. This does not authorize execution or task dispatch. A material unresolved DEC-001 in B would instead block at decisions, and a fixed hypothetical C input would not constitute a human Decision. Gold and preview release fingerprints match, and the documented source-digest domains and PRD trimming account for the distinct source fingerprints. The original specification's preparation placeholders do not override the supplied frozen preview and release inputs. This review relies on the Service's stated mechanical digest bindings and supplied evidence; I did not recompute digests, execute code, or inspect candidate outputs.",
+    "goldDigest": "9419cb73613101ef1e417de262ee996f62dafe25e482da954d1466fdf5d347ae"
+  }
+}

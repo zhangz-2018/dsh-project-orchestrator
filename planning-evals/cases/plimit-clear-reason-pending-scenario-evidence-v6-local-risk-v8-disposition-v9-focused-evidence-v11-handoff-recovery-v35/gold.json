@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0c93e0803f85c48c016af1ec52767887d29513da3242e73818:independent-gold-review:ad14c5e2-70d4-44a6-ab0c-6187be345e2f",
+    "reviewedAt": "2026-11-09T15:53:02.482Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending case. The original PRD explicitly leaves material DEC-001 unresolved: the recommended behavior in AC-001 and AC-002 is conditional and does not authorize selecting OPT-1. Blocking at decisions with requirement-decision-pending for DEC-001, requiring repository/requirements/decisions evidence, and expecting no assignable tasks or assignments are therefore appropriate. REQ-001 and AC-001 through AC-003 retain their specified stable keys. The complete supplied source supports index.js and index.d.ts as the implementation and maintained public-contract owners; limitFunction forwards the same clearQueue implementation and references the shared declaration, without requiring a separate owner edit. package.json establishes the existing xo, ava, and tsd verification entry point, with test.js and index.test-d.ts as the relevant regression surfaces. The empty team catalog does not introduce an earlier blocker because the unresolved material Decision gate precedes independent-review and assignment prerequisites. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and original/saved PRD normalization. The original specification's remaining/readiness fields describe preparation state, while the preview supplies the frozen release inputs. Independence is supported by the supplied isolation facts: no candidates or historical operations exist for this bundle. This review accepts Service-calculated digest bindings as supplied; it does not claim independent digest recomputation, execution, or human attestation.",
+    "goldDigest": "4e37e74e281c866030f1031646d4839d96dd42511139e15d5b2527bc4169a714"
+  }
+}

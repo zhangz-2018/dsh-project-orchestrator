@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_059da9dc0022e1ce016af1ec5f2d4487d28c78cfbbcc11f582:independent-gold-review:772e5492-9d04-4774-9dc9-19549e92e9aa",
+    "reviewedAt": "2026-11-09T15:53:20.147Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. Repository identity, base commit, paired case, REQ-001, AC-001 through AC-003, owner bindings, readiness, blocking reason and evidence stages agree with the original PRD. DEC-001 is material and explicitly unresolved; conditional acceptance language does not select OPT-1 or constitute human confirmation. Blocking at decisions, before Scenario Coverage and Binding, is therefore appropriate. Empty task and assignment expectations match the prohibition on generating assignable tasks in this scenario. The complete implementation and declaration sources establish index.js and index.d.ts as maintained owners, and package.json establishes separate AVA and tsd validation through xo && ava && tsd. The specified delay calculation, zero-delay notification, cancellation checks and conditional exception precedence are consistent with those sources. The truncated test.js evidence does not prevent evaluating this decisions-stage expectation because both owners, configuration and type-test evidence are supplied. The empty team catalog does not introduce a mandatory earlier blocker under the supplied gate-order policy. Gold and preview release fingerprints match; the distinct manifest and evaluation source digests and original-versus-saved PRD digests have explicit domain and normalization provenance. The original preparation snapshot's outstanding items are not treated as the current freeze: the supplied preview and Gold contain the release inputs. Isolation evidence states that this Gold precedes every candidate for this bundle. This approval relies on the Service's supplied mechanical bindings, not independent digest recomputation, code execution, human attestation or candidate outputs.",
+    "goldDigest": "164d65d9657a25193dedb06f9581f4836fe023e2b620ebaecd0552ab85aa1e0e"
+  }
+}

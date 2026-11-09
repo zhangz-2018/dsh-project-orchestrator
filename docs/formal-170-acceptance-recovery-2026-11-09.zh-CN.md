@@ -26,7 +26,7 @@
 
 Gold 工具新增 `PO_ACCEPTANCE_CONTEXT`，支持新版 patch 模型配置和版本化凭据引用；仍支持旧报告格式。凭据只复制网关所需引用，不进入报告、日志正文或 Git。
 
-## 真实模型阻塞
+## 原网关阻塞与路由切换
 
 网关为用户指定的 `http://47.253.229.128:18080/v1`，模型保持 `gpt-6.1-sol`。
 
@@ -43,6 +43,14 @@ UTC `2026-11-09T15:19:50Z` 再次检查最小 Chat Completions 请求，仍返�
 
 本机证据保存在 `output/acceptance/formal-170-20261109/`：`recovery.json`、`host-inputs-verified-final.json`、`gateway-probes.json`、`gold-1` 至 `gold-3` 的请求、响应及失败记录。文件仍用于后续复现和验收，保留原件。
 
+用户随后要求改成与 Codex 当前配置相同的 API。已只读核对其当前 provider，并将隔离验收配置切换为 `https://ai.aifiys.com`、`openai-responses`，模型仍为 `gpt-6.1-sol`；凭据仅在本机私有凭据文件中复用，不写入报告或 Git，不修改 Codex 自身及用户日常 Host。
+
+新地址的 `/models`、`/v1/models` 均列出目标模型；最小 `/responses` 请求 HTTP 200 且生成有效内容。根路径 `/chat/completions` 返回 HTML，因此不能只换 URL 或将 HTTP 200 计为模型成功。Gold 审阅工具已按 provider 协议构造请求，记录实际路由及协议，拒绝截断、拒绝回答、失败或缺少完整文本的响应；旧 Completions 协议仍受支持。上下文 `modelBaseURL` 显式绑定本批次地址，旧上下文继续绑定旧地址。
+
+切换后 61 项目、256 条原声明只读复核通过，25 个样本的真实独立 Gold 审阅均已获批准。其中 p-retry abort-cause 首次审阅误判缺少 `reliability.failure-handling`；冻结输入实际上包含两名成员在本项目的原 `human_confirmed/active` 记录。审阅输入增加原样 active 声明投影以便核对，未改变 Gold、权威声明或人工确认；追加复核获批准，首次审阅结果保留。候选规划及 canary 仍需完成，不能将 Gold 审阅通过视为正式发布验收通过。
+
+追加本机证据：`codex-route-migration.json`、`codex-route-discovery.json`、`codex-generation-probes.json`、`host-inputs-codex-route.json`、`gold-codex-route-1/`、`gold-codex-ready-a/`、`gold-codex-ready-b/`、`gold-codex-blocked/` 及 `gold-codex-pretry-claims/`。旧配置和凭据已保存在同一私有任务目录用于恢复，均不提交。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。
@@ -51,6 +59,7 @@ UTC `2026-11-09T15:19:50Z` 再次检查最小 Chat Completions 请求，仍返�
 - 后续完整依赖审计发现 Host 开发依赖链的 `undici@8.11.2` 告警；增加现有 pnpm override，锁定修复版 `8.12.2`，隔离 Host 同步安装该版本。完整 `pnpm audit --json` 退出 0，各级漏洞均为 0。该 override 不会自动升级用户另行安装的 Host。
 - 此依赖修复后完整 `pnpm verify` 再次退出 0，543 条 Node 测试、7 条浏览器测试和其余检查均通过，安装包 168 个文件。日志为本机 `output/formal-170-security-verify-2026-11-09.log`，完整审计为 `output/formal-170-full-audit-fixed-2026-11-09.json`。
 - 更新隔离安装包和 Host 的 undici 后，8 项真实 Host 检查再次通过；本机报告为 `output/compatibility/dsh-0.2.2-rc.1-1794237580721.json`，仍使用本地确定性模型，不计入真实规划成绩。
+- 新增 Responses/Completions 审阅协议回归后，完整 `pnpm verify` 退出 0，545 条 Node 测试、7 条浏览器测试及其余检查通过；本机日志 `output/formal-170-codex-route-verify-2026-11-09.log`。
 - `pnpm eval:planning`：退出 1；默认正式 manifest 仍缺足够 ready/resolved 样本、完整有效候选及本版 canary。
 
 本机日志为 `output/formal-170-verify-2026-11-09.log`、`output/formal-170-host-compatibility-2026-11-09.log`、`output/formal-170-audit-2026-11-09.json`、`output/formal-170-planning-gate-2026-11-09.log`。GitHub CI 结果需另行核对，不能用本地通过推定。
@@ -59,7 +68,7 @@ UTC `2026-11-09T15:19:50Z` 再次检查最小 Chat Completions 请求，仍返�
 
 ## 剩余发布条件
 
-1. 恢复网关目标模型的生成服务，重新执行独立 Gold 审阅，保留已有 503 记录。
+1. 通过新 Codex 默认 API 完成独立 Gold 审阅，保留旧网关已有 503 记录。
 2. 在当前 bundle 上完成 8 仓库、25 样本、每样本至少 5 次有效独立真实规划，覆盖 8 对 pending/resolved 及无合格成员场景；保留所有失败，修复根因后重新验证。
 3. 完成同版真实交付 canary、独立验证和所需人工交付确认。
 4. 默认正式门禁、完整回归及 GitHub CI/CodeQL 通过后，才合并发布提交、创建 `v1.7.0` tag，执行正式 GitHub Release 和 npm provenance 发布。
