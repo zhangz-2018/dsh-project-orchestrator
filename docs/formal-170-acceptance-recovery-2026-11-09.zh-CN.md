@@ -62,6 +62,28 @@ UTC `2026-11-09T15:19:50Z` 再次检查最小 Chat Completions 请求，仍返�
 
 本机回执为 `candidates-ready.json`、`candidates-blocked.json`、`ready-policy-successors.json`、`ready-qualification-diagnostics.json` 及 `codex-route-terminal-observation.json`。所有 12 个实际操作（含 1 个自动后继）均已终态，无审批、任务执行或交付写入。隔离 Host 已停止，停机后保存 `domain-after-codex-route-snapshot.json`；新地址及协议配置继续保留。上述问题属于正式规划质量和资格检查，不能继续归因为旧网关 503，也不表示本次 API 地址切换失败。
 
+### 事件观测修复与 p-retry 能力补充
+
+2026-11-10（北京时间），在 Service 的场景生成契约补充事件观测器生命周期规则，并升级 `scenario-coverage-review-v3.3.18`。`once` 回调仅用于重入触发；总事件数及事件缺席必须由首次触发前注册、覆盖同步重入和异步结算的独立非 once 收集器证明，完成断言后才能清理。规则同时禁止虚构私有钩子、事件存储或不存在的 payload。独立审核标准保持不变。
+
+新增 EventTarget 反例回归先失败、修复后通过：正确与错误生产者的 once 回调次数均为 1，而持续收集器分别观察到 1 次和 2 次事件。完整 `pnpm verify` 退出 0，546 条 Node 测试、7 条浏览器测试及其余本地检查通过。真实隔离 dsh Host 的 8 项兼容检查也通过，使用确定性适配器，不计作真实模型规划成绩。
+
+p-retry 的源码与现行 `v3.3.14` 能力规则复核确认需要 `data.change`、`domain.state`。用户已明确确认原两名成员在单一隔离项目承担这 4 项能力，并通过正式接口登记为 `human_confirmed/active`；原 256 项及原 pending 记录均保留。具体范围及登记回执见 [p-retry 能力补充清单](release-capability-pretry-addendum-2026-11-10.zh-CN.md)。没有放宽能力规则或代签其他项目。
+
+修复版 bundle SHA-256 为 `6f64622478bf69eb1782f980a2b063b4e26fe4d668b75bc106c9451776f1de2a`；隔离安装与本地构建一致。先保留旧版全部终态及自动后继的摘要证明，再冻结 `event-oracle-v36` 的独立 Gold，批准后才启动该版本真实候选。
+
+- p-retry `planning-v3:d40ac855-48ec-424b-9e36-f40a89cae7af` 已 `committed`，真实 fresh-1 的全部适用质量指标达标，包括 `assignableRate=1`、`firstPassApprovableRate=1` 和证据阶段完整覆盖。此处 committed 表示规划候选已原子保存，不是代码交付。
+- p-queue `planning-v3:a74b4b17-88e0-4c06-b23f-7685176ee27e` 已生成独立非 once 收集器，并通过独立场景审核。其 `SCN-AC-003-BOUNDARY` 明确断言重入拒绝时完整序列为 `['add']`，外层完成后为 `['add', 'next']`，且说明禁止的嵌套事件即便随后拒绝也会被检测。
+- 该 p-queue 根操作随后发现 4 个仓库 MUST 策略种子，按现有固定点流程被 supersede。采集器保留 `planning-policy-superseded/infrastructure_failure` 并退出 1，没有将自动后继当作 fresh 候选。后继 `planning-v3:c05102ca-c66c-47f4-99b1-78bd57ad517e` 在场景审核被正确拒绝：已断言等待中取消会发出 `next`，但结构化事件清单及收集器只覆盖提交前已取消的无事件分支，缺少该 present 事实的独立观察。
+
+针对后继暴露的相邻缺口，场景生成契约进一步升级至 `scenario-coverage-review-v3.3.19`：按每个具体夹具分支核对事件清单、收集器、结算检查点及断言；一个分支的 absent 不能覆盖另一个分支的 present。完整输出模板同时补齐 `eventObservables`，避免模板遗漏该字段。新增契约断言先失败再通过，没有弱化独立审核或删除必要分支。
+
+最终版 bundle SHA-256 为 `c8709d90690a8e8f73f761a3bddff44c98209c49b99f2198428c0737b354a4dc`，隔离安装摘要一致。61 个项目的旧操作历史核对通过，两个未知版本的自动后继均通过安装前终态观测证明隔离，没有推断其版本。`event-variant-v37` 两份新 Gold 已在该版本任何候选启动前独立批准，真实候选正在复验。最终版完整 `pnpm verify` 退出 0，546 条 Node 测试、7 条浏览器测试、clean install/package smoke（169 文件）及其余本地检查通过；8 项真实 Host 兼容检查再次通过。
+
+本机证据位于 `output/acceptance/formal-170-20261109/`：`pretry-capabilities-confirmed.json`、`domain-before-event-oracle-install.json`、`ready-domain-before-event-oracle.json`、`event-oracle-installed.json`、`event-oracle-historical-observation.json`、`gold-event-oracle-focused/` 和 `candidates-event-oracle-focused.json`。完整回归日志为 `output/formal-170-event-oracle-verify-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794241643747.json`。日志和领域快照仍用于验收及恢复，保留本机，不提交原文或凭据。
+
+最终版追加证据为同目录 `event-oracle-policy-successors.json`、`event-oracle-domain-before-variant.json`、`domain-before-event-variant-install.json`、`event-variant-installed.json`、`event-variant-historical-observation.json`、`gold-event-variant-focused/`、`candidates-event-variant-focused.json`；完整回归日志为 `output/formal-170-event-variant-verify-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794242347023.json`。旧提交 `ac63d14` 的 Linux CI 和 CodeQL 通过，macOS 作业没有执行 step 就被取消，不能记作测试通过或断言失败。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

@@ -3183,6 +3183,36 @@ test('Planning V3 recovery policy requires a recovery action or successful retry
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('Planning V3 event oracle keeps reentrant emissions observable after a once listener is removed', () => {
+  // 隔离 EventTarget 的真实监听器生命周期，复现“多发事件但 once 计数仍为 1”的反例。
+  const observe = (emitRejectedNestedEvent) => {
+    const events = new EventTarget()
+    let onceCalls = 0
+    const collected = []
+    events.addEventListener('add', () => collected.push('add'))
+    events.addEventListener('add', () => {
+      onceCalls += 1
+      if (emitRejectedNestedEvent) events.dispatchEvent(new Event('add'))
+    }, { once: true })
+    events.dispatchEvent(new Event('add'))
+    return { onceCalls, collected }
+  }
+  const correct = observe(false)
+  const faulty = observe(true)
+  assert.equal(correct.onceCalls, faulty.onceCalls, 'The once-only counter cannot distinguish the forbidden nested event')
+  assert.deepEqual(correct.collected, ['add'])
+  assert.deepEqual(faulty.collected, ['add', 'add'])
+  const service = new OrchestratorService({}, memoryStore())
+  const prompt = service.scenarioCompletionPromptV3({ requirements: [] }, {}, { anchors: [] }, new Map(), false)
+  assert.match(prompt, /Event observer lifetime grounding/)
+  assert.match(prompt, /independent non-once collector/)
+  assert.match(prompt, /register it before the first trigger/)
+  assert.match(prompt, /faulty producer that emits a forbidden nested event and then rejects/)
+  assert.match(prompt, /Variant event coverage grounding/)
+  assert.match(prompt, /A present event in one variant cannot be covered by an absent event in another/)
+  assert.match(prompt, /"required":true,"sourceAnchorIds":\["source-anchor-id"\],"eventObservables":\[/)
+})
+
 test('Planning V3 dependency policy distinguishes error contracts from actual dependency faults', async () => {
   const cases = [
     { text: 'DEC-001: 等待队列已满时，拒绝值使用原生 RangeError，还是 name 为 QueueCapacityError 的普通 Error？调用方依赖错误类型分支，未选择前不能固定错误契约。', required: false },
