@@ -3193,6 +3193,51 @@ test('Planning V3 derives compatibility from explicit preserved contracts within
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('Planning V3 derives explicit input rejection from its own source even when the model labels it happy_path', async () => {
+  const samples = [
+    { text: 'AC-REJECT: 空字符串或只有空白的姓名必须抛出 TypeError。', required: true },
+    { text: 'Reject invalid input names with TypeError.', required: true },
+    { text: 'For an empty name, greet must throw a TypeError.', required: true },
+    { text: '输入校验失败时拒绝调用，不产生业务写入。', required: true },
+    { text: 'Use src/reject-invalid-input.ts and the business_rejection test label.', required: false },
+    { text: '无需拒绝空姓名，按新契约返回结果。', required: false },
+    { text: 'Do not reject empty inputs; return the configured result.', required: false },
+    { text: 'Empty inputs must not throw a TypeError.', required: false },
+    { text: '空姓名不得抛出 TypeError，按新契约返回结果。', required: false },
+    { text: 'Reject invalid inputs but do not throw a TypeError.', required: true },
+    { text: 'The dependency throws a TypeError; preserve its identity.', required: false },
+    { text: 'Preserve the existing TypeError declaration and error object.', required: false },
+  ]
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-input-rejection-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    for (const sample of samples) {
+      const store = memoryStore()
+      const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+        const anchors = manifest.anchors.filter(anchor => anchor.requiredDisposition)
+        return { ...generated, requirements: [{ ...generated.requirements[0], sourceRefs: anchors.map(anchor => anchor.id),
+          acceptanceCriteria: anchors.map((anchor, index) => ({ key: `AC-${String(index + 1).padStart(3, '0')}`,
+            statement: anchor.text, required: true, scenario: 'happy_path', sourceRefs: [anchor.id] })) }] }
+      } }
+      const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+      try {
+        const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Input rejection', cwd: repository,
+          prd: `# Contract\n\n${sample.text}\n\n执行独立的类型检查。` })
+        await service.startDecomposition(project.id)
+        await waitForPlanning(store, project.id)
+        const policies = [...store.acceptanceScenarioCoveragePolicies.records.values()]
+        assert.equal(policies.length, 2)
+        const own = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-001'))
+        const sibling = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-002'))
+        assert.equal(own.categories.find(item => item.category === 'business_rejection').applicability, sample.required ? 'required' : 'not_applicable', sample.text)
+        assert.equal(sibling.categories.find(item => item.category === 'business_rejection').applicability, 'not_applicable')
+        assert.equal(observation.requirementReviewCalls, 1)
+        assert.equal(store.executionDispatches.size, 0)
+      } finally { await service.close() }
+    }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 recovery policy requires a recovery action or successful retry contract, not retry vocabulary', async () => {
   const cases = [
     { text: '次数耗尽、时间预算耗尽、AbortError、非网络 TypeError、shouldRetry=false 或已取消均不发事件。推荐方案下 hook 抛错原样终止；另一方案忽略同步抛错并继续，但仍执行取消检查。',

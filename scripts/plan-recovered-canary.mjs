@@ -65,7 +65,12 @@ if (journal === undefined) {
   let revisionBundleId
   if (project.status === 'awaiting_approval') {
     const plan = snapshot.planSnapshots.find(item => item.id === project.currentPlanSnapshotId)
-    assert.equal(plan?.planningOperationId, previous.currentOperationId)
+    // 被阻塞的重算不会发布新计划；只沿用前次终态快照中真实保留的候选指针，不能假定失败操作已提交。
+    const previousProject = previous.snapshot.projects.find(item => item.id === projectId)
+    assert.equal(project.currentPlanSnapshotId, previousProject.currentPlanSnapshotId)
+    assert.deepEqual(plan, previous.snapshot.planSnapshots.find(item => item.id === previousProject.currentPlanSnapshotId))
+    assert.equal(plan?.status, 'candidate')
+    assert.ok(previous.snapshot.planningOperations.some(item => item.id === plan.planningOperationId && item.status === 'committed'))
     const matrix = await request(`/projects/${projectId}/requirements?includeHistory=true`)
     const requirementBundle = matrix.bundles.find(item => item.id === plan.requirementBundleIds[0])
     assert.ok(requirementBundle)

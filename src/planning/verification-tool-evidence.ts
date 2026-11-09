@@ -26,8 +26,12 @@ function verificationScriptTokens(manifest: RepositoryCommandManifest | undefine
     for (const segment of command.split(/&&|\|\||[;|]/u)) {
       const run = /^\s*(?:npm|pnpm|yarn|bun|nub)\s+run\s+([A-Za-z0-9:_-]+)(?:\s|$)/u.exec(segment)
       if (run) queue.push(run[1]!)
-      const all = /^\s*(?:npm-run-all|run-s|run-p)\s+([A-Za-z0-9:_\s-]+)$/u.exec(segment)
-      if (all) queue.push(...all[1]!.trim().split(/\s+/u).filter(token => !token.startsWith('-')))
+      // 先按空白分词，再逐个核验静态参数，避免相邻空白量词在恶意脚本上产生回溯。
+      const [runner, ...arguments_] = segment.trim().split(/\s+/u)
+      if (['npm-run-all', 'run-s', 'run-p'].includes(runner!) && arguments_.length > 0
+        && arguments_.every(token => /^[A-Za-z0-9:_-]+$/u.test(token))) {
+        queue.push(...arguments_.filter(token => !token.startsWith('-')))
+      }
     }
   }
   return tokens

@@ -287,6 +287,18 @@ v47 全部 25 个独立 Gold 审阅已收齐：24 个 approved，p-map completio
 
 本机新增材料：`candidates-vitest-discovery-zod-first.json`、对应 `-policy-successors.json` 和 `-domain-facts.json`、`zod-vitest-discovery-production-tool-freeze.json`、`config-command-tools-capture.json`、`pmap-vitest-discovery-supplement.json` 及固定源码归档、`gold-vitest-discovery-*`、`domain-before-config-command-tools-install.json` 和 `canary-recovery/domain-before-config-command-tools-install.json`。完整回归日志为 `output/formal-170-config-command-tools-verify-2026-11-10.log`。材料继续用于正式验收、恢复和复现，保留本机。
 
+### v48 补证审阅、拒绝策略与脚本解析安全修复
+
+v48 隔离安装 bundle 为 `7206d738c05dda9976a77b6b848a07fd1e84f077498f3628da57afaf96b863da`，源码、source map、client 和 package.json 与本地逐字一致，8 项真实 Host 兼容检查通过；报告为 `output/compatibility/dsh-0.2.2-rc.1-1794258393396.json`。Zod trim 与 p-map completion 两份重新绑定的补证独立 Gold 均 approved，没有继承 v47 的批准或抹去其拒绝记录。Zod 首个根请求 `planning-v3:21d0b5a7-95f8-4e11-bf60-d216dcda2f41` 在 policy_snapshot 被 superseded，其自动后继另行观察，不计 fresh。
+
+同版 canary 操作 `planning-v3:57a84b40-c4e0-477c-8c43-c107fc4dc9e1` 在 scenario_coverage_review 被阻塞。独立审阅指出原始 AC 明确要求空字符串和纯空白姓名抛出 TypeError，但 Service 的确定性策略仅在模型种子类别为 business_rejection 时才识别该义务；本次分析把同一 PRD 块归为 happy_path，导致拒绝类别被错误标为 not_applicable。失败记录完整保留，未审批或派发。
+
+修复在策略归属层直接识别本 Acceptance 原始来源中的输入拒绝义务，不依赖模型标签；不从兄弟 Acceptance、文件名、错误类型名或依赖失败补造类别。明确免除拒绝/抛错的动作不计要求，同句另有明确拒绝动作时仍保留。策略版本升为 `scenario-coverage-policy-v3.3.10`。新增中英文正例、否定要求、依赖抛错、路径及兄弟来源反例；旧构建复现 not_applicable，修复后通过。重建 canary 脚本同时校验前次终态快照中实际保留的候选指针，允许新构建在失败重算后继续；不能把失败操作当成已提交计划，也不能对同构建失败请求自动重发。
+
+提交 `7e08a6e` 的 Linux/macOS CI 通过，但 CodeQL 报告 `verification-tool-evidence.ts` 的脚本 runner 正则存在高危多项式回溯。100,000 个制表符的本地反例在旧构建中触发 4 秒硬超时。修复改为先按空白分词，再逐个核验静态脚本参数；保留变量、引号和通配符不被推断的限制。回归由独立子进程施加硬超时，修复后九项工具采集测试全部通过。未压制告警，仍需新提交的 CodeQL 复核。
+
+最新源码完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：568 项 Node 测试、7 项浏览器测试、类型及文档检查、固定规划样本和 170 文件安装包 smoke 通过。日志为 `output/formal-170-rejection-policy-final-verify-2026-11-10.log`；后续为耗时回溯回归增加子进程硬超时后，九项工具采集测试再次通过。新版仍需隔离安装、真实规划、当前 canary 及正式门禁，不以本地回归替代发布验收。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

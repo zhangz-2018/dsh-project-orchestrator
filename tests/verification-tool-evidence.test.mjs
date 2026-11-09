@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -95,6 +96,32 @@ test('Verification tool evidence follows declared script runners without executi
       scripts: { test: 'echo unit', unit: 'runtime-checker', postinstall: 'publish-checker' },
     })
     assert.deepEqual(direct, [], 'Text naming a script does not prove a runner invokes it.')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Verification script runners reject malformed and whitespace-heavy arguments in bounded time', { timeout: 5000 }, async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-runner-whitespace-'))
+  try {
+    const tool = join(root, 'node_modules/type-checker')
+    await mkdir(tool, { recursive: true })
+    await mkdir(join(root, 'node_modules/.bin'))
+    await writeFile(join(tool, 'package.json'), JSON.stringify({ name: 'type-checker', version: '1.2.3', bin: './cli.js' }))
+    await writeFile(join(tool, 'cli.js'), "throw new Error('MUST_NOT_EXECUTE');\n")
+    await symlink('../type-checker/cli.js', join(root, 'node_modules/.bin/type-checker'))
+    // 子进程硬超时可以终止正则阻塞；同线程的 node:test timeout 无法打断回溯。
+    execFileSync(process.execPath, ['--input-type=module', '-e', `
+      import assert from 'node:assert/strict';
+      import { captureVerificationToolEvidenceV3 } from ${JSON.stringify(new URL('../lib/index.js', import.meta.url).href)};
+      for (const runner of ['run-s', 'run-p', 'npm-run-all']) {
+        for (const suffix of ['unit', 'unit*', '"unit"', '$unit']) {
+          const result = await captureVerificationToolEvidenceV3(process.argv[1], {
+            devDependencies: { 'type-checker': '1.2.3' },
+            scripts: { test: runner + ' ' + '\\t'.repeat(100_000) + suffix, unit: 'type-checker' },
+          });
+          assert.equal(result.length, suffix === 'unit' ? 1 : 0, runner + ': ' + suffix);
+        }
+      }
+    `, root], { timeout: 4000, stdio: 'pipe' })
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 

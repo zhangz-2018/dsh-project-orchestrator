@@ -360,7 +360,7 @@ Source disposition ownership is distinct from supporting evidence. Count consump
 The independent reviewer must check this same stage boundary and source grouping. Reject an early blocked analysis, duplicated product obligations, or invented product obligations based only on execution eligibility or invocation controls; do not approve it merely because a later Service stage is expected to abstain.`
 const PLANNER_PROMPT_VERSION = 'delivery-plan-v2.1'
 const PLANNER_V3_PROMPT_VERSION = 'evidence-grounded-v3.3.34'
-const SCENARIO_POLICY_VERSION = 'scenario-coverage-policy-v3.3.9'
+const SCENARIO_POLICY_VERSION = 'scenario-coverage-policy-v3.3.10'
 // 场景执行契约改变后，禁止复用按旧观测器生命周期或阶段清单生成和审核的场景。
 const SCENARIO_REVIEW_PROMPT_VERSION = 'scenario-coverage-review-v3.3.21'
 const BINDING_REVIEW_PROMPT_VERSION = 'binding-review-v3.3.22'
@@ -533,6 +533,16 @@ function deriveScenarioCoverageFactsV3(input: {
     const hasExplicitRecovery = /恢复|回滚|补偿|重放|重新启动|断点续传|\b(?:recover(?:y|ed|ing)?|rollback|compensat(?:e|ed|ion|ing)|replay|restart|resume)\b/iu.test(sourceText)
       || /重试[^。！？\n]{0,40}成功|\bretr(?:y|ies|ied|ying)\b[^.!?\n]{0,80}\b(?:succeed(?:s|ed|ing)?|success(?:ful(?:ly)?)?)\b|\bsuccessful\s+retr(?:y|ies)\b/iu.test(sourceText)
     const hasExplicitBoundary = /边界|边缘(?:情况|条件)?|极限|上限|下限|空值|缺失值|boundary|edge[ -]?case|limit|minimum|maximum|null|empty|missing/iu.test(sourceText)
+    // 原始来源要求拒绝具体输入时，即使分析把同一块标为 happy_path，也必须生成独立拒绝场景。
+    // 仅结合当前 Acceptance 的输入/状态对象与拒绝结果；依赖抛错、错误类型名及明确免除义务均不算。
+    const hasExplicitBusinessRejection = stripSourcePathTokens(sourceText).split(/[。！？\n;；]|[.!?](?=\s|$)/u).some(clause => {
+      const input = /输入|参数|姓名|空字符串|空白|校验失败|无效状态|非法状态|\b(?:inputs?|arguments?|parameters?|names?|empty|whitespace|invalid state)\b/iu.test(clause)
+      // 去掉明确否定的动作，仍允许同一句中另一个明确要求的拒绝动作生效。
+      const actions = clause.replace(/(?:无需|不必|不要求|不得|不能|不要|不应|不)(?:再|继续)?(?:拒绝|抛出)|\b(?:do not|must not|shall not|should not|need not|not required to)\s+(?:reject|throw)\b/giu, '')
+      const rejection = /拒绝|校验失败|\breject(?:s|ed|ing)?\b/iu.test(actions)
+        || /(?:必须|应当|应|会)?抛出\s*(?:TypeError|RangeError|错误|异常)|\b(?:must |shall |should )?throw(?:s)?\s+(?:an?\s+)?(?:TypeError|RangeError|error|exception)\b/iu.test(actions)
+      return input && rejection
+    })
     // 明确保持旧输出或公开契约本身就是兼容义务，不依赖模型选择 compatibility 标签。
     // 仅检查当前 Acceptance 的原始语句；文件名、工具复用和明确免除保持义务的语句均不增加场景。
     const hasExplicitCompatibility = stripSourcePathTokens(sourceText).split(/[。！？\n;；]|[.!?](?=\s|$)/u).some(clause => {
@@ -562,6 +572,7 @@ function deriveScenarioCoverageFactsV3(input: {
     }
     if (hints.has('failure')) dimensions.add('state')
     if (hasExplicitDependencyFailure) required.add('dependency_failure')
+    if (hasExplicitBusinessRejection) required.add('business_rejection')
     if (hasExplicitRecovery) required.add('recovery')
     if (hasExplicitBoundary) required.add('boundary')
     if (hints.has('data')) { required.add('boundary'); dimensions.add('data') }
