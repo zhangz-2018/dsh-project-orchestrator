@@ -51,6 +51,17 @@ UTC `2026-11-09T15:19:50Z` 再次检查最小 Chat Completions 请求，仍返�
 
 追加本机证据：`codex-route-migration.json`、`codex-route-discovery.json`、`codex-generation-probes.json`、`host-inputs-codex-route.json`、`gold-codex-route-1/`、`gold-codex-ready-a/`、`gold-codex-ready-b/`、`gold-codex-blocked/` 及 `gold-codex-pretry-claims/`。旧配置和凭据已保存在同一私有任务目录用于恢复，均不提交。
 
+### 新路由首轮候选观测
+
+2026-11-10（北京时间）继续通过真实 Host 发起首轮候选：8 个 pending 决策场景均按原 Gold 阻塞，指标检查通过；这仅是各 1 次，尚未满足每样本至少 5 次。
+
+无合格成员场景也已完成首轮，按预期在资格门禁拒绝分配，`correctAbstentionRate=1`，其余适用指标通过。合计 9 个 blocked 样本各 1 次通过，不能替代 45 次所需有效独立候选。
+
+- p-queue maxQueued resolved 在 Scenario Coverage Review 阻塞，代码 `incomplete-reentrant-event-count-oracle`。模型生成的场景仅用 `once:true` 的 add listener，却要求证明整个重入过程的总事件数和拒绝入队不发事件；该 listener 在回调前已移除，不能独立观测嵌套事件。候选保留为质量失败，不通过换 Gold 或重复采样消除。
+- p-retry abort-cause 原操作因 `repository-policy-delta` 被 supersede，按现有机制启动的后继操作已在 `assignment_qualification` 阻塞。后继推导要求 `data.change`、`domain.state`，原项目确认声明不包含这两项；是否因影响面分类过宽仍需源码核对，不能自动增加人工确认。原根记录为 infrastructure failure，后继不计为新的独立候选。
+
+本机回执为 `candidates-ready.json`、`candidates-blocked.json`、`ready-policy-successors.json`、`ready-qualification-diagnostics.json` 及 `codex-route-terminal-observation.json`。所有 12 个实际操作（含 1 个自动后继）均已终态，无审批、任务执行或交付写入。隔离 Host 已停止，停机后保存 `domain-after-codex-route-snapshot.json`；新地址及协议配置继续保留。上述问题属于正式规划质量和资格检查，不能继续归因为旧网关 503，也不表示本次 API 地址切换失败。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。
@@ -65,6 +76,8 @@ UTC `2026-11-09T15:19:50Z` 再次检查最小 Chat Completions 请求，仍返�
 本机日志为 `output/formal-170-verify-2026-11-09.log`、`output/formal-170-host-compatibility-2026-11-09.log`、`output/formal-170-audit-2026-11-09.json`、`output/formal-170-planning-gate-2026-11-09.log`。GitHub CI 结果需另行核对，不能用本地通过推定。
 
 修复提交 `04015b0` 的 GitHub Linux/macOS CI 与 CodeQL 均已通过；后续依赖和文档提交仍需核对各自最新检查。重建的正式 Host 已停止，停机后保存本机 `output/acceptance/formal-170-20261109/domain-pre-model-snapshot.json`，用于后续恢复；这是重建后的快照，不是丢失的旧环境备份。
+
+路由适配提交 `e1b94ad` 的 Linux/macOS CI 与 CodeQL 均通过；其后仅追加首轮实测记录。最终安装包 clean install 再次通过，报告为本机 `output/formal-170-codex-route-package-final-2026-11-10.log`。
 
 ## 剩余发布条件
 

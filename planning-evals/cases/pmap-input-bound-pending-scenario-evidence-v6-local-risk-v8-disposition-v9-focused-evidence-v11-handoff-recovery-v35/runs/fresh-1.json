@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [
+    {
+      "impact": "high",
+      "status": "pending"
+    }
+  ],
+  "bindings": [],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "reachedStage": "decisions",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:3f268655-8eba-40a5-9dbf-71e4ad32eaa2"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:3f268655-8eba-40a5-9dbf-71e4ad32eaa2:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:3f268655-8eba-40a5-9dbf-71e4ad32eaa2",
+        "decision-planning-effect:planning-v3:3f268655-8eba-40a5-9dbf-71e4ad32eaa2:DEC-001:precheck"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+    "repositoryBaseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe",
+    "planningOperationId": "planning-v3:3f268655-8eba-40a5-9dbf-71e4ad32eaa2",
+    "planningOperationDigest": "c3f399ca48aa6d1702fffca25a59ea36ff6754f419f5764748b281676f72130b",
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-11-09T15:57:56.746Z",
+    "completedAt": "2026-11-09T15:59:12.940Z"
+  }
+}

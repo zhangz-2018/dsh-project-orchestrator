@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [
+    "index.test-d.ts",
+    "index.js",
+    "test.js",
+    "index.d.ts",
+    "readme.md",
+    "recipes.md",
+    "benchmark.js",
+    "package.json",
+    "scripts/benchmarker.js",
+    ".github/security.md",
+    ".github/workflows/main.yml"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "index.test-d.ts",
+        "index.js",
+        "test.js",
+        "index.d.ts",
+        "readme.md",
+        "recipes.md",
+        "benchmark.js",
+        "package.json",
+        ".github/workflows/main.yml"
+      ],
+      "ownerPaths": [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "TASK-IMPLEMENT",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run test"
+      ]
+    },
+    {
+      "key": "TASK-VERIFY",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run test"
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "taskKey": "TASK-IMPLEMENT",
+      "outcome": "blocked"
+    },
+    {
+      "taskKey": "TASK-VERIFY",
+      "outcome": "blocked"
+    }
+  ],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "reachedStage": "assignments",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76"
+      ]
+    },
+    {
+      "stage": "assignments",
+      "evidenceIds": [
+        "assignment-evaluation:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76:TASK-IMPLEMENT",
+        "assignment-evaluation:planning-v3:88fbb770-8c19-4d60-874a-b13897341e76:TASK-VERIFY"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+    "repositoryBaseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb",
+    "planningOperationId": "planning-v3:88fbb770-8c19-4d60-874a-b13897341e76",
+    "planningOperationDigest": "eb0edcacf97f97f3d26dd72fc43556c97d03e62279248aeffedb8e9216f7b00c",
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-11-09T16:01:27.945Z",
+    "completedAt": "2026-11-09T16:09:43.824Z"
+  }
+}
