@@ -57,8 +57,12 @@ interface RepositoryIndex {
 
 const INDEX_CACHE = new Map<string, RepositoryIndex>()
 
+/** 线性去除路径末尾分隔符，避免重复斜杠引起正则回溯。 */
 function normalizedRepositoryPath(path: string): string {
-  return path.replace(/\\/g, '/').replace(/^\.\//u, '').replace(/\/+$/u, '')
+  const normalized = path.replace(/\\/g, '/').replace(/^\.\//u, '')
+  let end = normalized.length
+  while (end > 0 && normalized[end - 1] === '/') end--
+  return normalized.slice(0, end)
 }
 
 function categoryForPath(path: string): EvidenceCategory {
@@ -105,6 +109,7 @@ function importedSpecifiers(content: string): string[] {
   return [...new Set(values)].sort()
 }
 
+/** 读取冻结 tsconfig 的单通配符别名；无效模式被忽略，不推导缺失的依赖事实。 */
 function moduleResolutionConfig(indexed: IndexedFile[]): ModuleResolutionConfig {
   const config = indexed.find((file) => file.path === 'tsconfig.json')
   if (config === undefined) return { baseUrl: '.', paths: [] }
@@ -114,12 +119,15 @@ function moduleResolutionConfig(indexed: IndexedFile[]): ModuleResolutionConfig 
   const aliases = options?.paths !== null && typeof options?.paths === 'object' ? options.paths : {}
   const paths = Object.entries(aliases).flatMap(([pattern, rawTargets]) => {
     if (!Array.isArray(rawTargets) || rawTargets.some((target) => typeof target !== 'string')) return []
+    // TypeScript paths 只允许一个通配符；无效模式不能产生伪造的依赖闭包。
+    if (pattern.split('*').length > 2 || rawTargets.some(target => target.split('*').length > 2)) return []
     const star = pattern.indexOf('*')
     return [{ prefix: star < 0 ? pattern : pattern.slice(0, star), suffix: star < 0 ? '' : pattern.slice(star + 1), targets: rawTargets }]
   })
   return { baseUrl, paths }
 }
 
+/** 只解析冻结库存中的实际文件；通配值按字面量替换，不能解释为 replacement 模板。 */
 function resolveImport(fromPath: string, specifier: string, paths: Set<string>, config: ModuleResolutionConfig): string | undefined {
   const bases: string[] = []
   if (specifier.startsWith('.')) {
@@ -128,7 +136,7 @@ function resolveImport(fromPath: string, specifier: string, paths: Set<string>, 
     for (const alias of config.paths) {
       if (!specifier.startsWith(alias.prefix) || !specifier.endsWith(alias.suffix)) continue
       const wildcard = specifier.slice(alias.prefix.length, specifier.length - alias.suffix.length || undefined)
-      for (const target of alias.targets) bases.push(normalizedRepositoryPath(posix.normalize(posix.join(config.baseUrl, target.replace('*', wildcard)))))
+      for (const target of alias.targets) bases.push(normalizedRepositoryPath(posix.normalize(posix.join(config.baseUrl, target.split('*').join(wildcard)))))
     }
   }
   const extensionPattern = /\.(?:[cm]?[jt]sx?|vue|json)$/u

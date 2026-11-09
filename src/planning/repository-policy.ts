@@ -37,8 +37,12 @@ const LIFECYCLE_PATTERNS: Array<[PolicyLifecycleStage, RegExp]> = [
   ['release', /(?:\brelease\b|\bpublish\b|\bdeploy\b|发布|部署|上线)/iu],
 ]
 
+/** 线性规范化范围；空范围保持原来的仓库根目录语义。 */
 function normalizedScope(path: string): string {
-  const normalized = path.replace(/\\/g, '/').replace(/^\.\//u, '').replace(/\/+$/u, '')
+  let normalized = path.replace(/\\/g, '/').replace(/^\.\//u, '')
+  let end = normalized.length
+  while (end > 0 && normalized[end - 1] === '/') end--
+  normalized = normalized.slice(0, end)
   return normalized === '' ? '.' : normalized
 }
 

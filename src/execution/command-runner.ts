@@ -80,22 +80,20 @@ export class CommandRunner {
     if (this.subprocess !== undefined) return await this.runHost(input, execution, timeoutMs, outputLimit)
     let executable: string
     let args: string[]
-    let shellCommand: boolean
     if (typeof input.command === 'string') {
-      executable = input.command
-      args = []
-      shellCommand = true
+      // 字符串本身是已授权的 shell 程序；数组参数始终保持字面量，不参与 shell 拼接。
+      executable = process.platform === 'win32' ? process.env.ComSpec ?? 'cmd.exe' : '/bin/sh'
+      args = process.platform === 'win32' ? ['/d', '/s', '/c', input.command] : ['-c', input.command]
     } else {
       executable = input.command[0]
       args = input.command.slice(1)
-      shellCommand = false
     }
 
     return await new Promise((resolve, reject) => {
       const useProcessGroup = process.platform !== 'win32'
       const child = spawn(executable, args, {
         cwd: input.cwd,
-        shell: shellCommand,
+        shell: false,
         env: execution.env,
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: useProcessGroup,

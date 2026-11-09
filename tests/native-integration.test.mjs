@@ -153,6 +153,18 @@ test('Host subprocess executes argv and shell, honors venv, scrubs secrets and w
   } finally { await ctx.fiber.dispose(); await rm(root, { recursive: true, force: true }) }
 })
 
+test('Node command runner preserves literal argv and explicit authorized shell programs', async () => {
+  const runner = new CommandRunner()
+  const signal = new AbortController().signal
+  const value = 'literal; $(echo injected) `echo injected` & | >'
+  const literal = await runner.run({ cwd: tmpdir(), command: [process.execPath, '-e', 'console.log(process.argv[1])', value], signal })
+  assert.equal(literal.exitCode, 0)
+  assert.equal(literal.output.trim(), value)
+  const shell = await runner.run({ cwd: tmpdir(), command: 'printf first && printf second', signal })
+  assert.equal(shell.exitCode, 0)
+  assert.equal(shell.output, 'firstsecond')
+})
+
 test('Host subprocess absence or failure never falls back to Node', async () => {
   const input = { cwd: tmpdir(), command: [process.execPath, '-e', 'throw new Error("must not run")'], signal: new AbortController().signal }
   await assert.rejects(new CommandRunner(() => undefined).run(input), { code: 'subprocess-unavailable' })

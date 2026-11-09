@@ -245,6 +245,19 @@ test('requirement source manifest bounds section paths while preserving full hea
   assert.notEqual(headings[1].id, buildRequirementSourceManifest({ prd: `# ${oversized}x` }).anchors[0].id)
 })
 
+test('source parsing preserves long path tokens, list whitespace and PDF line separators without backtracking', { timeout: 5000 }, () => {
+  const filename = `${'-'.repeat(18000)}.ts`
+  const text = `Inspect ${filename}; preserve schema data.`
+  const manifest = buildRequirementSourceManifest({ prd: `# Acceptance\n- ${' '.repeat(30000)}${text}\n| valid | row |` }, { requireAllBlocks: true })
+  const item = manifest.anchors.find(anchor => anchor.kind === 'acceptance_item')
+  assert.equal(item.text, text)
+  assert.ok(item.normativeHints.includes('data'))
+  assert.equal(manifest.anchors.at(-1).kind, 'table_row')
+  const blockText = `* ${' '.repeat(30000)}body\u2028next`
+  const pdf = buildRequirementSourceManifest({ prd: '', sourceBlocks: [{ documentKind: 'prd', page: 1, block: 1, locator: 'pdf:test:page:1:block:1', text: blockText, textDigest: digestObject(blockText) }] }, { requireAllBlocks: true })
+  assert.equal(pdf.anchors[0].text, 'body\u2028next')
+})
+
 test('PDF source manifest retains stable page/block locators instead of summarized Markdown line locators', () => {
   const documentHash = 'd'.repeat(64)
   const block = (page, index, text) => ({ documentKind: 'prd', locator: `pdf:${documentHash}:page:${page}:block:${index}`, page, block: index, text, textDigest: digestObject(text) })

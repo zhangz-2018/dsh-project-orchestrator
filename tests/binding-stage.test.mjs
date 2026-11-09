@@ -610,3 +610,15 @@ test('BindingStage prompt projects frozen evidence and gates unknown-stage compa
     { path: 'existing.ts', existsInFrozenInventory: true, evidenceRef: null },
   ])
 })
+
+test('BindingStage prompt scans long dollar path tokens once and retains sentence-ending paths', { timeout: 5000 }, () => {
+  const context = fixture()
+  const path = `${'$'.repeat(18000)}.ts`
+  const analysis = { requirements: [{ key: 'REQ-OWNER', scope: 'in_scope', statement: `Inspect ${path} and src/owner.ts.` }] }
+  const prompt = buildBindingPromptV3(analysis, [], context.repository, context.manifest, false)
+  const facts = JSON.parse(prompt.split('\n\nRequested file inventory facts (not write authorization):\n')[1].split('\nAn absent frozen path')[0])
+  assert.deepEqual(facts, [
+    { path, existsInFrozenInventory: false, evidenceRef: null },
+    { path: 'src/owner.ts', existsInFrozenInventory: true, evidenceRef: 'ref-repo-f00001' },
+  ])
+})

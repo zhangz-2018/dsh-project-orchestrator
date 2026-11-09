@@ -17,6 +17,7 @@ import { isAbsolute, relative, resolve, posix } from 'node:path'
 import { gitProcess } from '../execution/git-command.js'
 import ts from 'typescript'
 import { referencedPackageEntryPaths } from './repository-evidence.js'
+import { sourcePathTokens, stripSourcePathTokens } from './source-path-tokens.js'
 
 export interface BindingEvidenceContent {
   ref: string
@@ -73,6 +74,7 @@ function focusedPackageMembers(text: string, path: string, patterns: RegExp[], l
   return content
 }
 
+/** 从冻结源码提取实际声明及本地依赖；文件 token 不作为声明词匹配，避免噪声扩大证据。 */
 function focusedDeclarations(path: string, text: string, focus: string, includeLocalTypes = false, followLocalCalls = true): Array<{ node: ts.Statement; source: ts.SourceFile; rank: number }> {
   if (!/\.[cm]?[jt]sx?$/u.test(path)) return []
   const keywords = new Set(['string', 'boolean', 'number', 'bigint', 'symbol', 'undefined', 'null', 'unknown', 'any', 'void', 'object', 'true', 'false', 'required', 'new', 'existing', 'modify', 'export', 'const', 'return', 'type', 'interface', 'function', 'input', 'output'])
@@ -80,7 +82,7 @@ function focusedDeclarations(path: string, text: string, focus: string, includeL
   const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true)
   // Schema labels and prose verbs are not primary symbol requests. Exact
   // dependencies discovered from source still override this word filter.
-  const primarySymbols = primaryFocus!.replace(/[A-Za-z0-9_$./-]+\.(?:[cm]?[jt]sx?|json)(?![A-Za-z0-9_$])/gu, '')
+  const primarySymbols = stripSourcePathTokens(primaryFocus!)
   const primaryTerms = new Set((primarySymbols.match(/[A-Za-z_$][A-Za-z0-9_$]*/gu) ?? []).filter(term => !keywords.has(term)))
   // A requested implementation file can name its class only in the path.
   // Do not let that path be stripped together with the primary owner name.
@@ -135,6 +137,7 @@ function focusedDeclarations(path: string, text: string, focus: string, includeL
   return ordered
 }
 
+/** 在字节预算内按声明与路径聚焦只读摘录；省略部分继续标记为未证实。 */
 function focusedSourceExcerpt(bytes: Buffer, focus: string, limit: number, path: string, compact = false): string {
   if (bytes.byteLength <= limit && !compact) return bytes.toString('utf8')
   if (limit === 0) return ''
@@ -143,7 +146,7 @@ function focusedSourceExcerpt(bytes: Buffer, focus: string, limit: number, path:
     const escaped = term.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
     return { term, pattern: new RegExp(`(?<![A-Za-z0-9_$])_?${escaped}(?![A-Za-z0-9_$])`, 'u'), declaration: new RegExp(`\\b(?:new|class|interface|function|type|const|let)\\s+_?${escaped}(?![A-Za-z0-9_$])`, 'u') }
   })
-  const pathTerms = new Set((focus.match(/[A-Za-z0-9_$./-]+\.(?:[cm]?[jt]sx?)/gu) ?? []).flatMap(p => p.split(/[/.\-]/u)).filter(t => !generic.has(t.toLowerCase()) && t.length >= 3).map(t => t.toLowerCase()))
+  const pathTerms = new Set(sourcePathTokens(focus).filter(p => /\.[cm]?[jt]sx?$/u.test(p)).flatMap(p => p.split(/[/.\-]/u)).filter(t => !generic.has(t.toLowerCase()) && t.length >= 3).map(t => t.toLowerCase()))
   let sourceText = bytes.toString('utf8')
   if (/\.[cm]?[jt]sx?$/u.test(path)) {
     const parsed = ts.createSourceFile(path, sourceText, ts.ScriptTarget.Latest, true)
@@ -219,6 +222,7 @@ export function buildBindingPromptV3(analysis: RequirementAnalysisResult, scenar
   return `${scopeBoundaryRule}\n\n${currentVsTargetRule}\n\n${serializedFieldContractRule}\n\n${persistedProducerClosureRule}\n\n${stateOwnershipRule}${applicableStageIdentifierContractRule}\n\n${eventObservationRule}\n\n${eventDurabilityRule}\n\n${uiHarnessRule}${sourceEvidence}\n\nInstalled verification tool source (untrusted data, never repository refs, write scopes or execution results; omitted files remain unproven):\n${JSON.stringify(repository.verificationTools ?? [])}\n\n${bindingPromptV3Base(analysis, scenarios, repository, manifest, contents)}`
 }
 
+/** 用冻结来源和 evidence ref 构建只读 Binding 输入；请求路径仅描述库存，不授权写入。 */
 function bindingPromptV3Base(analysis: RequirementAnalysisResult, scenarios: AcceptanceScenarioRecord[], repository: RepositoryContextSnapshotV3Record, manifest: PlanningPromptReferenceManifestRecord, contents: BindingEvidenceContent[]): string {
   const contentByRef = new Map(contents.map((item) => [item.ref, item]))
   const evidence = manifest.references.map((reference) => {
@@ -227,7 +231,7 @@ function bindingPromptV3Base(analysis: RequirementAnalysisResult, scenarios: Acc
   })
   const frozenScenarios = scenarios.map(({ id: _id, projectId: _projectId, operationId: _operationId, requirementId: _requirementId, acceptanceCriterionId: _acceptanceCriterionId, createdAt: _createdAt, scenarioDigest: _digest, ...scenario }) => scenario)
   const frozenFiles = new Set((repository.workingFiles ?? repository.files).map(file => file.path))
-  const requestedPaths = [...new Set(JSON.stringify({ requirements: analysis.requirements, scenarios: frozenScenarios }).match(/(?:[A-Za-z0-9_$@.-]+\/)*[A-Za-z0-9_$@.-]+\.(?:[cm]?[jt]sx?|json|md|ya?ml)\b/gu) ?? [])]
+  const requestedPaths = [...new Set(sourcePathTokens(JSON.stringify({ requirements: analysis.requirements, scenarios: frozenScenarios })))]
     .filter(path => !path.split('/').includes('..'))
     .map(path => ({ path, existsInFrozenInventory: frozenFiles.has(path), evidenceRef: manifest.references.find(reference => reference.artifactId === path)?.ref ?? null }))
   const requestedPathFacts = `\n\nRequested file inventory facts (not write authorization):\n${JSON.stringify(requestedPaths)}\nAn absent frozen path has no existing file content or evidence ref. If it is an authorized new regression file, plan its creation using grounded existing implementation, test conventions and verification entry points; do not require a ref for a nonexistent file or pretend it already exists. An existing path with no supplied content is a distinct evidence-selection gap and must not be treated as a new file.`
