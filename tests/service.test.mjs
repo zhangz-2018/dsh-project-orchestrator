@@ -3214,6 +3214,7 @@ test('Planning V3 event oracle keeps reentrant emissions observable after a once
   assert.match(prompt, /one entry must not combine an earlier absence with a later presence/)
   assert.match(prompt, /EVT-AC-001-REENTRANT-BEFORE-SETTLEMENT-ABSENT/)
   assert.match(prompt, /EVT-AC-001-REENTRANT-AFTER-SETTLEMENT-PRESENT/)
+  assert.match(prompt, /Do not repeat out-of-scope stage concepts as exclusions, negated assumptions or disclaimers/)
   assert.match(prompt, /"required":true,"sourceAnchorIds":\["source-anchor-id"\],"eventObservables":\[/)
 })
 

@@ -117,7 +117,9 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
     assert.equal(toolEvidence.repositoryIdentity, item.repositoryIdentity)
     assert.equal(toolEvidence.repositoryBaseCommit, item.repositoryBaseCommit)
     assert.ok(toolEvidence.caseIds.includes(item.caseId))
-    assert.equal(toolEvidence.previousIndependentReview.proposedGoldSha256, hash(JSON.stringify(core)), 'Supplemental evidence must not change the proposed Gold')
+    // 首次审阅也可携带已冻结的工具证明；旧版补审材料继续使用原审阅摘要，二者都必须绑定原样 Gold。
+    const proposedGoldSha256 = toolEvidence.proposedGoldSha256 ?? toolEvidence.previousIndependentReview?.proposedGoldSha256
+    assert.equal(proposedGoldSha256, hash(JSON.stringify(core)), 'Supplemental evidence must not change the proposed Gold')
     assert.equal(hash(await readFile(toolEvidence.archivePath)), toolEvidence.archiveSha256)
     for (const file of toolEvidence.files) assert.equal(hash(file.content), file.sha256)
   }

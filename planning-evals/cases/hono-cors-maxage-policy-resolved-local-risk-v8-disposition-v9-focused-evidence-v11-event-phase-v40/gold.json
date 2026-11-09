@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "releaseInput": {
+    "repositoryDigest": "055186837acdcd26e6403ba0fd2489aba8136e9d1118be3b651e63203ae175fb",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "2df506715a863061868429fc35634a83f4b729bd4fb0f0aff41f90e70b0c3750",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0c6987bd11c439aa016af202d3451487d280af53862caf3dad:independent-gold-review:012bc49f-35d1-4251-8968-c230c196b305",
+    "reviewedAt": "2026-11-09T17:29:07.817Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C. The original PRD explicitly fixes OPT-1 as hypothetical scenario input, not a human-confirmed Decision, so ready with no blocking reasons is appropriate. Only the selected branch is required; REQ-001, AC-001 through AC-003, DEC-001 and the task keys remain stable. The paired B must still block at decisions when DEC-001 is materially unresolved; this approval does not independently certify B's unsupplied bundle. The complete supplied implementation and test evidence supports the exact two-file writable scope: validation belongs at middleware construction, zero and omitted maxAge already have compatible serialization behavior, and other CORS behavior must remain unchanged. Build configuration establishes that published declarations are generated, not separately maintained owners; configuration and declaration consumers need no mandatory edits. TASK-VERIFY appropriately depends on TASK-IMPLEMENT, with independent implementation and verification coverage required for every acceptance criterion. The allowed agents have distinct eligible roles, available slots and supplied active project-scoped trusted claims for the bounded TypeScript contract, failure-handling and testing work, including testing.verification for the verifier. This invocation-local validation does not inherently require shared-data or state capabilities. A separate active project reviewer is configured. Gold and preview release fingerprints agree across repository, source, team, decision, prompt, model, sampling, policy and budgets; the differing manifest and evaluation source digests and PRD normalization are explicitly explained by their distinct domains. The original specification's remaining preparation items are historical snapshot metadata, while the preview supplies the frozen release inputs. No candidate outputs inform this review. Approval relies on the supplied Service-bound digest provenance and evidence, without independently recomputing hashes, executing code, creating human attestations or asserting compiler success; the unavailable compiler implementation does not prevent this planning-only review.",
+    "goldDigest": "e6eeda8af7cb8b005cff021f720f943b3aa3eb79b3a0c60c35cfb1560e17ead7"
+  }
+}

@@ -114,9 +114,30 @@ p-retry 的源码与现行 `v3.3.14` 能力规则复核确认需要 `data.change
 
 `event-phase-v40` 的 bundle SHA-256 为 `2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff`，安装摘要与本地构建一致。完整 `pnpm verify` 退出 0，549 条 Node 测试、7 条浏览器测试及其余检查通过；8 项真实隔离 Host 兼容检查通过，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794244681518.json`。本次未改主项目依赖。
 
-隔离重启第一次漏带 `DSH_PLANNING_CONTRACT_MODE=v3-candidate`，Gold 本地预检返回 `409 planning-v3-disabled`；补齐参数后的下一次请求早于 Host 就绪，返回 `ECONNREFUSED`。这两次未发送模型请求，未登记候选。完成 writer 健康与 V3 只读预览检查后，使用新目录 `gold-event-phase-focused-3/` 完成两份独立 Gold，均获批准后才启动该版真实 fresh-1。目前正在观察 p-queue 与 p-retry，尚无该版通过结论。
+隔离重启第一次漏带 `DSH_PLANNING_CONTRACT_MODE=v3-candidate`，Gold 本地预检返回 `409 planning-v3-disabled`；补齐参数后的下一次请求早于 Host 就绪，返回 `ECONNREFUSED`。这两次未发送模型请求，未登记候选。完成 writer 健康与 V3 只读预览检查后，使用新目录 `gold-event-phase-focused-3/` 完成两份独立 Gold，均获批准后才启动该版真实 fresh-1。
+
+- p-retry `planning-v3:7aa46937-aaa6-4b0e-9907-5d9cf8b1d5bd` 已 committed，全部适用指标通过，包括 `firstPassApprovableRate=1`、`assignableRate=1` 和证据阶段完整覆盖；没有执行计划或交付代码。
+- p-queue `planning-v3:e7a0052d-e7d7-4475-b876-22d15eed37f7` 已 blocked，代码 `scenario-unsupported-unknown-stage-compatibility`。生成场景的 assumptions 写入“Compatibility ... not unknown or future stage identifiers”，引入与 p-queue 源需求无关的否定式领域声明；现有确定性规则明确禁止这种声明。没有删除或忽略该拒绝。
+
+领域只读核验确认累计 22 个操作均终态，无审批、执行派发或交付。同版其余 23 个样本也完成独立 Gold 审阅，合计 24 份批准，Hono expose-function 为 insufficient_evidence，尚无 Gold。该审阅要求区分 TypeScript `lib/_tsc.js` 采集缺失与实际文件缺失。只读检查发现安装的 `typescript@6.0.3` 与声明最低版本一致，文件存在且为 6,239,091 字节，超过现有 65,536 字节单文件上限；真实 `tsc --version` 退出 0，返回 `Version 6.0.3`。该探针仅证明编译器存在且可启动，不证明项目类型测试或交付通过，也没有替代 Gold 复核。回执为本机 `hono-typescript-availability-probe.json`，原 insufficient_evidence 保留。其余 23 个样本未运行本版候选。
 
 追加本机证据：`domain-before-event-phase-install.json`、`tool-closure-domain-facts.json`、`tool-closure-policy-successors.json`、`event-phase-installed.json`、`event-phase-historical-observation.json`、`gold-event-phase-focused-3/`、`candidates-event-phase-focused.json`。完整回归日志为 `output/formal-170-event-phase-verify-2026-11-10.log`。这些文件仍用于正式验收与恢复，不清理、不提交原文。
+
+### 无关阶段声明生成约束
+
+针对上述实际拒绝，将场景生成契约升级至 `scenario-coverage-review-v3.3.21`：在冻结需求没有授权特殊阶段兼容性时，场景的所有字段均省略相关无关领域概念，包括 exclusions、negated assumptions 和 disclaimers；只陈述源需求支持的具体兼容行为。确定性拒绝、独立审核与原始需求均保持不变。新增契约断言先失败再通过。
+
+`stage-disclaimer-v41` 的 bundle SHA-256 为 `4663d88e94923727b6048f4417de201d16086068e78f2700cc1cad411b4709c9`，隔离安装与本地构建一致。完整 `pnpm verify` 退出 0，549 条 Node 测试、7 条浏览器测试及其余检查通过；8 项真实隔离 Host 兼容检查也通过，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794245663192.json`。
+
+保留旧版全部终态后，核对 61 个项目与历史证据，p-queue 和 p-retry 两份独立 Gold 均先批准，再启动该版真实 fresh-1；目前正在观察，不能引用旧版候选作为本版成绩。此前 `event-phase-v40` 的其余 Gold 仍保留为旧版已审阅未用于候选。
+
+追加本机证据：`event-phase-domain-facts.json`、`domain-before-stage-disclaimer-install.json`、`stage-disclaimer-installed.json`、`stage-disclaimer-historical-observation.json`、`gold-stage-disclaimer-focused/`、`candidates-stage-disclaimer-focused.json`。完整回归日志为 `output/formal-170-stage-disclaimer-verify-2026-11-10.log`。
+
+Hono 的编译器可用性证据另行冻结为 `hono-tool-proof/evidence.json`，包含实际文件大小、内容摘要、完整源码归档摘要及真实启动探针；大文件正文不插入提示词，也不提高源码采集预算。Gold 工具允许首次审阅补充材料直接声明 `proposedGoldSha256`，旧材料仍兼容原 `previousIndependentReview.proposedGoldSha256`，均强制绑定未修改的 Gold。错误摘要的实际负向预检在模型调用前拒绝，语法检查通过。补充材料没有宣称目标实现、项目测试或交付通过。
+
+`gold-stage-disclaimer-hono/` 的独立审阅在任何本版 Hono 候选启动前批准，原 insufficient_evidence 保留。本版 Hono expose-function 真实 fresh-1 已启动，账本为 `candidates-stage-disclaimer-hono.json`，目前等待结果。该版其余 22 个样本尚未重新冻结 Gold 或运行候选，不引用旧版 24 份批准作为本版资格。
+
+提交 `b0a4123` 的 Linux CI 和 CodeQL 通过，macOS 作业没有执行步骤，等待约 15 分钟后因 hosted runner 未分配而取消；GitHub annotations 明确报告 macOS arm64 容量约束。后续提交 `0d1bcc6` 的 Linux/macOS CI 和 CodeQL 均通过。本版后续提交仍须各自核对，不能继承上述结论。
 
 ## 实际验证
 

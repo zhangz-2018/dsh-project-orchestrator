@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "releaseInput": {
+    "repositoryDigest": "eeeb2bfb5488123ee7b390ee25f96949381438699f26cd7319a013db172f4283",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06256eec39f9801e016af202c6eed887d28812c7b50c174678:independent-gold-review:0cca818a-1f5f-48d1-9796-9bf4bc37f344",
+    "reviewedAt": "2026-11-09T17:28:54.711Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. DEC-001 materially determines the public rejection contract and remains intentionally unresolved without human confirmation, so blocked readiness at decisions, the requirement-decision-pending reason, and evidence stages repository/requirements/decisions are appropriate. Conditional acceptance criteria do not authorize selecting either option. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity agree across the specification and Gold. Empty assignment expectations and no assignable tasks are consistent with stopping at decisions; TASK-IMPLEMENT and dependent TASK-VERIFY apply only after resolution. The supplied complete implementation owners support source/index.ts and source/options.ts as the binding owner set. Runtime tests and compile-time validation are correctly distinguished: the supplied nz implementation discovers test-d files despite the production tsconfig including only source. Build configuration supports treating dist declarations as generated, not separately maintained owners. Truncated runtime-test excerpts do not prevent evaluating this decision-stage expectation. The empty trusted team catalog does not require a later reviewer or assignment blocker because the material decision gate precedes those prerequisites. Gold and preview release fingerprints agree for repository, source, team, decision inputs, prompts, model, sampling, budgets, and metric policy. The different manifest/evaluation source digests and original/saved PRD digests are explicitly explained by distinct digest domains and trim-only persistence. Original-specification null release/review fields and remaining-work notes describe preparation state; the supplied preview and Gold contain the frozen release input. Isolation evidence states that Gold precedes every candidate on this bundle and supplies no historical candidate outputs; project reuse does not establish a decision or transfer attestations. No hypothetical C input is treated as a human Decision. This assessment relies on the supplied Service-calculated digest bindings and provenance assertions; I did not recompute hashes, execute code, or provide human attestation.",
+    "goldDigest": "aa8849b53a50deccd566a90ab20ebf40a7243381aa15fc383042d14940f3d666"
+  }
+}
