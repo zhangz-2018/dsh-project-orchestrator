@@ -3213,6 +3213,17 @@ test('Planning V3 event oracle keeps reentrant emissions observable after a once
   assert.match(prompt, /"required":true,"sourceAnchorIds":\["source-anchor-id"\],"eventObservables":\[/)
 })
 
+test('Planning V3 task Decision refs come only from frozen resolved records, not hypothetical source labels', () => {
+  const service = new OrchestratorService({}, memoryStore())
+  const analysis = { requirements: [{ key: 'REQ-001', scope: 'in_scope', statement: 'DEC-001 is a hypothetical source label; OPT-1 is fixed without a human Decision.' }] }
+  const prompt = decisions => service.plannerPromptV3({ taskLanguage: 'zh-CN' }, analysis, [], { bindings: [] }, [], { references: [] }, decisions, false)
+  assert.match(prompt(new Map()), /Allowed task decisionKeys: \[\]/)
+  assert.match(prompt(new Map()), /no resolved records means decisionKeys must be \[\]/)
+  const resolved = prompt(new Map([['DEC-REAL', { chosenOption: 'OPT-1', resolution: 'confirmed' }]]))
+  assert.match(resolved, /Allowed task decisionKeys: \["DEC-REAL"\]/)
+  assert.doesNotMatch(resolved, /Allowed task decisionKeys: \[[^\]]*DEC-001/)
+})
+
 test('Planning V3 dependency policy distinguishes error contracts from actual dependency faults', async () => {
   const cases = [
     { text: 'DEC-001: 等待队列已满时，拒绝值使用原生 RangeError，还是 name 为 QueueCapacityError 的普通 Error？调用方依赖错误类型分支，未选择前不能固定错误契约。', required: false },

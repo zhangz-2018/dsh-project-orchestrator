@@ -43,3 +43,52 @@ test('Verification tool evidence freezes installed entry closure, rejects drift 
     assert.deepEqual(await capture(), [])
   } finally { await rm(root, { recursive: true, force: true }) }
 })
+
+test('Verification tool evidence resolves CommonJS extension and directory entries without executing them', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-commonjs-evidence-'))
+  try {
+    const repository = join(root, 'repo')
+    const tool = join(root, 'node_modules/type-checker')
+    await mkdir(repository)
+    await mkdir(join(tool, 'lib/runner'), { recursive: true })
+    await mkdir(join(root, 'node_modules/.bin'))
+    await writeFile(join(tool, 'package.json'), JSON.stringify({ name: 'type-checker', version: '1.2.3', bin: './cli.js' }))
+    await writeFile(join(tool, 'cli.js'), "require('./lib');\n")
+    await writeFile(join(tool, 'lib/index.js'), "require('./runner'); require('./options'); require('./outside');\n")
+    await writeFile(join(tool, 'lib/runner/index.js'), "throw new Error('TOOL_MUST_NOT_EXECUTE');\n")
+    await writeFile(join(tool, 'lib/options.json'), '{"files":"test-d"}\n')
+    await writeFile(join(root, 'outside.js'), 'SECRET_SENTINEL\n')
+    await symlink(join(root, 'outside.js'), join(tool, 'lib/outside.js'))
+    await symlink('../type-checker/cli.js', join(root, 'node_modules/.bin/type-checker'))
+    const evidence = await plugin.captureVerificationToolEvidenceV3(repository, {
+      devDependencies: { 'type-checker': '^1.2.3' }, scripts: { test: 'type-checker' },
+    })
+    assert.equal(evidence.length, 1)
+    assert.deepEqual(evidence[0].files.map(f => f.path), ['cli.js', 'lib/index.js', 'lib/options.json', 'lib/runner/index.js', 'package.json'])
+    assert.ok(evidence[0].files.some(f => f.content.includes('TOOL_MUST_NOT_EXECUTE')))
+    assert.ok(!JSON.stringify(evidence).includes('SECRET_SENTINEL'))
+    assert.ok(evidence[0].unavailablePaths.some(p => p.includes('outside')))
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Verification tool evidence does not mark captured duplicate imports unavailable when its budget ends', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-budget-evidence-'))
+  try {
+    const tool = join(root, 'node_modules/type-checker')
+    await mkdir(tool, { recursive: true })
+    await mkdir(join(root, 'node_modules/.bin'))
+    await writeFile(join(tool, 'package.json'), JSON.stringify({ name: 'type-checker', version: '1.2.3', bin: './cli.js' }))
+    const imports = []
+    for (let index = 0; index < 30; index++) {
+      await writeFile(join(tool, `part-${index}.js`), 'module.exports = {};\n')
+      imports.push(`require('./part-${index}');`)
+    }
+    await writeFile(join(tool, 'cli.js'), `${imports.join('\n')}\nrequire('./part-0');\n`)
+    await symlink('../type-checker/cli.js', join(root, 'node_modules/.bin/type-checker'))
+    const [evidence] = await plugin.captureVerificationToolEvidenceV3(root, { devDependencies: { 'type-checker': '1.2.3' }, scripts: { test: 'type-checker' } })
+    assert.ok(evidence.files.length <= 24, 'Keep the existing source budget')
+    assert.ok(evidence.unavailablePaths.length > 0, 'Unvisited files must remain explicit gaps')
+    for (const file of evidence.files) assert.ok(!evidence.unavailablePaths.includes(file.path), `${file.path} was already captured`)
+    assert.ok(evidence.unavailablePaths.includes('part-29.js'))
+  } finally { await rm(root, { recursive: true, force: true }) }
+})

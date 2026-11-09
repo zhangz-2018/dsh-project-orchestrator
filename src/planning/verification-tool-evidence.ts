@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import { lstat, readFile, realpath } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import type { RepositoryCommandManifest } from './repository-commands.js'
 import type { RepositoryContextSnapshotV3Record } from '../types.js'
@@ -8,8 +9,7 @@ type ToolEvidence = NonNullable<RepositoryContextSnapshotV3Record['verificationT
 const hash = (content: string) => createHash('sha256').update(content).digest('hex')
 const safePath = (path: string) => !isAbsolute(path) && !path.split(/[\\/]/u).includes('..') && !path.includes('\0')
 
-// Read installed script tools only. No install, execution, network access or
-// repository ownership refs. Unsupported version ranges remain unproven.
+/** 只读冻结已安装且与声明最低版本一致的脚本工具；不安装或执行包，未解析依赖保留为证据缺口。 */
 export async function captureVerificationToolEvidenceV3(root: string, manifest: RepositoryCommandManifest | undefined): Promise<ToolEvidence[]> {
   const scripts = Object.entries(manifest?.scripts ?? {}).filter(([name, value]) => /^(?:test|check|verify|build|lint|typecheck)(?::|$)/u.test(name) && typeof value === 'string')
   const tokens = new Set(scripts.flatMap(([, value]) => (value as string).match(/[A-Za-z0-9@/_.-]+/gu) ?? []))
@@ -66,12 +66,23 @@ export async function captureVerificationToolEvidenceV3(root: string, manifest: 
               if (bytes + Buffer.byteLength(content) > 98_304) throw new Error('Package source budget exceeded')
               bytes += Buffer.byteLength(content)
               files.push({ path, digest: hash(content), content, truncated: false })
-              for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*|\bimport\s*\(\s*|\brequire\s*\(\s*)['"](\.[^'"]+)['"]/gu)) {
+              for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*|\bimport\s*\(\s*)['"](\.[^'"]+)['"]/gu)) {
                 queue.push(relative(packageRoot, resolve(packageRoot, dirname(path), match[1]!)))
+              }
+              // CommonJS 可省略扩展名或引用目录；使用 Node 的只读解析规则，仍禁止越出本包。
+              const require = createRequire(join(packageRoot, path))
+              for (const match of content.matchAll(/\brequire\s*\(\s*['"](\.[^'"]+)['"]/gu)) {
+                const requested = relative(packageRoot, resolve(packageRoot, dirname(path), match[1]!)).split(sep).join('/')
+                try {
+                  const resolved = relative(packageRoot, require.resolve(match[1]!)).split(sep).join('/')
+                  if (!safePath(resolved)) throw new Error('Resolved dependency escapes package root')
+                  queue.push(resolved)
+                } catch { unavailablePaths.push(requested) }
               }
             } catch { unavailablePaths.push(path) }
           }
-          unavailablePaths.push(...queue)
+          // 预算耗尽仅表示尚未访问的依赖缺失；重复入队的已读取文件不能同时标为不可用。
+          unavailablePaths.push(...queue.map(path => relative(packageRoot, resolve(packageRoot, path)).split(sep).join('/')).filter(path => !seen.has(path)))
           if (!files.some(file => file.path === relative(packageRoot, resolve(packageRoot, binPath)))) continue
           result.push({ packageName: name, declaredRange: range, version: installed.version, binName, entryPath: relative(packageRoot, resolve(packageRoot, binPath)).split(sep).join('/'), files: files.sort((a, b) => a.path.localeCompare(b.path)), unavailablePaths: [...new Set(unavailablePaths)].sort() })
           break

@@ -78,11 +78,30 @@ p-retry 的源码与现行 `v3.3.14` 能力规则复核确认需要 `data.change
 
 针对后继暴露的相邻缺口，场景生成契约进一步升级至 `scenario-coverage-review-v3.3.19`：按每个具体夹具分支核对事件清单、收集器、结算检查点及断言；一个分支的 absent 不能覆盖另一个分支的 present。完整输出模板同时补齐 `eventObservables`，避免模板遗漏该字段。新增契约断言先失败再通过，没有弱化独立审核或删除必要分支。
 
-最终版 bundle SHA-256 为 `c8709d90690a8e8f73f761a3bddff44c98209c49b99f2198428c0737b354a4dc`，隔离安装摘要一致。61 个项目的旧操作历史核对通过，两个未知版本的自动后继均通过安装前终态观测证明隔离，没有推断其版本。`event-variant-v37` 两份新 Gold 已在该版本任何候选启动前独立批准，真实候选正在复验。最终版完整 `pnpm verify` 退出 0，546 条 Node 测试、7 条浏览器测试、clean install/package smoke（169 文件）及其余本地检查通过；8 项真实 Host 兼容检查再次通过。
+`event-variant-v37` 的 bundle SHA-256 为 `c8709d90690a8e8f73f761a3bddff44c98209c49b99f2198428c0737b354a4dc`，隔离安装摘要一致。61 个项目的旧操作历史核对通过，两个未知版本的自动后继均通过安装前终态观测证明隔离，没有推断其版本。两份新 Gold 已在该版本任何候选启动前独立批准。该版完整 `pnpm verify` 退出 0，546 条 Node 测试、7 条浏览器测试、clean install/package smoke（169 文件）及其余本地检查通过；8 项真实 Host 兼容检查再次通过。
 
 本机证据位于 `output/acceptance/formal-170-20261109/`：`pretry-capabilities-confirmed.json`、`domain-before-event-oracle-install.json`、`ready-domain-before-event-oracle.json`、`event-oracle-installed.json`、`event-oracle-historical-observation.json`、`gold-event-oracle-focused/` 和 `candidates-event-oracle-focused.json`。完整回归日志为 `output/formal-170-event-oracle-verify-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794241643747.json`。日志和领域快照仍用于验收及恢复，保留本机，不提交原文或凭据。
 
-最终版追加证据为同目录 `event-oracle-policy-successors.json`、`event-oracle-domain-before-variant.json`、`domain-before-event-variant-install.json`、`event-variant-installed.json`、`event-variant-historical-observation.json`、`gold-event-variant-focused/`、`candidates-event-variant-focused.json`；完整回归日志为 `output/formal-170-event-variant-verify-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794242347023.json`。旧提交 `ac63d14` 的 Linux CI 和 CodeQL 通过，macOS 作业没有执行 step 就被取消，不能记作测试通过或断言失败。
+该版追加证据为同目录 `event-oracle-policy-successors.json`、`event-oracle-domain-before-variant.json`、`domain-before-event-variant-install.json`、`event-variant-installed.json`、`event-variant-historical-observation.json`、`gold-event-variant-focused/`、`candidates-event-variant-focused.json`；完整回归日志为 `output/formal-170-event-variant-verify-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794242347023.json`。旧提交 `ac63d14` 的 Linux CI 和 CodeQL 通过，macOS 作业没有执行 step 就被取消，不能记作测试通过或断言失败；后续 `108b275` 的 Linux/macOS CI 和 CodeQL 均通过。
+
+### 工具证据闭包与正式决策引用修复
+
+`event-variant-v37` 的两个真实候选均已终态，不能记作通过：
+
+- p-retry `planning-v3:063b00b6-a1f9-4d45-9e01-471ded9ff6f7` 在 TaskPreflight 阻塞。规划选择 `npm exec -- tsd --files index.test-d.ts`，但隔离仓库尚未安装该工具，没有其 CLI、文件发现、配置和编译器证据。能力资格检查已通过，仍不能把证据缺失当作可批准计划。
+- p-queue `planning-v3:c5863091-5dab-42db-a236-fe5e1e791004` 已通过场景审核，各取消分支均有独立事件观察项；任务规划随后以 `plan-reference-invalid` 失败。它将源文假设输入中的 `DEC-001` 当作正式任务决策引用，而权威 resolved Decision 集合为空。确定性引用校验保持拒绝，没有补造人工决策。
+
+工具证据修复位于 `captureVerificationToolEvidenceV3`：使用 Node 的只读 CommonJS 解析规则追踪省略扩展名和目录入口的相对 `require`，不执行包代码，拒绝越过包根的符号链接；仍保留原文件数及字节预算。预算耗尽时仅将未访问路径列为缺口，避免重复入队的已采集文件同时被标为不可用。两条回归分别覆盖真实入口解析、拒绝越界与不执行代码，以及预算耗尽时的重复路径，均先失败再通过。
+
+在固定 p-retry 隔离仓库内安装声明最低版本 `tsd@0.33.0` 作为只读工具证据，禁用安装脚本且不写锁文件，tracked 文件仍干净；这不是给目标需求新增依赖。冻结结果包含 `dist/cli.js`、`dist/lib/index.js`、`dist/lib/config.js`、`dist/lib/compiler.js`，未采集路径仍显式保留为缺口。另用实际 tsd 编译器验证函数体内的负向类型断言：readonly `cause: Error` 通过，writable、missing、wrong-type 三种错误声明分别失败。该实验只证明测试工具能够区分这些声明，不能代替目标实现和交付验收。
+
+任务规划契约升级至 `evidence-grounded-v3.3.30`，动态列出 Service 冻结的正式 `decisionKeys`；空集合必须输出 `[]`。源文假设、比较、历史或 pending 标签没有引用权限，固定假设输入按需求行为执行，不能因此虚构正式 Decision。新增空集合与真实 `DEC-REAL` 集合回归先失败再通过，原未知引用拒绝未放宽。
+
+中间版 `tool-decision-v38` 的两份 Gold 已批准，但没有启动候选；随后修复工具预算误标，旧 Gold 保留为已审阅未使用，不能算成绩。当前 `tool-closure-v39` 的 bundle SHA-256 为 `480d4c03a6595bec2022eef7003dbb8b3eb31c1b3a80be0e1f6aedba1b74b88c`，隔离安装与本地构建一致。两份新 Gold 均在该版任何候选启动前获独立批准，p-queue 与 p-retry 的真实 fresh-1 正在观察。
+
+本版完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，549 条 Node 测试、7 条浏览器测试、类型及文档检查、固定样本和 clean install/package smoke（169 文件）通过。8 项真实隔离 Host 兼容检查通过，使用确定性模型，未计作真实候选。没有修改主项目依赖。
+
+本机追加证据：`event-variant-domain-facts.json`、`pretry-tool-closure-evidence.json`、`tsd-oracle-probe.json`、`tool-closure-installed.json`、`tool-closure-historical-observation.json`、`gold-tool-closure-focused/`、`candidates-tool-closure-focused.json`；回归及兼容日志为 `output/formal-170-tool-closure-verify-2026-11-10.log`、`output/formal-170-tool-closure-host-compatibility-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794243698679.json`。所有失败、未使用审阅和实验夹具均保留本机，供验收与恢复使用。
 
 ## 实际验证
 
@@ -103,7 +122,7 @@ p-retry 的源码与现行 `v3.3.14` 能力规则复核确认需要 `data.change
 
 ## 剩余发布条件
 
-1. 通过新 Codex 默认 API 完成独立 Gold 审阅，保留旧网关已有 503 记录。
+1. 原 25 个样本在新 Codex 默认 API 的独立 Gold 审阅已完成；每次 bundle 变化后，须先完成该版独立 Gold 审阅，再启动对应样本候选，保留旧网关已有 503 记录。
 2. 在当前 bundle 上完成 8 仓库、25 样本、每样本至少 5 次有效独立真实规划，覆盖 8 对 pending/resolved 及无合格成员场景；保留所有失败，修复根因后重新验证。
 3. 完成同版真实交付 canary、独立验证和所需人工交付确认。
 4. 默认正式门禁、完整回归及 GitHub CI/CodeQL 通过后，才合并发布提交、创建 `v1.7.0` tag，执行正式 GitHub Release 和 npm provenance 发布。
