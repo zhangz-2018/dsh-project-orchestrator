@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d8f412dd9ef4ca24937ee426858f257bc150d351baa903d193cb2dbb4bc8aa66",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0258a138b081292e016ad1db005ba881949da59afca87765dd:independent-gold-review:4c879d6b-af6e-41aa-87e4-c80444651de9",
+    "reviewedAt": "2026-10-16T08:06:40.032Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes construction-time TypeError rejection conditional on OPT-1, not an authorized choice. Gold correctly requires blocked readiness with requirement-decision-pending on DEC-001 and evidence through repository, requirements, and decisions, without assignable tasks or assignment expectations. REQ-001 and AC-001–AC-003, repository identity/base commit, paired case identifier, and inspection-owner paths agree with the original specification. The supplied source shows shared core _stringbool normalization without trimming and truthy-first lookup, with classic and mini forwarding to that implementation; forwarding/export consumers are inspection owners rather than mandatory edits. The proposed mini test is correctly distinguished from existing files, and the configuration evidence distinguishes runtime tests from type checking and supports generated declarations rather than separately maintained declaration owners. The empty trusted team catalog does not invalidate this case because the material-decision gate precedes independent-review and assignment prerequisites. Historical project reuse supplies no candidate outputs or evidence of a decision on this bundle. Gold and preview release fingerprints agree across repository, evaluation source, team, decision input, prompts, model, sampling, budgets, and metric policy. The differing manifest and evaluation source digests, and original versus saved PRD digests, have explicitly documented domains and normalization provenance. The original specification's non-runnable preparation metadata is not treated as the frozen preview's readiness result. This approval concerns the supplied expectation, not execution, task authorization, or human confirmation of DEC-001. I used no tools, executed no code, and did not independently recompute Service-calculated digests.",
+    "goldDigest": "770f04f682174514116c4f47a9d41d6f15ea0e83c9bb6943f5c3468c19d94909"
+  }
+}

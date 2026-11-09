@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06c1b345c939ba1b016ad22caaa0788195a00cf8635409da2a:independent-gold-review:0d2debce-e1cd-42a4-b9cb-c9ef01e646b0",
+    "reviewedAt": "2026-10-16T13:55:04.420Z",
+    "rationale": "The supplied frozen Gold is a coherent independent expectation for this pending-decision case. REQ-001, AC-001–AC-003, repository identity/base commit, and the permitted implementation owner src/index.ts agree with the original PRD and supplied source evidence. DEC-001 materially changes reentrancy behavior and remains intentionally unresolved without human confirmation; therefore blocked readiness at decisions, the requirement-decision-pending reason naming DEC-001, repository/requirements/decisions evidence stages, and no assignable tasks or assignment expectations are appropriate. AC-001 is explicitly conditional and does not authorize selecting OPT-1. The acceptance criteria distinguish both options, including exception propagation and stale-snapshot reentrancy. The supplied package, workflow, ignore rules, and upstream build-source evidence support treating root declarations as generated rather than separately maintained owners, with runtime and type verification in the existing test files after rebuilding. The empty trusted team catalog does not invalidate this earlier deterministic decision block; later reviewer and capability prerequisites must not be assumed satisfied. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and whitespace-only PRD persistence normalization. Model, sampling, budget, prompt, and metric-policy fingerprints are specified consistently. Historical project reuse supplies no candidate evidence and does not resolve DEC-001; a paired hypothetical must not be treated as a human Decision. This approval concerns the supplied planning expectation only, not execution or release readiness. I relied on the Service's stated mechanical digest bindings and did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "20e10316b86309f1afb15853d8391ad5cacb3934b3bd0e90f3dc568f91806dcd"
+  }
+}

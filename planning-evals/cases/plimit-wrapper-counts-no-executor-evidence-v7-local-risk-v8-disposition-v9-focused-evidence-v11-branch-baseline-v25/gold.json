@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0fb4fcc7bf5a3197016ad1fe7ed17081949ad427018afda9bf:independent-gold-review:9c907fdc-c548-4279-a2ae-b10c30c3679d",
+    "reviewedAt": "2026-10-16T10:38:02.298Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original specification. REQ-001, AC-001 through AC-003, the two stable task keys, and the implementation/verification dependency agree with the PRD. The frozen source shows that limitFunction already forwards clearQueue but lacks wrapper count properties and their return-type declarations; index.js, index.d.ts, test.js, and index.test-d.ts therefore form the appropriate exact writable scope. The package configuration supports the stated xo, AVA, and tsd verification entry point, with no evidence that index.d.ts is generated. No material unresolved Decision is present in this case. The configured non-executing project reviewer satisfies the stated earlier review prerequisite, while the catalog supplies no eligible implementer or verifier and no trusted capability claims. Generating complete tasks and then blocking at assignments with both specified abstentions is therefore appropriate. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. I relied on the Service's mechanical fingerprint assertions, without independently recomputing digests or executing code. Historical operations are explicitly old-version evidence and are not treated as fresh runs or candidate-derived expectations. This approval concerns Gold coherence only, not execution, human attestation, or completion of the pending negative controls.",
+    "goldDigest": "a4910c33eaf150453a64fd721e548dc9f194b2b4feed35ac62454595de80cac2"
+  }
+}

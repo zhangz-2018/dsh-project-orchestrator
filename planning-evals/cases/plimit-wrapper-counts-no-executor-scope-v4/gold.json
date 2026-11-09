@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-scope-v4",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "b490248d963f55adef45f940abc2034b5fcc1b50dba8626ea812e69ffbb01aa0",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07e9a61c1b0e5408016ad11dfb3e508195b6a8d5b4cfe34271:independent-gold-review:5733560f-9bb9-4480-b4ff-c61500c489b5",
+    "reviewedAt": "2026-10-15T18:40:06.760Z",
+    "rationale": "The frozen Gold is a coherent independent planning expectation for the supplied original specification, without reference to any candidate. REQ-001, AC-001 through AC-003, and the two stable task keys agree across the PRD and Gold. The source evidence supports index.js and the separately maintained index.d.ts as implementation owners, with test.js and index.test-d.ts as the required regression scopes; package.json establishes the existing xo, AVA, and tsd verification entry point without requiring a configuration edit. The wrapper already forwards clearQueue from its single internal limiter, so exposing live read-only counts is compatible with the stated acceptance criteria. TASK-VERIFY must depend on TASK-IMPLEMENT, and both tasks must cover all required acceptance criteria. The project catalog supplies only a non-executing reviewer, with no execution roles or capability claims, supporting empty eligible-agent sets and explicit assignment abstention for both tasks. That reviewer also satisfies the supplied earlier scenario-review prerequisite. This case contains no unresolved material DEC-001 or other business choice, so reaching assignments and blocking there, rather than at decisions, is appropriate. No hypothetical input has been treated as a human Decision. The Gold and preview release-input fingerprints agree for repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. I rely on the Service's stated mechanical binding of digests to saved inputs; I did not recompute hashes, execute code, run tests, or attest to human review. Approval concerns the proposed Gold only and does not establish benchmark runnability or completion of the outstanding negative-control operations.",
+    "goldDigest": "efe7187a40db95c4d8fe6bab98202641a909a9a0dff0a0c92ee1a5ed6de0f78b"
+  }
+}

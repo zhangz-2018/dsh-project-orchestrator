@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-tsd-v26",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "b3d23b76f6946419a8c858eded1f18e6baf663fafd6fc42b15ebcefe7ef067b4",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2998d6f9300ef04f05bec60364fb473664b5965406b5a123154592fa1c2182f1",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b507a73cc88fc1c016ad2043526808194a5cdc5714525ca66:independent-gold-review:abdf9b8d-d4f9-46f1-945c-d67c47303a0d",
+    "reviewedAt": "2026-10-16T11:02:24.742Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the complete frozen inputs. REQ-001 and AC-001–AC-003 preserve the original specification's exact-key counting, live shared-map behavior, compatibility, and event-key typing requirements. The three-file writable binding scope covers the implementation and required runtime/compiler regressions without forcing unnecessary edits. The repository configuration and supplied upstream build-source evidence support treating index.d.ts and dist as generated artifacts, with rebuilding before root-entry tests; they are not separately maintained owners. TASK-IMPLEMENT and dependent, independent TASK-VERIFY match the original task expectations, including implementation and verification coverage of every required AC. The supplied project-scoped active capability claims support the designated agents for the bounded API, TypeScript, shared-data/state, and testing work; pending-only capabilities and persona descriptions need not be used to infer eligibility. An independent active reviewer is configured for the state/data review prerequisite. No unresolved material Decision is present in this bundle, so ready with no blocking reasons is appropriate. Gold and preview release fingerprints agree; the supplied provenance explains the distinct source-manifest/evaluation digest domains and trim-only PRD persistence. The original specification's remaining preparation items describe its earlier preparation state, while the frozen preview supplies the team and release inputs. This approval reviews expectations only: it does not attest human claims, approve task dispatch, or imply any candidate, build, test, or code execution. Digests are accepted as Service-calculated and mechanically bound to the supplied inputs, not independently recomputed.",
+    "goldDigest": "72f0cd441b002e956f7ed0739a63b80e0d65ae1b8b6eb93a572359b8cac59b62"
+  }
+}

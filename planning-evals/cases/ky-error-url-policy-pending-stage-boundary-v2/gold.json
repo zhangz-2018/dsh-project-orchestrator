@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-stage-boundary-v2",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d1137e1f9dc08ae56e9554df8d0b48052630d145a274e6f2287d36e6f8d1e0f7",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_032f3bd813f17211016ad11a52eca48195a214a84d1225f06b:independent-gold-review:eb9df363-8e5d-4915-bb85-52889378c05b",
+    "reviewedAt": "2026-10-15T18:24:31.120Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. Repository identity, base commit, paired-case identity, REQ-001, AC-001–AC-003, and the nine inspection-owner paths agree with the original PRD and supplied source evidence. DEC-001 materially controls omitted-option behavior and remains intentionally pending, without human confirmation or decision input; B must therefore stop at decisions with requirement-decision-pending for DEC-001, rather than select a default or publish ready tasks. Required evidence stages and empty task/assignment expectations correctly reflect that boundary. The empty team catalog supplies no basis for capability or assignment claims and does not require reaching assignment stages in this case. The source supports the specified message-formatting, normalization, hook-snapshot, inheritance, and fetch-filtering concerns. Forwarding and declaration consumers are inspection owners, not mandatory edits; distribution declarations are build outputs, not separately maintained owners. The proposed type-test path is covered by tsconfig.test.json, and the PRD distinguishes compile-time checks from runtime tests. Gold and preview releaseInput fingerprints match across repository, source, team, decision, prompt, policy, model, sampling, and budgets. The source-manifest digest is a separately scoped value, not an asserted duplicate of releaseInput.sourceDigest. Historical preparation fields do not override the supplied frozen release input. No candidate was supplied or used, no human decision was inferred from hypothetical inputs, and no code was executed or digests independently recomputed; digest binding is accepted as the stated Service guarantee. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "f11ffdfd241625ffd268587d522eab200c1650d8143a263c9e35ada0b7d0af9c"
+  }
+}

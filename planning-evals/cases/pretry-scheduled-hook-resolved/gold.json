@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "4aa841913eb60e647a9d829cc30b13dc0cb676960fbd59c3feb3d1fa7acfa0d3",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_08e971afa8e3711e016ad1691e5dc08193834ba41e88d0ca22:independent-gold-review:1cf623f7-c7b3-4979-a34a-35c3ff0768f3",
+    "reviewedAt": "2026-10-16T00:00:44.742Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario, reviewed without any candidate. The PRD explicitly fixes DEC-001=OPT-1 as a hypothetical benchmark input, not a human Decision; only that option creates implementation and verification obligations. Accordingly, ready with no blocking reasons is appropriate here, while a materially unresolved DEC-001 in B must block at decisions before later gates. REQ-001, AC-001–AC-003, the task keys, repository identity/base commit, paired-case identity, and required evidence stages agree with the original specification. The exact four-file binding scope covers the implementation, maintained public declaration, runtime regressions, and tsd regressions without requiring unnecessary edits. The supplied implementation and package configuration support these ownership and verification expectations; no declaration-generation build is evidenced. TASK-VERIFY remains independent and depends on TASK-IMPLEMENT, with all required acceptance criteria requiring both relationships. The designated implementer and verifier have appropriate delivery roles, available capacity, auto-assignable memberships, and active capability claims relevant to this work; eligibility need not rely on personas or pending legacy claims. The independent active project reviewer satisfies the supplied pre-Binding review prerequisite without needing execution capabilities. Gold and preview release fingerprints agree across repository, source, team, decision inputs, prompts, model, sampling, budgets, and metric policy. I accept the Service's stated mechanical binding of digests to saved inputs; I did not recompute hashes, execute code, or attest to test results. The truncated runtime-test excerpt limits inspection of existing tests but does not materially undermine this planning expectation, since the complete implementation, declarations, type-test file, configuration, inventory, and frozen file fingerprints establish the relevant scope. Approval concerns the independent expectation, not task dispatch, repository changes, or execution readiness of a candidate.",
+    "goldDigest": "0228025acff6d490224d17692c5fa5c4e9559418eefb01031e0889d8be6e99a6"
+  }
+}

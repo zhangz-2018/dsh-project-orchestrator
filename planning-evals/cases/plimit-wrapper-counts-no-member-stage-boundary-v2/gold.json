@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-member-stage-boundary-v2",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d1137e1f9dc08ae56e9554df8d0b48052630d145a274e6f2287d36e6f8d1e0f7",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f84346085ae7ce4016ad1196f059081968e4f7901d0806617:independent-gold-review:ce4fcb24-6fd8-4995-9e33-e2619445c8e6",
+    "reviewedAt": "2026-10-15T18:20:40.915Z",
+    "rationale": "The supplied Gold is a coherent independent, pre-candidate expectation for the frozen specification. REQ-001 and AC-001–AC-003 agree with the PRD and supplied source: limitFunction already uses one internal limiter and forwards clearQueue, but lacks the requested count properties and corresponding return-type exposure. The exact writable owner scope correctly includes index.js, the maintained index.d.ts, and both runtime and type-regression files; package.json establishes the existing xo && ava && tsd validation entry and needs inspection, not a mandatory edit. TASK-IMPLEMENT and dependent, independent TASK-VERIFY are consistent with the required implementation and verification coverage. The empty project membership and runtime facts justify explicit no-eligible abstention for both tasks, blocked readiness, and evidence through assignments rather than an earlier decisions-stage stop. This case contains no material unresolved DEC-001 and supplies no hypothetical C as a human Decision. Repository identity, base commit, stable keys, file fingerprints, and the complete release-input fingerprint fields are consistent between the supplied Gold and frozen preview. Digests are accepted as Service-calculated bindings, not independently recomputed; the source-manifest digest and release-input source digest are distinct fields and are not treated as interchangeable. No candidate was supplied or evaluated, no code was executed, and this approval does not attest to implementation correctness, completion of the remaining negative controls, human approval, or permission to dispatch tasks.",
+    "goldDigest": "44a7d71f7a21b2b90bdbb9bc8f46fbd55daa175e53abf6bdd2fd243ffa153326"
+  }
+}

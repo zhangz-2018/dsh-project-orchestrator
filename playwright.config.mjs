@@ -8,6 +8,7 @@ export default defineConfig({
   reporter: [['line']],
   use: {
     browserName: 'chromium',
+    ...(process.env.PO_TEST_BROWSER_CHANNEL === undefined ? {} : { channel: process.env.PO_TEST_BROWSER_CHANNEL }),
     headless: true,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

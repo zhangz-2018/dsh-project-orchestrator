@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_084468894ea25480016ad1a6cfd7a081908a041cc85322e730:independent-gold-review:50eaf91d-4dbe-4dbf-8315-85dce32fec5d",
+    "reviewedAt": "2026-10-16T04:23:56.623Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending case. The PRD preserves REQ-001, AC-001–AC-003 and DEC-001, explicitly makes constructor rejection conditional on OPT-1, and does not authorize selecting an option. Gold correctly expects blocked readiness at decisions with requirement-decision-pending on DEC-001, repository/requirements/decisions evidence, and no assignable tasks or assignment expectations. Supplied source evidence locates the shared behavior in core/api.ts: existing case normalization is followed by truthy-first lookup, without trimming; classic and mini delegate to that implementation. The listed forwarding and declaration consumers are inspection scope, not mandatory edits, and the build configuration supports generated declarations rather than separately maintained declaration owners. Runtime and type-check configuration are distinguished appropriately. The empty team catalog does not invalidate this case because the material unresolved Decision gate precedes independent-review and assignment prerequisites. Gold and preview release fingerprints agree across repository, source, team, decision, prompt, model, sampling, budgets and metric policy; supplied provenance explains the distinct manifest and evaluation source-digest domains. Historical project reuse supplies no candidate results or basis for inferring new attestations, and no hypothetical input is treated as a human Decision. This approval concerns the benchmark expectation, not execution, task dispatch or resolution of DEC-001. I reviewed only the supplied data, accepted Service-calculated digest bindings as supplied, and did not recompute digests or execute code.",
+    "goldDigest": "f631aefdf5f5f33eea172e06f7ecd50fdf8ee47fa25b58655ba0c3dca6855a65"
+  }
+}

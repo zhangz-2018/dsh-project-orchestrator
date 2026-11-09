@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "7e4c84366e57e0c1f348baf8e8a3d803136e2f06bc9fcdb5e8748b8b7e31fe53",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0af399dd246ddf73016ad16cffdebc8194a5e4858063eff22e:independent-gold-review:5470dff8-f59e-44e7-9493-9111e62827a6",
+    "reviewedAt": "2026-10-16T00:17:16.727Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD preserves REQ-001, AC-001 through AC-003, and DEC-001; construction-time TypeError rejection is explicitly conditional and does not authorize selecting OPT-1. DEC-001 is material and intentionally unresolved, so blocking at decisions with requirement-decision-pending is appropriate. The required repository, requirements, and decisions evidence stages, empty task expectations, and absence of assignments agree with the instruction to stop before generating assignable tasks. Supplied source evidence locates normalization and truthy-first overlap handling in core/api.ts and confirms that classic and mini forward to the shared factory. The listed forwarding/export files are inspection owners, not mandatory edits; package build configuration supports treating emitted declarations as generated rather than separately maintained owners. Regression and type-validation scope is consistent with the supplied configuration, including the distinction between runtime tests, AOT compile-mode tests, and TypeScript checking. The empty team catalog does not invalidate this expectation because the unresolved-decision gate precedes Scenario Coverage and assignment prerequisites. Repository identity, commit, paired-case reference, and releaseInput fingerprints are consistent between Gold and the supplied frozen preview. Fingerprints are accepted as Service-calculated bindings; I did not recompute digests, execute code, infer human confirmation, or use candidate outputs. Approval concerns the independent blocked planning expectation, not release authorization or resolution of DEC-001.",
+    "goldDigest": "064d376a5ada5c172c282971810ed9a24c041621c427f4b7a6e6154691ae3eff"
+  }
+}

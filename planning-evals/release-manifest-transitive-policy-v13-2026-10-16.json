@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-transitive-policy-v13-2026-10-16",
+  "createdAt": "2026-10-16T01:58:26.309Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "a87501ed36b64c7bc4f277878a4f17033a21993d62c6622e8b4d9703f9a8ce5f"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "f9279f0b38cdecdaf9ff9edc50904f4838266d71a4a9ebb7d6b37c59fee9a2e2"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "945abc2b712666820097eb47e17de8f1ad5b6bfd604ffe3428f5d4276f08dac1"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "fae84813801cb894c6835a1c04b6ba67608ac43fb5003a74bd21ed9e605c8baf"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "51c21f67471d8f2fd4cb60ba34b79537e0c928e7d60bb04ddab9ec48fa683b53"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "0b1f07c32078a1be6cdc7cd664b639acaa2d45d881a4de3451684c8567b8eeb0"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "0060c5c475da154304eaf4db7a113e0da043937caed448a31b1c31d624cda786"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "dddadd706cf63df7ecd52279c9c7bd9b0da14207d2eeaec8c0d39460ec8ee7bf"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "0f803ffa5db0dbb1be8a322c5c648edd47e4e5b87955d2e3643ca04af1b68eef"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "0efe30b37f126453514b57eda2fc94272aa4839331f8a8d39acb514225c210a3"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "4e256284f42d530f58ad6b3e283e01c99c5ee54f0ec8f8071f432a44de1cea51"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:e3e94d15-5098-4057-ac3a-5630f6a5b743",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T01:58:26.341Z",
+      "completedAt": "2026-10-16T02:02:22.808Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:5832ed79-48ba-4f4f-81f1-794bf26b95be",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T01:58:26.348Z",
+      "completedAt": "2026-10-16T02:04:28.403Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:91db65cc-82c0-4591-86f5-21406d4eef04",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:05:22.601Z",
+      "completedAt": "2026-10-16T02:07:43.214Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:24d12827-bfb6-4a56-9884-dc2ea3fe43b3",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:05:22.612Z",
+      "completedAt": "2026-10-16T02:07:43.054Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:4ec9b433-bedc-4a6e-a7a9-246f6257ef34",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:07:45.733Z",
+      "completedAt": "2026-10-16T02:09:49.761Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:b6b42f35-fe8e-4c80-8ee6-9a19de8a5898",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:07:45.742Z",
+      "completedAt": "2026-10-16T02:10:15.540Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:2cba50a8-ccbd-443c-a729-0c177832bd67",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:09:54.368Z",
+      "completedAt": "2026-10-16T02:12:16.449Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:da80c78f-0798-4901-986c-a305d20047f2",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:10:19.704Z",
+      "completedAt": "2026-10-16T02:13:01.941Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:f82529c6-2d08-4541-9031-774f458e7d6c",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:12:18.480Z",
+      "completedAt": "2026-10-16T02:15:26.814Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:d2e1e3b7-e101-4c6e-aef9-f47d80deaaf2",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:13:04.987Z",
+      "completedAt": "2026-10-16T02:15:49.123Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:ddb0a79c-f7eb-4a02-abab-da121e614fd7",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:15:31.615Z",
+      "completedAt": "2026-10-16T02:18:11.290Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:4d15dfff-b4d7-406b-a91f-daaa6fce52b1",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:15:51.345Z",
+      "completedAt": "2026-10-16T02:18:49.714Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:3223aa13-5bba-408d-b110-b3ee1d6c1ceb",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:18:12.130Z",
+      "completedAt": "2026-10-16T02:20:32.495Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:f03fcd62-426d-4416-9792-969accca87f4",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:18:53.911Z",
+      "completedAt": "2026-10-16T02:21:21.330Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:e87fe331-bf30-432e-9f9a-f2c81fce20f2",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:20:35.661Z",
+      "completedAt": "2026-10-16T02:22:42.255Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:ce035510-312e-4b21-9256-60f88c4b9703",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:21:22.277Z",
+      "completedAt": "2026-10-16T02:23:24.668Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:b243df08-cf11-437f-acd9-24252a1fea45",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:22:43.278Z",
+      "completedAt": "2026-10-16T02:24:38.545Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:fa064f47-6f39-4b13-860e-b129247077ca",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:23:25.513Z",
+      "completedAt": "2026-10-16T02:26:05.097Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:08b3e35d-4cd4-4f58-a92b-ca0778922bcf",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:24:41.811Z",
+      "completedAt": "2026-10-16T02:27:33.049Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:bb6d72bc-2ce5-496d-9e30-fde1f8182e38",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:26:09.490Z",
+      "completedAt": "2026-10-16T02:28:32.420Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:b1ec641e-d744-4f21-872a-b28b880083dc",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:27:36.229Z",
+      "completedAt": "2026-10-16T02:30:27.619Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:a37cc7b3-1bad-498a-b9a6-cfad4e028293",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:28:37.942Z",
+      "completedAt": "2026-10-16T02:31:24.252Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:e5e7801c-8b1f-4af7-bff0-cf8a2176eaf4",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:30:32.667Z",
+      "completedAt": "2026-10-16T02:33:43.367Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:d2bc5ec2-ef15-44a8-ad85-a58b716e8e10",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:31:26.445Z",
+      "completedAt": "2026-10-16T02:34:01.690Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:e842d452-5d17-4073-ab0b-b855b6a190a1",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:33:47.108Z",
+      "completedAt": "2026-10-16T02:35:52.653Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:1a2a4157-dd4c-44dd-8202-7f7fa27641d5",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:34:02.986Z",
+      "completedAt": "2026-10-16T02:36:28.599Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:a8eaddf1-e512-40ed-a8c0-543f6f3f899e",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:35:55.966Z",
+      "completedAt": "2026-10-16T02:37:45.420Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:c8846aa4-167d-46cd-a4bc-c30d5a1bbc6b",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:36:32.759Z",
+      "completedAt": "2026-10-16T02:38:25.179Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:c24a36ea-112a-4afd-8c32-b94392932edb",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:37:48.173Z",
+      "completedAt": "2026-10-16T02:39:44.883Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:ac9223b2-4f9d-445a-b8ae-3c980e7605b7",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:38:30.189Z",
+      "completedAt": "2026-10-16T02:40:19.582Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:bb95aae7-77aa-4779-869c-db40be5aa96a",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:39:45.917Z",
+      "completedAt": "2026-10-16T02:41:34.636Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:0420eb7d-4a8b-4d5a-9674-b85161c9e2b5",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:40:22.869Z",
+      "completedAt": "2026-10-16T02:42:12.502Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:e1c5f42e-8558-45cd-8d67-21a4cefc9637",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:41:39.301Z",
+      "completedAt": "2026-10-16T02:43:35.169Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:8518b512-48ba-42f3-8458-45e751c79f43",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:42:16.459Z",
+      "completedAt": "2026-10-16T02:44:12.896Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:247dc815-8735-4df9-b9f9-c6c9e847e982",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:43:37.245Z",
+      "completedAt": "2026-10-16T02:45:31.781Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:501af7a9-a24c-403b-bbee-d8dca6a7439b",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:44:14.116Z",
+      "completedAt": "2026-10-16T02:46:23.500Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:ab08bdeb-19f8-443d-98c1-5ac801287fea",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:45:34.583Z",
+      "completedAt": "2026-10-16T02:47:52.284Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:6847ccc5-7c23-4d05-b91f-e642f11763ac",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-1.json",
+      "startedAt": "2026-10-16T02:46:27.943Z",
+      "completedAt": "2026-10-16T02:48:48.904Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:9aca2d29-43c7-426b-9230-40e5102cd4db",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:47:53.066Z",
+      "completedAt": "2026-10-16T02:50:17.024Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:46b2ae83-5185-41e3-98d3-ccf1a61aa87e",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-3.json",
+      "startedAt": "2026-10-16T02:48:51.995Z",
+      "completedAt": "2026-10-16T02:51:11.985Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-4",
+      "operationId": "planning-v3:a7e67e8c-cfe8-4b51-9fa5-6ae8832cd996",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-4.json",
+      "startedAt": "2026-10-16T02:50:19.049Z",
+      "completedAt": "2026-10-16T02:52:42.172Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-5",
+      "operationId": "planning-v3:2da73950-2e6e-43ee-973a-3498234c403a",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-5.json",
+      "startedAt": "2026-10-16T02:51:15.785Z",
+      "completedAt": "2026-10-16T02:53:27.788Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-1",
+      "operationId": "planning-v3:73a85a78-2b13-481a-9dc6-4fcff8ac7ecc",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T02:52:44.071Z",
+      "completedAt": "2026-10-16T02:56:45.661Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:dbd067a0-c338-41be-a500-fa8f17357893",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T02:53:29.682Z",
+      "completedAt": "2026-10-16T02:59:02.401Z"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "8fe9642287ba0b0e17d3f7aaa98bee085eaf4578f72a80478bd130f78e809dd7",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_033ac1a5a234732d016ad1c2fb30cc81969509034559b59e8e:independent-gold-review:db791d85-e233-45f8-a491-2dd898b90050",
+    "reviewedAt": "2026-10-16T06:24:08.834Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001–AC-003 preserve the specified notification timing, control-symbol exclusions, stopOnError behavior, default-pMap-only exposure, and awaited non-control value inference without widening results. The exact writable scope covers the runtime owner, maintained declaration owner, and both regression files; package.json establishes the separate AVA and tsd verification entry points and does not require a configuration edit. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the original task expectations. Their allowed agents have the supplied active project-scoped trusted claims for the relevant contract, shared-data/state, asynchronous consumer, language, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Pending security.authorization claims are not treated as trusted or as necessary for this feature. A separate active, non-assignable project reviewer supplies the stated earlier review prerequisite. No material unresolved Decision is supplied for this case, so ready with no blocking reasons is consistent. The repository identity, commit, stable keys, evidence stages, and release fingerprints agree across Gold and preview. The provenance explicitly distinguishes manifest and evaluation source-digest domains and original versus trimmed persisted PRD fingerprints. The original specification's unready preparation fields are historical preparation state, superseded by the supplied frozen preview facts, not evidence of candidate execution. Isolation records state that Gold precedes every candidate on this bundle, with no historical operations or candidate outputs. I relied on the supplied Service-bound fingerprints and provenance; I did not recompute digests, execute code, or provide human attestation. The truncated test excerpts are supporting inspection evidence, not a claim that the full tests were executed or independently inspected.",
+    "goldDigest": "b160d5619d3122a680bc436e7d5f1856212d924c1760c0614143bc0470a21a57"
+  }
+}

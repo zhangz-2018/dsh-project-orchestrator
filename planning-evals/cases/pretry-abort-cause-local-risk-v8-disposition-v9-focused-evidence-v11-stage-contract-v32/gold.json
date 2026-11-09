@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b6d80ceabfb1bf4016ad25df6b1a08197a7c399ee0d6e1e58:independent-gold-review:7c1815bc-f318-4f93-bb58-f7e4a5f28933",
+    "reviewedAt": "2026-10-16T17:25:22.798Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001–AC-003 consistently require cause identity with originalError, preservation of string wrapping and message/name behavior, unchanged AbortError unwrapping by pRetry, and readable declaration support without changing existing signatures. The supplied implementation, declaration, focused regression evidence, and package configuration support the exact four-file writable binding scope; package.json is an inspection/configuration input, not a required edit. Nothing supplied establishes that index.d.ts is generated. Stable requirement, acceptance, and task keys agree, and the original task contract requires implementation plus independent verification of every required AC, with TASK-VERIFY depending on TASK-IMPLEMENT. The eligible agents have distinct roles, available capacity, and supplied active project-scoped claims for the relevant JavaScript/TypeScript, API-contract, asynchronous-consumer, failure-handling, and testing capabilities; the verifier additionally has testing.verification. This bounded, invocation-local error-object change does not inherently require shared-data or state impacts, so pending data.change and domain.state claims do not contradict readiness. An independent active reviewer is also configured. No material unresolved Decision is supplied for this case. The Gold and preview release fingerprints agree, and the supplied provenance explains the separate source-manifest/evaluation digest domains and whitespace-only PRD persistence normalization. The original specification's preparation-time remaining items are supplemented by the frozen preview rather than evidence of a candidate run. Historical project reuse and retained old operations are explicitly distinguished from evaluation on this bundle. I relied on the supplied Service-bound fingerprints and isolation assertions, did not independently recompute digests or execute code, and make no new human attestation. The truncated runtime-test excerpt contains the relevant AbortError behavior and does not prevent review of this planning expectation.",
+    "goldDigest": "9ebbd1f2dd59298f8aa4177897111bbe8d5c8a56790bcd44329ffa85a2c8d591"
+  }
+}

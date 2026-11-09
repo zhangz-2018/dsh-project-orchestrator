@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-binding-manifest-v30-completion-1-2026-10-16",
+  "createdAt": "2026-10-16T15:16:04.192Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+      "goldDigest": "38752dcb446080be69293dae637054a026432982c30acbdd8630bced2a4c7b19"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+      "attemptId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30/fresh-1",
+      "operationId": "planning-v3:ed2c9057-f713-4f46-95d3-098c620cc61a",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30/runs/fresh-1.json",
+      "startedAt": "2026-10-16T15:16:04.232Z",
+      "completedAt": "2026-10-16T15:42:00.843Z"
+    }
+  ]
+}

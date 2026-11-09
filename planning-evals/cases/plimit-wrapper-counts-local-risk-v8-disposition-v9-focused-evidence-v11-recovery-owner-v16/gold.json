@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03d7a3767665824a016ad1a71146bc8195bdbdbe58d6697f6c:independent-gold-review:5b04ccff-2fe8-4819-ad59-064be5af7bef",
+    "reviewedAt": "2026-10-16T04:25:00.307Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001–AC-003, the exact four-file binding scope, and the implementation/independent-verification task split agree with the specification and supplied complete source evidence. index.js owns the wrapper and its existing internal limiter; index.d.ts is the directly maintained public declaration owner, with no supplied generation pipeline making it a generated artifact. test.js and index.test-d.ts are the appropriate runtime and compile-time regression owners, and package.json confirms the separate xo, ava, and tsd validation entry points. Existing correct logic need not be edited merely to fill the binding scope. Ready status is supported: no unresolved material Decision appears in this case, an independent active project reviewer is configured, and the two distinct allowed assignees have the relevant active project-scoped trusted capability claims, including data.change and integration.consumer, with testing.verification additionally present for the verifier. Pending security.authorization claims are not needed for this bounded counter-exposure requirement. Repository identity, base commit, and the proposedGold/preview release fingerprints agree. The supplied provenance explains the distinct source-manifest and evaluation-source digest domains and the trim-only PRD persistence normalization. Historical project operations are explicitly retained without supplying historical candidate outputs or treating them as fresh evaluation evidence. The original preparation-time remaining items do not override the subsequently supplied frozen inputs. This approval uses only the supplied review data and Service mechanical-binding assertions; I did not execute code, independently recompute digests, or provide human attestation.",
+    "goldDigest": "f72e34bd0ee716a24272d50777c42e9b8e7c2f66ecc9bb2634c1a93bca6fece3"
+  }
+}

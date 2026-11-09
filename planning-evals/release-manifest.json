@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-real-2026-10-16",
+  "createdAt": "2026-10-15T17:37:19.823Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "goldDigest": "94f7f361bea14b12bb13814ddf84799c289286bda07fd2e252679a688b783046"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending",
+      "goldDigest": "6ebec69ca62229262cf11eecb779f8eae973369fba2b178fef3aebc2d4ae3754"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending",
+      "goldDigest": "5f8e7360d949d71f45002e16c01e25ec7ee0781e387faeaeb1fa1be29bf63ea3"
+    },
+    {
+      "caseId": "pmap-input-bound-pending",
+      "goldDigest": "0e0076c01e37ed5e7775cef088ef9d4965c42f666bc45c4463ca921e6d75cfdd"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending",
+      "goldDigest": "239a4f4a871049b89c3a6dc39885ba03ebe3203318db4209b5cc66a723668f39"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending",
+      "goldDigest": "cdfa5286a7a7aff88d5a9b24aff6e8dc5c4395752abf230a6847f51c57552853"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending",
+      "goldDigest": "0b45b64bb67a5c7e58cbf15038573b3564e566a54c0d7a1502aeace4ca3c5c55"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "goldDigest": "51b6ccf7e580c5f232830e63a9f17e77891797434f4a89ed88264e8bbb4633db"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-member",
+      "goldDigest": "458c050645d7ab57304212137d9d9680a3652fb8e083447dca5905f0902e5cfb"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "attemptId": "plimit-clear-reason-pending/fresh-1",
+      "operationId": "planning-v3:b208e69f-8bf3-4ee6-bf10-18dedfd6f29d",
+      "outcome": "infrastructure_failure",
+      "failureCode": "route-not-found",
+      "startedAt": "2026-10-15T17:37:19.850Z",
+      "completedAt": "2026-10-15T17:38:18.366Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "attemptId": "plimit-clear-reason-pending/fresh-1/export-recovery",
+      "operationId": "planning-v3:b208e69f-8bf3-4ee6-bf10-18dedfd6f29d",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:40:24.487Z",
+      "completedAt": "2026-10-15T17:40:24.509Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "attemptId": "plimit-clear-reason-pending/fresh-2",
+      "operationId": "planning-v3:cd076745-952d-4a49-ab6c-10b0a8e75b2b",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:40:34.011Z",
+      "completedAt": "2026-10-15T17:41:33.313Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "attemptId": "plimit-clear-reason-pending/fresh-3",
+      "operationId": "planning-v3:74a91314-f0e5-45f7-8d79-f5ee52f1f1a3",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:41:34.370Z",
+      "completedAt": "2026-10-15T17:42:30.761Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "attemptId": "plimit-clear-reason-pending/fresh-4",
+      "operationId": "planning-v3:52b7248b-803c-424b-a1d7-e66f8b023f95",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:42:34.671Z",
+      "completedAt": "2026-10-15T17:43:34.276Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending",
+      "attemptId": "plimit-clear-reason-pending/fresh-5",
+      "operationId": "planning-v3:0c795a08-7b46-48aa-b742-dc3628dc8f43",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T17:43:34.974Z",
+      "completedAt": "2026-10-15T17:44:41.305Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending",
+      "attemptId": "pretry-scheduled-hook-pending/fresh-1",
+      "operationId": "planning-v3:f107edcc-0310-45ac-ac20-bbdcd5c805d2",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:44:45.310Z",
+      "completedAt": "2026-10-15T17:45:59.924Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending",
+      "attemptId": "pretry-scheduled-hook-pending/fresh-2",
+      "operationId": "planning-v3:133c7307-f3e5-459a-82f4-5783fb6952fc",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:46:00.669Z",
+      "completedAt": "2026-10-15T17:47:06.491Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending",
+      "attemptId": "pqueue-maxqueued-pending/fresh-1",
+      "operationId": "planning-v3:d3d2dfb8-9143-401e-8402-3037faff7701",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:46:27.691Z",
+      "completedAt": "2026-10-15T17:47:42.005Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending",
+      "attemptId": "pmap-input-bound-pending/fresh-1",
+      "operationId": "planning-v3:70f23d68-9906-4a40-987c-bb74593d0592",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:46:27.701Z",
+      "completedAt": "2026-10-15T17:47:33.009Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending",
+      "attemptId": "ky-error-url-policy-pending/fresh-1",
+      "operationId": "planning-v3:7ead490b-b012-4107-9153-06f5d0bd87e0",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:46:27.709Z",
+      "completedAt": "2026-10-15T17:48:01.657Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending",
+      "attemptId": "pretry-scheduled-hook-pending/fresh-3",
+      "operationId": "planning-v3:a9802eec-8387-4ff6-8268-fb9d71be846e",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:47:07.866Z",
+      "completedAt": "2026-10-15T17:48:18.309Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending",
+      "attemptId": "pmap-input-bound-pending/fresh-2",
+      "operationId": "planning-v3:17fa3e5e-70de-4aca-abf1-4b2f191cf7cd",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:47:33.247Z",
+      "completedAt": "2026-10-15T17:49:37.036Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending",
+      "attemptId": "pqueue-maxqueued-pending/fresh-2",
+      "operationId": "planning-v3:95088ac3-9fe9-4cdf-b942-dfd17e1542ce",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:47:43.255Z",
+      "completedAt": "2026-10-15T17:49:48.357Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending",
+      "attemptId": "ky-error-url-policy-pending/fresh-2",
+      "operationId": "planning-v3:3acf5477-5c15-4bd2-95ed-76beebd8fe51",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:48:03.406Z",
+      "completedAt": "2026-10-15T17:49:06.237Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending",
+      "attemptId": "pretry-scheduled-hook-pending/fresh-4",
+      "operationId": "planning-v3:b109ba67-e050-486f-a267-6ae65f7ec80c",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:48:23.294Z",
+      "completedAt": "2026-10-15T17:49:31.803Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending",
+      "attemptId": "ky-error-url-policy-pending/fresh-3",
+      "operationId": "planning-v3:20ebc499-7ca7-4ef7-96c5-e5b33d6d9ed8",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:49:08.868Z",
+      "completedAt": "2026-10-15T17:50:11.852Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending",
+      "attemptId": "pretry-scheduled-hook-pending/fresh-5",
+      "operationId": "planning-v3:22507bcf-3a76-4ee3-aa8a-7eaf89e59a96",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T17:49:33.720Z",
+      "completedAt": "2026-10-15T17:50:51.424Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending",
+      "attemptId": "pmap-input-bound-pending/fresh-3",
+      "operationId": "planning-v3:24e589ee-3368-49d8-bfd6-a73ef127c613",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:49:38.843Z",
+      "completedAt": "2026-10-15T17:50:48.664Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending",
+      "attemptId": "pqueue-maxqueued-pending/fresh-3",
+      "operationId": "planning-v3:2a6e1ad0-73a0-4be8-b437-b30bc9d348c1",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:49:48.873Z",
+      "completedAt": "2026-10-15T17:50:55.213Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending",
+      "attemptId": "ky-error-url-policy-pending/fresh-4",
+      "operationId": "planning-v3:e00c5600-7974-47f1-8ffc-69b59568a810",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:50:14.307Z",
+      "completedAt": "2026-10-15T17:51:13.746Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending",
+      "attemptId": "pmap-input-bound-pending/fresh-4",
+      "operationId": "planning-v3:8d54b8c8-3159-4e19-9fb9-af5e8bf84986",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:50:49.342Z",
+      "completedAt": "2026-10-15T17:51:54.895Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending",
+      "attemptId": "hono-cors-maxage-policy-pending/fresh-1",
+      "operationId": "planning-v3:a8ff655c-b281-4777-8293-36736fbdd9c3",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:50:54.382Z",
+      "completedAt": "2026-10-15T17:51:53.997Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending",
+      "attemptId": "pqueue-maxqueued-pending/fresh-4",
+      "operationId": "planning-v3:168b4504-48d9-4215-a028-9d7461852b33",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:50:59.374Z",
+      "completedAt": "2026-10-15T17:52:13.599Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending",
+      "attemptId": "ky-error-url-policy-pending/fresh-5",
+      "operationId": "planning-v3:8f89cbcc-b007-4562-819f-263b49746b16",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T17:51:14.761Z",
+      "completedAt": "2026-10-15T17:52:17.311Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending",
+      "attemptId": "hono-cors-maxage-policy-pending/fresh-2",
+      "operationId": "planning-v3:c854beeb-c7ae-473d-b9b9-8bdcb18f5083",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:51:55.027Z",
+      "completedAt": "2026-10-15T17:52:56.676Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending",
+      "attemptId": "pmap-input-bound-pending/fresh-5",
+      "operationId": "planning-v3:991514a5-5243-4bd3-84b6-74c0fb077bae",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T17:51:59.983Z",
+      "completedAt": "2026-10-15T17:53:05.041Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending",
+      "attemptId": "pqueue-maxqueued-pending/fresh-5",
+      "operationId": "planning-v3:3093631e-c1b8-4bfa-92dc-7d9fec188b08",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T17:52:14.880Z",
+      "completedAt": "2026-10-15T17:53:37.025Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending",
+      "attemptId": "zod-stringbool-overlap-pending/fresh-1",
+      "operationId": "planning-v3:45ab6cd2-75ab-415c-958c-b91d1954e70b",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:52:20.253Z",
+      "completedAt": "2026-10-15T17:53:27.970Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending",
+      "attemptId": "hono-cors-maxage-policy-pending/fresh-3",
+      "operationId": "planning-v3:43d2bad8-6f9e-4310-8100-ec62f1c34c35",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:53:00.618Z",
+      "completedAt": "2026-10-15T17:54:04.459Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "attemptId": "mitt-once-reentrancy-pending/fresh-1",
+      "operationId": "planning-v3:00ccbd7a-936f-43d0-a0fc-b093ac855622",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending/runs/fresh-1.json",
+      "startedAt": "2026-10-15T17:53:05.551Z",
+      "completedAt": "2026-10-15T17:54:13.039Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending",
+      "attemptId": "zod-stringbool-overlap-pending/fresh-2",
+      "operationId": "planning-v3:2a734228-cd11-42b9-b3ba-ddb29f0893ab",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:53:30.727Z",
+      "completedAt": "2026-10-15T17:54:39.651Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending",
+      "attemptId": "hono-cors-maxage-policy-pending/fresh-4",
+      "operationId": "planning-v3:b6d4dad4-d85d-43e0-889f-f81e07d8131e",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:54:06.266Z",
+      "completedAt": "2026-10-15T17:55:06.893Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "attemptId": "mitt-once-reentrancy-pending/fresh-2",
+      "operationId": "planning-v3:c22f235f-2e59-498e-9e16-f34c7f5bc42b",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending/runs/fresh-2.json",
+      "startedAt": "2026-10-15T17:54:16.284Z",
+      "completedAt": "2026-10-15T17:55:26.551Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending",
+      "attemptId": "zod-stringbool-overlap-pending/fresh-3",
+      "operationId": "planning-v3:c5b2a06d-4efa-4223-9786-1f67e887a90e",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:54:41.290Z",
+      "completedAt": "2026-10-15T17:55:50.170Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending",
+      "attemptId": "hono-cors-maxage-policy-pending/fresh-5",
+      "operationId": "planning-v3:c0edca9d-9b6b-4cdd-bf0b-c60490703eab",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T17:55:11.797Z",
+      "completedAt": "2026-10-15T17:56:10.889Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "attemptId": "mitt-once-reentrancy-pending/fresh-3",
+      "outcome": "infrastructure_failure",
+      "failureCode": "collector-project-restoration-race",
+      "startedAt": "2026-10-15T17:55:26.798Z",
+      "completedAt": "2026-10-15T17:58:51.619Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "attemptId": "mitt-once-reentrancy-pending/fresh-3/local-preflight-recovery",
+      "operationId": "planning-v3:41ab89d9-5f56-4836-b9a0-c98cd6b1d8a3",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending/runs/fresh-3.json",
+      "startedAt": "2026-10-15T17:58:51.619Z",
+      "completedAt": "2026-10-15T18:00:27.856Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending",
+      "attemptId": "zod-stringbool-overlap-pending/fresh-4",
+      "operationId": "planning-v3:009d0a75-98dd-450f-aa18-e7ee2db6eec4",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T17:59:09.207Z",
+      "completedAt": "2026-10-15T18:00:13.991Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending",
+      "attemptId": "zod-stringbool-overlap-pending/fresh-5",
+      "operationId": "planning-v3:6e6f01bc-bf28-4aee-9dbf-f2b766fd7d4f",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T18:00:15.005Z",
+      "completedAt": "2026-10-15T18:01:53.122Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "attemptId": "mitt-once-reentrancy-pending/fresh-4",
+      "operationId": "planning-v3:dc9105cb-8091-49b2-adf1-081cd296db29",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending/runs/fresh-4.json",
+      "startedAt": "2026-10-15T18:00:30.055Z",
+      "completedAt": "2026-10-15T18:01:41.880Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending",
+      "attemptId": "mitt-once-reentrancy-pending/fresh-5",
+      "operationId": "planning-v3:2ddeca5d-f207-4447-968b-87f59cb98905",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending/runs/fresh-5.json",
+      "startedAt": "2026-10-15T18:01:45.685Z",
+      "completedAt": "2026-10-15T18:03:00.823Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-member",
+      "attemptId": "plimit-wrapper-counts-no-member/fresh-2",
+      "operationId": "planning-v3:d3a66ea3-e19e-4575-b731-6c72432f23a4",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-member/runs/fresh-2.json",
+      "startedAt": "2026-10-15T18:09:16.741Z",
+      "completedAt": "2026-10-15T18:10:23.648Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-member",
+      "attemptId": "plimit-wrapper-counts-no-member/fresh-3",
+      "operationId": "planning-v3:32ef00b7-a3da-47e8-b2e8-a829c8b35f73",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-member/runs/fresh-3.json",
+      "startedAt": "2026-10-15T18:09:16.742Z",
+      "completedAt": "2026-10-15T18:10:16.572Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-member",
+      "attemptId": "plimit-wrapper-counts-no-member/fresh-4",
+      "operationId": "planning-v3:1eb3cc0b-6853-496c-9e8e-450698db9274",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-member/runs/fresh-4.json",
+      "startedAt": "2026-10-15T18:09:16.742Z",
+      "completedAt": "2026-10-15T18:10:20.090Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-member",
+      "attemptId": "plimit-wrapper-counts-no-member/fresh-1",
+      "operationId": "planning-v3:42a698c4-9586-4cd8-acab-5148ad6ceb89",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-member/runs/fresh-1.json",
+      "startedAt": "2026-10-15T18:09:16.748Z",
+      "completedAt": "2026-10-15T18:10:25.125Z"
+    }
+  ]
+}

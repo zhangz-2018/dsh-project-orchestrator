@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-blocked-scenario-source-helper-v17-round1-2026-10-16",
+  "createdAt": "2026-10-16T05:04:42.159Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "cd8cd4964ae8c43288a48a58bfd52d5b0cef347264ef4f52178c4427ceae2dd6"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "d334de651e3ffc4c5c88f30109988336b8d1e409042fd2c0affb4d6797c05b1d"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "543e09bc12ae5b13743e780bf070e5f43a787bcfc3b3e2cc9166c846a681a4a8"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "875afef4a23a124969a061e84131d0ddc21e61a06444f09d5889fba4861d3980"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "eef92bfb9dfff34cb13c7aa10ab2774764e7e4b06210cb11dd42a60ef248cdfb"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "97e924f077eb064c52773ca0ac75f5cff7c01eb4c00482239a88872f90f65b8f"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "2afe01fc4963f46ecc306262c5c5637828ed6d87b5dc64b62a901bc16a432c39"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "b0e08f70f9da47c0b0a719c375723ae9e6aa3d26f57205518e519fb71c7da15a"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "goldDigest": "e1194c88fd5985019fa14f1247d95832a3c75000cf12a497ba5534edf8f2f834"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17/fresh-1",
+      "operationId": "planning-v3:6e825bae-2218-4987-88cf-f13287f22474",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17/runs/fresh-1.json",
+      "startedAt": "2026-10-16T05:04:42.330Z",
+      "completedAt": "2026-10-16T05:16:17.919Z"
+    }
+  ]
+}

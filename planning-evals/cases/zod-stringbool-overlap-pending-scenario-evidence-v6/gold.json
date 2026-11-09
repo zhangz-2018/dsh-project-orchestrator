@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d7fb2067c482d25016ad12ce3573c81968d82280d10111b68:independent-gold-review:769c11a0-fb4e-4b8f-9eba-5587a601fc34",
+    "reviewedAt": "2026-10-15T19:43:43.571Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this intentionally pending planning case. Repository identity, base commit, paired case, REQ-001, AC-001–AC-003, owner-path bindings, readiness, blocking reason and evidence stages agree with the original specification. DEC-001 remains materially unresolved: the conditional recommendation does not select OPT-1 or constitute human confirmation. B must therefore stop at decisions with requirement-decision-pending for DEC-001, before Scenario Coverage or assignment prerequisites. Empty task and assignment expectations are appropriate; TASK-IMPLEMENT and TASK-VERIFY apply only after resolution. The supplied source shows shared core stringbool behavior, existing truthy precedence, case normalization without trimming, and classic/mini forwarding. Forwarding and declaration consumers are inspection owners, not mandatory edits; the build configuration supports treating emitted declarations as generated rather than separately maintained owners. The empty team catalog supplies no assignment capability evidence, but later-stage staffing and reviewer prerequisites do not supersede the earlier decision gate. Gold's releaseInput matches the supplied frozen preview across repository, source, team, decision, prompt, model, sampling, policy and budget fingerprints. These are accepted as Service-calculated bindings, not independently recomputed hashes. No candidates, code execution, test results or human attestation were assumed. Any explicitly fixed hypothetical C input would remain distinct from a human Decision and would not resolve this case's DEC-001.",
+    "goldDigest": "ac61c36afa9f9af02b1fd11856a55607cb15895851832a0472dfc309c314e9c6"
+  }
+}

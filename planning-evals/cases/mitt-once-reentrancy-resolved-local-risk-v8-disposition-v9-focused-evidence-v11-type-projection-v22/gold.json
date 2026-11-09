@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "e53dcc48df1322f7ecf516339d3410ceab0c2aee59f2c79e616e5a50c7b4f77c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "24061706858c8d516120398df9a57219c579305b9ffbd8111113fdbef7b5bb0b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00840d11595593ac016ad1d4633b5c819488c339f44f2c363f:independent-gold-review:96da5bde-31bc-46a7-9d7b-69e7244edbcb",
+    "reviewedAt": "2026-10-16T07:38:26.279Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C input. DEC-001 is explicitly fixed to hypothetical OPT-1 without representing a human Decision; only that branch is required. Accordingly, ready with no blocking reasons is appropriate for C, while a material unresolved DEC-001 in B must block at decisions rather than implicitly select an option. REQ-001, AC-001 through AC-003, the decision key, task keys, and required evidence stages are consistent. The exact writable binding scope includes the implementation and both regression/type-test owners. Repository configuration and the supplied upstream build evidence support treating index.d.ts and dist as generated outputs, not separately maintained owners, and establish build-before-test planning without claiming execution. The expectations preserve per-registration stale-snapshot protection, wildcard behavior, synchronous exception propagation, existing off semantics, and positive and negative overload checks. TASK-VERIFY is independently assigned and depends on TASK-IMPLEMENT; the supplied active trusted capability claims support the allowed implementer and verifier, including data.change and domain.state, with testing.verification additionally present for the verifier. The configured independent reviewer satisfies the stated non-executing review prerequisite. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation digest domains and trim-only PRD persistence. Repository, team, decision-input, prompt, model, sampling, budget, and policy fingerprints are consistently frozen. This review relies on the supplied Service-calculated digest bindings and evidence, not independent digest recomputation, code execution, new human attestation, or candidate outputs. The historical preparation fields in originalSpecification do not override the supplied completed frozen preview inputs.",
+    "goldDigest": "42b5ec72d1d8cde6fc36eb85b2c6c8ff5f289c4453b45c3b4e01037c72555ed6"
+  }
+}

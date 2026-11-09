@@ -50,6 +50,31 @@ test('DomainEvent append replays a deterministic event id without duplicating se
   await assert.rejects(events.appendDomainEvent({ ...input, payloadDigest: 'e'.repeat(64) }), (error) => error.code === 'domain-event-conflict')
 })
 
+test('DomainEvent index paginates 10,000 persisted events without gaps and appends from the durable high-water mark', async () => {
+  const events = store()
+  await Promise.all(Array.from({ length: 10_000 }, (_, index) => events.domainEvents.put(`seed:${index + 1}`, {
+    eventId: `seed:${index + 1}`, sequence: index + 1, occurredAt: new Date(index * 1_000).toISOString(), schemaVersion: 1,
+    aggregateType: 'task_run', aggregateId: `run-${index + 1}`, eventType: 'task_run.changed', actor: 'system', projectId: index % 2 === 0 ? 'project-1' : 'project-2',
+    payloadDigest: digestObject({ index }),
+  })))
+  const seen = []
+  let cursor = 0
+  do {
+    const page = events.readDomainEvents(cursor, 137, 'project-1')
+    assert.ok(page.events.length <= 137)
+    seen.push(...page.events.map((event) => event.sequence))
+    cursor = Number(page.nextCursor)
+    if (!page.hasMore) break
+  } while (true)
+  assert.equal(seen.length, 5_000)
+  assert.deepEqual(seen.slice(0, 3), [1, 3, 5])
+  assert.deepEqual(seen.slice(-3), [9_995, 9_997, 9_999])
+  assert.equal(cursor, 10_000)
+  const appended = await events.appendDomainEvent({ aggregateType: 'system', aggregateId: 'global', eventType: 'system.changed', actor: 'system', payloadDigest: 'f'.repeat(64) })
+  assert.equal(appended.sequence, 10_001)
+  assert.deepEqual(events.readDomainEvents(10_000, 1, 'project-1').events.map((event) => event.sequence), [10_001])
+})
+
 test('storage capability probe is honest and unresolved intents are observable', async () => {
   const storage = store()
   assert.deepEqual(storage.storageCapabilities(), { transactions: false, compareAndSwap: false, uniqueConstraints: false, orderedAppend: false, serializedDomainWrites: true, durableBeforeMemory: true })

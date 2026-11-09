@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "releaseInput": {
+    "repositoryDigest": "49d2268f40476639bef4fe4416581aad39a43968847146db3381780377a1488d",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04f610791fa510e4016ad1ca733a448195ac5d67ad7ef6a633:independent-gold-review:520d6b12-9715-4e33-b364-6c4eded54f6f",
+    "reviewedAt": "2026-10-16T06:56:02.190Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD preserves REQ-001, AC-001–AC-003 and DEC-001, explicitly makes construction-time TypeError rejection conditional on OPT-1, and does not authorize selecting it. DEC-001 is material and intentionally unresolved, so blocked readiness, requirement-decision-pending on DEC-001, evidence through repository/requirements/decisions, and no assignable task or assignment expectations are appropriate. The supplied source shows shared core _stringbool normalization without trimming and truthy-first parsing, with classic and mini forwarding to that implementation. The listed forwarding/export consumers are inspection scope, not mandatory edits; the package build configuration supports generated declarations rather than separately maintained declaration owners. Runtime and type-check configuration support the stated verification distinction. Empty team membership and claims do not invalidate an intentional stop at the earlier decision gate; later reviewer and assignment prerequisites must not be inferred satisfied. Repository identity, commit, paired-case reference and release-input fingerprints agree across the supplied Gold and preview. The provenance explains the distinct manifest/evaluation digest domains and whitespace-only PRD persistence normalization. I accept these as Service-calculated, mechanically bound fingerprints, not independently recomputed hashes. Historical operations are disclosed without candidate outputs and do not supply a decision or justify changing expectations. This approval concerns the independent Gold expectation only, not task readiness, human confirmation, execution, or authorization of the paired hypothetical case. No tools or code were executed.",
+    "goldDigest": "280e589a7b7c8c9a428c52c823cda812268e9e9408b4085412d8a49584f9fbf3"
+  }
+}

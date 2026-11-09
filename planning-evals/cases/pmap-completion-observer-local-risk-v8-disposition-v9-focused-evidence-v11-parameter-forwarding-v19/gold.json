@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "8fe9642287ba0b0e17d3f7aaa98bee085eaf4578f72a80478bd130f78e809dd7",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "6fcae66eaca49d88deb33a00f18bdd4e9547df305c5b52133a370f741f68eaec",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01e33986b5b90c24016ad1bb3e692c81958ad26c1b2fcfc8fe:independent-gold-review:1cfa3954-2d44-4e35-87a1-11c006036c60",
+    "reviewedAt": "2026-10-16T05:51:06.121Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation. REQ-001 and AC-001–AC-003 consistently define default-pMap-only notification semantics, temporal stop/done and settlement boundaries, hook-error handling, compatibility, and type inference. The complete implementation and declaration evidence supports the exact four-file writable binding scope: the shared runtime engine and shared declaration options require attention to prevent exposure through other entry points, while package.json establishes separate runtime and tsd validation. The test excerpts are explicitly truncated, but this does not prevent assessment of the planning expectations or identified owners. Stable requirement, acceptance, and task keys match the original specification; verification is independent and depends on implementation. The supplied project catalog supports the two allowed assignees through active trusted claims, including data.change, domain.state, integration.async, integration.consumer, and verifier-only testing.verification; pending security.authorization claims are not needed for this bounded feature. A separate active project reviewer satisfies the stated non-executing review prerequisite. No material unresolved Decision is present, so ready with no blocking reasons is coherent. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct source-manifest, evaluation-source, and normalized-PRD digest domains. Model, policy, sampling, and budget fingerprints are consistently frozen. This assessment uses only the supplied review data, with no candidate outputs, execution, independent digest recomputation, or new human attestation.",
+    "goldDigest": "ad9446ff804526623972aa71fb278b4456136a1075566d62cc6632baadc7b195"
+  }
+}

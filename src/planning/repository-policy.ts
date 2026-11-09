@@ -8,7 +8,7 @@ import type {
 } from '../types.js'
 
 const NORMATIVE_TERM = /(?:\bMUST(?:\s+NOT)?\b|\bSHALL(?:\s+NOT)?\b|必须|不得|严禁|禁止|不允许)/iu
-const POLICY_APPLICABILITY_EVALUATOR_VERSION = 'policy-applicability-v3.4.0'
+const POLICY_APPLICABILITY_EVALUATOR_VERSION = 'policy-applicability-v3.4.1'
 
 const OPERATION_PATTERNS: Array<[PolicyOperationKind, RegExp]> = [
   ['read', /(?:\bGET\b|\bread(?:s|ing)?\b|\bquery\b|\blist\b|\bview\b|只读|读取|查询|查看|列表)/iu],
@@ -84,12 +84,16 @@ export function derivePolicyTargetSelectorV3(input: { sourcePath?: string; state
   const sourcePath = input.sourcePath === undefined ? undefined : normalizedScope(input.sourcePath)
   const sourceDirectory = sourcePath === undefined || sourcePath === '.' ? '.' : normalizedScope(posix.dirname(sourcePath))
   const scopedByRepositoryDocument = sourcePath !== undefined && /(?:^|\/)(?:AGENTS\.md|README(?:\.[^/]+)?\.md)$/iu.test(sourcePath)
+  // A tool invocation describes how to comply, not which business operation
+  // the policy targets. Keep prose (including explicit DELETE/POST predicates)
+  // and the complete stored policy statement unchanged.
+  const selectorText = input.statement.replace(/`(?:npm|pnpm|yarn|bun|nub|node|npx|tsc|vitest)\b[^`]*`/giu, ' ')
   return {
     includePaths: scopedByRepositoryDocument && sourceDirectory !== '.' ? [sourceDirectory] : [],
     excludePaths: [],
-    artifactKinds: inferPolicyArtifactKindsV3(input.statement),
-    operationKinds: inferPolicyOperationKindsV3(input.statement),
-    lifecycleStages: inferPolicyLifecycleStagesV3(input.statement),
+    artifactKinds: inferPolicyArtifactKindsV3(selectorText),
+    operationKinds: inferPolicyOperationKindsV3(selectorText),
+    lifecycleStages: inferPolicyLifecycleStagesV3(selectorText),
     stackTags: [...new Set(input.stackTags ?? [])].sort(),
   }
 }

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-stage-boundary-v2",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d1137e1f9dc08ae56e9554df8d0b48052630d145a274e6f2287d36e6f8d1e0f7",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0bf5631e186ecb99016ad11a46425081948f4ca7592508c8c3:independent-gold-review:23052fd2-44bb-4545-8324-bc5de32e822c",
+    "reviewedAt": "2026-10-15T18:24:17.947Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved; AC-001's recommended RangeError behavior is conditional and does not authorize selecting OPT-1. Gold correctly expects blocked readiness with requirement-decision-pending on DEC-001, requires evidence only through repository, requirements, and decisions, and supplies no assignment expectations. REQ-001, AC-001 through AC-003, repository identity/base commit, and paired-case identity agree across the specification and Gold. The supplied implementation and package exports support index.js and the maintained index.d.ts as the binding owners; test.js and index.test-d.ts are verification surfaces, not additional implementation owners. Shared runtime machinery and shared option types require inspection to preserve other exports, without implying mandatory edits to every consumer. The configured verification entry is xo && ava && tsd; no execution or passing results are assumed. The empty trusted team roster and claims do not justify assignments, and post-resolution task expectations correctly remain inapplicable here. Gold and preview carry matching frozen releaseInput fingerprints for repository, source, team, decisions, prompts, model, sampling, policy, and budgets. The source-manifest digest is a separately labeled artifact, not an asserted duplicate of the release source digest. The original specification's null releaseInput and remaining preparation items describe its earlier preparation state, while the supplied preview and Gold provide the frozen release input. This review accepts the Service's mechanical digest binding; it does not claim independent hash recomputation, code execution, human confirmation, or candidate evidence. No hypothetical input is treated as resolving DEC-001.",
+    "goldDigest": "3451b383f6a11c924399b6f496ba9e3321c109598887efbfc35b88bfc40a8af9"
+  }
+}

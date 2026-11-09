@@ -38,6 +38,8 @@ import {
   RequirementDecisionRecordSchema,
   AcceptanceCriterionRecordStorageSchema,
   VerificationEvidenceRecordSchema,
+  VerificationSpecRecordSchema,
+  VerificationInvocationRecordSchema,
   ProjectReviewRecordSchema,
   DeliveryRecordSchema,
   FeatureUsageDailyRecordSchema,
@@ -48,6 +50,8 @@ import {
   PlanningStageAttemptRecordSchema,
   PlanningCheckpointRecordSchema,
   StorageMutationIntentRecordSchema,
+  StorageMutationPayloadRecordSchema,
+  StorageRecoveryAttemptRecordSchema,
   PlanningSourceInputRecordSchema,
   RequirementSourceProfileRecordSchema,
   RequirementSourceManifestRecordStorageSchema,
@@ -88,6 +92,7 @@ import {
   TaskPreflightRecordV3Schema,
   PlanApprovalV3RecordSchema,
   ExecutionDispatchRecordSchema,
+  DeliveryIntegrationIntentRecordSchema,
   DeliveryIntegrationSnapshotRecordSchema,
   IntegrationInclusionEvidenceRecordSchema,
   DeliveryConvergenceFindingRecordSchema,
@@ -131,6 +136,8 @@ import {
   type RequirementDecisionRecord,
   type AcceptanceCriterionRecord,
   type VerificationEvidenceRecord,
+  type VerificationSpecRecord,
+  type VerificationInvocationRecord,
   type ProjectReviewRecord,
   type DeliveryRecord,
   type PlanningOperationRecord,
@@ -140,6 +147,8 @@ import {
   type PlanningStageAttemptRecord,
   type PlanningCheckpointRecord,
   type StorageMutationIntentRecord,
+  type StorageMutationPayloadRecord,
+  type StorageRecoveryAttemptRecord,
   type PlanningSourceInputRecord,
   type RequirementSourceProfileRecord,
   type RequirementSourceManifestRecord,
@@ -180,6 +189,7 @@ import {
   type TaskPreflightRecordV3,
   type PlanApprovalV3Record,
   type ExecutionDispatchRecord,
+  type DeliveryIntegrationIntentRecord,
   type DeliveryIntegrationSnapshotRecord,
   type IntegrationInclusionEvidenceRecord,
   type DeliveryConvergenceFindingRecord,
@@ -190,6 +200,7 @@ import {
 } from './types.js'
 import { STORAGE_CAPABILITIES, type StorageCapabilities } from './storage-unit-of-work.js'
 import { WorkflowError, planDigest } from './workflow.js'
+import { PullRequestBindingSchema, type PullRequestBinding } from './native/types.js'
 
 export const orchestratorDomain = defineDomain({
   name: 'project_orchestrator',
@@ -199,6 +210,8 @@ export const orchestratorDomain = defineDomain({
     initial: { schemaVersion: 1 },
   },
   tables: {
+    // 增量表使用独立 schemaVersion，不迁移/改写现有项目和审批记录。
+    pull_request_bindings: domainTable<string, PullRequestBinding>(PullRequestBindingSchema),
     agents: domainTable<string, AgentRecord>(AgentRecordSchema),
     projects: domainTable<string, ProjectRecord>(ProjectRecordSchema),
     tasks: domainTable<string, TaskRecord>(TaskRecordSchema),
@@ -233,6 +246,8 @@ export const orchestratorDomain = defineDomain({
     requirement_decisions: domainTable<string, RequirementDecisionRecord>(RequirementDecisionRecordSchema),
     acceptance_criteria: domainTable<string, AcceptanceCriterionRecord>(AcceptanceCriterionRecordStorageSchema),
     verification_evidence: domainTable<string, VerificationEvidenceRecord>(VerificationEvidenceRecordSchema),
+    verification_specs: domainTable<string, VerificationSpecRecord>(VerificationSpecRecordSchema),
+    verification_invocations: domainTable<string, VerificationInvocationRecord>(VerificationInvocationRecordSchema),
     project_reviews: domainTable<string, ProjectReviewRecord>(ProjectReviewRecordSchema),
     delivery_records: domainTable<string, DeliveryRecord>(DeliveryRecordSchema),
     planning_operations: domainTable<string, PlanningOperationRecord>(PlanningOperationRecordSchema),
@@ -242,6 +257,8 @@ export const orchestratorDomain = defineDomain({
     planning_stage_attempts: domainTable<string, PlanningStageAttemptRecord>(PlanningStageAttemptRecordSchema),
     planning_checkpoints: domainTable<string, PlanningCheckpointRecord>(PlanningCheckpointRecordSchema),
     storage_mutation_intents: domainTable<string, StorageMutationIntentRecord>(StorageMutationIntentRecordSchema),
+    storage_mutation_payloads: domainTable<string, StorageMutationPayloadRecord>(StorageMutationPayloadRecordSchema),
+    storage_recovery_attempts: domainTable<string, StorageRecoveryAttemptRecord>(StorageRecoveryAttemptRecordSchema),
     planning_source_inputs: domainTable<string, PlanningSourceInputRecord>(PlanningSourceInputRecordSchema),
     requirement_source_profiles: domainTable<string, RequirementSourceProfileRecord>(RequirementSourceProfileRecordSchema),
     requirement_source_manifests: domainTable<string, RequirementSourceManifestRecord>(RequirementSourceManifestRecordStorageSchema),
@@ -279,6 +296,7 @@ export const orchestratorDomain = defineDomain({
     expected_assignment_fixtures: domainTable<string, ExpectedAssignmentFixtureRecord>(ExpectedAssignmentFixtureRecordSchema),
     planning_metric_release_report_creates: domainTable<string, PlanningMetricReleaseReportCreateRecord>(PlanningMetricReleaseReportCreateRecordSchema),
     planning_metric_release_reports: domainTable<string, PlanningMetricReleaseReportRecord>(PlanningMetricReleaseReportRecordSchema),
+    delivery_integration_intents: domainTable<string, DeliveryIntegrationIntentRecord>(DeliveryIntegrationIntentRecordSchema),
     delivery_integration_snapshots: domainTable<string, DeliveryIntegrationSnapshotRecord>(DeliveryIntegrationSnapshotRecordSchema),
     integration_inclusion_evidence: domainTable<string, IntegrationInclusionEvidenceRecord>(IntegrationInclusionEvidenceRecordSchema),
     delivery_convergence_findings: domainTable<string, DeliveryConvergenceFindingRecord>(DeliveryConvergenceFindingRecordSchema),
@@ -293,6 +311,8 @@ export const orchestratorDomain = defineDomain({
 })
 
 export class OrchestratorStore {
+  /** 一项目一条原生 PR 关联；旧 Domain 缺表时读取为空。 */
+  readonly pullRequestBindings
   readonly agents
   readonly projects
   readonly tasks
@@ -327,6 +347,8 @@ export class OrchestratorStore {
   readonly requirementDecisions
   readonly acceptanceCriteria
   readonly verificationEvidence
+  readonly verificationSpecs
+  readonly verificationInvocations
   readonly projectReviews
   readonly deliveryRecords
   readonly planningOperations
@@ -336,6 +358,8 @@ export class OrchestratorStore {
   readonly planningStageAttempts
   readonly planningCheckpoints
   readonly storageMutationIntents
+  readonly storageMutationPayloads
+  readonly storageRecoveryAttempts
   readonly planningSourceInputs
   readonly requirementSourceProfiles
   readonly requirementSourceManifests
@@ -373,6 +397,7 @@ export class OrchestratorStore {
   readonly expectedAssignmentFixtures
   readonly planningMetricReleaseReportCreates
   readonly planningMetricReleaseReports
+  readonly deliveryIntegrationIntents
   readonly deliveryIntegrationSnapshots
   readonly integrationInclusionEvidence
   readonly deliveryConvergenceFindings
@@ -385,8 +410,10 @@ export class OrchestratorStore {
   readonly executionDispatches
   private mutationGuard: () => void = () => {}
   private eventAppendTail: Promise<void> = Promise.resolve()
+  private orderedDomainEvents: DomainEventRecord[] | undefined
 
   constructor(readonly domain: Domain<typeof orchestratorDomain>) {
+    this.pullRequestBindings = optionalTable<PullRequestBinding>(domain, 'pull_request_bindings')
     this.agents = domain.table('agents')
     this.projects = domain.table('projects')
     this.tasks = domain.table('tasks')
@@ -421,6 +448,8 @@ export class OrchestratorStore {
     this.requirementDecisions = optionalTable<RequirementDecisionRecord>(domain, 'requirement_decisions')
     this.acceptanceCriteria = optionalTable<AcceptanceCriterionRecord>(domain, 'acceptance_criteria')
     this.verificationEvidence = optionalTable<VerificationEvidenceRecord>(domain, 'verification_evidence')
+    this.verificationSpecs = optionalTable<VerificationSpecRecord>(domain, 'verification_specs')
+    this.verificationInvocations = optionalTable<VerificationInvocationRecord>(domain, 'verification_invocations')
     this.projectReviews = optionalTable<ProjectReviewRecord>(domain, 'project_reviews')
     this.deliveryRecords = optionalTable<DeliveryRecord>(domain, 'delivery_records')
     this.planningOperations = optionalTable<PlanningOperationRecord>(domain, 'planning_operations')
@@ -430,6 +459,8 @@ export class OrchestratorStore {
     this.planningStageAttempts = optionalTable<PlanningStageAttemptRecord>(domain, 'planning_stage_attempts')
     this.planningCheckpoints = optionalTable<PlanningCheckpointRecord>(domain, 'planning_checkpoints')
     this.storageMutationIntents = optionalTable<StorageMutationIntentRecord>(domain, 'storage_mutation_intents')
+    this.storageMutationPayloads = optionalTable<StorageMutationPayloadRecord>(domain, 'storage_mutation_payloads')
+    this.storageRecoveryAttempts = optionalTable<StorageRecoveryAttemptRecord>(domain, 'storage_recovery_attempts')
     this.planningSourceInputs = optionalTable<PlanningSourceInputRecord>(domain, 'planning_source_inputs')
     this.requirementSourceProfiles = optionalTable<RequirementSourceProfileRecord>(domain, 'requirement_source_profiles')
     this.requirementSourceManifests = optionalTable<RequirementSourceManifestRecord>(domain, 'requirement_source_manifests')
@@ -467,6 +498,7 @@ export class OrchestratorStore {
     this.expectedAssignmentFixtures = optionalTable<ExpectedAssignmentFixtureRecord>(domain, 'expected_assignment_fixtures')
     this.planningMetricReleaseReportCreates = optionalTable<PlanningMetricReleaseReportCreateRecord>(domain, 'planning_metric_release_report_creates')
     this.planningMetricReleaseReports = optionalTable<PlanningMetricReleaseReportRecord>(domain, 'planning_metric_release_reports')
+    this.deliveryIntegrationIntents = optionalTable<DeliveryIntegrationIntentRecord>(domain, 'delivery_integration_intents')
     this.deliveryIntegrationSnapshots = optionalTable<DeliveryIntegrationSnapshotRecord>(domain, 'delivery_integration_snapshots')
     this.integrationInclusionEvidence = optionalTable<IntegrationInclusionEvidenceRecord>(domain, 'integration_inclusion_evidence')
     this.deliveryConvergenceFindings = optionalTable<DeliveryConvergenceFindingRecord>(domain, 'delivery_convergence_findings')
@@ -496,12 +528,13 @@ export class OrchestratorStore {
 
   private mutableTables(): Array<{ put(key: string, value: any): Promise<void>; delete(key: string): Promise<boolean>; update(key: string, transform: (current: any) => any): Promise<any> }> {
     return [
+      this.pullRequestBindings,
       this.agents, this.projects, this.tasks, this.approvals, this.runs, this.runtimes, this.resources, this.issues, this.taskRuns, this.activity, this.domainEvents,
       this.comments, this.decisions, this.squads, this.delegations, this.transcripts, this.artifacts, this.commands, this.externalTriggers,
       this.skills, this.localDirectoryLocks, this.workspaceLeases, this.workspaceWriterLeases, this.taskRunConflictLocks,
       this.projectAgentMemberships, this.projectSquadBindings, this.projectAgentMembershipSources, this.featureUsageDaily, this.planSnapshots,
-      this.requirementBundles, this.requirementItems, this.requirementDecisions, this.acceptanceCriteria, this.verificationEvidence,
-      this.projectReviews, this.deliveryRecords, this.planningOperations, this.planningMetricPolicies, this.planningMetricPolicyPublishes, this.planningShadowEvaluations, this.planningStageAttempts, this.planningCheckpoints, this.storageMutationIntents, this.planningSourceInputs,
+      this.requirementBundles, this.requirementItems, this.requirementDecisions, this.acceptanceCriteria, this.verificationEvidence, this.verificationSpecs, this.verificationInvocations,
+      this.projectReviews, this.deliveryRecords, this.planningOperations, this.planningMetricPolicies, this.planningMetricPolicyPublishes, this.planningShadowEvaluations, this.planningStageAttempts, this.planningCheckpoints, this.storageMutationIntents, this.storageMutationPayloads, this.storageRecoveryAttempts, this.planningSourceInputs,
       this.requirementSourceProfiles, this.requirementSourceManifests, this.requirementAnalysisProposals, this.planningRepairAttempts,
       this.sourceDispositionBindings, this.acceptanceScenarios,
       this.acceptanceScenarioCoveragePolicies, this.planningRiskProfiles, this.sourcePolicyPrechecks, this.scenarioCoverageReviews,
@@ -510,7 +543,7 @@ export class OrchestratorStore {
       this.planningPromptReferenceManifests, this.requirementCodeBindings, this.planningProposalPacks, this.planningReferenceMaps,
       this.policyFulfillments, this.capabilityDefinitions, this.agentCapabilityClaims, this.projectCapabilityCatalogSnapshots,
       this.resourceAccessGrants, this.projectAccessGrantSnapshots, this.capabilityRequirementDrafts, this.assignmentDrafts,
-      this.assignmentEvaluations, this.expectedAssignmentFixtures, this.planningMetricReleaseReportCreates, this.planningMetricReleaseReports, this.deliveryIntegrationSnapshots, this.integrationInclusionEvidence,
+      this.assignmentEvaluations, this.expectedAssignmentFixtures, this.planningMetricReleaseReportCreates, this.planningMetricReleaseReports, this.deliveryIntegrationIntents, this.deliveryIntegrationSnapshots, this.integrationInclusionEvidence,
       this.deliveryConvergenceFindings, this.deliveryConvergenceReviews, this.taskPreflightsV3, this.planApprovalsV3, this.executionDispatches,
       this.convergenceRepairBaselines, this.convergenceRepairCarryItems, this.convergenceCarryValidations,
     ]
@@ -522,6 +555,13 @@ export class OrchestratorStore {
 
   unresolvedStorageMutationIntents(projectId?: string): StorageMutationIntentRecord[] {
     return [...this.storageMutationIntents.entries()]
+      .map(([, value]) => value)
+      .filter((intent) => intent.status !== 'committed' && intent.status !== 'compensated' && (projectId === undefined || intent.projectId === projectId))
+      .sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id))
+  }
+
+  unresolvedDeliveryIntegrationIntents(projectId?: string): DeliveryIntegrationIntentRecord[] {
+    return [...this.deliveryIntegrationIntents.entries()]
       .map(([, value]) => value)
       .filter((intent) => intent.status !== 'committed' && (projectId === undefined || intent.projectId === projectId))
       .sort((left, right) => left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id))
@@ -546,7 +586,8 @@ export class OrchestratorStore {
           return existing
         }
       }
-      const sequence = [...this.domainEvents.entries()].reduce((highest, [, event]) => Math.max(highest, event.sequence), 0) + 1
+      const ordered = this.domainEventIndex()
+      const sequence = (ordered.at(-1)?.sequence ?? 0) + 1
       const event: DomainEventRecord = DomainEventRecordSchema.parse({
         ...input,
         eventId: input.eventId ?? `event:${sequence}`,
@@ -555,6 +596,7 @@ export class OrchestratorStore {
         schemaVersion: 1,
       })
       await this.domainEvents.put(event.eventId, event)
+      ordered.push(event)
       return event
     })
     this.eventAppendTail = operation.then(() => undefined, () => undefined)
@@ -563,16 +605,38 @@ export class OrchestratorStore {
 
   readDomainEvents(after = 0, limit = 100, projectId?: string): DomainEventPage {
     const boundedLimit = Math.max(1, Math.min(500, Math.trunc(limit)))
-    const all = [...this.domainEvents.entries()].map(([, event]) => event).sort((left, right) => left.sequence - right.sequence)
-    const filtered = all.filter((event) => event.sequence > after && (projectId === undefined || event.projectId === undefined || event.projectId === projectId))
-    const events = filtered.slice(0, boundedLimit)
-    const latest = all.at(-1)?.sequence ?? 0
+    const ordered = this.domainEventIndex()
+    let low = 0
+    let high = ordered.length
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2)
+      if (ordered[middle]!.sequence <= after) low = middle + 1
+      else high = middle
+    }
+    const events: DomainEventRecord[] = []
+    let hasMore = false
+    for (let index = low; index < ordered.length; index += 1) {
+      const event = ordered[index]!
+      if (projectId !== undefined && event.projectId !== undefined && event.projectId !== projectId) continue
+      if (events.length < boundedLimit) events.push(event)
+      else { hasMore = true; break }
+    }
+    const latest = ordered.at(-1)?.sequence ?? 0
     return {
       events,
-      nextCursor: String(events.at(-1)?.sequence ?? latest),
+      nextCursor: String(hasMore ? events.at(-1)?.sequence ?? after : latest),
       latestCursor: String(latest),
-      hasMore: filtered.length > events.length,
+      hasMore,
     }
+  }
+
+  private domainEventIndex(): DomainEventRecord[] {
+    if (this.orderedDomainEvents === undefined) {
+      this.orderedDomainEvents = [...this.domainEvents.entries()]
+        .map(([, event]) => event)
+        .sort((left, right) => left.sequence - right.sequence || left.eventId.localeCompare(right.eventId))
+    }
+    return this.orderedDomainEvents
   }
 
   snapshot(): Snapshot {
@@ -615,7 +679,7 @@ export class OrchestratorStore {
       issues: issues.filter((issue) => issue.projectId === undefined || projectIds.has(issue.projectId)),
       taskRuns: taskRuns.filter((run) => projectIds.has(run.projectId)),
       activity: activity.filter((event) => event.projectId === undefined || projectIds.has(event.projectId)),
-      eventCursor: String([...this.domainEvents.entries()].reduce((highest, [, event]) => Math.max(highest, event.sequence), 0)),
+      eventCursor: String(this.domainEventIndex().at(-1)?.sequence ?? 0),
       comments: comments.filter((comment) => issues.some((issue) => issue.id === comment.issueId)),
       decisions: [...this.decisions.entries()]
         .map(([, value]) => value)
@@ -652,6 +716,8 @@ export class OrchestratorStore {
       requirementDecisions: [...this.requirementDecisions.entries()].map(([, value]) => value).filter((decision) => projectIds.has(decision.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       acceptanceCriteria: [...this.acceptanceCriteria.entries()].map(([, value]) => value).filter((criterion) => projectIds.has(criterion.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       verificationEvidence: [...this.verificationEvidence.entries()].map(([, value]) => value).filter((evidence) => projectIds.has(evidence.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      verificationSpecs: [...this.verificationSpecs.entries()].map(([, value]) => value).filter((spec) => projectIds.has(spec.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      verificationInvocations: [...this.verificationInvocations.entries()].map(([, value]) => value).filter((invocation) => projectIds.has(invocation.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       projectReviews: [...this.projectReviews.entries()].map(([, value]) => value).filter((review) => projectIds.has(review.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       deliveryRecords: [...this.deliveryRecords.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       planningOperations: [...this.planningOperations.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
@@ -664,6 +730,11 @@ export class OrchestratorStore {
       }).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       planningCheckpoints: [...this.planningCheckpoints.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.sequence - left.sequence),
       storageMutationIntents: [...this.storageMutationIntents.entries()].map(([, value]) => value).filter((record) => record.projectId === undefined || projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      storageMutationPayloads: [...this.storageMutationPayloads.entries()].map(([, value]) => value).filter((record) => {
+        const intent = this.storageMutationIntents.get(record.intentId)
+        return intent?.projectId === undefined || (intent !== undefined && projectIds.has(intent.projectId))
+      }).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      storageRecoveryAttempts: [...this.storageRecoveryAttempts.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       planningSourceInputs: [...this.planningSourceInputs.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       requirementSourceProfiles: [...this.requirementSourceProfiles.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       requirementSourceManifests: [...this.requirementSourceManifests.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
@@ -710,6 +781,7 @@ export class OrchestratorStore {
       taskPreflightsV3: [...this.taskPreflightsV3.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       planApprovalsV3: [...this.planApprovalsV3.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.approvedAt.localeCompare(left.approvedAt)),
       executionDispatches: [...this.executionDispatches.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      deliveryIntegrationIntents: [...this.deliveryIntegrationIntents.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => left.integrationSnapshotId.localeCompare(right.integrationSnapshotId) || left.sequence - right.sequence),
       deliveryIntegrationSnapshots: [...this.deliveryIntegrationSnapshots.entries()].map(([, value]) => value).filter((record) => projectIds.has(record.projectId)).sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       integrationInclusionEvidence: [...this.integrationInclusionEvidence.entries()].map(([, value]) => value).filter((record) => {
         const integration = this.deliveryIntegrationSnapshots.get(record.integrationSnapshotId)

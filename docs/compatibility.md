@@ -2,11 +2,17 @@
 
 English | [简体中文](compatibility.zh-CN.md)
 
-## Certified matrix
+## Validated Source Matrix
 
 | Plugin | DeepSeek Harness | Cordis | Node.js | Git | Platforms |
 |---|---|---|---|---|---|
-| 1.x | 0.1.0-rc.6 | 4.0.1 | >=22 | required for worktrees | Linux and macOS CI; Windows not certified |
+| Current working source (unpublished) | 0.2.2-rc.1 | 4.1.0 | >=24.9.0 | required for worktrees | macOS local validation; Linux CI configured, not run in this session; Windows not certified |
+
+The previous 0.1.0-rc.6 validation applies only to its historical source and artifacts. The current package requires the new Host packages and does not claim compatibility with that old Host. Node.js 22 is no longer supported. Existing user Host processes and data were not upgraded during this verification.
+
+The migration uses `dsh-agent-preset-registry`, `dsh-api-workspace-controller`, `dsh-client-ui-workspace`, `dsh-client-ui-renderer`, and `sessionQuery.readSession()` in place of the removed or split services. The client factory protocol remains unchanged. Storage domain names and record schema versions remain unchanged.
+
+Compatibility checks cover the real CLI and plugin activation, Agent preset/stream/query lifecycle, model errors, tool denial, cancellation, disposal, and JSON storage across Host restart. Model output is supplied by a deterministic local adapter: this proves integration, not real-model planning quality or release qualification. See the [acceptance record](dsh-0.2.2-adaptation-2026-11-09.zh-CN.md) for evidence and reproduction.
 
 Harness prerelease SemVer does not imply compatibility across release candidates. Every future Harness RC or stable release must be validated before the peer range is changed. Harness packages are optional peers because the profile Host supplies them; a generic npm install that auto-resolves peers can construct an invalid mixed-RC tree from upstream prerelease ranges. Use the Harness `dsh plugin` manager and pnpm-backed profile rather than treating the package as a standalone Node application.
 

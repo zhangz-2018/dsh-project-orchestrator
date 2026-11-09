@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-callable-fixture-v33-2026-10-17",
+  "createdAt": "2026-10-16T17:59:23.325Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "goldDigest": "c2b4f3bc9f5f07bbfc85478d8f9b749e211b50c16ee683bb1de3559f5b9030be"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "goldDigest": "429efa532800f04ceae1c77077f575d14cd3e7b31f43b004680264e67022c7c3"
+    },
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "goldDigest": "bf8c53689a4b037434e16a72cc5eba5c362fc90447a9d82ea0c99eade25d723f"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "goldDigest": "74f1ebcf185b558c215a128b39a3aa1f06c6c427fb3053a9e78b4bcde1cfeaca"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "attemptId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/fresh-1",
+      "operationId": "planning-v3:127cc39c-2183-4832-a3e5-5c011fddd664",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:59:23.365Z",
+      "completedAt": "2026-10-16T18:09:55.999Z"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "attemptId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/fresh-1",
+      "operationId": "planning-v3:c9b495dd-eb79-4778-bb5c-2205427ffc45",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:59:23.370Z",
+      "completedAt": "2026-10-16T18:12:56.581Z"
+    },
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/fresh-1",
+      "operationId": "planning-v3:178b0839-8190-4c7c-a827-3b3a1fa29fb3",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:59:23.373Z",
+      "completedAt": "2026-10-16T18:23:47.644Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+      "attemptId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/fresh-1",
+      "operationId": "planning-v3:601dead8-ffcd-4297-9395-b5c3038b1ddb",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:59:24.171Z",
+      "completedAt": "2026-10-16T18:22:27.560Z"
+    }
+  ]
+}

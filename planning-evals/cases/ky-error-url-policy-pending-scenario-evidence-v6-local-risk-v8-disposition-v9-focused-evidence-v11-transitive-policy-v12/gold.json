@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "997d50f41feb75f1585488fca813649368c3faf4e455878b94a31d36d4106ec2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ff2a7d8663c9d72016ad181377e508196af344aa846e1eacb:independent-gold-review:c6c16a56-0c50-495a-a2ed-d01d3fbbcc1b",
+    "reviewedAt": "2026-10-16T01:43:32.594Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and the paired-case identity consistently with the original specification. DEC-001 materially determines omitted-option behavior and remains intentionally unresolved, without human confirmation or decision inputs. Accordingly, blocked readiness at decisions, evidence stages limited to repository/requirements/decisions, and no assignable tasks or assignment expectations are appropriate. The supplied policy places this deterministic decision gate before Scenario Coverage, so the empty team catalog does not require an additional later-stage reviewer or assignment blocker in this case. The nine binding owners cover message construction, public/internal normalization contracts, runtime snapshots, option filtering, instance inheritance, and hook/API consumers. Existing generic forwarding and declaration consumers are inspection owners, not mandatory edits. The supplied build configuration supports treating distribution declarations as generated rather than separately maintained owners; runtime and compile-time verification are correctly distinguished. The proposed Gold and preview releaseInput fingerprints agree across repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. Historical project reuse does not supply candidate evidence or resolve DEC-001, and the resolved hypothetical must not be treated as a human decision for this case. This approval concerns the frozen planning expectation, not implementation correctness, test execution, task dispatch, or human attestation. I reviewed the supplied evidence without tools or execution and relied on the Service's mechanical digest bindings rather than independently recomputing hashes.",
+    "goldDigest": "4109f4b914892aaa38e041c18fb7b76e59bea893de5edcabb20df98c5bf482f9"
+  }
+}

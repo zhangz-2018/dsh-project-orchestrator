@@ -17,14 +17,44 @@ export function createHttpHandler(service: OrchestratorService) {
       const method = req.method ?? 'GET'
       if (method === 'GET') assertLoopbackRead(req)
       if (method === 'GET' && path === '/pdf-worker.mjs') return javascript(res, await pdfWorkerSource)
+      if (method === 'GET' && path === '/bootstrap') return json(res, 200, service.getWorkbenchBootstrap())
       if (method === 'GET' && path === '/snapshot') return json(res, 200, service.snapshot())
+      if (method === 'GET' && path === '/native-capabilities') return json(res, 200, service.nativeIntegration.diagnostics())
+      const pullRequest = matchOne(path, /^\/projects\/([^/]+)\/pull-request$/u)
+      if (method === 'GET' && pullRequest !== undefined) return json(res, 200, service.nativeIntegration.status(pullRequest))
+      const pullRequestRead = matchTwo(path, /^\/projects\/([^/]+)\/pull-request\/(checks|diff)$/u)
+      if (method === 'GET' && pullRequestRead !== undefined) {
+        const request = requestAbortSignal(req, res)
+        try {
+          const signal = AbortSignal.any([request.signal, AbortSignal.timeout(30000)])
+          return json(res, 200, await (pullRequestRead[1] === 'checks' ? service.nativeIntegration.checks(pullRequestRead[0], signal) : service.nativeIntegration.diff(pullRequestRead[0], signal)))
+        } finally { request.dispose() }
+      }
       if (method === 'GET' && path === '/events') {
         const after = parseCursor(url.searchParams.get('after'))
         const limit = parseEventLimit(url.searchParams.get('limit'))
         return json(res, 200, service.listDomainEvents(after, limit, url.searchParams.get('projectId') ?? undefined))
       }
+      const projectReadiness = matchOne(path, /^\/projects\/([^/]+)\/readiness$/u)
+      if (method === 'GET' && projectReadiness !== undefined) return json(res, 200, await service.getProjectReadiness(projectReadiness))
+      const projectEvaluationInput = matchOne(path, /^\/projects\/([^/]+)\/planning-evaluation-input$/u)
+      if (method === 'GET' && projectEvaluationInput !== undefined) return json(res, 200, await service.previewPlanningEvaluationInputV3(projectEvaluationInput))
+      const projectOverview = matchOne(path, /^\/projects\/([^/]+)\/overview$/u)
+      if (method === 'GET' && projectOverview !== undefined) return json(res, 200, service.getProjectOverview(projectOverview))
+      const projectHistory = matchOne(path, /^\/projects\/([^/]+)\/history$/u)
+      if (method === 'GET' && projectHistory !== undefined) {
+        const kind = url.searchParams.get('kind')
+        if (kind !== 'task-runs' && kind !== 'planning-operations') throw new WorkflowError('query-kind-invalid', 'History kind must be task-runs or planning-operations.', 400)
+        return json(res, 200, service.getProjectHistory(projectHistory, kind, url.searchParams.get('cursor') ?? undefined, parseHistoryLimit(url.searchParams.get('limit'))))
+      }
+      const projectTaskRunArtifacts = matchOne(path, /^\/projects\/([^/]+)\/task-run-artifacts$/u)
+      if (method === 'GET' && projectTaskRunArtifacts !== undefined) return json(res, 200, service.getTaskRunArtifacts(projectTaskRunArtifacts, url.searchParams.getAll('taskRunId')))
       if (method === 'GET' && path === '/admin/storage-capabilities') return json(res, 200, service.getStorageCapabilities())
       if (method === 'GET' && path === '/admin/storage-reconciliation') return json(res, 200, service.listStorageMutationIntents(url.searchParams.get('projectId') ?? undefined))
+      const reconciliationPreview = matchOne(path, /^\/admin\/storage-reconciliation\/([^/]+)\/preview$/u)
+      if (method === 'GET' && reconciliationPreview !== undefined) return json(res, 200, service.previewStorageReconciliation(reconciliationPreview))
+      const reconciliationAttempts = matchOne(path, /^\/admin\/storage-reconciliation\/([^/]+)\/attempts$/u)
+      if (method === 'GET' && reconciliationAttempts !== undefined) return json(res, 200, service.listStorageRecoveryAttempts(reconciliationAttempts))
       if (method === 'GET' && path === '/inbox') return json(res, 200, await service.getInbox(queryObject(url)))
       if (method === 'GET' && path === '/agents/workload') return json(res, 200, await service.getAgentWorkloads())
       if (method === 'GET' && path === '/issues') return json(res, 200, service.snapshot().issues)
@@ -37,9 +67,11 @@ export function createHttpHandler(service: OrchestratorService) {
       if (method === 'GET' && path === '/planning/provider-support') return json(res, 200, service.getRepositoryProviderSupportMatrixV3())
       if (method === 'GET' && path === '/team-metrics') return json(res, 200, service.getTeamCollaborationMetrics())
       const taskRunTranscript = matchOne(path, /^\/task-runs\/([^/]+)\/transcript$/)
-      if (method === 'GET' && taskRunTranscript !== undefined) return json(res, 200, service.snapshot().transcripts.filter((entry) => entry.taskRunId === taskRunTranscript))
+      if (method === 'GET' && taskRunTranscript !== undefined) return json(res, 200, service.getTaskRunTranscript(taskRunTranscript))
       const taskRunArtifacts = matchOne(path, /^\/task-runs\/([^/]+)\/artifacts$/)
-      if (method === 'GET' && taskRunArtifacts !== undefined) return json(res, 200, service.snapshot().artifacts.filter((artifact) => artifact.taskRunId === taskRunArtifacts))
+      if (method === 'GET' && taskRunArtifacts !== undefined) return json(res, 200, service.getTaskRunArtifactsById(taskRunArtifacts))
+      const issueContext = matchOne(path, /^\/issues\/([^/]+)\/context$/u)
+      if (method === 'GET' && issueContext !== undefined) return json(res, 200, service.getIssueContext(issueContext))
       const projectAgentsRead = matchOne(path, /^\/projects\/([^/]+)\/agents$/u)
       if (method === 'GET' && projectAgentsRead !== undefined) return json(res, 200, service.listProjectAgents(projectAgentsRead))
       const projectTeamPlan = matchOne(path, /^\/projects\/([^/]+)\/team-plan$/u)
@@ -129,6 +161,23 @@ export function createHttpHandler(service: OrchestratorService) {
 
       assertSameOrigin(req)
       if (method === 'POST' || method === 'PUT' || requestHasBody(req)) assertJsonRequest(req)
+      const capturePullRequest = matchOne(path, /^\/projects\/([^/]+)\/pull-request\/evidence$/u)
+      if (method === 'POST' && capturePullRequest !== undefined) {
+        await readJson(req)
+        const request = requestAbortSignal(req, res)
+        try { return json(res, 201, await service.serializedMutation(() => service.nativeIntegration.capture(capturePullRequest, AbortSignal.any([request.signal, AbortSignal.timeout(30000)])))) }
+        finally { request.dispose() }
+      }
+      if (pullRequest !== undefined && (method === 'PUT' || method === 'DELETE')) {
+        const body = await readJson(req)
+        return json(res, 200, await service.serializedMutation(async () => {
+          if (method === 'PUT') return await service.nativeIntegration.bind(pullRequest, body)
+          await service.nativeIntegration.unbind(pullRequest, body)
+          return { removed: true }
+        }))
+      }
+      const reconciliationExecute = matchOne(path, /^\/admin\/storage-reconciliation\/([^/]+)\/execute$/u)
+      if (reconciliationExecute !== undefined && method === 'POST') return json(res, 202, await service.executeStorageReconciliation(reconciliationExecute, await readJson(req)))
       const projectTeamValidationMutation = matchOne(path, /^\/projects\/([^/]+)\/validate-team$/u)
       if (projectTeamValidationMutation !== undefined && method === 'POST') {
         const command = await service.executeCommand({ type: 'validate_team', projectId: projectTeamValidationMutation, actorType: 'human', payload: await readJson(req) })
@@ -193,6 +242,8 @@ export function createHttpHandler(service: OrchestratorService) {
       if (confirmCapabilityClaim !== undefined && method === 'POST') return json(res, 201, await service.confirmProjectCapabilityClaim(confirmCapabilityClaim[0], confirmCapabilityClaim[1], await readJson(req)))
       const confirmCapabilityClaims = matchOne(path, /^\/projects\/([^/]+)\/capability-claims\/confirm$/u)
       if (confirmCapabilityClaims !== undefined && method === 'POST') return json(res, 201, await service.confirmProjectCapabilityClaims(confirmCapabilityClaims, await readJson(req)))
+      const prepareCapabilityClaims = matchOne(path, /^\/projects\/([^/]+)\/capability-claims\/prepare$/u)
+      if (prepareCapabilityClaims !== undefined && method === 'POST') return json(res, 201, await service.prepareProjectCapabilityClaims(prepareCapabilityClaims, await readJson(req)))
       const retryPlanningRepairV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-repairs\/([^/]+)\/retry$/u)
       if (retryPlanningRepairV3 !== undefined && method === 'POST') return json(res, 202, await service.retryPlanningRepairV3(retryPlanningRepairV3[0], retryPlanningRepairV3[1], await readJson(req)))
       const retryPlanningOperationV3 = matchTwo(path, /^\/projects\/([^/]+)\/planning-operations\/([^/]+)\/retry$/u)
@@ -206,6 +257,22 @@ export function createHttpHandler(service: OrchestratorService) {
         const result = await service.dispatchPlanningV3(executionDispatchV3, await readJson(req))
         return json(res, result.dispatch.outcome === 'waiting' ? 202 : 201, result)
       }
+      const confirmDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery\/confirm$/)
+      if (confirmDelivery !== undefined && method === 'POST') return json(res, 200, await service.confirmProjectDelivery(confirmDelivery, await readJson(req) as { actor: string; note?: string }))
+      const resolveReview = matchOne(path, /^\/projects\/([^/]+)\/review\/resolve$/)
+      if (resolveReview !== undefined && method === 'POST') return json(res, 200, await service.resolveProjectReview(resolveReview, await readJson(req)))
+      const closeDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery\/close$/)
+      if (closeDelivery !== undefined && method === 'POST') return json(res, 200, await service.closeProjectDelivery(closeDelivery, await readJson(req) as { actor: string; note?: string }))
+      // Planning reserves its own operation and can acquire the write lock while
+      // bootstrapping policy. Do not retain an outer lock while awaiting it.
+      const replan = matchOne(path, /^\/projects\/([^/]+)\/replan$/)
+      if (replan !== undefined && method === 'POST') return json(res, 202, await service.replanProject(replan, await readJson(req)))
+      const decompose = matchOne(path, /^\/projects\/([^/]+)\/decompose$/)
+      if (decompose !== undefined && method === 'POST') return json(res, 202, await service.startDecomposition(decompose))
+      const appendDecomposition = matchOne(path, /^\/projects\/([^/]+)\/decompositions$/)
+      if (appendDecomposition !== undefined && method === 'POST') return json(res, 202, await service.appendDecomposition(appendDecomposition, await readJson(req)))
+      const reviseDecomposition = matchTwo(path, /^\/projects\/([^/]+)\/decompositions\/([^/]+)\/revise$/)
+      if (reviseDecomposition !== undefined && method === 'POST') return json(res, 202, await service.reviseDecomposition(reviseDecomposition[0], reviseDecomposition[1], await readJson(req)))
       await service.serializedMutation(async () => {
         if (method === 'POST' && path === '/agents') {
           return json(res, 201, await service.createAgent(await readJson(req)))
@@ -332,34 +399,6 @@ export function createHttpHandler(service: OrchestratorService) {
           await service.deleteProject(project)
           return json(res, 200, { ok: true })
         }
-        const confirmDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery\/confirm$/)
-        if (confirmDelivery !== undefined && method === 'POST') {
-          return json(res, 200, await service.confirmProjectDelivery(confirmDelivery, await readJson(req) as { actor: string; note?: string }))
-        }
-        const resolveReview = matchOne(path, /^\/projects\/([^/]+)\/review\/resolve$/)
-        if (resolveReview !== undefined && method === 'POST') {
-          return json(res, 200, await service.resolveProjectReview(resolveReview, await readJson(req)))
-        }
-        const closeDelivery = matchOne(path, /^\/projects\/([^/]+)\/delivery\/close$/)
-        if (closeDelivery !== undefined && method === 'POST') {
-          return json(res, 200, await service.closeProjectDelivery(closeDelivery, await readJson(req) as { actor: string; note?: string }))
-        }
-        const replan = matchOne(path, /^\/projects\/([^/]+)\/replan$/)
-        if (replan !== undefined && method === 'POST') {
-          return json(res, 202, await service.replanProject(replan, await readJson(req)))
-        }
-        const decompose = matchOne(path, /^\/projects\/([^/]+)\/decompose$/)
-        if (decompose !== undefined && method === 'POST') {
-          return json(res, 202, await service.startDecomposition(decompose))
-        }
-        const appendDecomposition = matchOne(path, /^\/projects\/([^/]+)\/decompositions$/)
-        if (appendDecomposition !== undefined && method === 'POST') {
-          return json(res, 202, await service.appendDecomposition(appendDecomposition, await readJson(req)))
-        }
-        const reviseDecomposition = matchTwo(path, /^\/projects\/([^/]+)\/decompositions\/([^/]+)\/revise$/)
-        if (reviseDecomposition !== undefined && method === 'POST') {
-          return json(res, 202, await service.reviseDecomposition(reviseDecomposition[0], reviseDecomposition[1], await readJson(req)))
-        }
         const openDirectory = matchOne(path, /^\/projects\/([^/]+)\/open-directory$/)
         if (openDirectory !== undefined && method === 'POST') {
           return json(res, 200, await service.openProjectDirectory(openDirectory))
@@ -452,6 +491,14 @@ function parseEventLimit(value: string | null): number {
   if (!/^\d+$/u.test(value)) throw new WorkflowError('invalid-event-limit', 'Event limit must be an integer from 1 to 500.', 400)
   const parsed = Number(value)
   if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 500) throw new WorkflowError('invalid-event-limit', 'Event limit must be an integer from 1 to 500.', 400)
+  return parsed
+}
+
+function parseHistoryLimit(value: string | null): number {
+  if (value === null || value === '') return 50
+  if (!/^\d+$/u.test(value)) throw new WorkflowError('invalid-history-limit', 'History limit must be an integer from 1 to 100.', 400)
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 100) throw new WorkflowError('invalid-history-limit', 'History limit must be an integer from 1 to 100.', 400)
   return parsed
 }
 

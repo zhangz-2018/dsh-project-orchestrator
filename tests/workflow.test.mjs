@@ -178,6 +178,30 @@ test('Requirement Analysis normalizes only the exact full-digest spelling of a f
   assert.throws(() => parseRequirementAnalysis(JSON.stringify(forged), manifest), (error) => error.code === 'requirement-source-invalid')
 })
 
+test('Requirement Analysis identifies every competing disposition without counting supporting citations', () => {
+  const { manifest, analysis } = planningV2Fixture()
+  const ref = analysis.requirements[0].acceptanceCriteria[0].sourceRefs[0]
+  const valid = structuredClone(analysis)
+  valid.requirements[0].sourceRefs.push(analysis.decisions[0].sourceRefs[0])
+  valid.decisions[0].options[0].evidenceAnchorIds = [ref]
+  valid.diagnostics.push({ code: 'context', severity: 'info', message: 'Supporting citation.', sourceRefs: [ref] })
+  assert.doesNotThrow(() => parseRequirementAnalysis(JSON.stringify(valid), manifest))
+  for (const competing of ['decision', 'disposition', 'acceptance']) {
+    const duplicate = structuredClone(valid)
+    const owner = competing === 'decision' ? 'Decision DEC-001' : competing === 'disposition' ? 'Requirement REQ-002 (out_of_scope)' : 'Acceptance REQ-001/AC-002'
+    if (competing === 'decision') duplicate.decisions[0].sourceRefs.push(ref)
+    else if (competing === 'disposition') duplicate.requirements.push({ key: 'REQ-002', kind: 'fact', scope: 'out_of_scope', dispositionReason: 'Retained as a planning constraint.', statement: 'Validation commands remain constraints.', sourceRefs: [ref], acceptanceCriteria: [] })
+    else duplicate.requirements[0].acceptanceCriteria.push({ ...duplicate.requirements[0].acceptanceCriteria[0], key: 'AC-002' })
+    assert.throws(() => parseRequirementAnalysis(JSON.stringify(duplicate), manifest), error => {
+      assert.equal(error.code, 'requirement-source-duplicate')
+      assert.ok(error.message.includes(ref))
+      assert.ok(error.message.includes('Acceptance REQ-001/AC-001'))
+      assert.ok(error.message.includes(owner))
+      return true
+    })
+  }
+})
+
 test('Planning V3 source manifest dispositions every normative block instead of keyword-prefiltering requirements', () => {
   const manifest = buildRequirementSourceManifest({
     prd: '# 保存功能\n保存必须校验当前用户权限。\n\n## 失败处理\n依赖超时不得返回成功。\n\n## 验收标准\n1. 保存后可以重新查询。',
@@ -193,6 +217,16 @@ test('Planning V3 source manifest dispositions every normative block instead of 
 
   const legacy = buildRequirementSourceManifest({ prd: '# 保存功能\n保存必须校验当前用户权限。\n\n## 验收标准\n1. 保存后可以重新查询。' })
   assert.deepEqual(legacy.anchors.filter((anchor) => anchor.requiredDisposition).map((anchor) => anchor.kind), ['acceptance_item'])
+})
+
+test('source risk hints distinguish filenames from actual data and state contracts', () => {
+  const manifest = buildRequirementSourceManifest({ prd: '# Inspection\n必须检查 packages/core/schemas.ts 与 src/state.ts，不修改这两个文件。\n必须保持 schema 数据字段及状态兼容。' }, { requireAllBlocks: true })
+  const anchors = manifest.anchors.filter(a => a.requiredDisposition)
+  assert.equal(anchors[0].normativeHints.includes('data'), false)
+  assert.equal(anchors[0].normativeHints.includes('state'), false)
+  assert.equal(anchors[1].normativeHints.includes('data'), true)
+  assert.equal(anchors[1].normativeHints.includes('state'), true)
+  assert.match(anchors[0].text, /packages\/core\/schemas\.ts/)
 })
 
 test('requirement source manifest bounds section paths while preserving full heading evidence and stable identity', () => {
@@ -522,6 +556,28 @@ test('V3 planner can only use frozen local keys and attempt-scoped opaque refere
   assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(eventBound), eventInput), (error) => error.code === 'binding-event-observable-chain-missing' && /EVT-SCN-001-TASK-RUN-ABSENT/u.test(error.message))
   eventBound.bindings[0].eventFactChains.push({ factKey: 'EVENT-FACT-TASK-RUN', eventObservableKey: 'EVT-SCN-001-TASK-RUN-ABSENT', scenarioKeys: ['SCN-001'], eventTypes: ['task_run'], recordOwnerSymbols: ['OrchestratorService'], persistedCollectionOwnerSymbols: ['OrchestratorService'], readSurfaceOwnerSymbols: ['OrchestratorService'], producerOwnerSymbols: ['OrchestratorService'], fixtureEvidenceRefs: ['ref-evidence-owner'], assertionEvidenceRefs: ['ref-evidence-owner'], correlation: 'The project and operation identifiers match before and after the query.', assertsAbsence: true })
   assert.deepEqual(parseGeneratedBindingAnalysisV3(JSON.stringify(eventBound), eventInput), eventBound)
+  const transientEvents = structuredClone(eventBound)
+  for (const chain of transientEvents.bindings[0].eventFactChains) {
+    chain.durability = 'transient'
+    chain.persistedCollectionOwnerSymbols = []
+  }
+  assert.deepEqual(parseGeneratedBindingAnalysisV3(JSON.stringify(transientEvents), eventInput), transientEvents)
+  const missingPersistedCollection = structuredClone(eventBound)
+  missingPersistedCollection.bindings[0].eventFactChains[0].persistedCollectionOwnerSymbols = []
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(missingPersistedCollection), eventInput), /persisted.*collection/i)
+  missingPersistedCollection.bindings[0].eventFactChains[0].durability = 'persisted'
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(missingPersistedCollection), eventInput), /persisted.*collection/i)
+  const fabricatedTransientCollection = structuredClone(transientEvents)
+  fabricatedTransientCollection.bindings[0].eventFactChains[0].persistedCollectionOwnerSymbols = ['OrchestratorService']
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(fabricatedTransientCollection), eventInput), /transient.*collection/i)
+  for (const field of ['producerOwnerSymbols', 'readSurfaceOwnerSymbols', 'recordOwnerSymbols', 'assertionEvidenceRefs', 'fixtureEvidenceRefs']) {
+    const incompleteTransient = structuredClone(transientEvents)
+    incompleteTransient.bindings[0].eventFactChains[0][field] = []
+    assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(incompleteTransient), eventInput))
+  }
+  const uncoveredTransient = structuredClone(transientEvents)
+  uncoveredTransient.bindings[0].eventFactChains.pop()
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(uncoveredTransient), eventInput), (error) => error.code === 'binding-event-observable-chain-missing')
   const forgedEventOwner = structuredClone(eventBound)
   forgedEventOwner.bindings[0].eventFactChains[0].producerOwnerSymbols = ['ForgedProducer']
   assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(forgedEventOwner), eventInput), (error) => error.code === 'binding-event-owner-invalid')
@@ -543,6 +599,23 @@ test('V3 planner can only use frozen local keys and attempt-scoped opaque refere
   assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(duplicateEventMapping), eventInput), (error) => error.code === 'duplicate-binding-event-observable-key')
   const blockedWithFrozenDiagnosticSubjects = { status: 'blocked', diagnostics: [{ code: 'binding-evidence-insufficient', severity: 'blocking', message: 'The frozen evidence is incomplete.', subjectIds: ['REQ-001', 'ref-evidence-owner'] }], bindings: [] }
   assert.deepEqual(parseGeneratedBindingAnalysisV3(JSON.stringify(blockedWithFrozenDiagnosticSubjects), { requirementKeys: ['REQ-001'], allowedEvidenceRefs: ['ref-evidence-owner'] }), blockedWithFrozenDiagnosticSubjects)
+  const diagnosticInput = { ...eventInput, acceptanceKeys: ['AC-003'], scenarioKeys: ['SCN-AC-003-COMPATIBILITY'] }
+  const blockedOnCompatibility = structuredClone(blockedWithFrozenDiagnosticSubjects)
+  blockedOnCompatibility.diagnostics[0].subjectIds = ['AC-003', 'SCN-AC-003-COMPATIBILITY']
+  assert.deepEqual(parseGeneratedBindingAnalysisV3(JSON.stringify(blockedOnCompatibility), diagnosticInput), blockedOnCompatibility)
+  for (const forged of ['AC-FORGED', 'SCN-FORGED', 'src/forged-path.ts']) {
+    const rejected = structuredClone(blockedOnCompatibility)
+    rejected.diagnostics[0].subjectIds = [forged]
+    assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(rejected), diagnosticInput), error => error.code === 'binding-diagnostic-subject-invalid')
+  }
+  const ordinaryScenarioAsEvent = structuredClone(eventBound)
+  ordinaryScenarioAsEvent.bindings[0].eventFactChains[0].scenarioKeys = ['SCN-AC-003-COMPATIBILITY']
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(ordinaryScenarioAsEvent), diagnosticInput), error => error.code === 'binding-event-scenario-invalid')
+  const blockedOnKnownEvent = structuredClone(blockedWithFrozenDiagnosticSubjects)
+  blockedOnKnownEvent.diagnostics[0].subjectIds = ['EVT-SCN-001-DISPATCH-ABSENT']
+  assert.deepEqual(parseGeneratedBindingAnalysisV3(JSON.stringify(blockedOnKnownEvent), eventInput), blockedOnKnownEvent)
+  blockedOnKnownEvent.diagnostics[0].subjectIds = ['EVT-FORGED']
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(blockedOnKnownEvent), eventInput), (error) => error.code === 'binding-diagnostic-subject-invalid')
   const blockedWithForgedDiagnosticSubject = structuredClone(blockedWithFrozenDiagnosticSubjects)
   blockedWithForgedDiagnosticSubject.diagnostics[0].subjectIds = ['src/forged-path.ts']
   assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(blockedWithForgedDiagnosticSubject), { requirementKeys: ['REQ-001'], allowedEvidenceRefs: ['ref-evidence-owner'] }), (error) => error.code === 'binding-diagnostic-subject-invalid')
@@ -760,6 +833,12 @@ test('V3 plan fails closed for uncovered acceptance, missing scenario verificati
   assert.throws(() => parseGeneratedPlanV3(JSON.stringify(plan), { ...input, uiScenarioKeys: ['SCN-001'] }), (error) => error.code === 'ui-verification-harness-missing')
   const browserVerified = structuredClone(plan)
   browserVerified.tasks[1].contextPack.verificationHarness = { kind: 'browser', runner: 'Repository browser runner', applicationStart: 'Start the test application.', fixtureMutation: 'create_and_cleanup', fixtureSetup: 'Create persisted operation facts.', navigation: 'Open the project detail route.', asyncWait: 'Wait for the stage list response and render.', persistedFactCorrelation: 'Compare the same operation id in storage, API, and rendered rows.', teardown: 'Stop the application and remove the fixture.' }
+  browserVerified.tasks[1].contextPack.verificationSteps = browserVerified.tasks[1].contextPack.verificationSteps.map((step) => ({
+    ...step,
+    testFile: 'tests/browser/project-lifecycle.spec.mjs',
+    testKey: 'SCN-001-project-lifecycle',
+    browserProject: 'chromium',
+  }))
   assert.doesNotThrow(() => parseGeneratedPlanV3(JSON.stringify(browserVerified), { ...input, uiScenarioKeys: ['SCN-001'] }))
   const supportingBundleVerification = structuredClone(browserVerified)
   supportingBundleVerification.tasks.push({
@@ -781,6 +860,7 @@ test('V3 plan fails closed for uncovered acceptance, missing scenario verificati
   browserInfrastructure.tasks.push({ ...structuredClone(browserVerified.tasks[0]), key: 'TASK-BROWSER-INFRA', kind: 'test', changeContract: { ...structuredClone(browserVerified.tasks[0].changeContract), allowedPathScopes: ['tests/browser'] }, contextPack: { ...structuredClone(browserVerified.tasks[0].contextPack), expectedChangeSurfaces: ['tests/browser'] } })
   assert.throws(() => parseGeneratedPlanV3(JSON.stringify(browserInfrastructure), { ...input, uiScenarioKeys: ['SCN-001'], bindingScopes: { 'BIND-API': ['src/service.ts', 'tests/browser'] } }), (error) => error.code === 'browser-infrastructure-harness-contract-missing')
   browserInfrastructure.tasks.at(-1).contextPack.verificationHarness = structuredClone(browserVerified.tasks[1].contextPack.verificationHarness)
+  browserInfrastructure.tasks.at(-1).contextPack.verificationSteps = structuredClone(browserVerified.tasks[1].contextPack.verificationSteps)
   assert.throws(() => parseGeneratedPlanV3(JSON.stringify(browserInfrastructure), { ...input, uiScenarioKeys: ['SCN-001'], bindingScopes: { 'BIND-API': ['src/service.ts', 'tests/browser'] } }), (error) => error.code === 'browser-harness-infrastructure-dependency-missing')
   browserInfrastructure.tasks[1].dependencyKeys = ['TASK-IMPLEMENT', 'TASK-BROWSER-INFRA']
   assert.doesNotThrow(() => parseGeneratedPlanV3(JSON.stringify(browserInfrastructure), { ...input, uiScenarioKeys: ['SCN-001'], bindingScopes: { 'BIND-API': ['src/service.ts', 'tests/browser'] } }))
@@ -841,6 +921,68 @@ test('V3 plan requires dependency or a shared conflict key for overlapping write
   const unreachableImplementation = structuredClone(transitivelyVerified)
   unreachableImplementation.tasks[2].dependencyKeys = []
   assert.throws(() => parseGeneratedPlanV3(JSON.stringify(unreachableImplementation), input), (error) => error.code === 'task-relationship-dependency-invalid')
+})
+
+test('V3 capability surfaces distinguish value transforms and local calls without erasing impacts', () => {
+  const { binding, plan } = planningV3Fixture()
+  for (const assessment of binding.bindings[0].impactAssessments) {
+    assessment.applicability = ['domain_owner', 'read_path', 'data', 'api', 'consumer', 'failure', 'test'].includes(assessment.dimension) ? 'required' : 'not_applicable'
+    assessment.evidenceRefs = assessment.applicability === 'required' ? ['ref-evidence-owner'] : []
+    if (assessment.dimension === 'data') assessment.capabilitySurface = 'call_value'
+    if (assessment.dimension === 'consumer') assessment.capabilitySurface = 'local_call'
+  }
+  const input = { projectId: 'p1', operationId: 'op1', reservedTaskIdsByKey: { 'TASK-IMPLEMENT': 'task-1', 'TASK-VERIFY': 'task-2' }, stackCapabilityEvidence: [{ capability: 'language.typescript', evidencePaths: ['src/service.ts'] }], repositoryEvidencePathByRef: { 'ref-evidence-owner': 'src/service.ts' }, now }
+  const derived = deriveCapabilityRequirementDraftsV3(plan, binding, input)
+  assert.deepEqual(derived[0].requiredCapabilities, ['api.contract', 'language.typescript', 'reliability.failure-handling', 'testing.automation'])
+  assert.deepEqual(derived[1].requiredCapabilities, [...derived[0].requiredCapabilities, 'testing.verification'])
+  assert.equal(binding.bindings[0].impactAssessments.find(a => a.dimension === 'data').applicability, 'required')
+  assert.equal(binding.bindings[0].impactAssessments.find(a => a.dimension === 'consumer').applicability, 'required')
+  const persistentFixturePlan = structuredClone(plan)
+  persistentFixturePlan.tasks[1].contextPack.verificationHarness = { fixtureMutation: 'create_and_cleanup' }
+  const persistentFixtureDrafts = deriveCapabilityRequirementDraftsV3(persistentFixturePlan, binding, input)
+  assert.equal(persistentFixtureDrafts[1].requiredCapabilities.includes('data.change'), true, 'Explicit persistent fixture mutation still requires data qualification.')
+
+  const shared = structuredClone(binding)
+  shared.bindings[0].impactAssessments.find(a => a.dimension === 'data').capabilitySurface = 'shared_data'
+  shared.bindings[0].impactAssessments.find(a => a.dimension === 'consumer').capabilitySurface = 'integration_boundary'
+  for (const draft of deriveCapabilityRequirementDraftsV3(plan, shared, input)) {
+    assert.equal(draft.requiredCapabilities.includes('data.change'), true)
+    assert.equal(draft.requiredCapabilities.includes('integration.consumer'), true)
+  }
+  const historical = structuredClone(shared)
+  for (const a of historical.bindings[0].impactAssessments) delete a.capabilitySurface
+  assert.deepEqual(deriveCapabilityRequirementDraftsV3(plan, historical, input).map(r => r.requiredCapabilities), deriveCapabilityRequirementDraftsV3(plan, shared, input).map(r => r.requiredCapabilities))
+  const unknown = structuredClone(binding)
+  unknown.bindings[0].impactAssessments.find(a => a.dimension === 'data').capabilitySurface = 'unknown'
+  assert.throws(() => deriveCapabilityRequirementDraftsV3(plan, unknown, input), e => e.code === 'capability-surface-unresolved')
+})
+
+test('V3 Binding capability surfaces require correct dimension semantics for new planning', () => {
+  const { binding } = planningV3Fixture()
+  const input = { requirementKeys: ['REQ-001'], allowedEvidenceRefs: ['ref-evidence-owner'], requireCapabilitySurfaces: true }
+  const data = binding.bindings[0].impactAssessments.find(a => a.dimension === 'data')
+  data.applicability = 'required'; data.evidenceRefs = ['ref-evidence-owner']
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input), e => e.code === 'binding-capability-surface-missing')
+  data.capabilitySurface = 'local_call'
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input))
+  data.capabilitySurface = 'call_value'
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input), e => e.code === 'binding-capability-surface-contradiction')
+  data.capabilitySurface = 'shared_data'
+  assert.doesNotThrow(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input))
+  data.capabilitySurface = 'unknown'
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input), e => e.code === 'capability-surface-unresolved')
+  data.capabilitySurface = 'shared_data'
+  const consumer = binding.bindings[0].impactAssessments.find(a => a.dimension === 'consumer')
+  consumer.applicability = 'required'; consumer.evidenceRefs = ['ref-evidence-owner']
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input), e => e.code === 'binding-capability-surface-missing')
+  consumer.capabilitySurface = 'local_call'
+  const asyncImpact = binding.bindings[0].impactAssessments.find(a => a.dimension === 'async')
+  asyncImpact.applicability = 'required'; asyncImpact.evidenceRefs = ['ref-evidence-owner']
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input), e => e.code === 'binding-capability-surface-contradiction')
+  consumer.capabilitySurface = 'integration_boundary'
+  assert.doesNotThrow(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input))
+  consumer.applicability = 'not_applicable'; consumer.evidenceRefs = []
+  assert.throws(() => parseGeneratedBindingAnalysisV3(JSON.stringify(binding), input))
 })
 
 test('V3 capability derivation is Service-owned and assignment uses exact trusted facts', () => {
@@ -917,7 +1059,7 @@ test('V3 capability derivation is scoped to each task change surface', () => {
   assert.deepEqual(byTask.get('TASK-MIGRATE'), ['api.contract', 'database.migration', 'language.typescript', 'release.rollback', 'security.authorization'])
   assert.deepEqual(byTask.get('TASK-CLIENT'), ['framework.react', 'integration.consumer', 'language.typescript'])
   assert.deepEqual(byTask.get('TASK-VERIFY'), ['api.contract', 'database.migration', 'framework.react', 'integration.consumer', 'language.javascript', 'release.rollback', 'security.authorization', 'testing.automation', 'testing.verification'])
-  assert.equal(drafts.every((draft) => draft.derivationRuleVersion === 'v3.3.13'), true)
+  assert.equal(drafts.every((draft) => draft.derivationRuleVersion === 'v3.3.14'), true)
 
   const backendVerificationPlan = structuredClone(scopedPlan)
   backendVerificationPlan.tasks[3].key = 'TASK-MUTATION-BOUNDARY'

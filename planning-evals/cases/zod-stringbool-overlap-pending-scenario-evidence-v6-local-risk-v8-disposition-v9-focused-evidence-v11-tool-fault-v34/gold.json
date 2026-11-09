@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e0bd943a792a88f5debdc5cfa8acafce6073e554908a2bf0ad02782a24abea1f",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_060b849d949abd32016ad26db70ee88195a5573cd0c5d4a220:independent-gold-review:b3e919c6-7cbc-4e24-b542-323cd47a0056",
+    "reviewedAt": "2026-10-16T18:32:34.562Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes the recommended construction-time TypeError behavior conditional, not an authorized choice. Gold correctly expects blocked readiness with requirement-decision-pending on DEC-001, evidence through repository, requirements and decisions, and no task or assignment expectations. REQ-001 and AC-001–AC-003 agree across the specification and Gold. The supplied source establishes shared core _stringbool ownership, existing truthy-first behavior after case normalization, no additional trimming, and classic/mini forwarding consumers; the listed owners are inspection scope rather than mandatory edits. The proposed mini test is correctly distinguished from an existing file. Build/export configuration supports treating declarations as generated rather than separately maintained owners, and the verification configuration distinguishes runtime testing from TypeScript checking. The empty team catalog does not invalidate the earlier deterministic decision block: later reviewer and assignment prerequisites are not reached. Repository identity and base commit agree, and Gold and preview release fingerprints, model identifiers, policy identifiers and budgets match. The supplied provenance explains the distinct source digest domains and PRD whitespace normalization. I rely on the Service's stated mechanical digest binding; I did not recompute hashes, execute code, infer human confirmation, or use candidate outputs. Approval concerns the benchmark expectation only, not resolution of DEC-001 or authorization to release or dispatch tasks.",
+    "goldDigest": "32d42db3c7e00ce618dbc54bddbb9cde77a91b6849f1f713db9e42343bbfd98c"
+  }
+}

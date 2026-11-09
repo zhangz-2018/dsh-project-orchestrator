@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01be295b8d879eeb016ad22c69daf88196b19b5df31613a2a6:independent-gold-review:4fef3c65-33a2-472a-970f-76640813ed00",
+    "reviewedAt": "2026-10-16T13:53:59.885Z",
+    "rationale": "The frozen Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, and DEC-001 agree with the original PRD and source anchors. DEC-001 materially controls overflow behavior and is explicitly unresolved; the recommended RangeError acceptance is conditional, not authorization to select OPT-1. Blocking at decisions with requirement-decision-pending, requiring repository/requirements/decisions evidence, and producing no assignable tasks or assignment expectations are therefore appropriate. The supplied implementation and declaration contents support index.js and index.d.ts as inspection/binding owners, including the shared engine and option types whose other exports must retain their contracts. package.json supports the stated xo, AVA, and tsd verification entry point; no execution is inferred. The empty team catalog does not invalidate this early block because the supplied policy places the material-decision gate before mandatory independent Scenario Coverage review and assignment checks. Gold and preview release fingerprints agree across repository, evaluation source, team, decisions, prompts, model, sampling, budgets, and metric policy. The provenance explains the distinct source-manifest/evaluation digest domains and trim-only PRD persistence normalization. Original preparation placeholders are not treated as overriding the subsequently supplied frozen release input. Independence is supported by the supplied isolation facts: no candidate on this bundle has run and no historical candidate outputs are supplied. This approval uses the supplied Service-bound digest and provenance assertions; I did not independently recompute hashes, execute code, or create a human attestation. The truncated existing test excerpts do not prevent assessment of this decision-blocked expectation.",
+    "goldDigest": "f305df9078b032cdaa1e25f3a928dbd6b76bfee9e8336c0215b526848df3069e"
+  }
+}

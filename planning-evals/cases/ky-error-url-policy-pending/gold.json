@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4f6a662cce150d42da2d54a01b19562ef8aebb0a655cd82e5e59d3d63239b110",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_05c7d52be97eff9e016ad10effeba481948b606bd4476a16a3:independent-gold-review:00ccd33d-7128-4ee8-b4bc-e9e7b03790ef",
+    "reviewedAt": "2026-10-15T17:36:14.398Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. It preserves REQ-001, AC-001–AC-003 and DEC-001, matches the repository identity/base commit and paired case, and correctly requires blocked readiness with requirement-decision-pending at decisions. DEC-001 materially controls default behavior; conditional acceptance criteria do not authorize selecting either option. Empty assignment expectations and no proposed tasks correctly reflect the required stop before task generation. The nine binding owners are supported by the supplied source: message construction, option declarations and normalization, registry filtering, forwarding/merging, public exports and hook/instance consumers. Forwarding and declaration consumers require inspection, not mandatory edits. The supplied build configuration supports treating distribution declarations as generated rather than separately maintained owners, and tsconfig.test.json includes the proposed test-d file for compile-time verification separately from AVA runtime execution. Gold and preview release fingerprints agree across repository, source, team, decision input, prompts, model, sampling, budgets and metric policy. The empty team facts confer no assignment capability and are consistent with stopping at decisions. The source-manifest digest is a separate supplied manifest fingerprint, not evidence by itself of a conflicting release-input digest. No candidate results or human confirmation were assumed; any paired resolved hypothetical is not a human Decision. This approval concerns expectation coherence, not execution or release authorization. Digests were accepted as Service-calculated and mechanically bound to saved inputs; I did not recompute them or execute code.",
+    "goldDigest": "239a4f4a871049b89c3a6dc39885ba03ebe3203318db4209b5cc66a723668f39"
+  }
+}

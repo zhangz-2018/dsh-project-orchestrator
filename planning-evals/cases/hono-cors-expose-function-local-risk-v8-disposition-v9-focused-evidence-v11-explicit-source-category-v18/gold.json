@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00f26a958e5a92e4016ad1b65072048190b6bb28f4a9cf4f9c:independent-gold-review:517db113-877a-4e2a-b9f5-378998c4f2b1",
+    "reviewedAt": "2026-10-16T05:30:03.176Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001, AC-001–AC-003, exact writable owner paths, task keys, verification dependency, and required evidence stages agree with the original PRD. The complete source and configuration evidence supports keeping implementation declarations and regression/type checks within the two specified CORS files; published declarations are generated, not separately maintained edit owners. The change is a request-local value transformation: asynchronous callback evaluation does not itself require shared-data or persistent-state impacts, so pending data.change and domain.state claims do not invalidate these assignments. Both allowed agents have supplied active project-scoped claims for the relevant contract, TypeScript, async, consumer, failure-handling, authorization, and testing capabilities; the verifier additionally has testing.verification. A distinct active project reviewer satisfies the stated non-executing review prerequisite. No material unresolved Decision is present in this case, so ready with no blocking reasons is appropriate. The Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is explicitly isolated from candidates on this bundle. This approval relies on the supplied Service-bound fingerprints and evidence; I did not recompute digests, execute code, or provide human attestation. It approves the benchmark expectation, not task dispatch or implementation correctness.",
+    "goldDigest": "73023bf666c5a5a325764040864821704e4fc396574194d183541d10e90dc24e"
+  }
+}

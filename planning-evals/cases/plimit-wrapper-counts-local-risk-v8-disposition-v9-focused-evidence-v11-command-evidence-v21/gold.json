@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a55e7b5c07a2f32016ad1ca229ed8819785b623b1170912d2:independent-gold-review:f7f7f2ad-90a6-4a92-8253-793bffb7bcf0",
+    "reviewedAt": "2026-10-16T06:54:42.285Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 agree with the original PRD and supplied source: limitFunction already forwards clearQueue but lacks wrapper count getters and their declared types. The exact four-file binding scope covers the maintained runtime implementation, public declarations, runtime regressions and tsd regressions without requiring unnecessary edits. package.json establishes xo && ava && tsd as the verification entry point; no generated-declaration or additional mandatory-owner evidence contradicts that scope. The two stable task keys, implementation/independent-verification split and verification dependency match the specification. The designated agents have active project-scoped trusted claims supporting the applicable API, shared-data/state, asynchronous-consumer, JavaScript/TypeScript and testing responsibilities, with testing.verification additionally present for the verifier. Pending security.authorization claims are not needed for this bounded change and were not treated as trusted capability evidence. A separate active project reviewer is configured for the earlier high-risk review prerequisite. No material unresolved DEC-001 or hypothetical C input is present in this case, so the supplied empty decision input does not contradict ready planning status. The Gold and preview release fingerprints agree; the provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization. The original preparation placeholders are superseded by the supplied frozen preview and release inputs. Isolation evidence states that this Gold precedes every candidate on this bundle, while retaining old-version operations on the reused project without supplying historical candidate outputs. This approval concerns expectation coherence only, not execution, task dispatch or a new human attestation. I used only the supplied evidence and did not execute code or independently recompute Service-calculated digests.",
+    "goldDigest": "9679bfca4fc987e7dc1376271840e7920dd815372c23ab6facea931888978011"
+  }
+}

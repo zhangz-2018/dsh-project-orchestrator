@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d8f412dd9ef4ca24937ee426858f257bc150d351baa903d193cb2dbb4bc8aa66",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e034b723a5fcea8016ad1daa2329881909d7d3af8c030f1d8:independent-gold-review:35a001f4-cd54-4492-9c1c-504b649d9bfe",
+    "reviewedAt": "2026-10-16T08:05:05.393Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001–AC-003 retain their stable keys and consistently require cause identity, compatible string wrapping, unchanged AbortError termination behavior, and readable declarations without signature changes. The exact four-file binding scope covers the maintained implementation, declarations, runtime regressions, and tsd checks; package.json supports the stated verification entry point without requiring configuration edits. The supplied implementation and focused regression evidence support these ownership expectations, although test.js is explicitly an excerpt. The two task expectations agree with the required implementation/independent-verification split and dependency. The designated agents have supplied active project-scoped trusted claims appropriate to this invocation-local change, including testing.verification for the verifier; pending data.change and domain.state claims need not be treated as active or required merely because an Error instance receives a property. An independent active project reviewer is configured. No material unresolved Decision is present in this case, so ready with no blocking reasons is consistent. Repository identity, base commit, and release fingerprints agree across the frozen Gold and preview. The distinct manifest/evaluation source digest domains and trimmed/untrimmed PRD domains are explicitly explained. Historical project reuse preserves scoped attestations and is distinguished from fresh candidate execution; no candidate output was used to establish expectations. This review relies on the supplied Service-bound fingerprints and evidence records, not independent digest recomputation, code execution, or new human attestation.",
+    "goldDigest": "702778f73280be7b5d938437eede9eb23de1555be63c3043e35773e15d012ad3"
+  }
+}

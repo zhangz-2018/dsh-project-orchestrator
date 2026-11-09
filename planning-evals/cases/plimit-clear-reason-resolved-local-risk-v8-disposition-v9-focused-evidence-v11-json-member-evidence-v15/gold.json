@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "c0f0ddb97491d6664455dd200bdf57fe97821437101fcbf415239349822b2f38",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_086cca2b2325f88b016ad19d170b208194a89aac14b6705859:independent-gold-review:5a8d5d4d-cf7f-43d8-be84-c11b4113c71f",
+    "reviewedAt": "2026-10-16T03:42:29.617Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The original PRD explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision, so ready status and no decision blocker are appropriate; this does not waive the decisions-stage block required for an unresolved material DEC-001 in B. REQ-001, AC-001 through AC-003, repository identity/base commit, and the exact four-file binding scope agree across the specification and Gold. The supplied source supports the runtime, maintained declaration, regression, and tsd ownership choices; limitFunction forwards clearQueue and inherits its declaration through Pick, so those consumers need inspection rather than forced separate edits. The implementation and dependent independent-verification task expectations match the PRD. Their allowed agents have the relevant active project-scoped trusted claims, including shared-data, state, asynchronous integration, consumer, JavaScript/TypeScript, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Pending security.authorization claims are not needed for this bounded change. A distinct configured reviewer satisfies the supplied independent-review prerequisite without requiring execution claims. The Gold and preview release fingerprints agree for repository, source, team, decisions, prompts, model, sampling, policy, and budgets. Historical project reuse is disclosed without supplied candidate outputs or copied attestations, consistent with pre-candidate review. I relied on the supplied Service-bound digests and evidence; I did not recompute hashes, execute code, or independently attest to the recorded human confirmations. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "c1c052db3a242087c3123c44d288e3cc213adc4f9924be9c90e47419e90cba24"
+  }
+}

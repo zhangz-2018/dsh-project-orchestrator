@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "aa9d1803194e9acaeac819a2789e4931de23bc622f51b39065dd955883940011",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07092df2119b6bb3016ad1ca54e8f48190ba80887b2f80e3df:independent-gold-review:55b3e7d4-8a8b-49e8-8668-dc98bc6971e6",
+    "reviewedAt": "2026-10-16T06:55:31.061Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle, with no candidate executions or historical candidate outputs supplied. C explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision; only that branch is required. Its ready expectation therefore does not waive the rule that an unresolved material DEC-001 must block paired B at decisions. REQ-001, AC-001 through AC-003, the exact four-file writable binding scope, and the implementation/independent-verification task split agree with the original PRD. Source evidence identifies index.js as the shared runtime owner and index.d.ts as the maintained declaration owner, requiring default-pMap-only behavior and type isolation from the other exports. package.json establishes separate AVA runtime and tsd type verification through xo && ava && tsd, without requiring configuration changes. The permitted implementer and verifier have the relevant supplied active trusted capability claims, including data.change, domain.state, integration.async, integration.consumer, JavaScript, TypeScript, failure handling, and testing.automation; the verifier additionally has testing.verification. Pending security.authorization claims are not needed for this requirement. A distinct active project reviewer is supplied for the earlier scenario-review prerequisite. Repository identity, base commit, stable keys, evidence stages, and release-input fingerprints are consistent across the supplied records. The provenance explains the distinct manifest/evaluation source digest domains and trim-only PRD persistence normalization. I accept those mechanically bound Service digest assertions as supplied; I did not independently recompute hashes, execute code, or provide human attestation. The original specification's preparation-time remaining items and runnable=false do not contradict the frozen Gold's expected planning readiness.",
+    "goldDigest": "636509656f7791723df05d98aa39681fa05bd56f10f6b15a2752518935735870"
+  }
+}

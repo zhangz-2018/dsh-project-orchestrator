@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-stage-contract-v32-2026-10-17",
+  "createdAt": "2026-10-16T17:28:07.109Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "goldDigest": "9843dbde8fd03ec1acdea1b965d10a3c12a37ca09b66e834f37dac55ef17b0bc"
+    },
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "goldDigest": "c4992f6f8311fcecb2022209e15fc3b1eace2a6036b589cd29617f221509fb2e"
+    },
+    {
+      "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "goldDigest": "7db156556116506a445e5e56ab8264f94bead1dd3b855a9b52ce6a304fb717d5"
+    },
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "goldDigest": "2e26706935822ccc5e85a15ebbb6cf1c3880d909381e53a51b82f4b3a9c7099c"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "attemptId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/fresh-1",
+      "operationId": "planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:28:07.155Z",
+      "completedAt": "2026-10-16T17:50:10.513Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/fresh-1",
+      "operationId": "planning-v3:3beae0e3-2460-4c0a-bb00-decd23e147e8",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:28:07.166Z",
+      "completedAt": "2026-10-16T17:52:26.271Z"
+    },
+    {
+      "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "attemptId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/fresh-1",
+      "operationId": "planning-v3:142ef38e-cb5a-4ffd-93b7-aca633b95447",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:28:07.168Z",
+      "completedAt": "2026-10-16T17:47:37.020Z"
+    },
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/fresh-1",
+      "operationId": "planning-v3:7445259a-1426-4771-b12b-da7f9bab7c72",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32/runs/fresh-1.json",
+      "startedAt": "2026-10-16T17:28:08.375Z",
+      "completedAt": "2026-10-16T17:37:57.792Z"
+    }
+  ]
+}

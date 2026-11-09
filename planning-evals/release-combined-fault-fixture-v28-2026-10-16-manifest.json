@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-fault-fixture-v28-2026-10-16",
+  "createdAt": "2026-10-16T13:57:05.980Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "goldDigest": "f654fa6742869bb8213d91ad1c237e0f02b3f49774a4085bd0c924ee06876920"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "goldDigest": "127283073f20b3de87c708ca61ab7f797028c89e0b1e9fe57a33abf7b590dee3"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "goldDigest": "57a004511f4dbe001599bde03448e9e7e7b01e8a22081342f291bf334e78cee0"
+    },
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "goldDigest": "ab3e9ec850bf94483f3016b1bda542d972cbe829a517519aaaf9917cb2959b01"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "attemptId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28/fresh-1",
+      "operationId": "planning-v3:96fa525b-09cc-436c-97e5-6a62a61040c1",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T13:57:06.014Z",
+      "completedAt": "2026-10-16T14:09:16.405Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "attemptId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28/fresh-1",
+      "operationId": "planning-v3:21bb0e63-2eda-42a4-acf3-0e176df68105",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28/runs/fresh-1.json",
+      "startedAt": "2026-10-16T13:57:06.017Z",
+      "completedAt": "2026-10-16T14:22:36.756Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "attemptId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28/fresh-1",
+      "operationId": "planning-v3:8d4b286e-c821-43c9-b106-90ec4f088e29",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T13:57:06.019Z",
+      "completedAt": "2026-10-16T14:11:14.693Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "attemptId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28/fresh-1",
+      "operationId": "planning-v3:989d740a-1e0d-4576-bdf7-a10ce7a598c7",
+      "outcome": "model_failure",
+      "failureCode": "agent-turn-timeout",
+      "startedAt": "2026-10-16T13:57:06.020Z",
+      "completedAt": "2026-10-16T14:18:09.180Z"
+    }
+  ]
+}

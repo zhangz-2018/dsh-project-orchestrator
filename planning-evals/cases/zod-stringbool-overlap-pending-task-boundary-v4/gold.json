@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-task-boundary-v4",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "261a73ed104010a93fd8b143c36d047a5033bfc48ed32a174bfb5b595e1c077c",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03942925c6b20b07016ad122f7757c8190be39b07d5ad5dab6:independent-gold-review:98005fb2-a4a0-40e5-9ff5-abf2c1fc90b2",
+    "reviewedAt": "2026-10-15T19:01:26.730Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, paired case, and inspection-owner paths agree with the original PRD. DEC-001 materially changes overlap behavior and remains intentionally unresolved; the recommended OPT-1 acceptance language is explicitly conditional, not authorization to select it. B must therefore stop at decisions with requirement-decision-pending for DEC-001, after repository and requirements evidence, without assignable tasks or assignments. The supplied source shows that classic and mini delegate to core._stringbool, which currently normalizes case without trimming and checks truthy before falsy. Forwarding and declaration consumers are inspection owners, not mandatory edits; the supplied zshy build configuration establishes generated declarations rather than separately maintained declaration owners. Runtime and type-check configuration support the stated verification scope without implying that checks have run. Empty team membership and capability claims do not invalidate this expectation because the deterministic decision gate precedes scenario-review and assignment prerequisites. Any C comparison remains a fixed hypothetical input, not a human Decision resolving B. Gold and preview releaseInput fingerprints agree for repository, source, team catalog, decision input, prompts, model, sampling, budgets, and metric policy. These are accepted as Service-calculated bindings to the saved inputs; I did not independently recompute digests, execute code, review a candidate, or provide human attestation. Approval concerns the frozen expectation only, not implementation, task dispatch, or execution readiness.",
+    "goldDigest": "ed581ef57135238fa13b281ee9ab17f0579f020990002d32f8b17c8cf49b37c6"
+  }
+}

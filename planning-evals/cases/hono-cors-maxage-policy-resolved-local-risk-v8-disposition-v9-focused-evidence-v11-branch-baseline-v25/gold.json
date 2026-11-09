@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d416c046621fe9d016ad1fe20aacc8195abd51917336f7dc0:independent-gold-review:013efcc2-f4ba-4ee2-88c9-c1b5413fd7f4",
+    "reviewedAt": "2026-10-16T10:36:28.275Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. The original PRD explicitly fixes OPT-1 as a hypothetical benchmark input, not a human-confirmed Decision; ready with no decision blocker is therefore appropriate here. A material unresolved DEC-001 in paired B must still block at decisions. REQ-001, AC-001 through AC-003, task keys, repository identity/base commit, and exact writable owner scopes agree across the specification and Gold. The source supports creation-time validation in the CORS factory while preserving zero, omission, finite nonnegative values, and unrelated request behavior. The source/test pair is sufficient; build configuration establishes generated declarations rather than separately maintained declaration owners. The test file is included in both runtime discovery and compiler checking, which the PRD correctly distinguishes. Implementation and dependent independent verification expectations are consistent with the supplied roles, availability, memberships, and active project-scoped trusted claims. This bounded invocation-local validation does not require inferring shared-data or state capabilities from pending claims or personas. An independent active project reviewer is configured. Gold and preview release fingerprints agree, and the provenance explains the distinct manifest/evaluation digest domains and PRD trimming. Historical operations are expressly old-version evidence, not candidates on this bundle, and project reuse preserves scoped attestations without copying them. Approval concerns Gold coherence only, not execution, task dispatch, or human decision confirmation. I relied on the supplied Service-bound fingerprint and isolation evidence; I did not recompute digests or execute code.",
+    "goldDigest": "5ad2e0fe09c0aa3f7bd1bb3544b90f84935bc26d8daa6592bf7b10e8ba6d5bb1"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-disposition-2026-10-16",
+  "createdAt": "2026-10-16T00:52:05.237Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9",
+      "goldDigest": "d154c1f8b92007795737f7146d74ef0d38d9e02f3b99c2f17ca3bf867242573a"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9",
+      "goldDigest": "40c84ae57c651633f519a2825a515968bcbe53b459e80a067b5429946b2ad9d6"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9",
+      "goldDigest": "b10c334e32e040b57e6db37b09f0afd630b806bce841a36f18fe101b4c3402da"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9",
+      "goldDigest": "d261bf1389801eb87ad0df2c3e228a659114038a9b8efc4fd9929a1463a3e27f"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9/fresh-1",
+      "operationId": "planning-v3:7e4257a6-9f7f-4274-a93b-51de94be0fb0",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9/runs/fresh-1.json",
+      "startedAt": "2026-10-16T00:52:05.265Z",
+      "completedAt": "2026-10-16T00:58:17.880Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9/fresh-1",
+      "operationId": "planning-v3:76de6e97-b0d3-423c-9516-a001f817a5ec",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9/runs/fresh-1.json",
+      "startedAt": "2026-10-16T00:52:05.272Z",
+      "completedAt": "2026-10-16T00:55:03.486Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9/fresh-1",
+      "operationId": "planning-v3:8163d56f-ee01-4761-a84b-c999c856bad2",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9/runs/fresh-1.json",
+      "startedAt": "2026-10-16T00:52:05.282Z",
+      "completedAt": "2026-10-16T00:54:38.362Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9",
+      "attemptId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9/fresh-1",
+      "operationId": "planning-v3:2b70194b-905b-4e11-a5a7-641cc5540138",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9/runs/fresh-1.json",
+      "startedAt": "2026-10-16T00:52:05.291Z",
+      "completedAt": "2026-10-16T00:55:23.204Z"
+    }
+  ]
+}

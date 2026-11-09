@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d8f412dd9ef4ca24937ee426858f257bc150d351baa903d193cb2dbb4bc8aa66",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_09f86fdbc78d673b016ad1daa20fc481978ff549ec2bdc72d6:independent-gold-review:6a229979-c9a8-4dde-87db-85422d0d21ec",
+    "reviewedAt": "2026-10-16T08:05:04.320Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, the seven evidence stages, and the exact four-file binding scope agree with the specification. The complete source evidence establishes index.js and the separately maintained index.d.ts as implementation owners, with test.js and index.test-d.ts as the runtime and type-regression owners; package.json confirms the existing xo && ava && tsd verification entry point. The wrapper already forwards clearQueue from its single internal limiter, so adding live read-only counts without changing queue or Promise behavior is well-defined. TASK-IMPLEMENT and dependent independent TASK-VERIFY are consistent with the specification. Their allowed agents have supplied active project-scoped trusted claims for the relevant contract, shared-data/state, asynchronous-consumer, JavaScript/TypeScript, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Pending security.authorization claims are not needed for this bounded change. A distinct active project reviewer satisfies the supplied non-executing review prerequisite. No unresolved material Decision is present in this case, making ready with no blocking reasons appropriate. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct source-digest domains and trim-only PRD normalization. Historical project reuse preserves scoped attestations without supplying candidate outputs or treating old operations as fresh evidence. The original specification's unfinished preparation fields are distinguishable from the subsequently supplied frozen preview. This approval relies on the supplied Service-bound digest and provenance facts; I did not recompute digests, execute code, or independently attest human confirmations.",
+    "goldDigest": "8cf617470d0195f6fdbcd0c15a0a96fd732436d518bfc9f8b039b43f6dd64a54"
+  }
+}

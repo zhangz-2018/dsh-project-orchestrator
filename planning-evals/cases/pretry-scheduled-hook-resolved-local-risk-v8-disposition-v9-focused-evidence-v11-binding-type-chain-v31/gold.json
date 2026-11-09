@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "afe0153d034ba4ec036684db3babd0fc54436a040e887f274a9704a9faed5934",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06f95cd2e58475dc016ad253b41d848190807d5224cf65c98f:independent-gold-review:8838ce9f-a40e-40ad-b4a5-df23c4177f30",
+    "reviewedAt": "2026-10-16T16:41:40.554Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original specification. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, exact four-file writable scope, task roles, verification dependency, and evidence stages agree. C explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision; ready with no decision blocker is therefore appropriate. A material unresolved DEC-001 in paired B must still block at decisions. The source evidence supports index.js and the maintained index.d.ts as implementation owners and test.js/index.test-d.ts as regression owners; package.json establishes xo, AVA, and tsd verification without requiring a configuration edit. The selected acceptance branch coherently requires reuse of the existing delay calculation, zero-delay notification, terminal-path suppression, and hook-error precedence over synchronous abort. The distinct implementer and verifier have active project-scoped trusted claims for the required capabilities, including data.change, domain.state, and integration.consumer, with testing.verification additionally available to the verifier. Pending security.authorization claims are not used to establish eligibility. An independent, non-autoassignable reviewer is configured, consistent with the supplied review policy. Gold and preview release fingerprints and model/policy/budget fields agree; the provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical operations are explicitly old-version observations, not candidates on this bundle. The original preparation record's runnable=false is distinct from expected planning readiness. This approval relies on the supplied Service-bound inputs and provenance; I did not recompute digests, execute code, inspect omitted portions of the truncated test excerpt, or provide a human attestation.",
+    "goldDigest": "8c9d195b3af9b17d6a132d010caa90a8f486237389359bb96028a8ce9b52f678"
+  }
+}

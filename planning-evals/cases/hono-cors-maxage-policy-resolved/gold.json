@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "dbe2a417831ddb85eedc37e876b7760726f53d03fb21a3ca85922cd2cd3c211f",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b133a8a6468a59c016ad1698e06208194a58aeb8799857f80:independent-gold-review:9754c518-e3aa-453d-b858-b2b2cff32d48",
+    "reviewedAt": "2026-10-16T00:02:35.775Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the complete supplied C scenario, without reference to any candidate. The PRD explicitly fixes DEC-001=OPT-1 as a hypothetical benchmark input, not a human Decision; humanConfirmed=false and the empty decision-input fingerprint are consistent with that distinction. C can therefore expect ready with no blocking reasons, whereas an unresolved material DEC-001 in paired B must block at decisions before later prerequisites. REQ-001, AC-001 through AC-003, task keys, repository identity/base commit, paired-case identity, and evidence stages align. The exact writable scope correctly includes the CORS implementation and regression test: the supplied implementation currently serializes invalid numeric maxAge values during OPTIONS rather than rejecting them at middleware creation, while already preserving zero through its nullish check. The requested rejection timing, boundary behavior, and compatibility obligations are coherent. Package and build evidence establishes generated declarations, so neither generated declaration files nor read-only configuration consumers require additional mandatory edits. The test file is included in both runtime discovery and the separate TypeScript check. TASK-VERIFY is explicitly independent and depends on TASK-IMPLEMENT, with all required ACs requiring implementation and verification coverage. The supplied scoped active capability claims, delivery roles, auto-assignable memberships, and availability support the two exact allowed assignees; pending legacy claims and Personas are not needed to infer eligibility. The distinct configured reviewer supports the supplied earlier independent-review prerequisite without requiring execution capabilities. Gold and preview release fingerprints and model, policy, sampling, and budget fields agree. The original preparation-time remaining items do not override the subsequently supplied team facts and frozen release input, and planning readiness does not imply execution authorization. I relied on the Service's stated mechanical digest binding; I did not recompute digests, execute code, run candidates, or attest to a human decision. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "b543011ec1d6b3a471c7fadb118ad5c3223e0e73b918eb8f1330decb0dccb72d"
+  }
+}

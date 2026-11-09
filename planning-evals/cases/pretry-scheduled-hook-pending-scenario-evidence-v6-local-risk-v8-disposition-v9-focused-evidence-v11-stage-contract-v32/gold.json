@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ebc0dbf13ca4662016ad25e03381081959a338e0c40e7467d:independent-gold-review:87c2bee8-66e5-4c49-be3e-8c345c44d561",
+    "reviewedAt": "2026-10-16T17:25:34.446Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity agree with the original specification. DEC-001 materially affects exception propagation and abort precedence, remains unconfirmed, and must block readiness at decisions; the conditional recommendation does not authorize selecting OPT-1. Accordingly, blocked readiness, the requirement-decision-pending reason, evidence stages limited to repository/requirements/decisions, and empty assignment expectations are appropriate. Later reviewer and capability prerequisites do not supersede this earlier decision gate. The complete implementation and declaration evidence supports index.js and index.d.ts as binding owners, while test.js and index.test-d.ts are verification scope; package.json establishes the separate runtime and type-checking entry points. The specified delay calculation and cancellation cases are consistent with the supplied implementation. The frozen preview and Gold release-input fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Original preparation placeholders do not contradict the subsequently supplied frozen release inputs. The isolation record states that this Gold precedes every candidate on this bundle and supplies no historical candidate outputs. Approval relies on the Service's stated mechanical input bindings, not independent digest recomputation, code execution, or human attestation. The runtime test excerpt is truncated, but that does not prevent assessment of this decision-blocked expectation.",
+    "goldDigest": "7a1fbffd19269f99378b6a411d8d5e1877e0ef86bea97793f55b566797bac74b"
+  }
+}

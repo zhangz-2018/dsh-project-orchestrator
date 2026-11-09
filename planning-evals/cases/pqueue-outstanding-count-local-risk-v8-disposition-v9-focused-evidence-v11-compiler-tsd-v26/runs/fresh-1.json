@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "ready",
+  "repositoryEvidenceIds": [
+    "test/advanced.ts",
+    "test/helpers.ts",
+    "source/index.ts",
+    "source/options.ts",
+    "source/priority-queue.ts",
+    "source/queue.ts",
+    "source/lower-bound.ts",
+    "test/basic.ts",
+    "test-d/index.test-d.ts",
+    "readme.md",
+    "test/strict.ts",
+    "test/rate-limit.ts",
+    "test/validation.ts",
+    "test/debug.ts",
+    "test/fixtures/types.ts",
+    "test/priority-queue.ts",
+    "bench.ts",
+    "test/types.ts",
+    "package.json",
+    "tsconfig.json",
+    ".github/workflows/main.yml"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "test/advanced.ts",
+        "test/helpers.ts",
+        "source/index.ts",
+        "source/options.ts",
+        "source/priority-queue.ts",
+        "source/queue.ts",
+        "source/lower-bound.ts",
+        "test/basic.ts",
+        "test-d/index.test-d.ts",
+        "test/fixtures/types.ts",
+        "test/types.ts",
+        "package.json",
+        "tsconfig.json"
+      ],
+      "ownerPaths": [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "TASK-IMPLEMENT",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005",
+        "AC-006"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run test"
+      ]
+    },
+    {
+      "key": "TASK-VERIFY",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005",
+        "AC-006"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run test"
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "taskKey": "TASK-IMPLEMENT",
+      "outcome": "selected",
+      "agentId": "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+    },
+    {
+      "taskKey": "TASK-VERIFY",
+      "outcome": "selected",
+      "agentId": "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+    }
+  ],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [],
+  "reachedStage": "preflight",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1"
+      ]
+    },
+    {
+      "stage": "assignments",
+      "evidenceIds": [
+        "assignment-evaluation:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1:TASK-IMPLEMENT",
+        "assignment-evaluation:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1:TASK-VERIFY"
+      ]
+    },
+    {
+      "stage": "preflight",
+      "evidenceIds": [
+        "task-preflight:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1:TASK-IMPLEMENT",
+        "task-preflight:planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1:TASK-VERIFY"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-tsd-v26",
+    "repositoryBaseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8",
+    "planningOperationId": "planning-v3:aab00d57-ad56-4f37-8f46-8c4529f341f1",
+    "planningOperationDigest": "b720f2847bb47fbe4523a62555b96640a1a180006540382e0ea045b06b44ec0c",
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "27d2e2ac5c13bcc86ff41aa762239dc84f3305aab8d75746641d9181555f1aaf",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "2998d6f9300ef04f05bec60364fb473664b5965406b5a123154592fa1c2182f1",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-16T11:05:34.284Z",
+    "completedAt": "2026-10-16T11:27:13.275Z"
+  }
+}

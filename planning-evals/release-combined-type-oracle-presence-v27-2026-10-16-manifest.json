@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-type-oracle-presence-v27-2026-10-16",
+  "createdAt": "2026-10-16T11:53:18.743Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "6c610abc4ece487792e770f51c9b3a3cf5cca6519708751e1739a5b8a98bcb11"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "94fa66ef38520ca4a4f7748b064105c806f51399768b609da1783d882d8a26b3"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "3e4f7bb78092ab9c73cbd16b760ad9cd6768b9a97f4bb40634ae4ada01d694c3"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "93a2fca17280e0c828ab3bc7e6cb5d6d8dbd0e437ea6137336467b39a8697835"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "cb3a0d485d27f31acee003d7254767b19b46d0f49969c66e05a41e766c3e0e90"
+    },
+    {
+      "caseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "3bb5d213353904fb125cc58faf975719581d3bc12c18e5d9e87476647220d838"
+    },
+    {
+      "caseId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "ee458302df26f3b6129052e68c19de5f1db22475c75a029921fb9312e40ffd00"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "5292025bd7cb592079731cb36e8cda513603241252536e1f2f50a43b71819ef2"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "d405208e19c0994ff94f7058b6047ceed14744713a1a8dbba4d1db98d800f5cf"
+    },
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "0df8cc6a97ce2215008dc4a2ae6e0b52d5e372ebcaf7dcdf93026bfb9541257f"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "b286ac081a5ca2bdea158a570184c8cdec8b014c7fac7916464e284201cb98fe"
+    },
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "a4ade43da198196137278402294dac8051b895548fb8ab94e8ad9674a7fcc8f8"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "43633ec088f6b7217db85b90572c1d42a2bdc4b3cd9505310945e18803e223e5"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:0c581994-f1b4-4fbe-b8d7-aa38f788c0e4",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T11:53:18.790Z",
+      "completedAt": "2026-10-16T12:15:50.718Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:8f8d54e0-bd92-494e-b70d-a4fa44a09b1c",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T11:53:18.794Z",
+      "completedAt": "2026-10-16T12:14:39.848Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:c113fa00-7e7a-4a3c-87b2-09adf8a0b201",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T11:53:18.798Z",
+      "completedAt": "2026-10-16T12:03:58.003Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-6",
+      "operationId": "planning-v3:022f17c3-0865-4900-9aaf-df2d2f68d04c",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-6.json",
+      "startedAt": "2026-10-16T11:53:20.083Z",
+      "completedAt": "2026-10-16T12:12:32.360Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-6",
+      "operationId": "planning-v3:de4a62aa-3cfd-4b25-8d86-dc9d73496595",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-6.json",
+      "startedAt": "2026-10-16T12:12:39.015Z",
+      "completedAt": "2026-10-16T12:18:18.466Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:d106b145-c439-4cd1-bb91-4b5aaadc3b59",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T12:16:07.089Z",
+      "completedAt": "2026-10-16T12:33:09.164Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-2",
+      "operationId": "planning-v3:98dfa5da-078e-4b5b-ba31-3ef0d0fa8d1e",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-2.json",
+      "startedAt": "2026-10-16T12:33:42.955Z",
+      "completedAt": "2026-10-16T12:51:45.698Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-2",
+      "operationId": "planning-v3:b2f56a5d-382b-4fa3-a50f-4972b6dbc40d",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-2.json",
+      "startedAt": "2026-10-16T12:33:43.404Z",
+      "completedAt": "2026-10-16T12:55:21.094Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-2",
+      "operationId": "planning-v3:599d36f6-f6f6-4679-9fd2-7f6cb7ea3550",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-2.json",
+      "startedAt": "2026-10-16T12:33:43.408Z",
+      "completedAt": "2026-10-16T12:59:55.246Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-7",
+      "operationId": "planning-v3:55ae1c7a-1ada-41e8-9718-d6f2d1dccf40",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-7.json",
+      "startedAt": "2026-10-16T12:33:45.164Z",
+      "completedAt": "2026-10-16T12:52:44.545Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-7",
+      "operationId": "planning-v3:6e757dfc-1e40-4915-8f45-cd1f619e1cdc",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-7.json",
+      "startedAt": "2026-10-16T12:52:50.809Z",
+      "completedAt": "2026-10-16T12:59:06.918Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-2",
+      "operationId": "planning-v3:eb122caa-1683-42db-9bd7-aba8b5fd6dc7",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-2.json",
+      "startedAt": "2026-10-16T12:53:22.315Z",
+      "completedAt": "2026-10-16T13:13:40.488Z"
+    },
+    {
+      "caseId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:21e1803a-744a-4579-ae99-9184716a5eb2",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T12:56:42.182Z",
+      "completedAt": "2026-10-16T13:07:39.477Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-6",
+      "operationId": "planning-v3:4b3c751e-d423-448e-aabb-3974bd0b0a52",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-6.json",
+      "startedAt": "2026-10-16T12:59:13.027Z",
+      "completedAt": "2026-10-16T13:05:14.152Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:70a241af-af49-45fc-a08e-ec9b3b43692d",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T13:00:48.450Z",
+      "completedAt": "2026-10-16T13:12:09.118Z"
+    },
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:e756ea5f-1a3d-4ac6-93a1-f5b1d28ffff3",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T13:05:18.439Z",
+      "completedAt": "2026-10-16T13:27:41.106Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-6",
+      "operationId": "planning-v3:79f96cec-3d49-40d2-9eb8-d3aed2f099c0",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-6.json",
+      "startedAt": "2026-10-16T13:15:46.130Z",
+      "completedAt": "2026-10-16T13:22:07.553Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:c4bd281c-4d92-42a3-a49a-cd23355e5900",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T13:22:12.799Z",
+      "completedAt": "2026-10-16T13:28:54.241Z"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:6e7a136a-7c5a-44b0-ae89-679b0086b1c0",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T13:25:17.463Z",
+      "completedAt": "2026-10-16T13:33:36.977Z"
+    }
+  ]
+}

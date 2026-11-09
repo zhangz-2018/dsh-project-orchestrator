@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-ready-type-oracle-v20-round1-2026-10-16",
+  "createdAt": "2026-10-16T06:25:47.815Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "12bd1acf4dd4623b4551f9f9c36db9e1bb2e37ef16dcab11a5aa265319b0a7b9"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "4d7021dff03dbf06f4632cb4bee3515b3641674b71862cb43cfd52c5cbfeb4da"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "0dd34034b38484ab44d6cfa74784f11a70399f99ff2979dd1785f79bf7489c32"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "attemptId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/fresh-1",
+      "operationId": "planning-v3:ea6b5168-baa5-4176-9a5c-e764a2e68120",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/runs/fresh-1.json",
+      "startedAt": "2026-10-16T06:25:47.852Z",
+      "completedAt": "2026-10-16T06:31:56.947Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/fresh-1",
+      "operationId": "planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/runs/fresh-1.json",
+      "startedAt": "2026-10-16T06:25:47.864Z",
+      "completedAt": "2026-10-16T06:36:42.730Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/fresh-1",
+      "operationId": "planning-v3:31be29c7-7df8-4b1d-b521-0a6278923f6a",
+      "outcome": "model_failure",
+      "failureCode": "agent-turn-failed",
+      "startedAt": "2026-10-16T06:25:48.028Z",
+      "completedAt": "2026-10-16T06:41:17.053Z"
+    }
+  ]
+}

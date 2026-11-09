@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00ed1cf30b1d69fb016ad22cba93808195b89b6ea88199ed3d:independent-gold-review:68eed6d9-9b1e-4f89-8b9f-ddd8279121e4",
+    "reviewedAt": "2026-10-16T13:55:20.692Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001 through AC-003 consistently require live, read-only wrapper counts backed by the existing limiter, preservation of Promise, scheduling and clearQueue behavior, and runtime plus compile-time regressions. The supplied source establishes index.js and index.d.ts as maintained implementation/declaration owners and test.js and index.test-d.ts as the bounded regression scope; package.json confirms the xo && ava && tsd validation entry point without requiring configuration edits. The stable keys, two-task split, verification dependency and required evidence stages agree with the specification. Both assignment abstentions and blocked readiness are supported by the frozen project catalog: its sole member is a non-auto-assignable reviewer with no execution roles or capability claims. That configured reviewer also addresses the stated earlier independent-review prerequisite for asynchronous/state-related work; this review does not assert that any human review or scenario-review execution occurred. No unresolved material DEC-001 or hypothetical C input is present in this case, so there is no supplied decision conflict requiring an earlier stop. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. I accept these as Service-calculated bindings, not independently recomputed hashes. Historical operations are explicitly old-version, non-fresh observations with no candidate outputs supplied, and are not used to derive expectations. Approval applies only to this pre-candidate Gold expectation, not benchmark runnability, task dispatch, test success or release approval; the listed fresh negative-control operations remain outstanding.",
+    "goldDigest": "ebc53d58244cdd8593f81fde73e491507424b88ea0d78c4a1867389596999d2b"
+  }
+}

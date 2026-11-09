@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07bca8ce2191c559016ad196c0dd8c819684291fbe7a04c998:independent-gold-review:3c435c95-087f-4918-bcda-4016d9d89a0a",
+    "reviewedAt": "2026-10-16T03:15:26.384Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, the exact implementation/test binding scope, and the implementation plus dependent independent-verification task structure agree. The supplied source supports adding a per-request synchronous/asynchronous exposeHeaders callback using the original Origin and same Context, including OPTIONS, while preserving static-array behavior and existing CORS semantics. The test file is included in the separate TypeScript checking and runtime-test configurations. Build configuration establishes that published declarations are generated, so they are not additional maintained edit owners; package export and configuration consumers do not require edits. Ready status is supported: no material unresolved Decision is supplied, an independent active project reviewer is configured, and each allowed task agent has the relevant active project-scoped trusted claims. Pending data.change and domain.state claims do not invalidate eligibility for this bounded invocation-local transformation, which does not require shared-data or state changes. The Gold and preview release fingerprints agree across repository, source, team, decisions, prompts, policy, model, sampling, and budgets. The historical project reuse and retained old-version operation evidence do not establish a candidate run on this bundle or contaminate the expectation. This approval concerns Gold suitability only, not task dispatch, human attestation, or successful execution. I reviewed the supplied records without tools or code execution and rely on the Service's stated mechanical digest binding rather than claiming independent digest recomputation.",
+    "goldDigest": "8490192808611ff3d7f2b1f4dc5b7753e10b9d7cd98224b7beb5670bb150689f"
+  }
+}

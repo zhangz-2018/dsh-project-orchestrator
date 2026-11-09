@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "c40f8bbe9864a94d7bd909bdbc700878fc9db75b9739ba92957c3a9ab5d3a5e3",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0dc748fbb275c636016ad1841851d08190b78d44926c13ef57:independent-gold-review:3f3b5462-0614-4778-bed2-e99b0d1b8be6",
+    "reviewedAt": "2026-10-16T01:55:52.619Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. It matches the original PRD's repository identity and base commit, paired case, stable REQ-001 and AC-001–AC-003 keys, inspection-owner scope, and required repository/requirements/decisions evidence stages. DEC-001 materially determines omitted-option behavior and remains intentionally unresolved without human confirmation; therefore the expected requirement-decision-pending block at decisions is correct, and empty task and assignment expectations are appropriate. Conditional acceptance criteria do not authorize selecting OPT-1 or OPT-2. The supplied source evidence coherently identifies HTTPError message construction, option normalization and readonly snapshots, option-key filtering, generic direct/create/extend propagation, and hook/public-type consumers. Forwarding and declaration consumers are inspection owners, not mandatory edits; distribution declarations are build outputs rather than separately maintained source owners. The configuration distinguishes AVA/tsx runtime tests from the test-d TypeScript checking entry point. The empty team catalog does not invalidate this expectation because the deterministic decision gate precedes later reviewer, binding, and assignment prerequisites. Gold and preview releaseInput fingerprints agree across repository, source, team, decision, prompt, model, sampling, policy, and budgets. Historical operations are not treated as candidate evidence or current decision attestations. This approval concerns the frozen benchmark expectation, not implementation success, human decision confirmation, task dispatch, or release authorization. I reviewed only the supplied data, without tools or code execution, and relied on the Service's mechanical digest binding rather than independently recomputing hashes.",
+    "goldDigest": "0060c5c475da154304eaf4db7a113e0da043937caed448a31b1c31d624cda786"
+  }
+}

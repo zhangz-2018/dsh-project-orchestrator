@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01cb24ac48bec11d016ad253c1d7708190bdcb552eeab393ea:independent-gold-review:fe283862-13a7-482c-a5b6-b6c61835672a",
+    "reviewedAt": "2026-10-16T16:41:51.265Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD makes DEC-001 material and explicitly unresolved: its alternatives establish different caller-visible error contracts, and conditional acceptance criteria do not authorize selecting either alternative. Gold therefore correctly expects blocked readiness at decisions, with requirement-decision-pending referencing DEC-001, and requires only repository, requirements, and decisions evidence. REQ-001 and AC-001 through AC-003 match the specification; empty assignment expectations are appropriate because no assignable tasks may be generated in this case. The complete implementation-owner evidence supports source/index.ts and source/options.ts as the binding-owner pair. The supplied package and compiler configuration establish the generated dist declaration chain rather than a separately maintained declaration owner, and distinguish runtime tests from compilation and dedicated type validation. Truncated runtime-test excerpts do not prevent assessing this decision-stage expectation. The empty team roster and claims do not introduce a required earlier blocker: the supplied policy explicitly places the unresolved material Decision gate before Scenario Coverage and its independent-review prerequisite. Gold and preview release-input fingerprints agree, and the supplied provenance explains the distinct manifest, evaluation-source, and normalized PRD digest domains. Repository identity, base commit, paired-case reference, model, policy, sampling, and budgets are internally consistent. This assessment relies on the Service-supplied mechanical bindings and isolation facts; I did not recompute digests, execute code, infer human confirmation, or use candidate outputs.",
+    "goldDigest": "cc0bb3a05d07b8503c8214f04679ab279185ef2ab87c4ebd57059be20ec3381c"
+  }
+}

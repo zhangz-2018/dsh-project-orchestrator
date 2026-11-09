@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ffe68e8aea4609d016ad23ec782d0819482b56ef755f0a0fd:independent-gold-review:41bf41db-4114-4f20-9c82-21da7147a517",
+    "reviewedAt": "2026-10-16T15:12:22.293Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001–AC-003, the exact implementation/test binding scope, and TASK-IMPLEMENT followed by independent TASK-VERIFY agree with the specification. The source supports invocation-local synchronous/asynchronous exposeHeaders resolution using the raw request Origin and the same Context on normal and OPTIONS requests, without requiring shared-data or state changes. Both allowed assignees have supplied active project-scoped trusted claims for the relevant contract, TypeScript, async, consumer, failure-handling, authorization, and automation capabilities; the verifier additionally has testing.verification. Pending data.change and domain.state claims do not establish eligibility, but those capabilities are not required by this bounded invocation-local change. An independent non-executing project reviewer is configured. The supplied build configuration establishes that public declarations are generated from source, so no separately maintained declaration owner or release-configuration edit is needed. The test file is included in both runtime discovery and the separate TypeScript check. No material unresolved Decision is present in this case, making ready with no blocking reasons appropriate. The Gold and preview release fingerprints match; the different manifest/evaluation source digest domains and original/saved PRD whitespace normalization are explicitly explained and mechanically bound by the Service. The original specification's remaining-preparation fields describe its earlier preparation state, while the preview supplies the subsequent frozen team and release inputs. Historical project reuse preserves scoped attestations without supplying candidate outputs, and the isolation record states that this Gold precedes every candidate on this bundle. This review used only the supplied evidence: I did not execute code, recompute digests, or provide human attestation.",
+    "goldDigest": "a37ddc4457b23ac6822ec8eec756b3166a9365d21dca7f49991e6e0f088eebab"
+  }
+}

@@ -5,8 +5,8 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { promisify } from 'node:util'
 
-const [baseUrlArgument, profileRootArgument] = process.argv.slice(2)
-if (baseUrlArgument === undefined || profileRootArgument === undefined) throw new Error('Usage: node scripts/verify-host-acceptance.mjs <base-url> <profile-root>')
+const [baseUrlArgument, profileRootArgument, recoveryEvidenceArgument] = process.argv.slice(2)
+if (baseUrlArgument === undefined || profileRootArgument === undefined) throw new Error('Usage: node scripts/verify-host-acceptance.mjs <base-url> <profile-root> [recovery-evidence.json]')
 const baseUrl = baseUrlArgument.replace(/\/$/u, '')
 const profileRoot = resolve(profileRootArgument)
 const run = promisify(execFile)
@@ -66,18 +66,58 @@ const installedBundleHash = await sha256(installedBundle)
 assert.equal(storageHash, backupHash)
 assert.equal(repositoryBundleHash, installedBundleHash)
 
+let storageRecovery = {
+  status: 'unknown',
+  reason: 'No independent corruption-and-restore experiment evidence was supplied.',
+  restoredHash: storageHash,
+  backupHash,
+  hashesMatch: true,
+}
+if (recoveryEvidenceArgument !== undefined) {
+  const evidencePath = resolve(recoveryEvidenceArgument)
+  const evidenceBytes = await readFile(evidencePath)
+  const evidence = JSON.parse(evidenceBytes.toString('utf8'))
+  assert.equal(typeof evidence.experimentId, 'string')
+  assert.ok(evidence.experimentId.length > 0)
+  assert.equal(typeof evidence.observedAt, 'string')
+  assert.equal(Number.isNaN(Date.parse(evidence.observedAt)), false)
+  assert.equal(evidence.corruptionFailureObserved, true)
+  assert.equal(Number.isInteger(evidence.corruptBytes) && evidence.corruptBytes > 0, true)
+  assert.equal(typeof evidence.failureLogPath, 'string')
+  assert.ok(evidence.failureLogPath.length > 0)
+  assert.match(evidence.failureLogDigest, /^[a-f0-9]{64}$/u)
+  const failureLogPath = resolve(dirname(evidencePath), evidence.failureLogPath)
+  assert.equal(await sha256(failureLogPath), evidence.failureLogDigest)
+  assert.equal(evidence.restoredHash, storageHash)
+  assert.equal(evidence.backupHash, backupHash)
+  storageRecovery = {
+    status: 'verified',
+    experimentId: evidence.experimentId,
+    observedAt: evidence.observedAt,
+    corruptionFailureObserved: true,
+    corruptBytes: evidence.corruptBytes,
+    failureLogPath,
+    failureLogDigest: evidence.failureLogDigest,
+    evidencePath,
+    evidenceFileHash: createHash('sha256').update(evidenceBytes).digest('hex'),
+    restoredHash: storageHash,
+    backupHash,
+    hashesMatch: true,
+  }
+}
+
 const report = {
-  status: 'passed',
+  status: storageRecovery.status === 'verified' ? 'passed' : 'partial',
   baseUrl,
   health,
   profileRoot,
-  storageRecovery: { corruptionFailureObserved: true, corruptBytes: 37, restoredHash: storageHash, backupHash, hashesMatch: true },
+  storageRecovery,
   packageIntegrity: { repositoryBundleHash, installedBundleHash, hashesMatch: true },
   legacyMigration: { projectId: legacyProject.id, taskCount: legacyTasks.length, parentIssueCount: 1, childIssueCount: childIssues.length, linkedTaskCount: legacyTasks.filter((task) => task.issueId !== undefined).length, taskStatuses: { completed: 11, failed: 10, draft: 10 }, issueStatuses: { done: 11, blocked: 10, todo: 10 }, membershipCount: 1, membershipSourceCount: 1, legacyDecisionCount: 1, teamPlanTaskCount: teamPlan.tasks.length },
   realGitInput: { projectId: gitProject.id, resourceId: gitResource.id, repositoryUrl: gitResource.location, ref: gitResource.ref, sourcePath: gitResource.sourcePath, headCommit, clonedOriginMainCommit: remoteCommit, credentialFreeUrl: true },
   verifiedAt: new Date().toISOString(),
 }
-const outputPath = resolve('output/acceptance/host-backup-restore-real-git.json')
+const outputPath = resolve(process.env.PO_HOST_ACCEPTANCE_OUTPUT ?? 'output/acceptance/host-backup-restore-real-git.json')
 await mkdir(dirname(outputPath), { recursive: true })
 await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`)
 console.log(outputPath)

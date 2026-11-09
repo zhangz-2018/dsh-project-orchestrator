@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d8f412dd9ef4ca24937ee426858f257bc150d351baa903d193cb2dbb4bc8aa66",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0431d7e70aed5f59016ad1dae3237c8196bd8cb9e1919e4508:independent-gold-review:192c4e3c-f2c9-4053-a8bb-67548bb87180",
+    "reviewedAt": "2026-10-16T08:06:08.701Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, owner bindings and paired-case identity agree with the original specification. DEC-001 materially controls the omitted-option default and is explicitly unresolved without human confirmation; blocked readiness at decisions, evidence stages repository/requirements/decisions, and no assignable task expectations are therefore appropriate. Conditional acceptance does not authorize choosing OPT-1 or OPT-2. The supplied source supports the listed message-formatting, normalization, hook snapshot, inheritance and fetch-filtering inspection scope; forwarding and declaration consumers need not be edited when their existing generic behavior is correct. Build configuration supports treating distribution declarations as generated rather than separately maintained owners, and tsconfig.test.json includes the proposed test-d scope for compile-time checks. The missing team members and reviewer do not invalidate this expectation because the supplied policy places the unresolved material-decision gate before later review and assignment prerequisites. Gold and preview release fingerprints agree; the distinct manifest/evaluation source digest domains and original/saved PRD whitespace normalization are explicitly explained. Historical project reuse is not evidence of a candidate run on this bundle. This approval relies on the supplied Service-bound fingerprints and provenance assertions; I did not recompute digests, execute code, provide human attestation, or evaluate candidate outputs. It approves the blocked Gold expectation, not implementation readiness or release.",
+    "goldDigest": "dad831c95a84e3b8a0286d935b7ac18d0c18a2aacec83f01a66a410111a7e383"
+  }
+}

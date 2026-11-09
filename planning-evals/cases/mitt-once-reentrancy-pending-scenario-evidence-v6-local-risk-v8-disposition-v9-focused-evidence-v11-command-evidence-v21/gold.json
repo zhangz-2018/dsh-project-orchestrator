@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_033182f7e7bb8112016ad1ca83deb48195a1490f28a21dc4a7:independent-gold-review:79f13eab-bd1f-4768-8372-b35a39b42521",
+    "reviewedAt": "2026-10-16T06:56:18.975Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision bundle. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, and the paired-case identifier agree with the original specification. DEC-001 materially changes reentrancy and exception-cleanup behavior and remains intentionally unresolved without human confirmation; B must therefore stop at decisions with requirement-decision-pending for DEC-001, rather than select OPT-1 from the conditional recommended acceptance criterion or publish ready tasks. The required repository, requirements, and decisions evidence stages, empty task/assignment expectations, and blocked readiness are appropriate. The empty trusted team does not create a prerequisite failure before this deterministic decision gate. src/index.ts is the maintained implementation owner; the supplied tests and configuration establish the verification scope and build-before-test workflow. The supplied package, ignore rules, and pinned upstream build-source evidence support treating root declarations and dist as generated outputs, not separately maintained binding owners. The frozen releaseInput agrees between Gold and preview, including repository/source/team/decision, prompt, model, sampling, policy, and budget fingerprints. The differing manifest and evaluation source digests and original-versus-saved PRD digests have explicitly documented domains and trim-only persistence provenance. The original specification's remaining-work fields describe its earlier preparation state; the supplied frozen preview and provenance provide the subsequent inputs for this review. No candidate outputs were used, historical project reuse does not imply a new human attestation, and no hypothetical paired-case input is treated as a human Decision. This approval concerns the planning expectation only, not execution or release readiness. Digest binding and persistence assertions are accepted as supplied Service evidence; I did not independently recompute digests, execute code, or attest to a successful build.",
+    "goldDigest": "ed3ffcc3e6d67971163d8b5cada0b387f4de0a0d531a653e08fd6f29ea760489"
+  }
+}

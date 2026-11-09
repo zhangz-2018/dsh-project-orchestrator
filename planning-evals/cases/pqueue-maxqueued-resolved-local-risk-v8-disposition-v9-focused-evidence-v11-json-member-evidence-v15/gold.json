@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "0b13d558b8b60038a8634c114f7d708078d1471904a5d5d69134cc7df888e03d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01b33d2c066a9ece016ad19d5d1408819791ec6b881257dc72:independent-gold-review:cca5d792-f44a-49fe-974a-5b30d21c8768",
+    "reviewedAt": "2026-10-16T03:43:43.735Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. REQ-001, AC-001 through AC-003, DEC-001, task keys, repository identity and base commit agree with the original specification. C explicitly fixes OPT-1 as hypothetical benchmark input, not a human Decision; an empty human decision input is therefore consistent with readiness=ready. This does not resolve DEC-001 for paired B, where a material unresolved decision must block at decisions. The exact five-file writable scope covers the implementation, options declaration, runtime regressions and type regressions without requiring gratuitous edits. Package and TypeScript configuration support treating dist declarations as generated rather than separately maintained owners, and distinguish runtime testing from compilation and nz type checks. The two-task implementation/independent-verification split and verification dependency are appropriate. The supplied project team facts support the allowed implementer and verifier through active trusted claims for the relevant contract, shared-data, state, asynchronous integration, consumer, TypeScript, failure-handling and testing capabilities; the verifier additionally has testing.verification. Eligibility need not rely on pending JavaScript or authorization claims or on personas. A distinct active project reviewer satisfies the stated non-executing review prerequisite. Gold and preview release fingerprints agree across repository, source, team, decision input, prompts, model, sampling, policy and budgets. Original-specification preparation placeholders are distinguishable from the subsequently supplied frozen preview and do not override it. The isolation record states that this Gold precedes every candidate on this bundle and supplies no historical candidate outputs. This approval is based on the supplied evidence, including explicitly truncated test excerpts, and the Service's mechanical input bindings; I did not execute code, independently recompute digests, or provide a human attestation.",
+    "goldDigest": "e96c10d874ccf4524a06353513869e3909eb20c67f7c008281667fa151e49076"
+  }
+}

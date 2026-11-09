@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "27d2e2ac5c13bcc86ff41aa762239dc84f3305aab8d75746641d9181555f1aaf",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ea1341cec592c09016ad1c2e9a57481968489c5a491ef25bb:independent-gold-review:8bbece3f-6b37-48b5-ab62-63c5929b8858",
+    "reviewedAt": "2026-10-16T06:23:50.808Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen specification. REQ-001 and AC-001–AC-003 consistently require a read-only, derived size + pending count while preserving scheduling, event ordering, clear semantics, and existing microtask timing. The exact writable scope covers the implementation and required runtime/type regressions without requiring gratuitous edits. Package/build evidence supports treating dist declarations as generated rather than separately maintained owners. TASK-IMPLEMENT and the dependent independent TASK-VERIFY agree with the PRD; the designated members have the relevant active, supplied project-scoped trusted capability claims, including data.change, domain.state, integration.async, integration.consumer, TypeScript, and testing, with testing.verification additionally present for the verifier. The separate configured reviewer satisfies the stated earlier review prerequisite without needing execution claims. No material unresolved DEC-001 or hypothetical C input is present in this case, so the empty decision input and ready expectation are consistent. Repository identity, stable keys, evidence stages, and release fingerprints agree across Gold and the frozen preview; the supplied provenance explains the distinct source-manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is explicitly isolated from fresh candidate evaluation. This approval relies on the supplied Service-bound fingerprints and evidence, not independent digest recomputation, code execution, or a new human attestation. The truncated runtime-test excerpts do not prevent reviewing this bounded planning expectation; execution and full regression verification remain future task responsibilities.",
+    "goldDigest": "979af86356fd65ab09f801498e64eabc451a6877788c27d8be1b2fe5036fbf3e"
+  }
+}

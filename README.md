@@ -8,7 +8,7 @@ A **DeepSeek Harness plugin** for local-first AI project management and task orc
 
 **Use this when** you want a local DeepSeek Harness workflow for planning coding tasks, importing GitHub Issues, executing in isolated Git worktrees, and requiring human approval before repository changes.
 
-> **Compatibility:** v1.7.0 is certified only with DeepSeek Harness `0.1.0-rc.6`, Cordis `4.0.1`, Node.js 22+, and Git. Future Harness release candidates are not covered until tested.
+> **Compatibility:** Current source targets DeepSeek Harness `0.2.2-rc.1`, Cordis `4.1.0`, Node.js >=24.9.0, and Git. Local macOS compatibility checks passed; this adaptation has not been published. See the [compatibility matrix](docs/compatibility.md).
 
 ## See it in action
 
@@ -86,21 +86,24 @@ The Project detail view can open the persisted working directory in Finder on ma
 
 ## Install
 
-Install pnpm first because the Harness profile plugin manager owns and supplies the required Host peers, then add the npm package. Do not install this plugin as a standalone application with npm peer auto-resolution; Harness `0.1.0-rc.6` packages expose prerelease transitive peer ranges that can otherwise resolve a mixed RC tree.
+Use Node.js >=24.9.0 and Harness `0.2.2-rc.1`. The profile Host supplies the optional peers, which must all use the same Harness version. This adaptation is available in the working source; build a local archive rather than assuming the published `1.7.0` package includes it.
 
 ```bash
-npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.7.0
+npm install --global pnpm@10.34.5
+pnpm install --frozen-lockfile
+pnpm pack
+dsh plugin --profile web add /absolute/path/dsh-project-orchestrator-1.7.0.tgz
 ```
 
 Add the plugin to the Web profile loader patch, normally `~/.dsh/profiles/web/cordis.patch.yml`:
 
 ```yaml
-- id: project-orchestrator
-  name: dsh-project-orchestrator
+- insert:
+    - id: project-orchestrator
+      name: dsh-project-orchestrator
 ```
 
-Restart the existing `dsh web` process and refresh its current URL. Do not run a second Web server for the same profile.
+If this entry already exists, edit its existing declaration instead of inserting a duplicate. Back up the existing Harness home before upgrading; do not run the adapted package inside an old `0.1.0-rc.6` Host. Restart the existing `dsh web` process and refresh its current URL. Do not run a second Web server for the same profile.
 
 Verify the Host half:
 
@@ -168,6 +171,7 @@ Storage version 1 preserves missing newer tables as empty compatibility tables. 
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
 pnpm verify
 ```
 
@@ -177,6 +181,7 @@ Useful commands:
 pnpm typecheck
 pnpm docs:check
 pnpm test
+pnpm test:browser
 pnpm build
 pnpm smoke:package
 ```
@@ -189,6 +194,7 @@ The package smoke test builds the exact npm artifact, checks its file allowlist 
 - [Quickstart](docs/quickstart.md)
 - [HTTP and CLI contracts](docs/api.md)
 - [Compatibility and stability policy](docs/compatibility.md)
+- [dsh native integration implementation and checks (Chinese)](docs/dsh-native-integration-implementation-2026-11-09.zh-CN.md)
 - [Operations, backup, upgrade, and rollback](docs/operations.md)
 - [Migration from local or scoped builds](docs/migration.md)
 - [Maintainer release runbook](docs/releasing.md)

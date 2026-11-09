@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-ready-command-evidence-v21-round1-2026-10-16",
+  "createdAt": "2026-10-16T06:57:37.802Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+      "goldDigest": "5f51d691b0b6c3251f4b690c9e49a453e2bb4b8b269aa1dd3316c1a79a6c2bf2"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+      "goldDigest": "f99455ac15d8112a39d269e505249cc09959b648ac94c42ce3a26685d8f4e611"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+      "goldDigest": "a3bac495df25b1712e4c626116d453b0d4a62c9632be59350a9b316ef9d0752f"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21/fresh-1",
+      "operationId": "planning-v3:efca488f-41b2-428b-b735-db28242c75da",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21/runs/fresh-1.json",
+      "startedAt": "2026-10-16T06:57:37.845Z",
+      "completedAt": "2026-10-16T07:04:53.527Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+      "attemptId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21/fresh-1",
+      "operationId": "planning-v3:3bf9d4d4-5c8b-46cd-b68a-70da7e33554b",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T06:57:37.861Z",
+      "completedAt": "2026-10-16T07:08:04.651Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21/fresh-1",
+      "operationId": "planning-v3:9be39538-3e21-4175-b1f2-09d33c71da45",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T06:57:38.124Z",
+      "completedAt": "2026-10-16T07:07:03.525Z"
+    }
+  ]
+}

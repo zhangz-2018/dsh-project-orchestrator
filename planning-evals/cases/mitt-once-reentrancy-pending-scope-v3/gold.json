@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scope-v3",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved",
+  "releaseInput": {
+    "repositoryDigest": "27fef76fb745e781fd280b3455f0ea4489b8cb92a1bf72200480d68f3d890e49",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "b490248d963f55adef45f940abc2034b5fcc1b50dba8626ea812e69ffbb01aa0",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03da77adb7b99577016ad12000e4f481978072ada6827cb93e:independent-gold-review:67be3fff-0df2-4da7-a470-ba68e6fa5870",
+    "reviewedAt": "2026-10-15T18:48:45.002Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. Repository identity, base commit, paired case, REQ-001, AC-001–AC-003, and the src/index.ts implementation-owner binding agree with the original specification. DEC-001 materially changes reentrancy behavior and remains intentionally unresolved; B must therefore stop at decisions with requirement-decision-pending for DEC-001, without selecting OPT-1 or OPT-2 or generating assignable tasks. AC-001 is explicitly conditional, not authorization to resolve the decision. Empty assignment expectations are appropriate, and the supplied runtime policy places this deterministic decision gate before later reviewer and capability prerequisites. The source, configuration, and fixed upstream build evidence support treating index.d.ts and dist as generated outputs rather than separately maintained owners; tests and declaration consumers remain inspection and verification scope, not additional mandatory implementation owners. Gold's release-input fingerprints and budgets match the supplied preview releaseInput, including repository, source, team, decision, prompt, model, sampling, and metric-policy fields. The original preparation record's null releaseInput and remaining-work list do not constitute a claim that the benchmark is runnable. This approval concerns the frozen expectation only, not execution, assignment, human confirmation, or resolution of DEC-001; an explicitly fixed hypothetical C would not supply such confirmation. No candidates were supplied or used, no code or tools were executed, and digest values were accepted as Service-calculated and mechanically bound rather than independently recomputed.",
+    "goldDigest": "d8a9d0ba8930ffe7d855326c74561b0cfb687c092f3c83c75fb6f2b7cd36a405"
+  }
+}

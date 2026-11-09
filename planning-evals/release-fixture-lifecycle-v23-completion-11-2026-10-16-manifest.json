@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-fixture-lifecycle-v23-completion-11-2026-10-16",
+  "createdAt": "2026-10-16T09:26:05.304Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "goldDigest": "4a1e94e15504c290667e5df77b95b6d16763f1b06d001d1732fa92cf4a281b4c"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "attemptId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23/fresh-1",
+      "operationId": "planning-v3:511aa21c-07ab-4e1c-8be0-e3348521702c",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23/runs/fresh-1.json",
+      "startedAt": "2026-10-16T09:26:05.567Z",
+      "completedAt": "2026-10-16T09:42:24.773Z"
+    }
+  ]
+}

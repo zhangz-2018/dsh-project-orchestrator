@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01b7f8776e90fdcc016ad19d0877e881968dfe0c5e9148d699:independent-gold-review:560a74a5-a7db-4fb9-a401-f5340299850d",
+    "reviewedAt": "2026-10-16T03:42:12.400Z",
+    "rationale": "The frozen Gold is a coherent independent planning expectation for the supplied original PRD. REQ-001, AC-001–AC-003, repository identity/base commit, exact writable owner scopes, required evidence stages, and ready/no-blocker expectations agree. The source establishes that exposeHeaders is currently static and that the requested synchronous/asynchronous callback behavior can be implemented and verified within the two allowed files. The test file is included in both the compile-time and runtime verification configurations; build configuration establishes that published declarations are generated, not separately maintained edit owners. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the specification. Their allowed agents have the relevant active project-scoped trusted contract, TypeScript, asynchronous-integration, consumer, failure-handling, security, and testing claims; the verifier additionally has testing.verification. Pending data.change and domain.state claims do not undermine eligibility for this bounded invocation-local transformation, which does not require shared-data or state impacts. A distinct active project reviewer is configured for the earlier risk-review prerequisite. No material unresolved DEC-001 or hypothetical C decision is present in this case. The Gold and preview release fingerprints agree across repository, source, team, decision input, prompts, model, sampling, budgets, and policy. Historical operations are explicitly retained as old-bundle evidence and are not treated as candidate runs on this bundle. This review uses the supplied records, including their attestation provenance and Service-bound digests; it does not independently attest capabilities, recompute digests, execute code, or authorize task dispatch.",
+    "goldDigest": "2d815d59a0d71571ac888732dcabae11145ebb986e271d6c5e0c5704c0d25b03"
+  }
+}

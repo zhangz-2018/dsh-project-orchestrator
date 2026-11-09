@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "fbb0907800c9bfd4b64367a10ca56a348b9ee47097038e8966899668b653c63a",
+    "teamCatalogDigest": "faeee3bdd0e3f30ae24fa57694edddf2fbe533db3f7d9b8ba3a80afc7b001287",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0443eb63b3d56adf016ad1fe3d17a48196962042825d24d917:independent-gold-review:14b09ad2-0f6e-4cad-b6d3-1dd2676fe98c",
+    "reviewedAt": "2026-10-16T10:36:59.008Z",
+    "rationale": "The supplied frozen Gold is a coherent independent expectation for this planning-only C scenario. REQ-001, AC-001–AC-003, DEC-001, task keys, repository identity and base commit agree across the specification, PRD and Gold. C explicitly fixes OPT-1 as a hypothetical benchmark input, without claiming a human Decision; only that selected branch is required. This supports ready with no decision blocker, while an unresolved material DEC-001 in paired B must still block at decisions. The supplied source places normalization, vocabulary sets and truthy-first baseline behavior in core/api.ts, with classic and mini forwarding to that shared factory. The exact writable scope correctly includes that implementation and both regression files; forwarding and declaration consumers remain inspection owners, and the supplied zshy build configuration supports treating emitted declarations as generated rather than separately maintained owners. Acceptance covers construction-time TypeError rejection, normalization and boundary cases without trimming, and preservation of non-overlap, inference and codec behavior. Runtime tests and compiler checks are distinguished and supported by the supplied configuration. TASK-VERIFY is independent and depends on TASK-IMPLEMENT; the specified agents have appropriate roles, availability and active project-scoped trusted claims for the bounded work, including data.change and the verifier-only testing.verification claim. An independent active non-executing Reviewer is configured. Historical project reuse preserves scoped attestations and does not constitute candidate evidence for this bundle. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD trimming. Repository, source, team, decision, prompt, model, sampling, budget and policy fingerprints are supplied as Service-bound inputs. I reviewed their stated consistency without recomputing digests, executing code, creating a human attestation or relying on candidate outputs. Approval concerns the expectation, not task dispatch, implementation correctness or release authorization.",
+    "goldDigest": "119a71ae16f0e91a003ae12fa5a2506e6135d4a780ca6217658a041d40501ff7"
+  }
+}

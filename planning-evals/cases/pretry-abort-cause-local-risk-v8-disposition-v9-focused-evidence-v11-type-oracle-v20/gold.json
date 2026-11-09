@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cd13455f2d207b3016ad1c2c68a448193849d76953459133a:independent-gold-review:6e2d13f5-2bb8-431d-844b-f895ce60e557",
+    "reviewedAt": "2026-10-16T06:23:17.043Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001–AC-003 preserve Error identity, string-wrapper compatibility, the existing AbortError unwrapping contract, and declaration/call-signature compatibility. The exact writable scope correctly includes the maintained runtime and declaration owners and both regression files, without requiring gratuitous edits or configuration changes. Package evidence establishes xo, AVA, and tsd as distinct validation steps; the focused test excerpt includes the relevant AbortError behavior despite unrelated test content being truncated. TASK-IMPLEMENT and dependent, independent TASK-VERIFY agree with the specification, and their allowed agents have the relevant active project-scoped trusted claims; pending legacy claims and persona descriptions are not needed to establish eligibility. This change concerns invocation-local error values rather than shared data or state, so additional shared-data/state capability requirements are not justified. No material unresolved Decision is present in this case, making ready status and an empty blocking-reason list appropriate. Repository identity, base commit, stable keys, and release-input fingerprints are consistent across the supplied records. The provenance explains the distinct manifest/evaluation digest domains and trim-only PRD persistence normalization. I rely on the Service's supplied mechanical digest bindings, not independent recomputation or execution. The supplied isolation record establishes that this Gold precedes every candidate on this bundle; historical project reuse preserves scoped attestations without supplying candidate outputs. Approval concerns this independent expectation only, not task dispatch, code correctness after implementation, or test execution.",
+    "goldDigest": "b52122bf710fad2249369e97ebedeba9ded83fbeac0652990eb9c2be6ecbf4e9"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d8427bdc74c6480016ad1b64c73688197b87435a7b9f62187:independent-gold-review:b2dda333-433e-4397-a523-1aa3fecc3dda",
+    "reviewedAt": "2026-10-16T05:30:00.488Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001–AC-003 preserve their stable keys and cover live wrapper counts, completion and clearing boundaries, read-only runtime/type behavior, and scheduling/Promise compatibility. The exact four-file binding scope contains the implementation, maintained declaration, and runtime/type regression owners; package.json establishes the existing xo, AVA, and tsd verification entry without requiring configuration edits. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the specified roles and coverage obligations. Their allowed agents have supplied active project-scoped trusted claims for the relevant contract, shared-data, state, asynchronous integration, consumer, language, and testing capabilities; the verifier additionally has testing.verification. The separate configured reviewer satisfies the supplied earlier review prerequisite without requiring execution claims. No unresolved material Decision is present in this frozen case, so ready with no blocking reasons is appropriate. Historical operations are explicitly retained as old, non-fresh observations rather than candidate evidence for this bundle. The release fingerprints agree between Gold and preview, and the supplied provenance explains the distinct manifest/evaluation digest domains and trim-only PRD persistence normalization. I rely on the Service's stated mechanical binding of these fingerprints; I did not recompute digests, execute code, or create a human attestation. The original preparation snapshot's remaining items do not override the subsequently supplied frozen inputs. No candidate output was used to establish these expectations.",
+    "goldDigest": "15aae2ad8d9e9b2b52a75715e08b1970b1d183609e47ac4a408887b71e556ce2"
+  }
+}

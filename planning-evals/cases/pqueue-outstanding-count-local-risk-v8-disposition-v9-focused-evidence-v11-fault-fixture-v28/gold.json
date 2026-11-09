@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "27d2e2ac5c13bcc86ff41aa762239dc84f3305aab8d75746641d9181555f1aaf",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0412c68c8d805559016ad22c5e84908195801836549634cfc3:independent-gold-review:3654d4df-80ae-492c-9500-491a07fb75d2",
+    "reviewedAt": "2026-10-16T13:53:50.894Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001–AC-003 preserve the original read-only, derived size+pending contract, including existing completion-event and microtask timing, clear behavior, and compile-time assignment rejection. The exact four-file writable scope covers the implementation and required runtime/type regressions without requiring gratuitous edits. package.json and tsconfig.json establish that dist declarations are generated rather than separately maintained owners; runtime tests and nz type verification remain distinct. Stable requirement, acceptance, and task keys agree, and TASK-VERIFY independently depends on TASK-IMPLEMENT. The supplied project-scoped active capability records support the designated implementer and verifier, including data.change, domain.state, integration.async, integration.consumer, and verifier-only testing.verification; eligibility does not rely on pending claims or personas. The configured separate reviewer satisfies the stated earlier review prerequisite. No material unresolved Decision is supplied for this case, so ready with no blocking reasons is appropriate. Gold and preview release fingerprints agree, and the provenance explains the distinct source-manifest/evaluation digest domains and PRD trimming. The original preparation placeholders are superseded by the supplied frozen preview. Historical operations are explicitly old-bundle records, not candidate evidence for this bundle. This approval reviews supplied evidence only: I did not execute code, independently recompute digests, or create or independently attest human capability confirmations.",
+    "goldDigest": "578c8cfb0024e2b30fb52eee2efe323eee798c0b57e41e1bf90e57d8f435bf9a"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f7171115672457780da39cd027b62693ccb39267421dda91686ad8b48a3dc47d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0feeb4b7f3f61c52016ad1afe2d3e4819389a6f4005e8250a7:independent-gold-review:b5e52d47-3d6f-43d2-9cf9-11635883ce67",
+    "reviewedAt": "2026-10-16T05:02:40.166Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, both stable task keys, and all required evidence stages agree with the specification. The complete source evidence supports index.js and index.d.ts as maintained implementation/declaration owners and test.js and index.test-d.ts as regression owners; the exact writable scope is appropriate without requiring gratuitous edits. package.json establishes the existing xo, AVA, and tsd verification entry point and need not be edited. The current wrapper already forwards clearQueue from its single internal limiter, so adding live read-only counts while preserving scheduling, Promise behavior, and clearQueue is well-defined. Implementation and dependent independent verification must cover every required AC. The specified agents have the relevant active project-scoped trusted claims, including data.change, domain.state, asynchronous integration and consumer capabilities, JavaScript/TypeScript, and testing; the verifier additionally has testing.verification. Pending security.authorization claims are not relied upon for this bounded requirement. A distinct active project reviewer is configured for the earlier risk-review prerequisite. No unresolved material DEC-001 or hypothetical C input is present in this case, so the empty decision input and ready expectation are coherent. The supplied isolation evidence permits historical project reuse without treating old operations as fresh candidates or copying attestations. Gold and preview release fingerprints agree; the documented source-manifest versus evaluation-source digest domains and PRD whitespace normalization explain their distinct fingerprints. The frozen release input supersedes the original preparation-time remaining-work markers. This assessment relies on the supplied Service-bound digest and provenance evidence; I did not recompute digests, execute code, inspect candidate outputs, or provide a human attestation. Approval concerns the benchmark expectation only, not task dispatch or implementation correctness.",
+    "goldDigest": "27453d65e5ab456a7a27762fd968b2d392cf7e6fca245ba8df3a664e46678668"
+  }
+}

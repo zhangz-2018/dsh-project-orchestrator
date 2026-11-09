@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "afe0153d034ba4ec036684db3babd0fc54436a040e887f274a9704a9faed5934",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f7171115672457780da39cd027b62693ccb39267421dda91686ad8b48a3dc47d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_054b3797964f601c016ad1afef985c819782ca7326a2357a20:independent-gold-review:05c78020-a1d0-4ddc-a77f-4abb73fe8c77",
+    "reviewedAt": "2026-10-16T05:02:52.120Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. REQ-001, AC-001 through AC-003, repository identity/base commit, exact writable binding scope, task keys, and evidence stages agree with the original PRD. C explicitly fixes OPT-1 as hypothetical source input, not a human-confirmed Decision; only that branch is required. Consequently, ready with no blocking reasons is appropriate here, while a material unresolved DEC-001 must still block paired B at decisions. The runtime source supports reusing the existing sampled, rounded, capped delay and placing the hook after termination checks and before waiting, with a post-hook cancellation check and unchanged thrown-value precedence. The exported runtime and maintained declaration owners are index.js and index.d.ts; test.js and index.test-d.ts are appropriate regression scopes, and package.json confirms xo, AVA, and tsd without requiring configuration edits. The two tasks retain implementation/independent-verification coverage of every required AC, with TASK-VERIFY depending on TASK-IMPLEMENT. Their allowed agents have matching roles, available capacity, and supplied active project-scoped claims for the relevant capabilities, including testing.verification for the verifier. Pending security.authorization claims are not needed for this requirement. A separate configured active reviewer satisfies the supplied non-executing review prerequisite. Gold and preview release fingerprints match; the source-manifest/evaluation-source and original/saved-PRD digest differences are explicitly explained by their distinct domains and trim-only persistence. Model, sampling, policy, and budget identifiers are frozen consistently. I rely on the Service's supplied mechanical bindings and isolation assertions, not independent digest recomputation, code execution, candidate results, or newly created human attestations. The truncated runtime-test excerpt limits inspection of existing tests but does not prevent establishing this planning expectation from the complete implementation, declarations, configuration, and normative specification supplied.",
+    "goldDigest": "1feb30d6e2fa04b4850ee972777efce684a6876a28133ca6372e307fa2778685"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a9970e15642238b016ad23f3620708190adee6446148f79e6:independent-gold-review:cec2c16d-a63a-4f03-a65d-4dee57a4cba0",
+    "reviewedAt": "2026-10-16T15:14:09.925Z",
+    "rationale": "The supplied frozen Gold is a coherent independent expectation for the original PRD. Material DEC-001 is intentionally unresolved and lacks human confirmation, so B must stop at decisions with requirement-decision-pending for DEC-001; conditional acceptance language does not select OPT-1. The required repository, requirements, and decisions evidence stages, stable REQ/AC keys, empty assignment expectations, and absence of assignable tasks are consistent with that stop. The supplied source establishes src/index.ts as the implementation owner and the two test files as regression and type-validation scope. Configuration and fixed upstream build evidence support treating index.d.ts and dist as generated artifacts rather than separately maintained owners, with rebuilding required before root-import validation. The two decision options coherently distinguish pre-call removal with a per-registration fired guard from finally-based removal permitting bounded callback reentrancy. The empty trusted team catalog does not invalidate this earlier decision gate, and later reviewer or assignment prerequisites must not replace the specified blocker. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Repository, source, team, decision, prompt, model, sampling, policy, and budget fingerprints are supplied and mechanically bound by the Service. Historical project reuse is explicitly isolated from candidates on this bundle. This review relies on the supplied evidence and Service digest assertions; I did not execute code, independently recompute digests, or provide a human Decision or attestation.",
+    "goldDigest": "160073c876091a67e2d0ae561471b1815f2b61f14ac0c46e222d830f536db486"
+  }
+}

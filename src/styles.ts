@@ -1,4 +1,14 @@
 export const styles = `
+.po-native-section { border-top: 1px solid var(--dsw-alias-border-primary, #ddd); padding: 20px 0; min-width: 0; }
+.po-project-detail-page > .po-native-section { padding: 20px 24px; }
+.po-native-section h2 { font-size: 16px; margin: 0; }
+.po-native-section dd, .po-native-section a { overflow-wrap: anywhere; min-width: 0; }
+.po-native-capabilities { margin: 0; }
+.po-native-capabilities > div { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 3fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--dsw-alias-border-primary, #ddd); }
+.po-native-capabilities dd { margin: 0; }
+.po-native-capabilities small { display: block; margin-top: 4px; color: var(--dsw-alias-label-secondary, #666); line-height: 1.5; }
+.po-native-evidence { max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+@media (max-width: 700px) { .po-project-detail-page > .po-native-section { padding: 16px 14px; } }
 .po-launcher {
   width: 36px;
   height: 36px;
@@ -293,7 +303,8 @@ body[data-ds-dark-theme] .po-workbench {
 .po-progress-ring { --po-progress: 0deg; width: 20px; height: 20px; border-radius: 50%; display: inline-block; background: conic-gradient(var(--po-success) var(--po-progress), var(--dsw-alias-border-l2, #e5e7eb) 0); position: relative; }
 .po-progress-ring::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--dsw-alias-bg-base, #fff); }
 .po-project-detail-page { padding-bottom: 48px; }
-.po-project-summary-band { min-height: 86px; padding: 14px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); background: var(--dsw-alias-bg-layer-1, #fafafa); }
+/* 摘要换行时保留内容高度，避免滚动页的 flex 收缩将下一节推入摘要。 */
+.po-project-summary-band { flex: 0 0 auto; min-height: 86px; padding: 14px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); background: var(--dsw-alias-bg-layer-1, #fafafa); }
 .po-project-summary-band > div, .po-project-summary-band > button { min-width: 0; display: grid; align-content: center; gap: 6px; }
 .po-project-directory { margin: 0 24px; padding: 14px 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 18px; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }
 .po-directory-fact { min-width: 0; display: grid; gap: 6px; }
@@ -627,6 +638,41 @@ body[data-ds-dark-theme] .po-workbench {
 .po-project-diagnostic-actions details { position: relative; }
 .po-project-diagnostic-actions summary { cursor: pointer; color: var(--po-error-ink); font-size: 11px; }
 .po-project-diagnostic-actions pre { position: absolute; z-index: 2; right: 0; top: calc(100% + 8px); width: min(520px, 70vw); max-height: 220px; overflow: auto; margin: 0; padding: 10px; border: 1px solid var(--dsw-alias-border-l2, #d4d4d8); border-radius: 6px; color: var(--dsw-alias-label-primary, #18181b); background: var(--dsw-alias-bg-base, #fff); font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; }
+.po-operational-summary { margin: 18px 24px 0; border-block: 1px solid var(--dsw-alias-border-l2, #e5e7eb); padding: 16px 0; display: grid; gap: 14px; }
+.po-operational-summary > .po-section-heading { margin: 0; }
+.po-operational-current { min-height: 64px; display: grid; grid-template-columns: minmax(170px, .85fr) minmax(190px, 1fr) minmax(220px, 1.25fr) auto; align-items: center; gap: 14px; }
+.po-operational-current > div { min-width: 0; display: grid; gap: 4px; }
+.po-operational-current span { color: var(--dsw-alias-label-caption, #6b7280); font-size: 10px; }
+.po-operational-current strong { overflow-wrap: anywhere; font-size: 13px; }
+.po-operational-message { min-height: 42px; padding: 9px 11px; display: flex; align-items: center; gap: 9px; color: var(--dsw-alias-label-secondary, #52525b); background: var(--dsw-alias-bg-layer-1, #fafafa); font-size: 12px; }
+.po-operational-message > svg { flex: 0 0 auto; }
+.po-operational-message > span { min-width: 0; margin-right: auto; display: grid; gap: 2px; }
+.po-operational-message.is-error { color: var(--po-error-ink); background: var(--po-error-surface); }
+.po-operational-message.is-warning { color: var(--po-warn-ink); background: var(--po-warn-surface); }
+.po-readiness-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.po-readiness-grid > section { min-width: 0; border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); }
+.po-readiness-grid header { min-height: 40px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.po-readiness-status { padding: 3px 7px; border-radius: 4px; color: var(--dsw-alias-label-secondary, #52525b); background: var(--dsw-alias-bg-layer-2, #f0f0f1); font-size: 10px; font-weight: 700; }
+.po-readiness-status.is-ready { color: var(--po-success-ink); background: var(--po-success-surface); }
+.po-readiness-status.is-blocked { color: var(--po-error-ink); background: var(--po-error-surface); }
+.po-readiness-status.is-unknown { color: var(--po-warn-ink); background: var(--po-warn-surface); }
+.po-readiness-grid ul { margin: 0; padding: 0; display: grid; list-style: none; }
+.po-readiness-grid li { min-height: 46px; border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); display: grid; grid-template-columns: 8px minmax(0, 1fr); align-items: center; gap: 9px; }
+.po-readiness-grid li > span:last-child { min-width: 0; display: grid; gap: 2px; }
+.po-readiness-grid li strong { font-size: 11px; font-weight: 600; }
+.po-readiness-grid li small { overflow-wrap: anywhere; color: var(--dsw-alias-label-caption, #6b7280); font-size: 10px; }
+.po-readiness-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dsw-alias-label-caption, #9ca3af); }
+.po-readiness-dot.is-ready { background: var(--po-success); }
+.po-readiness-dot.is-blocked { background: var(--po-error); }
+.po-readiness-dot.is-unknown { background: var(--po-warn); }
+.po-reconciliation-panel { border-top: 1px solid var(--dsw-alias-border-l2, #e5e7eb); padding-top: 14px; display: grid; gap: 12px; }
+.po-reconciliation-panel > .po-section-heading { margin: 0; }
+.po-reconciliation-facts { display: flex; gap: 8px; flex-wrap: wrap; }
+.po-reconciliation-facts span { padding: 5px 7px; color: var(--dsw-alias-label-secondary, #52525b); background: var(--dsw-alias-bg-layer-1, #f4f4f5); font-size: 11px; }
+.po-reconciliation-reasons { margin: 0; padding: 0; display: grid; list-style: none; }
+.po-reconciliation-reasons li { min-height: 38px; border-top: 1px solid var(--dsw-alias-border-l3, #eeeeef); display: grid; grid-template-columns: minmax(180px, .45fr) minmax(0, 1fr); align-items: center; gap: 10px; font-size: 11px; }
+.po-reconciliation-reasons span { overflow-wrap: anywhere; color: var(--dsw-alias-label-secondary, #52525b); }
+.po-reconciliation-reason { max-width: 680px; display: grid; gap: 5px; color: var(--dsw-alias-label-secondary, #52525b); font-size: 11px; }
 .po-modal .po-inline-error, .po-agent-chat .po-inline-error { margin: 0 0 12px; }
 .po-empty { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--dsw-alias-label-caption, #6b7280); text-align: center; }
 .po-empty strong { color: var(--dsw-alias-label-primary, #18181b); }
@@ -977,6 +1023,12 @@ button.po-management-row:hover { background: var(--dsw-alias-interactive-bg-hove
   .po-project-diagnostic-actions { width: 100%; justify-content: flex-start; }
   .po-project-diagnostic-actions details { width: 100%; }
   .po-project-diagnostic-actions pre { position: static; width: auto; max-height: 180px; margin-top: 8px; }
+  .po-operational-summary { margin: 14px 14px 0; }
+  .po-operational-current, .po-readiness-grid { grid-template-columns: 1fr; gap: 10px; }
+  .po-operational-current { align-items: stretch; }
+  .po-operational-current > button { width: 100%; }
+  .po-operational-message { align-items: flex-start; flex-wrap: wrap; }
+  .po-reconciliation-reasons li { grid-template-columns: 1fr; align-content: center; gap: 2px; padding: 7px 0; }
   .po-approval-summary, .po-intervention-panel { flex-direction: column; gap: 4px; }
   .po-v3-stage-grid { grid-template-columns: 1fr; }
   .po-v3-stage-grid > div { min-height: 0; border-right: 0; border-bottom: 1px solid var(--dsw-alias-border-l2, #e5e7eb); }

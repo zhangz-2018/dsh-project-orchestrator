@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_034cd7379b27f738016ad253bcd2808194aac22607a09ed655:independent-gold-review:2dc142e0-c414-4ad8-90e9-3db78cc919d2",
+    "reviewedAt": "2026-10-16T16:41:43.335Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. C explicitly fixes OPT-1 as a hypothetical benchmark input, without asserting a human Decision; ready with no blocking reasons is therefore appropriate. A materially unresolved DEC-001 in paired B must still block at decisions. REQ-001, AC-001–AC-003, the exact implementation/test binding scope, and the implementation plus dependent independent-verification tasks agree with the specification. The source establishes that CORSOptions and runtime behavior share the implementation owner, the designated test file is included in both runtime testing and separate compiler checking, and published declarations are generated rather than separately maintained owners. Configuration and declaration-routing inspection does not require additional writable bindings. The allowed implementer and verifier have the relevant supplied active project-scoped capability claims, distinct delivery roles, and available slots; pending-only data/state claims need not be promoted for this bounded invocation-local validation change. An independent active reviewer is also configured. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct PRD, manifest, and evaluation-source digest domains. Historical project reuse preserves scoped attestations without treating old operations as fresh candidates. Approval concerns the expectation, not execution, dispatch, or completion of the remaining release-review bookkeeping. I relied on the supplied Service-bound fingerprints and evidence; I did not recompute digests, execute code, or independently attest the recorded human confirmations.",
+    "goldDigest": "8c64d572f672462919e6dd8df27dc5425ea9e97f554c925a5d8923de9225c2e8"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "6fcae66eaca49d88deb33a00f18bdd4e9547df305c5b52133a370f741f68eaec",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_097eae3980a05493016ad1bb57f8d881909fbaed7eefb26314:independent-gold-review:6cf6149a-0a82-4e61-a7d5-15a0075a46df",
+    "reviewedAt": "2026-10-16T05:51:29.386Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this frozen pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes AC-001 conditional rather than authorizing OPT-1. Gold correctly requires repository, requirements, and decisions evidence, expects blocked readiness with requirement-decision-pending on DEC-001, preserves REQ-001 and AC-001 through AC-003, and requires no assignable tasks or assignments. The complete supplied implementation supports src/middleware/cors/index.ts as the binding owner; the test file is verification scope, while build configuration establishes that distribution declarations are generated rather than separately maintained owners. The documented test entry separates TypeScript checking from runtime tests. Empty team membership and capability claims do not invalidate this expectation because the decision gate precedes later reviewer and assignment prerequisites. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is not presented as candidate evidence or a new human decision. Review is based solely on the supplied specification and frozen evidence; no tools or code were executed, no human attestation was made, and Service-calculated digests were not independently recomputed. Approval concerns the Gold expectation, not resolution of DEC-001 or authorization to dispatch work.",
+    "goldDigest": "495e87f4e4dada753c683b2dd10e8c46b785f8463b1b8bfe85df322d25ac5d29"
+  }
+}

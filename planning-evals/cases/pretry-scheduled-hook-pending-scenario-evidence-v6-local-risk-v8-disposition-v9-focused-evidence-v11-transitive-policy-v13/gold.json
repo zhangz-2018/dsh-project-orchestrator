@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "c40f8bbe9864a94d7bd909bdbc700878fc9db75b9739ba92957c3a9ab5d3a5e3",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00212c9b06c44691016ad183ebb6b481959e537905a08ca1cf:independent-gold-review:b5982890-6fff-429f-bd6b-67757a117f62",
+    "reviewedAt": "2026-10-16T01:55:05.582Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending case. The original PRD explicitly leaves material DEC-001 unresolved and does not authorize selecting the recommended option. Gold correctly expects blocked readiness at decisions, preserves REQ-001 and AC-001 through AC-003, requires repository/requirements/decisions evidence, and supplies no task or assignment expectations. The conditional hook-error and abort-precedence criteria preserve both decision options rather than silently resolving them. The supplied implementation, declarations, package exports and test configuration support index.js and index.d.ts as the maintained binding owners, with test.js and index.test-d.ts as verification scope. No build evidence identifies index.d.ts as generated. The empty team catalog does not invalidate this earlier decision gate: the supplied policy places it before mandatory Scenario Coverage reviewer and assignment prerequisites. Repository identity, base commit and paired-case reference agree across the specification and Gold; the complete releaseInput fingerprint fields agree between Gold and the frozen preview. The source-manifest digest is a distinct manifest field, not asserted to equal the aggregate release source digest. Historical project reuse supplies no decision confirmation or candidate evidence here. The truncated runtime-test excerpt does not prevent establishing this decision-blocked expectation from the complete PRD and owner/configuration evidence. This approval concerns the benchmark expectation only, not implementation correctness, execution, human attestation or release readiness. Digests are accepted as Service-calculated and mechanically bound; I did not independently recompute them or execute code.",
+    "goldDigest": "fae84813801cb894c6835a1c04b6ba67608ac43fb5003a74bd21ed9e605c8baf"
+  }
+}

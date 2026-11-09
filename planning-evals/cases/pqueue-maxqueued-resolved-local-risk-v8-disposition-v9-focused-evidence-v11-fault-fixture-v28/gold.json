@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "0b13d558b8b60038a8634c114f7d708078d1471904a5d5d69134cc7df888e03d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03cd1fbd097661ea016ad22c714ab88197a201dd40e6007321:independent-gold-review:dffd3497-ee5e-4225-aa77-0bc2ec77b144",
+    "reviewedAt": "2026-10-16T13:54:08.286Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C scenario. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, exact writable owner scopes, and task keys agree with the original specification. C explicitly fixes OPT-1 as a hypothetical input, without representing it as a human Decision; an unresolved material DEC-001 in paired B must still block at decisions. The implementation and verification roles remain distinct, verification depends on implementation, and both must cover every required acceptance criterion. The allowed agents have active project-scoped trusted claims for the relevant TypeScript, API-contract, shared-data/state, asynchronous-consumer, failure-handling, and testing obligations, with testing.verification additionally present for the verifier. Pending legacy claims are not needed as substitutes for trusted claims. An independent active project reviewer is configured for the earlier scenario-coverage prerequisite. The bounded source/test scopes are appropriate; package and compiler configuration provide inspection/build evidence, and generated dist declarations need not be separately maintained owners. Runtime testing and compile-time/type validation are explicitly distinguished. Gold and preview release fingerprints agree, and the supplied provenance explains the separate original, normalized saved-PRD, manifest, and evaluation-source digest domains. Historical project reuse is explicitly scoped and does not supply candidate outputs or count as a fresh run. I relied on the Service's mechanical digest bindings and supplied evidence; I did not recompute hashes, execute code, or create human attestations. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "f654fa6742869bb8213d91ad1c237e0f02b3f49774a4085bd0c924ee06876920"
+  }
+}

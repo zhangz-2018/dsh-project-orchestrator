@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1491d93392bea8611e41f3d5b2339a4e33ee93894418bceb2caf532706abe95c",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_016dd9355ad46532016ad238ce60bc81938a8b2f0731ac5077:independent-gold-review:7cc41bf0-7998-41cc-b744-b392dd9bd198",
+    "reviewedAt": "2026-10-16T14:46:50.770Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001 through AC-003 consistently require live, read-only wrapper counts from the existing internal limiter without changing scheduling, Promise behavior, or clearQueue. The complete supplied source supports the exact writable scope index.js, index.d.ts, test.js, and index.test-d.ts: the wrapper currently exposes only clearQueue, its maintained declaration likewise omits the counts, and runtime/type regressions belong in the existing AVA/tsd files. package.json confirms the xo && ava && tsd verification entry point and supplies no declaration-generation evidence. The implementation and dependent independent-verification tasks preserve the specified stable keys and required acceptance coverage. Neither task has an eligible executor: the sole project member is a non-auto-assignable reviewer with no capability claims. That reviewer supplies the configured independent-review prerequisite without implying execution eligibility, so blocking at assignments with both specified abstention reasons is appropriate. No material unresolved Decision is supplied or required by this case. Repository identity, base commit, file fingerprints, and the Gold/preview release-input fingerprints are consistent in the supplied record. The distinct source-manifest and evaluation-source digest domains, and trimmed versus original PRD fingerprints, are explicitly explained by the Service provenance. Historical operations are identified as old-version, non-fresh observations rather than candidate evidence for this bundle. This approval concerns the independent expectation only; it does not attest execution, human review, completed negative controls, or release readiness. I relied on the supplied Service-bound digest assertions and did not recompute digests or execute code.",
+    "goldDigest": "e1ee49d2fbc750f6346199e3f3fcfa33949c6452cc64b068b4f454c283801c8c"
+  }
+}

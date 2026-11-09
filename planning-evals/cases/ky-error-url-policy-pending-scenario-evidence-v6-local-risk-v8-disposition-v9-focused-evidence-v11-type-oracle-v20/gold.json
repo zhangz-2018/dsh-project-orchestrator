@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d51aea78336c762016ad1c2fbc98c8196970caa0f504439f3:independent-gold-review:73ae9ffb-b86b-440a-ba58-277d5fe59165",
+    "reviewedAt": "2026-10-16T06:24:10.570Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and the paired-case identity consistently with the original PRD. The material unresolved DEC-001 correctly requires blocked readiness at decisions, with repository/requirements/decisions evidence and no assignable tasks or assignment expectations; conditional acceptance criteria do not authorize choosing a default. The supplied source supports the listed inspection owners for message construction, option normalization and snapshots, option filtering, direct/create/extend forwarding, and public hook/type contracts. Existing generic forwarding and declaration consumers need inspection, not mandatory edits. Build configuration supports treating distribution declarations as generated rather than separately maintained owners, and the configured test-d compilation provides a distinct compile-time verification route. The empty team catalog does not invalidate this expectation because the deterministic decision gate precedes later reviewer and assignment prerequisites. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation digest domains and trim-only PRD persistence normalization. Retained historical operations do not establish candidate execution on this bundle or supply candidate-derived expectations. This approval is based solely on the supplied review data and Service-reported mechanical bindings; I did not execute code, independently recompute digests, or provide human decision attestation.",
+    "goldDigest": "ea25cc2a3e863086b472e1ce55acbdaa6debf99153c141d92ada0508e7d17b65"
+  }
+}

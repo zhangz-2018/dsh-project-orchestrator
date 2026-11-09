@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-blocked-type-oracle-v20-round1-2026-10-16",
+  "createdAt": "2026-10-16T06:25:47.815Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "805a05f5bac46e41321255d615a383e9769600015e499d81d752361ee79241eb"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "c17298de6616279ef708fd4b609e6dcfe13f3ac0fd3c4533d4017bb696d5b3f9"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "fa822ed6ff71ae08995090e19edd501b9fa43f6515a4a3ac4cd8ebfd0e58de31"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "042eca52c42520d91637a9911fa0a2f06a840cf8cffc1b65ae439114d6e4a9e5"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "5e7bb6ef94941233ffc2338e8deb19317b31866bad288368cff411dfd23b8d46"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "ea25cc2a3e863086b472e1ce55acbdaa6debf99153c141d92ada0508e7d17b65"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "30a2cca75c8577e7606adb45044a027c23780fa6438640b85536445ccee77c3f"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "60e4b4fc1269449ccdcaef1be80580b99e7d9bb63dfbee76aa0b90d1cf62384c"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "goldDigest": "d1a4d204b1aa789b9f1d8f398f048799aab2d46d158ba29b5dcb044f7104f4bf"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/fresh-1",
+      "operationId": "planning-v3:4f6a4560-dc88-40f4-948f-edef71bc9b26",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20/runs/fresh-1.json",
+      "startedAt": "2026-10-16T06:25:47.848Z",
+      "completedAt": "2026-10-16T06:38:04.712Z"
+    }
+  ]
+}

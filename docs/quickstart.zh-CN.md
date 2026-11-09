@@ -48,6 +48,15 @@ curl --fail http://127.0.0.1:3080/project-orchestrator/api/health
 
 规划阶段只读检查仓库。如果 Planner 报告缺少仓库证据或无法确认验证命令，应先补齐仓库前置条件并重新规划，不要批准臆造的命令。
 
+创建后可在页面概览查看“规划准备”和“执行准备”，也可用 CLI 读取相同的服务端投影：
+
+```bash
+dsh-project-orchestrator readiness <PROJECT_ID>
+dsh-project-orchestrator overview <PROJECT_ID>
+```
+
+Readiness 只读取路径、Git、模型路由、团队、能力、访问授权、当前计划和存储一致性；它不会执行仓库命令或发起模型调用。`unknown` 表示事实尚未冻结，不等于通过。Planning V3 当前提供 TypeScript/JavaScript、Vue/Nuxt、Prisma、测试文件和 manifest 命令的语义 Provider；Python、Java/Spring、Go 尚没有生产语义 Provider，命中这些主栈时应按页面阻塞原因处理，不能把通用文件读取当成完整 V3 支持。
+
 ## 4. 绑定并分配团队
 
 1. 打开 **更多 > 团队编排**，创建一个至少包含 Leader、实现成员和测试成员的 Squad。Leader 必须同时位于 Squad 成员列表中。
@@ -84,5 +93,6 @@ Project 会依次经过排队、Agent 执行和测试验证。遇到权限、Run
 - **Runtime 不可用：**改用本机默认环境，或将绑定的自定义 Runtime 恢复为在线状态。
 - **Planner 被阻塞：**确认目录存在，并确认仓库公开了可非交互执行的验证命令。
 - **执行需要决定：**打开 Inbox，检查上下文记录，再明确批准、拒绝、暂缓或重试。
+- **存储需要恢复：**先查看页面给出的 Recovery Preview。只有服务端返回 `replay`、`compensate` 或 `finalize` 时才执行对应动作；`manual_required` 不提供自动恢复按钮，也不应直接修改 JSON。
 
 备份、恢复和生产使用请继续阅读[运维文档](operations.zh-CN.md)与[安全策略](../SECURITY.zh-CN.md)。

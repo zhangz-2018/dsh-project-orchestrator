@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-ready-recovery-owner-v16-round1-2026-10-16",
+  "createdAt": "2026-10-16T04:26:43.134Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "1fae6462482b8c4c70fb72cf7dce0cfb7316ef8dee7d71a29fa0e4d3796952f6"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "51b555f89732bdbe7cf1f300c535ffcba784cdc494500de53dea46d2a65c403d"
+    },
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "626021ad82844827ce2686aa3f26e255137644874a2f23580962506d1002d402"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:b6d70d26-5e5e-4256-a694-2d3baab89062",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T04:26:43.168Z",
+      "completedAt": "2026-10-16T04:33:28.439Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:6a360f61-3650-45b5-83e6-979eeddefd2c",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/runs/fresh-1.json",
+      "startedAt": "2026-10-16T04:26:43.178Z",
+      "completedAt": "2026-10-16T04:34:08.189Z"
+    },
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:285226e9-a975-4324-919d-136898fa05b2",
+      "outcome": "model_failure",
+      "failureCode": "binding-diagnostic-subject-invalid",
+      "startedAt": "2026-10-16T04:26:43.340Z",
+      "completedAt": "2026-10-16T04:37:16.490Z"
+    }
+  ]
+}

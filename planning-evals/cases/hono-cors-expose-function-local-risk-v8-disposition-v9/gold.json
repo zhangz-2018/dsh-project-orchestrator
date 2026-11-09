@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "08802d0c1d3e22bd47ff7d40a30fff2e08b0dca310a542517e3093dc11de1ac8",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "ae818716cd3bf9f1e7e01db6743a7917d148c0fe79726c1c451763addcb60517",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0fec84959d0ccc2a016ad174acc9f08190802dd7c49e1d2253:independent-gold-review:ee907ba2-aa4e-44b4-bc49-3bd00da3d480",
+    "reviewedAt": "2026-10-16T00:50:03.208Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001–AC-003, repository identity/base commit, exact writable owner scopes, evidence stages, and readiness expectations agree. The source supports a bounded invocation-local CORS enhancement, including raw request Origin and Context forwarding, synchronous/asynchronous callbacks, empty-array behavior, error propagation, and compatibility regression coverage. It does not require shared-data or persistent-state impacts merely because callbacks are asynchronous. The implementation and test files are sufficient writable owners; supplied build configuration establishes that published declarations are generated rather than separately maintained. The test file is included in the explicit TypeScript checking configuration as well as runtime test discovery. The two stable task keys preserve independent verification dependent on implementation. Their allowed agents have the relevant active trusted capability claims, delivery roles, assignable memberships, and available capacity; pending legacy claims and personas are not used as proof. An independent active project reviewer is configured as required by the supplied risk policy. No material unresolved DEC-001 or hypothetical C input is present in this case, so an empty decision input and ready expectation are coherent. Gold and preview release fingerprints agree across repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. This review relies on the Service's stated mechanical binding of those fingerprints, not independent digest recomputation. No tools, code execution, candidate outputs, or new human attestations were used, and approval does not authorize implementation or task dispatch.",
+    "goldDigest": "d154c1f8b92007795737f7146d74ef0d38d9e02f3b99c2f17ca3bf867242573a"
+  }
+}

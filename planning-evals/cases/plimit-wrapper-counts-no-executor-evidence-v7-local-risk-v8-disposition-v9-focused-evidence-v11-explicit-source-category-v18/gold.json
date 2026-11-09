@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_002130a84dcf5ed1016ad1b6b609408197a0172fda4381cc42:independent-gold-review:06d9054a-8120-486b-92aa-453b585039a5",
+    "reviewedAt": "2026-10-16T05:31:46.213Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original specification. REQ-001 and AC-001 through AC-003 match the supplied source: limitFunction currently forwards clearQueue but exposes neither counter, while its internal limiter already owns both counters. The exact writable scope covers the maintained runtime and declaration owners plus runtime and tsd regressions; package.json establishes xo, ava and tsd as the verification entry point, without evidence of generated declarations or additional mandatory edit owners. The original task expectations preserve separate implementation and verification roles, the verification dependency, and coverage of every required acceptance criterion. No material unresolved business Decision is present. The configured online, non-auto-assignable project reviewer satisfies the stated earlier review prerequisite without constituting an eligible executor. With no implementer or verifier members or trusted capability claims, both empty assignment sets and the two assignment-abstention blocking reasons are appropriate. Repository identity, base commit and release fingerprints agree across the supplied Gold and preview. The provenance explicitly distinguishes manifest, evaluation-source and normalized PRD digest domains, explaining their different values. I rely on the supplied Service-bound fingerprint evidence; I did not recompute digests, execute code, or provide human attestation. The supplied isolation facts distinguish retained historical operations from candidates on this frozen bundle. Approval concerns the independent Gold expectation, not task dispatch, execution success, or completion of the remaining fresh negative controls.",
+    "goldDigest": "9fb6a45e83ce1fe51268b3dbba78d59a2ca670a85c9b7d3dc82b83e4c8041078"
+  }
+}

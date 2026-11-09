@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "test/http-error.ts",
+        "test/hooks.ts",
+        "test/request-options.ts",
+        "test-d/hide-error-url-search.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "d7e3bc141c16126555ae01f34f1adf40c8ae3627def32c7eeb429ecfb6b4b3ee",
+    "teamCatalogDigest": "dd9326dc0e795029bfb874fc6cc3ac77c3c5d51d8d57f218702f7ca8891046a6",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "24061706858c8d516120398df9a57219c579305b9ffbd8111113fdbef7b5bb0b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b3ec608dab092ec016ad1d44003f48196bcddf1119f94fe70:independent-gold-review:ad1024de-4843-4370-a281-b7e043f11830",
+    "reviewedAt": "2026-10-16T07:37:51.954Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C bundle. REQ-001, AC-001–AC-003, DEC-001 and both task keys remain stable and agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical benchmark input without asserting a human Decision, supporting expectedReadiness=ready; this does not resolve the paired B scenario, where a material unresolved DEC-001 must block at decisions. The writable binding scope covers message formatting, optional input and required normalized boolean declarations, runtime normalization, Ky-option filtering, and the specified regression/type-test files. The supplied source supports treating merge/options/index and hook/instance declaration consumers as inspection owners rather than mandatory edits. Build configuration establishes distribution declarations as generated, and tsconfig.test.json includes the proposed test-d file for compile-time checks independently of runtime tests. The implementation and dependent independent-verification tasks are consistent with the PRD's required AC coverage. Their allowed agents have the relevant active project-scoped trusted capability claims, including data.change and domain.state; eligibility does not rely on persona text or pending legacy claims. A distinct configured reviewer satisfies the supplied non-executing review prerequisite. Gold and preview release fingerprints agree across repository, evaluation source, team, decision input, prompts, model, sampling, budgets and metric policy. The supplied provenance explains the distinct manifest/evaluation digest domains and whitespace-only PRD persistence normalization. Historical preparation placeholders are supplemented by the frozen preview facts. Independence is supported by the supplied isolation record stating that no candidate on this bundle exists and no historical candidates were supplied. This is a documentary consistency review: I did not execute code, recompute digests, or supply human attestation.",
+    "goldDigest": "88effe43f6415bfb470aa691279440d53d9549e00c0408981f5e858dd9fe5ac8"
+  }
+}

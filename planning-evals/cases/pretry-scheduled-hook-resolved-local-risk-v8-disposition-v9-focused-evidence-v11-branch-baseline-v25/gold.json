@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "afe0153d034ba4ec036684db3babd0fc54436a040e887f274a9704a9faed5934",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ed063a2ceab3818016ad1fe221a388197b463243eb4e1a580:independent-gold-review:a7c464c7-19e7-457c-9f78-53068653f6ae",
+    "reviewedAt": "2026-10-16T10:36:30.874Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. DEC-001=OPT-1 is explicitly fixed hypothetical input, not a human Decision; only that branch is required. Thus C may be ready with no blocking reasons, while a material unresolved DEC-001 in paired B must block at decisions. REQ-001, AC-001 through AC-003, the exact four-file writable binding scope, and the implementation/independent-verification task split agree with the PRD and supplied source evidence. The existing delay calculation supports reuse of the sampled, rounded, capped value without a new minTimeout floor; the acceptance criteria also address zero delay, terminal exclusions, synchronous abort, thrown-value precedence, and cleanup. Package exports establish index.js and index.d.ts as maintained owners, and the configured verification entry is xo && ava && tsd. Both allowed assignees have the relevant supplied active project-scoped capability claims and available slots; the verifier additionally has testing.verification. The separate active reviewer satisfies the stated non-executing review prerequisite. Pending security.authorization claims are not needed for this bounded change and were not treated as trusted eligibility evidence. Gold and preview release fingerprints match, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is explicitly isolated from candidates on this bundle. This approval concerns the independent Gold expectation, not implementation correctness, test execution, task dispatch, or a human decision attestation. I relied on the supplied Service-bound digest and provenance records; I did not recompute digests, execute code, or inspect candidate outputs.",
+    "goldDigest": "45e05657a0f5a64d578ce3bc38e757a0c4cda418a1ca1a2fc8a12cda1b748c79"
+  }
+}

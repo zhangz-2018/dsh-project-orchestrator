@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04d147d4b535d86d016ad197143aa88196bb5cf2965afc45e1:independent-gold-review:95a9518d-ae41-47b7-ab57-c12a2e10c615",
+    "reviewedAt": "2026-10-16T03:16:49.738Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes construction-time TypeError rejection conditional on OPT-1, not authorization to select it. Gold correctly preserves REQ-001 and AC-001–AC-003, expects blocked readiness with requirement-decision-pending for DEC-001, and stops at repository, requirements, and decisions evidence without assignment expectations. The supplied source establishes shared core _stringbool behavior, existing truthy precedence after case normalization without trimming, and classic/mini forwarding through that implementation. The listed forwarding and export owners are inspection scope, not mandatory edits; package/build configuration supports treating emitted declarations as generated rather than separately maintained owners. The classic test exists and the mini stringbool test is explicitly proposed, consistent with the inventory. Post-resolution implementation and independent-verification tasks remain conditional and are not required in this pending case. The empty team catalog does not invalidate the earlier decision-stage block: the supplied policy places that gate before Scenario Coverage and its independent-review prerequisite. Repository identity, base commit, paired-case identity, stable keys, and the Gold/preview release-input fingerprints and budgets agree. I accept the digest bindings as supplied Service-calculated facts; I did not recompute hashes, execute code, infer human confirmation, or use candidate outputs. Historical operation retention and project reuse do not supply a current decision or candidate result. This approval concerns the benchmark expectation, not execution readiness or task authorization.",
+    "goldDigest": "538b10436f9ce6e729575721f1c03fe53e2c98e1657487221173229e3887981c"
+  }
+}

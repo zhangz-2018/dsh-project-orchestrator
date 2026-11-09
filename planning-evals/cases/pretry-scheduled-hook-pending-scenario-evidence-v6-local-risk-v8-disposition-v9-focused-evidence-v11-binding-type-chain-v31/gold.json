@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_089d44a757554032016ad253b07df0819091a1cb9f69e5e186:independent-gold-review:a4901e4b-7ff5-4b27-9d65-0413c6efffc4",
+    "reviewedAt": "2026-10-16T16:41:33.291Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, and DEC-001 agree with the original PRD. DEC-001 materially determines hook-error propagation and abort/error precedence; its intentionally pending, unconfirmed state correctly requires blocked readiness at decisions, with requirement-decision-pending and no assignable tasks or assignment expectations. Conditional acceptance language does not authorize choosing OPT-1. The repository, requirements, and decisions evidence stages are appropriate; later Scenario Coverage reviewer and assignment prerequisites do not override this earlier deterministic stop. The supplied implementation and package evidence support index.js and the separately maintained index.d.ts as the bounded owners, with test.js and index.test-d.ts as verification scope and xo && ava && tsd as the configured validation entry point. The runtime-test excerpt is truncated, but that does not prevent establishing the owner bindings or this decision-stage expectation. Repository identity, base commit, stable keys, paired-case reference, and release fingerprints are consistent across the supplied Gold and frozen preview. Provenance explicitly explains the distinct manifest/evaluation digest domains and whitespace-only PRD persistence normalization. The empty team and decision inputs are consistent with an intentionally pending case that stops before assignment. The supplied isolation record establishes that Gold precedes candidates on this bundle; retained historical operations are not treated as candidate evidence or human confirmation. This approval relies on the Service's stated mechanical digest binding and supplied source evidence; I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "b303ec65b880a6c4e286d7d631aad786786e98acfc3ed1ef66b4050646ea552b"
+  }
+}

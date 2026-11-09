@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-tsd-v26",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-tsd-v26",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2998d6f9300ef04f05bec60364fb473664b5965406b5a123154592fa1c2182f1",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_080614d178ae4b33016ad203f122748195ac52a96c5d61b1a7:independent-gold-review:69c5ab34-e940-402f-a35f-512a7cc7ea67",
+    "reviewedAt": "2026-10-16T11:01:16.884Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001 through AC-003, and DEC-001; matches the repository identity, base commit, paired case, and original owner binding; and correctly expects blocked readiness at decisions with requirement-decision-pending for DEC-001. The unresolved error-type contract is material, and neither the conditional acceptance criteria nor the paired resolved-case identifier authorizes choosing an option. Requiring only repository, requirements, and decisions evidence, with no task or assignment expectations, is consistent with stopping before Scenario Coverage, Binding, or allocation. The empty trusted team catalog therefore does not introduce an earlier prerequisite for this case. The supplied source supports source/index.ts and source/options.ts as implementation owners. Package and compiler configuration distinguish runtime tests from compiler/type validation and establish dist declarations as generated rather than separately maintained owners. Truncated regression-test excerpts do not prevent reviewing this deliberately early-blocked expectation. Gold and preview release fingerprints agree across repository, source, team, decisions, prompts, model, sampling, policy, and budgets; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is explicitly scoped without copied attestations, and no candidate outputs inform this review. I relied on the Service's stated mechanical digest bindings; I did not recompute digests, execute code, or provide human attestation. Approval concerns the frozen Gold expectation, not implementation correctness, task dispatch, or resolution of DEC-001.",
+    "goldDigest": "310b968dc26b667169883fa1b9fbbabe02b3ad0a4cfbed3c3c7c754c457d93ec"
+  }
+}

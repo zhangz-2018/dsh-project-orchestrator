@@ -8,7 +8,7 @@
 
 **适合这样的场景：**你希望在本机使用 DeepSeek Harness 规划编码任务，导入 GitHub Issues，在隔离的 Git worktree 中执行，并在修改仓库前保留人工审批环节。
 
-> **兼容性：** 当前 `1.7.0` 版本仅针对 DeepSeek Harness `0.1.0-rc.6`、Cordis `4.0.1`、Node.js 22+ 和 Git 完成认证。Windows 尚未认证。
+> **兼容性：** 当前源码适配 DeepSeek Harness `0.2.2-rc.1`、Cordis `4.1.0`、Node.js >=24.9.0 和 Git。本机 macOS 兼容性检查已通过，本次适配尚未发布；详见[兼容性矩阵](docs/compatibility.zh-CN.md)。
 
 ## 先看界面
 
@@ -119,21 +119,24 @@ Planner 会只读检查仓库结构与现有测试，生成人类可审阅的代
 
 ## 安装
 
-Harness Profile 插件管理器负责提供 Host peer 依赖。请先安装 pnpm，再通过 `dsh plugin` 安装已发布版本；不要把插件当作独立 Node 应用依赖 npm 自动解析 Harness 的预发布 peer。
+请先使用 Node.js >=24.9.0 和 Harness `0.2.2-rc.1`。Profile Host 提供可选 peer，所有 Harness 包必须保持同一版本。本次适配尚在工作区，请从源码构建本地安装包，不能假定 npm 已发布的 `1.7.0` 已包含此次适配。
 
 ```bash
-npm install --global pnpm
-dsh plugin --profile web add dsh-project-orchestrator@1.7.0
+npm install --global pnpm@10.34.5
+pnpm install --frozen-lockfile
+pnpm pack
+dsh plugin --profile web add /absolute/path/dsh-project-orchestrator-1.7.0.tgz
 ```
 
 把插件加入 Web Profile 的 Loader Patch，通常是 `~/.dsh/profiles/web/cordis.patch.yml`：
 
 ```yaml
-- id: project-orchestrator
-  name: dsh-project-orchestrator
+- insert:
+    - id: project-orchestrator
+      name: dsh-project-orchestrator
 ```
 
-重启现有 `dsh web` 进程并刷新当前页面。不要为同一个 Profile 启动第二个 Web 服务。
+如果已有该条目，请编辑原声明，避免重复插入。升级前备份现有 Harness home，不要把新版插件装进旧 `0.1.0-rc.6` Host。重启现有 `dsh web` 进程并刷新当前页面，不要为同一个 Profile 启动第二个 Web 服务。
 
 验证 Host：
 
@@ -202,6 +205,7 @@ Runtime 记录只代表当前 Harness Host 内的本地事实。1.x **不提供*
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
 pnpm verify
 ```
 
@@ -211,6 +215,7 @@ pnpm verify
 pnpm typecheck
 pnpm docs:check
 pnpm test
+pnpm test:browser
 pnpm build
 pnpm smoke:package
 ```
@@ -223,6 +228,7 @@ pnpm smoke:package
 - [HTTP 与 CLI 契约](docs/api.zh-CN.md)
 - [架构与事实来源规则](docs/architecture.zh-CN.md)
 - [兼容性与稳定性策略](docs/compatibility.zh-CN.md)
+- [dsh 原生能力接入与实施验收](docs/dsh-native-integration-implementation-2026-11-09.zh-CN.md)
 - [运维、备份、升级与回滚](docs/operations.zh-CN.md)
 - [从本地或 Scope 构建迁移](docs/migration.zh-CN.md)
 - [维护者发布手册](docs/releasing.zh-CN.md)

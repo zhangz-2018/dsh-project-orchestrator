@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "27fef76fb745e781fd280b3455f0ea4489b8cb92a1bf72200480d68f3d890e49",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "b3d23b76f6946419a8c858eded1f18e6baf663fafd6fc42b15ebcefe7ef067b4",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_032a7316ee335ded016ad19db7c1e48190940eff7ae234b5aa:independent-gold-review:bc918d5d-bc38-427c-bc92-b7ffbfe68d3c",
+    "reviewedAt": "2026-10-16T03:45:09.606Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation for the frozen bundle. REQ-001 and AC-001–AC-003 consistently specify exact-key counts from the current handler map, including duplicates, external map/array mutations, wildcard isolation, and preservation of existing behavior and event-key typing. The exact writable scope covers the implementation and both regression files without requiring unnecessary edits. Repository configuration and the supplied microbundle source establish that root declarations are generated; rebuilding before root-import runtime and compile-time checks is appropriate. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the PRD. Their allowed agents have the appropriate delivery roles, available slots, and supplied active project-scoped capability claims for this bounded API, shared-state, TypeScript, and testing work; verifier-specific testing.verification is present. Pending legacy claims and Persona descriptions are not used to establish eligibility. An independent, non-executing project reviewer is configured for the state/data risk prerequisite. No material unresolved DEC-001 or other decision input is supplied, so ready with no blocking reasons is coherent. Stable keys, repository identity/base commit, evidence stages, and Gold versus preview release-input fingerprints agree. The original specification's remaining-preparation fields are historical preparation state, superseded by the supplied frozen preview rather than evidence of a current blocker. Review is based only on the supplied inputs, before any candidate on this bundle; no execution, independent digest recomputation, or new human attestation is claimed.",
+    "goldDigest": "62a6b2ab3872c1feac46788016a3388dd644a037f25ba45fcb49961f989760fc"
+  }
+}

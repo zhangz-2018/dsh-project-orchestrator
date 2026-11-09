@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a051fe5c9517a9e016ad19d16060c8195af3d9bb8895faa58:independent-gold-review:79a0e346-ed9a-4e96-aa24-524ca177256c",
+    "reviewedAt": "2026-10-16T03:42:26.292Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. REQ-001, AC-001–AC-003, DEC-001, task keys, repository identity/base commit, and exact writable source/test scopes agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision; ready with no decision blocker is therefore appropriate. An unresolved material DEC-001 in paired B must instead block at decisions, before later review prerequisites. The source supports construction-time numeric validation while preserving existing zero, omission, finite-number serialization, and unrelated CORS behavior. Build configuration establishes that dist declarations are generated, not separately maintained edit owners; configuration and read-only consumers do not require writable bindings. TASK-VERIFY must remain independent, depend on TASK-IMPLEMENT, and cover every required AC alongside implementation coverage. The supplied project-scoped active capability claims, roles, membership, and availability support the two allowed assignees without relying on personas or pending claims. This bounded invocation-local validation does not inherently require shared-data or state capabilities, and an independent active project reviewer is configured. Gold and preview release fingerprints agree for repository, source, team, decision inputs, prompts, model, sampling, budgets, and metric policy. The original specification's preparation-time null releaseInput and remaining-work fields are superseded by the supplied frozen preview, not evidence of candidate execution. Historical project reuse is consistent with retaining scoped attestations and does not establish a run on this bundle. This assessment uses only supplied evidence: I executed no code, independently recomputed no digests, and provide no human attestation.",
+    "goldDigest": "21f46e7daab13550b3cb02229c14315f2dc1b489e8b9407ba76f9082eb6b3a0a"
+  }
+}

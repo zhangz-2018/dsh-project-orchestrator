@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "0b13d558b8b60038a8634c114f7d708078d1471904a5d5d69134cc7df888e03d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0752b0faba907c74016ad1fe3d4368819683498f4c34a88b22:independent-gold-review:9f551def-5a02-4d2b-8532-a4ed43d4af94",
+    "reviewedAt": "2026-10-16T10:36:57.973Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C scenario. The original PRD explicitly fixes OPT-1 as hypothetical input without representing it as a human-confirmed Decision; only that branch is required. This supports ready with no blocking reasons for C, while a material unresolved DEC-001 in B must still block at decisions. REQ-001, AC-001–AC-003, DEC-001 and the two task keys are consistent throughout. The exact five-file writable binding scope covers the implementation, option declaration, runtime regressions and type tests without requiring gratuitous edits. The supplied source and build configuration support these owners and establish dist declarations as generated rather than separately maintained owners. Runtime testing and compile-time/type validation remain distinct obligations. TASK-VERIFY is independent and depends on TASK-IMPLEMENT, with all required acceptance criteria requiring both relationships. The allowed implementer and verifier have active project-scoped trusted claims for the relevant contract, shared-data/state, asynchronous-consumer, TypeScript, failure-handling and testing capabilities; the verifier additionally has testing.verification. Pending legacy claims and persona descriptions are not needed to establish eligibility. A separate active project reviewer satisfies the stated earlier review prerequisite without execution claims. Release fingerprints agree between Gold and preview; the supplied provenance explains the separate source-digest domains and PRD trim normalization. Retained historical operations do not constitute candidate evidence for this bundle, and the isolation facts state that this Gold precedes every candidate on it. This approval relies on the supplied Service-bound fingerprints and evidence, not independent digest recomputation, code execution, new human attestation or candidate results.",
+    "goldDigest": "41d25020123bcdfca9d88ab9cbe9c53e42de0d00d39a5aad371b264199f89c6c"
+  }
+}

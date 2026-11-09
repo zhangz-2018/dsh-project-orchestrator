@@ -29,6 +29,12 @@ All responses are JSON and carry `Cache-Control: no-store`. Failed requests use:
 
 Inbox query fields are strict: `kind`, `projectId`, `issueId`, and bounded `limit`.
 
+## Native capabilities and read-only pull requests
+
+`GET /native-capabilities` reports loaded Host services and the selected command backend. `GET /projects/:id/pull-request`, `/checks`, and `/diff` expose the local binding and external references. `PUT /projects/:id/pull-request` accepts `{url, expectedHead, expectedUpdatedAt}`; use `null` for an initial binding. `DELETE` requires `{expectedUpdatedAt}` and only removes the local binding. `POST /projects/:id/pull-request/evidence` stores a complete checks reference and returns `201`; it does not advance acceptance.
+
+Mutations require same-origin JSON and the Service writer. Old heads, incomplete checks, and binding CAS conflicts fail closed. No remote PR writes are exposed. See the [implementation record (Chinese)](dsh-native-integration-implementation-2026-11-09.zh-CN.md) for limits and the opt-in pilot.
+
 ## Project creation and planning routes
 
 `POST /projects` accepts two explicit request modes:

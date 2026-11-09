@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-task-boundary-2026-10-16",
+  "createdAt": "2026-10-15T18:52:03.632Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-task-v5",
+      "goldDigest": "3f0c4a14bf7d101c111dd581159390299a92ea14e5ed7c3f0cdb3d827ae38db0"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-task-boundary-v4",
+      "goldDigest": "3434b25400d4b73d65a5ad0bd135d9880d39bbc89e46d4a0917cc7710faee48d"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-task-v5",
+      "attemptId": "plimit-wrapper-counts-no-executor-task-v5/fresh-1",
+      "operationId": "planning-v3:f457c1ef-f7db-4fbd-83e9-309fcff82248",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-task-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T18:52:03.660Z",
+      "completedAt": "2026-10-15T18:59:17.757Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-task-v5",
+      "attemptId": "plimit-wrapper-counts-no-executor-task-v5/fresh-2",
+      "operationId": "planning-v3:569b5add-985c-4760-bada-dcf6c04e6b90",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-task-v5/runs/fresh-2.json",
+      "startedAt": "2026-10-15T19:02:46.837Z",
+      "completedAt": "2026-10-15T19:11:23.101Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-task-v5",
+      "attemptId": "plimit-wrapper-counts-no-executor-task-v5/fresh-3",
+      "operationId": "planning-v3:b96a3980-6f34-42b1-9f8a-ed45d1e13473",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-task-v5/runs/fresh-3.json",
+      "startedAt": "2026-10-15T19:02:46.838Z",
+      "completedAt": "2026-10-15T19:10:54.226Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-task-v5",
+      "attemptId": "plimit-wrapper-counts-no-executor-task-v5/fresh-4",
+      "operationId": "planning-v3:4133a8cf-de28-4d35-aa4c-614dfe92df0b",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-task-v5/runs/fresh-4.json",
+      "startedAt": "2026-10-15T19:02:46.838Z",
+      "completedAt": "2026-10-15T19:11:40.445Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-task-v5",
+      "attemptId": "plimit-wrapper-counts-no-executor-task-v5/fresh-5",
+      "operationId": "planning-v3:f2caf870-e48f-4d07-a555-1b3985afe629",
+      "outcome": "model_failure",
+      "failureCode": "planning-v3-failed",
+      "startedAt": "2026-10-15T19:02:46.839Z",
+      "completedAt": "2026-10-15T19:11:00.609Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-task-boundary-v4",
+      "attemptId": "plimit-clear-reason-pending-task-boundary-v4/fresh-1",
+      "operationId": "planning-v3:bceaec36-8943-41b9-822a-c66e4092bbb3",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-task-boundary-v4/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:10:55.142Z",
+      "completedAt": "2026-10-15T19:12:14.563Z"
+    }
+  ]
+}

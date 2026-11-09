@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0dc68c2cf349ff52016ad22c3b360c8197bed631548cc0145b:independent-gold-review:3c09c20e-17eb-4964-8a68-4c3d0ea0cd62",
+    "reviewedAt": "2026-10-16T13:53:11.921Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity agree with the original specification. DEC-001 materially determines rejection semantics and remains intentionally unresolved without human confirmation. The recommended behavior in AC-001 and AC-002 is explicitly conditional, not authorization to select OPT-1. Gold therefore correctly requires blocked readiness, the requirement-decision-pending blocker for DEC-001, evidence through repository/requirements/decisions, and no task or assignment expectations. The supplied source establishes index.js as the implementation owner and index.d.ts as the maintained public declaration owner; test.js and index.test-d.ts provide the stated verification scope, with package.json specifying xo && ava && tsd. Existing limitFunction forwarding and Pick-based declaration reuse do not establish additional separately maintained owners or mandatory edits. The empty team catalog does not invalidate this earlier deterministic decision block, because later reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints agree, and the supplied provenance explains both the distinct manifest/evaluation source-digest domains and whitespace-only PRD persistence normalization. Original-specification preparation fields recording an earlier non-runnable state do not contradict the subsequently supplied release freeze. Historical operation retention is compatible with project reuse, and the supplied isolation facts state that this Gold precedes every candidate on this bundle. This approval is based solely on inspection of the supplied review data and Service-provided mechanical bindings; I did not execute code, independently recompute digests, or supply human attestation.",
+    "goldDigest": "878f37531fd3667214a52a0bf1c08edf5f84d020ff8aa01a49656c32a92e3098"
+  }
+}

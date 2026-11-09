@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-ready-catalog-evidence-preview-v14-2026-10-16",
+  "createdAt": "2026-10-16T03:19:40.888Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "8490192808611ff3d7f2b1f4dc5b7753e10b9d7cd98224b7beb5670bb150689f"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "bdd380ec254c65a1a4b6a7b8231eca0ad10fc8f88fa93cb95fb0a738846de4a7"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:a1f7c1dc-fc12-477a-935a-e8fb47b716b8",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:19:40.914Z",
+      "completedAt": "2026-10-16T03:31:27.114Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:fcbaa7fa-bce6-42f4-8129-636dc86653a7",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:19:41.035Z",
+      "completedAt": "2026-10-16T03:29:27.268Z"
+    }
+  ]
+}

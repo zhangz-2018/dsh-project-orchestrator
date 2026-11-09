@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "c0f0ddb97491d6664455dd200bdf57fe97821437101fcbf415239349822b2f38",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01861ef14aa8b7bb016ad1b65a2ce88190967038856ccd6ab8:independent-gold-review:89821f99-b9c0-4234-83ba-4728ded15bc9",
+    "reviewedAt": "2026-10-16T05:30:13.729Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the complete supplied C-case inputs. REQ-001, AC-001–AC-003, DEC-001 and the task keys are preserved. C explicitly fixes OPT-1 as a hypothetical benchmark input without asserting a human Decision; its ready expectation therefore does not waive the rule that a material unresolved DEC-001 must block paired B at decisions. The acceptance criteria consistently require identity-preserving custom rejection, explicit undefined distinguished from omission, and preservation of running-task and rejectOnClear=false behavior. The exact four-file writable scope matches the supplied runtime owner, maintained declaration and regression files; package.json establishes separate AVA and tsd validation through xo && ava && tsd. Forwarding through limitFunction does not require inventing another owner. TASK-IMPLEMENT and dependent independent TASK-VERIFY have distinct eligible members supported by the supplied active project-scoped capability claims, including shared-data, state and asynchronous-consumer capabilities; the verifier additionally has testing.verification. Pending security.authorization claims are not treated as trusted or required for this bounded change. A configured independent active reviewer satisfies the stated non-executing review prerequisite. The Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and PRD whitespace normalization. Historical project reuse and retained operations do not contradict the supplied assertion that no candidate exists on this bundle. The original preparation-time remaining/runnable fields do not contradict planning readiness or the subsequently supplied frozen release inputs. This approval relies on the supplied Service-bound evidence and fingerprints: I did not recompute digests, execute code, create a human attestation, or use candidate outputs.",
+    "goldDigest": "cfc46792bd1ad972e721ca3aca6ea086bc4120c04d299e2231f826502d54cb5c"
+  }
+}

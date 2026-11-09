@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "eeeb2bfb5488123ee7b390ee25f96949381438699f26cd7319a013db172f4283",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "27d2e2ac5c13bcc86ff41aa762239dc84f3305aab8d75746641d9181555f1aaf",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e0bd943a792a88f5debdc5cfa8acafce6073e554908a2bf0ad02782a24abea1f",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_070cc7bd98af369e016ad26d7e66f08190aebfdc58e0fd8656:independent-gold-review:c3628ac1-13fc-4c37-b0d1-0c3081a43737",
+    "reviewedAt": "2026-10-16T18:31:39.452Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001, AC-001 through AC-003, the exact four-file writable binding scope, and the implementation/independent-verification task split agree with the original PRD. The implementation evidence supports a derived read-only getter without a second counter or scheduling changes; the acceptance criteria correctly preserve completed/error event timing and defer final zero assertions until onIdle. Build configuration establishes dist declarations as generated rather than separately maintained owners. The supplied nz discovery and compiler-configuration evidence establishes compile-time coverage of test-d/index.test-d.ts despite the main tsconfig including only source; runtime tests are not substituted for type checking. Both allowed assignees have the relevant active project-scoped trusted claims, including data.change, domain.state, integration.async, integration.consumer, language.typescript, and testing.automation; the verifier additionally has testing.verification. Pending legacy claims and persona descriptions are not needed to justify eligibility. A separate configured reviewer supports the earlier independent-review prerequisite. No material unresolved DEC-001 or hypothetical C is present in these inputs, so ready with no blocking reasons is appropriate. Repository identity, stable keys, evidence stages, and release fingerprints align across Gold and preview; the different source-manifest and evaluation-source digest domains are explicitly explained. Historical old-bundle operations do not constitute candidates on this bundle under the supplied isolation facts. This approval relies on the Service's supplied mechanical digest bindings and provenance, not independent digest recomputation, code execution, or a new human attestation. It approves the benchmark expectation only, not task dispatch or implementation correctness.",
+    "goldDigest": "2065908a854632666d105d5569655fb504270ec7ded96a462916788d4850eb14"
+  }
+}

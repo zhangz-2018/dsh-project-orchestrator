@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "7ca0dbc49a0dd9860103bcc0c1a89adae20cfe163b9e36d506faa693c4dcf5db",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_084ba3c47fd0dadf016ad20f7c4b288196bdce71ab6a4ecf5c:independent-gold-review:d43f8c09-a335-4da4-b599-0fb6649c08bb",
+    "reviewedAt": "2026-10-16T11:50:33.357Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only bundle. REQ-001 and AC-001–AC-003 consistently require live, readonly wrapper counts from the existing internal limiter, preservation of Promise/scheduling/clearQueue behavior, and runtime plus compile-time regressions. The complete supplied source supports the exact four-file writable binding: index.js owns the wrapper, index.d.ts is the directly exported maintained declaration, and test.js plus index.test-d.ts own the regressions. package.json establishes xo && ava && tsd as the existing verification entry point without requiring a configuration edit. Stable requirement, acceptance, and task keys agree across the specification and Gold; the specification requires independent verification dependent on implementation and both relationships to cover all required acceptance criteria. The allowed implementer and verifier have appropriate project-scoped active trusted claims, including data.change, domain.state, integration.async, integration.consumer, JavaScript, TypeScript, contract and testing capabilities; the verifier additionally has testing.verification. Pending security.authorization claims are not needed for this change and are not treated as trusted. A separate active project reviewer is configured for the earlier scenario-coverage prerequisite. No material unresolved Decision is supplied for this case, so ready with no blocking reasons is appropriate; no hypothetical input is treated as a human Decision. Gold and preview release fingerprints match, and the supplied provenance explains the distinct manifest/evaluation digest domains and trim-only PRD persistence. Historical operations are explicitly old-version records, not candidates on this bundle, and project reuse preserves rather than copies scoped attestations. The original preparation-status fields do not negate the subsequently supplied frozen release and team evidence. This approval reviews the supplied records only: it does not attest human confirmation, independently recompute Service digests, execute checks, approve task dispatch, or infer candidate performance.",
+    "goldDigest": "6c610abc4ece487792e770f51c9b3a3cf5cca6519708751e1739a5b8a98bcb11"
+  }
+}

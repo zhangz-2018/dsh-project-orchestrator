@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04b522259985e449016ad196f778948190ac0605d9093de556:independent-gold-review:e04e5202-1638-4241-b456-1bdf321999fa",
+    "reviewedAt": "2026-10-16T03:16:20.319Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. The original PRD, acceptance statements and Gold consistently preserve REQ-001, AC-001 through AC-003 and DEC-001. DEC-001 materially controls omitted-option behavior and is explicitly unresolved and not human-confirmed; therefore blocked readiness, the requirement-decision-pending reason naming DEC-001, evidence through repository/requirements/decisions, and no assignable task expectations are coherent. Neither conditional acceptance nor the paired-case identifier authorizes selecting a default. The supplied owner contents support tracing message construction, option normalization and snapshots, registry filtering, inheritance, exports and hook/type consumers. Read-only forwarding and declaration consumers are inspection owners, not mandatory edits; the supplied build configuration supports treating distribution declarations as generated rather than separately maintained owners. The configured test entry distinguishes runtime tests from compilation of test-d. Empty team membership and capability claims do not undermine this expectation because the deterministic decision gate precedes Scenario Coverage and assignment prerequisites; no eligibility or human attestation is inferred. Repository identity, base commit and paired-case references agree, and the Gold and preview releaseInput fingerprints agree for repository, source, team, decision inputs, prompts, model, sampling, budgets and metric policy. Historical project reuse is not treated as new-version approval or candidate evidence. This review uses only the supplied specification and frozen evidence, with no candidate outputs, tools or execution. Digests are accepted as Service-calculated bindings, not independently recomputed. Approval concerns the Gold expectation, not resolution of DEC-001, benchmark execution readiness or task dispatch.",
+    "goldDigest": "aa16fb136c8572b689fa14a7141a92fd20390079a0c9377b1676ed6aefa20d0e"
+  }
+}

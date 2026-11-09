@@ -1,31 +1,56 @@
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
-import type { ClientContext, WorkspaceId } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context } from '@deepseek-ai/cordis'
+import type { WorkspaceId } from '@deepseek-ai/dsh-api-workspace-controller/client'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type { SidebarFooterActionOwnerProps } from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import {
   Tooltip,
-  IconAgentPresetOutline16,
-  IconCheckOutline16,
-  IconChecklistOutline14,
-  IconChevronLeftOutline14,
-  IconChevronRightOutline14,
-  IconCloseOutline16,
-  IconCodeOutline16,
-  IconEditOutline16,
-  IconFolderOpenOutline16,
-  IconPlayOutline16,
-  IconPlusOutline16,
-  IconProjectAddOutline16,
-  IconQueueOutline14,
-  IconRefreshOutline16,
-  IconSearchOutline16,
-  IconSendOutline16,
-  IconStopFill16,
-  IconTrashOutline16,
-  IconUserOutline16,
-  IconWarningOutline16,
+  // 新版按字重命名图标；本地别名保留现有布局中的尺寸语义。
+  IconAgentPresetOutlineMedium as IconAgentPresetOutline16,
+  IconCheckOutlineMedium as IconCheckOutline16,
+  IconChecklistOutlineMedium as IconChecklistOutline14,
+  IconChevronLeftOutlineMedium as IconChevronLeftOutline14,
+  IconChevronRightOutlineMedium as IconChevronRightOutline14,
+  IconCloseOutlineMedium as IconCloseOutline16,
+  IconCodeOutlineMedium as IconCodeOutline16,
+  IconEditOutlineMedium as IconEditOutline16,
+  IconFolderOpenOutlineMedium as IconFolderOpenOutline16,
+  IconPlayOutlineMedium as IconPlayOutline16,
+  IconPlusOutlineMedium as IconPlusOutline16,
+  IconProjectAddOutlineMedium as IconProjectAddOutline16,
+  IconQueueOutlineMedium as IconQueueOutline14,
+  IconRefreshOutlineMedium as IconRefreshOutline16,
+  IconSearchOutlineMedium as IconSearchOutline16,
+  IconSendOutlineMedium as IconSendOutline16,
+  IconStopFillMedium as IconStopFill16,
+  IconTrashOutlineMedium as IconTrashOutline16,
+  IconUserOutlineMedium as IconUserOutline16,
+  IconWarningOutlineMedium as IconWarningOutline16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { loadDomainEvents, loadSnapshot, mutate } from './api-client.js'
+import {
+  executeStorageReconciliation,
+  loadDomainEvents,
+  loadIssueContext,
+  loadProjectHistory,
+  loadProjectOverview,
+  loadProjectReadiness,
+  loadStorageReconciliationIntents,
+  loadStorageReconciliationPreview,
+  loadTaskRunArtifacts,
+  loadWorkbenchBootstrap,
+  mutate,
+} from './api-client.js'
+import type {
+  IssueContext,
+  ProjectOverview,
+  ProjectReadiness,
+  RecoveryAction,
+  RecoveryPreview,
+  StorageMutationIntentRecord,
+} from './api-client.js'
 import type {
   AgentBuilderMessage,
   AgentBuilderResponse,
@@ -67,6 +92,7 @@ import type {
   DeliveryRole,
   TaskRiskLevel,
   TaskRecord,
+  TaskRunRecord,
   TaskStatus,
 } from './client-types.js'
 import {
@@ -79,8 +105,10 @@ import {
   squadUiDiagnostics,
 } from './squad-ui.js'
 import { styles } from './styles.js'
+import { NativeCapabilitiesPanel, NativePullRequestPanel } from './native/panels.js'
 
-export const inject = ['slots', 'workspaces']
+/** 加载新版拆分后的工作区数据与 UI 导航服务。 */
+export const inject = ['slots', 'workspaces', 'uiWorkspace']
 
 type View = 'tasks' | 'projects' | 'agents' | 'inbox' | 'issues' | 'squads' | 'runtimes' | 'skills' | 'local-data'
 type Panel = 'task-new' | 'task-detail' | 'project-form' | 'issue-detail' | 'agent-start' | 'agent-manual' | 'agent-ai' | 'agent-edit' | 'squad-form' | 'squad-detail' | 'project-squad-binding' | 'runtime-form' | 'runtime-detail' | 'runtime-binding' | null
@@ -102,6 +130,7 @@ interface WorkbenchState {
   panel: Panel
   dialog: DialogRequest | null
   snapshot: Snapshot
+  bootstrapTotals: { taskRuns: number; activity: number; transcripts: number; artifacts: number }
   selectedProjectId: string | undefined
   selectedTaskId: string | undefined
   selectedIssueId: string | undefined
@@ -297,12 +326,16 @@ class WorkbenchModel {
     private readonly directoryLister: (path?: string, signal?: AbortSignal) => Promise<DirectoryListing>,
     private readonly workspaceCreator: (path: string) => Promise<WorkspaceLink>,
     private readonly workspaceStarter: (workspaceId: string) => void,
+    /** 原生会话导航；只打开现有记录，不创建或恢复模型执行。 */
+    private readonly sessionNavigator: (sessionId: string) => void,
   ) {}
 
   pickDirectory = (): Promise<string | null> => this.directoryPicker()
   listDirectory = (path?: string, signal?: AbortSignal): Promise<DirectoryListing> => this.directoryLister(path, signal)
   ensureWorkspace = (path: string): Promise<WorkspaceLink> => this.workspaceCreator(path)
   startWorkspace = (workspaceId: string): void => this.workspaceStarter(workspaceId)
+  /** 选择已有会话后关闭工作台，让 Host 自己呈现会话加载/缺失状态。 */
+  openSession = (sessionId: string): void => { this.sessionNavigator(sessionId); this.patch({ open: false, panel: null }) }
 
   private state: WorkbenchState = {
     open: false,
@@ -310,6 +343,7 @@ class WorkbenchModel {
     panel: null,
     dialog: null,
     snapshot: EMPTY_SNAPSHOT,
+    bootstrapTotals: { taskRuns: 0, activity: 0, transcripts: 0, artifacts: 0 },
     selectedProjectId: undefined,
     selectedTaskId: undefined,
     selectedIssueId: undefined,
@@ -325,6 +359,8 @@ class WorkbenchModel {
   private listeners = new Set<() => void>()
   private interval: number | undefined
   private refreshGeneration = 0
+  private refreshInFlight: Promise<void> | undefined
+  private refreshPending: { silent: boolean; forceSnapshot: boolean } | undefined
   private eventCursor: string | undefined
   private silentPollsSinceSnapshot = 0
   private actionPending = false
@@ -350,6 +386,7 @@ class WorkbenchModel {
     if (this.interval !== undefined) window.clearInterval(this.interval)
     this.interval = undefined
     this.refreshGeneration += 1
+    this.refreshPending = undefined
     this.resolveDialog(false)
     this.patch({ open: false, panel: null })
     window.setTimeout(() => {
@@ -364,6 +401,7 @@ class WorkbenchModel {
     if (this.interval !== undefined) window.clearInterval(this.interval)
     this.interval = undefined
     this.refreshGeneration += 1
+    this.refreshPending = undefined
   }
 
   setView = (view: View): void => {
@@ -438,7 +476,27 @@ class WorkbenchModel {
   private dialogResolver: ((confirmed: boolean) => void) | undefined
 
   async refresh(silent = false, forceSnapshot = false): Promise<void> {
-    const generation = ++this.refreshGeneration
+    this.refreshPending = this.refreshPending === undefined
+      ? { silent, forceSnapshot }
+      : { silent: this.refreshPending.silent && silent, forceSnapshot: this.refreshPending.forceSnapshot || forceSnapshot }
+    if (this.refreshInFlight !== undefined) return this.refreshInFlight
+    const cycle = (async () => {
+      while (this.refreshPending !== undefined) {
+        const request = this.refreshPending
+        this.refreshPending = undefined
+        await this.performRefresh(request.silent, request.forceSnapshot)
+      }
+    })()
+    this.refreshInFlight = cycle
+    try {
+      await cycle
+    } finally {
+      if (this.refreshInFlight === cycle) this.refreshInFlight = undefined
+    }
+  }
+
+  private async performRefresh(silent: boolean, forceSnapshot: boolean): Promise<void> {
+    const generation = this.refreshGeneration
     if (!silent) this.patch({ loading: true })
     try {
       if (silent && !forceSnapshot && this.eventCursor !== undefined && this.silentPollsSinceSnapshot < 15) {
@@ -448,7 +506,8 @@ class WorkbenchModel {
         this.silentPollsSinceSnapshot += 1
         if (page.events.length === 0 && !page.hasMore) return
       }
-      const loaded = await loadSnapshot()
+      const bootstrap = await loadWorkbenchBootstrap()
+      const loaded = bootstrap.snapshot as Snapshot
       const snapshot: Snapshot = { ...loaded, projectAgentMemberships: loaded.projectAgentMemberships ?? [], projectSquadBindings: loaded.projectSquadBindings ?? [], projectAgentMembershipSources: loaded.projectAgentMembershipSources ?? [], featureUsageDaily: loaded.featureUsageDaily ?? [] }
       if (generation !== this.refreshGeneration) return
       this.eventCursor = snapshot.eventCursor
@@ -460,6 +519,7 @@ class WorkbenchModel {
       const closeMissingTask = taskWasRemoved && this.state.panel === 'task-detail'
       this.patch({
         snapshot,
+        bootstrapTotals: bootstrap.totals,
         selectedProjectId,
         selectedTaskId,
         selectedAgentId,
@@ -502,15 +562,17 @@ class WorkbenchModel {
   }
 }
 
-export function apply(ctx: ClientContext): void {
+/** 注册工作台入口与浮层；目录和会话导航由 Host 的 uiWorkspace 服务提供。 */
+export function apply(ctx: Context): void {
   const model = new WorkbenchModel(
-    () => ctx.workspaces.pickDirectory(),
-    (path, signal) => ctx.workspaces.listDirectory(path, signal),
+    () => ctx.uiWorkspace.pickDirectory(),
+    (path, signal) => ctx.uiWorkspace.listDirectory(path, signal),
     async (path) => {
       const workspace = await ctx.workspaces.create({ path })
       return { workspaceId: String(workspace.workspaceId), path: workspace.path, title: workspace.title }
     },
-    (workspaceId) => ctx.workspaces.startSession(workspaceId as WorkspaceId),
+    (workspaceId) => ctx.uiWorkspace.startSession(workspaceId as WorkspaceId),
+    (sessionId) => ctx.uiWorkspace.openSession(sessionId as SessionId),
   )
   ctx.effect(() => {
     const style = document.createElement('style')
@@ -666,7 +728,7 @@ function RuntimesPage({ state, model }: { state: WorkbenchState; model: Workbenc
   const [filter, setFilter] = useState<'active' | 'archived'>('active')
   const runtimes = state.snapshot.runtimes.filter((runtime) => runtime.lifecycle === filter).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
   const host = state.snapshot.runtimeOverview.defaultHost
-  return <section className="po-page"><PageHeader title="运行环境" subtitle={`${state.snapshot.runtimeOverview.customCount} 个自定义 Runtime · ${state.snapshot.runtimeOverview.abnormalCount} 个异常`} action={<><ActionButton variant="ghost" onClick={() => model.setView('local-data')}>查看本地数据</ActionButton><ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => model.openPanel('runtime-form')}>创建 Runtime</ActionButton></>} /><div className="po-toolbar"><div className="po-segments" role="group" aria-label="筛选 Runtime"><Segment active={filter === 'active'} onClick={() => setFilter('active')}>Active</Segment><Segment active={filter === 'archived'} onClick={() => setFilter('archived')}>已归档</Segment></div></div><div className="po-management-list"><div className="po-management-row po-host-baseline"><span><strong>{host.name}</strong><small>Host baseline · 无需配置</small></span><span><strong>{availabilityLabel(host.status)}</strong><small>{host.capabilities.join(', ') || 'Harness 默认能力'}</small></span><span><strong>{host.boundAgentCount} Agents</strong><small>默认执行环境</small></span><span className="po-badge po-runtime-online">默认</span><span /></div>{runtimes.map((runtime) => { const agents = state.snapshot.agents.filter((agent) => agent.runtimeId === runtime.id).length; const resources = state.snapshot.resources.filter((resource) => resource.runtimeId === runtime.id).length; return <button className="po-management-row" type="button" key={runtime.id} onClick={() => model.openRuntime(runtime.id)}><span><strong>{runtime.name}</strong><small>{runtime.machineId}</small></span><span><strong>{availabilityLabel(runtime.status)}</strong><small>心跳 {relativeDate(runtime.lastHeartbeatAt)}</small></span><span><strong>{agents} Agents · {resources} Resources</strong><small>{runtime.capabilities.join(', ') || '未声明能力'}</small></span><span className={`po-badge po-runtime-${runtime.status}`}>{runtime.lifecycle === 'archived' ? '已归档' : availabilityLabel(runtime.status)}</span><IconChevronRightOutline14 /></button> })}</div></section>
+  return <section className="po-page"><PageHeader title="运行环境" subtitle={`${state.snapshot.runtimeOverview.customCount} 个自定义 Runtime · ${state.snapshot.runtimeOverview.abnormalCount} 个异常`} action={<><ActionButton variant="ghost" onClick={() => model.setView('local-data')}>查看本地数据</ActionButton><ActionButton variant="primary" icon={<IconPlusOutline16 />} onClick={() => model.openPanel('runtime-form')}>创建 Runtime</ActionButton></>} /><NativeCapabilitiesPanel /><div className="po-toolbar"><div className="po-segments" role="group" aria-label="筛选 Runtime"><Segment active={filter === 'active'} onClick={() => setFilter('active')}>Active</Segment><Segment active={filter === 'archived'} onClick={() => setFilter('archived')}>已归档</Segment></div></div><div className="po-management-list"><div className="po-management-row po-host-baseline"><span><strong>{host.name}</strong><small>Host baseline · 无需配置</small></span><span><strong>{availabilityLabel(host.status)}</strong><small>{host.capabilities.join(', ') || 'Harness 默认能力'}</small></span><span><strong>{host.boundAgentCount} Agents</strong><small>默认执行环境</small></span><span className="po-badge po-runtime-online">默认</span><span /></div>{runtimes.map((runtime) => { const agents = state.snapshot.agents.filter((agent) => agent.runtimeId === runtime.id).length; const resources = state.snapshot.resources.filter((resource) => resource.runtimeId === runtime.id).length; return <button className="po-management-row" type="button" key={runtime.id} onClick={() => model.openRuntime(runtime.id)}><span><strong>{runtime.name}</strong><small>{runtime.machineId}</small></span><span><strong>{availabilityLabel(runtime.status)}</strong><small>心跳 {relativeDate(runtime.lastHeartbeatAt)}</small></span><span><strong>{agents} Agents · {resources} Resources</strong><small>{runtime.capabilities.join(', ') || '未声明能力'}</small></span><span className={`po-badge po-runtime-${runtime.status}`}>{runtime.lifecycle === 'archived' ? '已归档' : availabilityLabel(runtime.status)}</span><IconChevronRightOutline14 /></button> })}</div></section>
 }
 
 async function readApi<T>(path: string): Promise<T> {
@@ -839,7 +901,7 @@ function ManagementDrawer({ title, subtitle, close, children, footer }: { title:
 function LocalDataPage({ state, model }: { state: WorkbenchState; model: WorkbenchModel }) {
   const latest = [...state.snapshot.featureUsageDaily].sort((a, b) => b.lastUsedAt.localeCompare(a.lastUsedAt))
   const clearUsage = async () => { await model.action(() => mutate('/usage', 'DELETE'), '本地使用统计已清除。', false) }
-  return <section className="po-page"><PageHeader title="本地数据" subtitle="当前 Host 的持久化记录与最近使用情况" action={latest.length > 0 ? <ActionButton variant="outline" icon={<IconTrashOutline16 />} disabled={state.loading} onClick={() => void clearUsage()}>清除使用统计</ActionButton> : undefined} /><div className="po-local-data"><section><h2>持久化记录</h2><dl><dt>Projects</dt><dd>{state.snapshot.projects.length}</dd><dt>Issues</dt><dd>{state.snapshot.issues.length}</dd><dt>TaskRuns</dt><dd>{state.snapshot.taskRuns.length}</dd><dt>Artifacts</dt><dd>{state.snapshot.artifacts.length}</dd><dt>Feature usage days</dt><dd>{state.snapshot.featureUsageDaily.length}</dd></dl></section><section><h2>最近使用</h2>{latest.length === 0 ? <p>尚无本地功能使用记录。</p> : latest.slice(0, 12).map((item) => <div className="po-context-row" key={item.id}><strong>{item.feature}</strong><span>{item.opens} 次打开 · {item.meaningfulActions} 次操作</span></div>)}</section><section><h2>导航</h2><div className="po-inline-actions"><ActionButton variant="outline" onClick={() => model.setView('projects')}>查看项目</ActionButton><ActionButton variant="outline" onClick={() => model.setView('runtimes')}>查看运行环境</ActionButton><ActionButton variant="outline" onClick={() => model.setView('inbox')}>查看 Inbox</ActionButton></div></section></div></section>
+  return <section className="po-page"><PageHeader title="本地数据" subtitle="当前 Host 的持久化记录与最近使用情况" action={latest.length > 0 ? <ActionButton variant="outline" icon={<IconTrashOutline16 />} disabled={state.loading} onClick={() => void clearUsage()}>清除使用统计</ActionButton> : undefined} /><div className="po-local-data"><section><h2>持久化记录</h2><dl><dt>Projects</dt><dd>{state.snapshot.projects.length}</dd><dt>Issues</dt><dd>{state.snapshot.issues.length}</dd><dt>TaskRuns</dt><dd>{state.bootstrapTotals.taskRuns}</dd><dt>Artifacts</dt><dd>{state.bootstrapTotals.artifacts}</dd><dt>Feature usage days</dt><dd>{state.snapshot.featureUsageDaily.length}</dd></dl></section><section><h2>最近使用</h2>{latest.length === 0 ? <p>尚无本地功能使用记录。</p> : latest.slice(0, 12).map((item) => <div className="po-context-row" key={item.id}><strong>{item.feature}</strong><span>{item.opens} 次打开 · {item.meaningfulActions} 次操作</span></div>)}</section><section><h2>导航</h2><div className="po-inline-actions"><ActionButton variant="outline" onClick={() => model.setView('projects')}>查看项目</ActionButton><ActionButton variant="outline" onClick={() => model.setView('runtimes')}>查看运行环境</ActionButton><ActionButton variant="outline" onClick={() => model.setView('inbox')}>查看 Inbox</ActionButton></div></section></div></section>
 }
 
 function SkillsPage({ state, model }: { state: WorkbenchState; model: WorkbenchModel }) {
@@ -1218,6 +1280,130 @@ function ProjectTaskEmptyState({ project }: { project: ProjectRecord }) {
   return <EmptyState title="这是一个空项目" body="现在还没有任务。你可以手动添加任务，或补充需求后明确选择让 AI 拆解。" />
 }
 
+interface ProjectOperationalState {
+  overview: ProjectOverview | undefined
+  readiness: ProjectReadiness | undefined
+  intents: StorageMutationIntentRecord[]
+  preview: RecoveryPreview | undefined
+  loading: boolean
+  error: string | undefined
+  previewError: string | undefined
+}
+
+const READINESS_STATUS_LABELS = { ready: '已就绪', blocked: '阻塞', unknown: '待确认', not_applicable: '不适用' } as const
+
+function projectConclusionLabel(code: string): string {
+  return ({
+    storage_reconciliation_required: '存储状态需要恢复',
+    delivery_integration_reconciliation_required: '交付集成状态需要恢复',
+    requirement_decision_required: '等待需求决策',
+    planning_not_started: '尚未开始规划',
+    planning_in_progress: '规划正在进行',
+    plan_review_required: '计划等待审阅',
+    execution_ready: '计划已批准，可以派发',
+    execution_failure_requires_attention: '执行失败，需要处理',
+    execution_in_progress: '任务正在执行',
+    delivery_review_required: '交付等待 Review',
+    delivery_confirmation_required: '交付等待确认',
+    project_completed: '项目已完成',
+    project_ready_for_next_step: '可以继续下一步',
+  } as Record<string, string>)[code] ?? code
+}
+
+function projectActionLabel(code: ProjectOverview['nextAction']['code']): string {
+  return ({
+    reconcile_storage: '预检并恢复存储',
+    resolve_requirement_decision: '处理需求决策',
+    inspect_readiness: '检查准备条件',
+    review_plan: '审阅当前计划',
+    start_execution: '派发可运行任务',
+    inspect_execution: '查看运行与证据',
+    review_delivery: '处理交付 Review',
+    confirm_delivery: '确认交付结果',
+    none: '等待当前操作完成',
+  } as const)[code]
+}
+
+function readinessCheckLabel(check: ProjectReadiness['planningReadiness']['checks'][number]): string {
+  const ready = check.status === 'ready'
+  return ({
+    repository_readable: ready ? '仓库目录与 Git 元数据可读取' : '仓库目录或 Git 元数据不可用',
+    model_route_available: ready ? '规划模型路由已配置' : '尚未配置规划模型路由',
+    project_team_available: ready ? '存在可自动分派的项目成员' : '没有可自动分派的项目成员',
+    repository_stack_supported: check.status === 'unknown' ? '技术栈支持情况尚未冻结' : ready ? '当前技术栈受支持' : '当前技术栈支持不完整',
+    storage_consistent: ready ? '没有待恢复的存储写入' : '存在待恢复的存储写入',
+    delivery_integration_consistent: ready ? '没有待恢复的交付集成' : '存在待恢复的交付集成',
+    trusted_capabilities_available: check.status === 'not_applicable' ? '当前没有任务需要能力授权' : ready ? '存在可信能力声明' : '缺少可信能力声明',
+    resource_access_available: check.status === 'not_applicable' ? '当前没有任务需要资源授权' : ready ? '执行资源授权有效' : '缺少有效执行资源授权',
+    current_plan_available: ready ? '当前计划快照可用' : '尚无当前计划快照',
+  } as Record<string, string>)[check.code] ?? check.reason
+}
+
+function recoveryVerdictLabel(verdict: RecoveryPreview['verdict']): string {
+  return ({ already_applied: '写入已完成，可确认收敛', replay_safe: '可以安全补写', compensation_safe: '可以补写或撤销候选写入', manual_required: '需要人工处理' } as const)[verdict]
+}
+
+function recoveryActionLabel(action: RecoveryAction): string {
+  return ({ finalize: '确认已完成', replay: '补写剩余记录', compensate: '撤销候选写入' } as const)[action]
+}
+
+function ProjectOperationalSummary({
+  state,
+  busy,
+  recoveryReason,
+  onRecoveryReasonChange,
+  onRetry,
+  onNextAction,
+  onRecover,
+}: {
+  state: ProjectOperationalState
+  busy: boolean
+  recoveryReason: string
+  onRecoveryReasonChange: (value: string) => void
+  onRetry: () => void
+  onNextAction: () => void
+  onRecover: (action: RecoveryAction) => void
+}) {
+  const overview = state.overview
+  const readiness = state.readiness
+  const intent = overview?.nextAction.code === 'reconcile_storage'
+    ? state.intents.find((candidate) => candidate.id === overview.nextAction.subjectId) ?? state.intents[0]
+    : state.intents[0]
+  const actionableNextStep = overview !== undefined && !['none', 'reconcile_storage', 'inspect_readiness'].includes(overview.nextAction.code)
+  return <section className="po-operational-summary" aria-label="项目当前结论">
+    <div className="po-section-heading"><div><h2>当前结论</h2><p>来自服务端权威事实的只读投影；实际操作仍会重新校验审批、版本与权限。</p></div>{overview ? <span>Revision {overview.projectRevision}</span> : null}</div>
+    {state.loading && overview === undefined ? <div className="po-operational-message" role="status"><IconRefreshOutline16 /><span>正在读取项目准备状态</span></div> : null}
+    {state.error !== undefined ? <div className="po-operational-message is-error" role="alert"><IconWarningOutline16 /><span><strong>项目状态读取失败</strong>{state.error}</span><ActionButton size="sm" variant="outline" onClick={onRetry}>重新读取</ActionButton></div> : null}
+    {overview !== undefined ? <>
+      <div className="po-operational-current">
+        <div><span>当前状态</span><strong>{projectConclusionLabel(overview.conclusionCode)}</strong></div>
+        <div><span>明确下一步</span><strong>{projectActionLabel(overview.nextAction.code)}</strong></div>
+        <div><span>运行摘要</span><strong>{overview.counts.activeTaskRuns} 运行中 · {overview.counts.failedTaskRuns} 失败 · {overview.counts.failedEvidence} 验证失败</strong></div>
+        {actionableNextStep ? <ActionButton size="sm" variant="outline" onClick={onNextAction}>查看下一步</ActionButton> : null}
+      </div>
+      {readiness !== undefined ? <div className="po-readiness-grid">
+        {([['规划准备', readiness.planningReadiness], ['执行准备', readiness.executionPreparation]] as const).map(([title, group]) => <section key={title} aria-label={title}>
+          <header><strong>{title}</strong><span className={`po-readiness-status is-${group.status}`}>{READINESS_STATUS_LABELS[group.status]}</span></header>
+          <ul>{group.checks.map((check) => <li key={`${check.phase}:${check.code}`}><span className={`po-readiness-dot is-${check.status}`} aria-hidden="true" /><span><strong>{readinessCheckLabel(check)}</strong><small>{READINESS_STATUS_LABELS[check.status]} · {check.code}</small></span></li>)}</ul>
+        </section>)}
+      </div> : null}
+      {intent !== undefined ? <section className="po-reconciliation-panel" aria-label="存储恢复预检">
+        <div className="po-section-heading"><div><h3>存储恢复</h3><p>Intent {intent.id} · {intent.status}</p></div>{state.preview ? <span>{recoveryVerdictLabel(state.preview.verdict)}</span> : null}</div>
+        {state.preview === undefined && state.previewError === undefined ? <div className="po-operational-message" role="status"><IconRefreshOutline16 /><span>正在预检当前存储事实</span></div> : null}
+        {state.previewError !== undefined ? <div className="po-operational-message is-error" role="alert"><IconWarningOutline16 /><span><strong>恢复预检失败</strong>{state.previewError}</span><ActionButton size="sm" variant="outline" onClick={onRetry}>重新预检</ActionButton></div> : null}
+        {state.preview !== undefined ? <>
+          <div className="po-reconciliation-facts"><span>{state.preview.steps.filter((step) => step.actual === 'after').length}/{state.preview.steps.length} 个步骤已写入</span><span>{state.preview.steps.filter((step) => step.actual === 'diverged' || step.actual === 'unavailable').length} 个步骤无法自动确认</span></div>
+          {state.preview.reasons.length > 0 ? <ul className="po-reconciliation-reasons">{state.preview.reasons.map((reason) => <li key={`${reason.code}:${reason.subjectIds.join(':')}`}><strong>{reason.code}</strong><span>{reason.subjectIds.join('、') || '无关联对象'}</span></li>)}</ul> : null}
+          {state.preview.verdict === 'manual_required' ? <div className="po-operational-message is-warning" role="alert"><IconWarningOutline16 /><span><strong>自动恢复已禁用</strong>当前事实无法证明补写或撤销安全，请根据原因码人工核对；页面不会提供执行按钮。</span></div> : <>
+            <label className="po-reconciliation-reason"><span>操作说明</span><input className="po-input" value={recoveryReason} onChange={(event) => onRecoveryReasonChange(event.target.value)} /></label>
+            <div className="po-inline-actions">{state.preview.allowedActions.map((action) => <ActionButton key={action} size="sm" variant={action === 'compensate' ? 'outline' : 'primary'} disabled={busy || recoveryReason.trim() === ''} onClick={() => onRecover(action)}>{recoveryActionLabel(action)}</ActionButton>)}</div>
+          </>}
+        </> : null}
+      </section> : null}
+    </> : null}
+  </section>
+}
+
 function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
   const tasks = state.snapshot.tasks.filter((task) => task.projectId === project.id).sort((left, right) => left.ordinal - right.ordinal)
   const activeMemberships = projectMemberships(state.snapshot, project.id)
@@ -1233,6 +1419,9 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const [teamPlanError, setTeamPlanError] = useState<string>()
   const [planningV3, setPlanningV3] = useState<ProjectPlanningV3View>()
   const [planningV3Error, setPlanningV3Error] = useState<string>()
+  const [operationalVersion, setOperationalVersion] = useState(0)
+  const [recoveryReason, setRecoveryReason] = useState('根据当前预检结果恢复项目存储状态。')
+  const [operational, setOperational] = useState<ProjectOperationalState>({ overview: undefined, readiness: undefined, intents: [], preview: undefined, loading: true, error: undefined, previewError: undefined })
   useEffect(() => {
     const controller = new AbortController()
     setTeamPlan(undefined)
@@ -1250,6 +1439,34 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
     }
     return () => controller.abort()
   }, [isPlanningV3, project.id, project.revision, project.status, project.currentPlanSnapshotId, project.currentDeliveryConvergenceReviewId])
+  useEffect(() => {
+    const controller = new AbortController()
+    setOperational({ overview: undefined, readiness: undefined, intents: [], preview: undefined, loading: true, error: undefined, previewError: undefined })
+    void (async () => {
+      try {
+        const [overview, readiness, intents] = await Promise.all([
+          loadProjectOverview(project.id, controller.signal),
+          loadProjectReadiness(project.id, controller.signal),
+          loadStorageReconciliationIntents(project.id, controller.signal),
+        ])
+        if (controller.signal.aborted) return
+        setOperational({ overview, readiness, intents, preview: undefined, loading: false, error: undefined, previewError: undefined })
+        const intentId = overview.nextAction.code === 'reconcile_storage'
+          ? overview.nextAction.subjectId ?? intents[0]?.id
+          : intents[0]?.id
+        if (intentId === undefined) return
+        try {
+          const preview = await loadStorageReconciliationPreview(intentId, controller.signal)
+          if (!controller.signal.aborted) setOperational({ overview, readiness, intents, preview, loading: false, error: undefined, previewError: undefined })
+        } catch (reason) {
+          if (!controller.signal.aborted) setOperational({ overview, readiness, intents, preview: undefined, loading: false, error: undefined, previewError: messageOf(reason) })
+        }
+      } catch (reason) {
+        if (!controller.signal.aborted) setOperational({ overview: undefined, readiness: undefined, intents: [], preview: undefined, loading: false, error: messageOf(reason), previewError: undefined })
+      }
+    })()
+    return () => controller.abort()
+  }, [project.id, project.revision, project.status, project.currentPlanSnapshotId, project.currentDeliveryConvergenceReviewId, operationalVersion])
   const assignmentsComplete = unassignedTasks.length === 0 && ineligibleTaskAssignments.length === 0
   const planComplete = tasks.some((task) => task.kind === 'code') && tasks.some((task) => task.kind === 'test') && tasks.every((task) => task.testCommand.trim() !== '') && assignmentsComplete
   const canApprove = !isPlanningV3 && project.status === 'awaiting_approval' && planComplete && planHash !== undefined && !approvalCurrent && teamPlan?.preflight.ready === true
@@ -1284,6 +1501,37 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
   const reviewActor = project.owner?.trim() || '项目负责人'
   const confirmDelivery = () => void model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/delivery/confirm`, 'POST', { actor: reviewActor, note: '已确认本地交付包。' }), '交付已确认。')
   const closeDelivery = () => void model.action(() => mutate(`/projects/${encodeURIComponent(project.id)}/delivery/close`, 'POST', { actor: reviewActor, note: '本地交付包已接收并关闭。' }), '交付已关闭。')
+  const openNextAction = () => {
+    const action = operational.overview?.nextAction.code
+    if (action === 'inspect_execution') {
+      model.setProjectTab('runs')
+      return
+    }
+    const selector = action === 'resolve_requirement_decision' ? '.po-requirement-plan' : '.po-delivery-gate'
+    document.querySelector<HTMLElement>(selector)?.scrollIntoView({ block: 'start' })
+  }
+  const recoverStorage = async (action: RecoveryAction) => {
+    const preview = operational.preview
+    const intent = operational.intents.find((candidate) => candidate.id === preview?.intentId)
+    if (preview === undefined || intent === undefined || !preview.allowedActions.includes(action) || recoveryReason.trim() === '') return
+    const confirmed = await model.confirm({
+      title: recoveryActionLabel(action),
+      message: `${recoveryVerdictLabel(preview.verdict)}。系统会在执行前重新校验 Intent、预检摘要和 Project revision；事实变化时将拒绝操作。`,
+      confirmLabel: recoveryActionLabel(action),
+      ...(action === 'compensate' ? { tone: 'warning' as const } : {}),
+    })
+    if (!confirmed) return
+    const result = await model.action(() => executeStorageReconciliation(intent.id, {
+      expectedIntentDigest: preview.intentDigest,
+      previewDigest: preview.previewDigest,
+      expectedProjectRevision: preview.projectRevision,
+      action,
+      idempotencyKey: `workbench:${intent.id}:${preview.previewDigest}:${action}`,
+      requestedBy: reviewActor,
+      reason: recoveryReason.trim(),
+    }), `${recoveryActionLabel(action)}已完成。`)
+    if (result !== undefined) setOperationalVersion((value) => value + 1)
+  }
   return (
     <section className="po-page po-project-detail-page">
       <PageHeader
@@ -1307,6 +1555,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         <div><span>测试进度</span><strong>{completed}/{tasks.length}</strong></div>
       </div>
        <section className="po-project-directory" aria-label="工作目录"><div className="po-directory-fact"><span>工作目录</span><strong title={project.cwd}>{project.cwd}</strong></div><div className="po-directory-actions">{project.workspaceId ? <ActionButton size="sm" variant="outline" icon={<IconPlayOutline16 />} onClick={() => model.startWorkspace(project.workspaceId!)}>打开 Workspace</ActionButton> : null}<ActionButton size="sm" variant="outline" icon={<IconFolderOpenOutline16 />} disabled={state.loading} onClick={() => void openDirectory()}>打开目录</ActionButton></div></section>
+        <ProjectOperationalSummary state={operational} busy={state.loading} recoveryReason={recoveryReason} onRecoveryReasonChange={setRecoveryReason} onRetry={() => setOperationalVersion((value) => value + 1)} onNextAction={openNextAction} onRecover={(action) => void recoverStorage(action)} />
         <ProjectOrchestrationStrip project={project} state={state} model={model} />
       <ProjectSquadsPanel project={project} state={state} model={model} />
       <section className="po-project-context-grid" aria-label="项目协作上下文">
@@ -1347,6 +1596,7 @@ function ProjectWorkspace({ project, state, model }: { project: ProjectRecord; s
         {currentReview?.status === 'pending' ? <ProjectReviewResolutionPanel project={project} review={currentReview} acceptanceCriteria={(state.snapshot.acceptanceCriteria ?? []).filter((criterion) => criterion.projectId === project.id)} model={model} loading={state.loading || active} /> : null}
       </section>
       <RequirementPlanningPanel project={project} state={state} model={model} teamPlan={teamPlan} />
+      <NativePullRequestPanel key={project.id} projectId={project.id} />
       <div className="po-project-artifacts">
         {currentDelivery?.responsibilityChain ? <DeliveryResponsibilitySummary delivery={currentDelivery} review={currentReview} snapshot={state.snapshot} /> : null}
         <details className="po-artifact-disclosure" open><summary>初始需求简报</summary><div className="po-document-text">{project.prd || '尚未填写。空项目可以先手动管理任务，之后再补充需求并启动 AI 拆解。'}</div></details>
@@ -1582,9 +1832,59 @@ function TaskCandidateInspector({ project, task, state, model }: { project: Proj
 }
 
 function ProjectRunsTab({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
-  const runs = state.snapshot.taskRuns.filter((run) => run.projectId === project.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  const artifacts = state.snapshot.artifacts.filter((artifact) => artifact.projectId === project.id)
-  return <div className="po-project-tab-body"><div className="po-section-heading"><div><h2>运行与证据</h2><p>{runs.length} 次 TaskRun · {artifacts.length} 份 Artifact</p></div></div>{runs.length === 0 ? <EmptyState title="尚无运行证据" body="项目批准并执行后，Runtime、Session、测试和 Artifact 会汇总到这里。" /> : runs.map((run) => <details key={run.id} className="po-run-disclosure"><summary><strong>TaskRun {run.id.slice(0, 8)} · {taskName(state.snapshot, run.taskId)}</strong><span>{run.status} · {formatDate(run.createdAt)}</span></summary><dl><dt>智能体</dt><dd>{agentName(state.snapshot, run.agentId)}</dd><dt>Runtime</dt><dd><button type="button" className="po-link-button" onClick={() => { model.setView('runtimes'); if (run.runtimeId) window.setTimeout(() => model.openRuntime(run.runtimeId!), 0) }}>{run.runtimeNameSnapshot ?? runtimeName(state.snapshot, run.runtimeId)}</button></dd><dt>Session</dt><dd>{run.sessionId ?? '未记录'}</dd><dt>工作区</dt><dd>{run.workspace ?? run.cwd ?? '未记录'}</dd><dt>测试</dt><dd>{run.testExitCode === undefined ? '未记录' : `exit ${run.testExitCode}`}</dd><dt>证据</dt><dd>{artifacts.filter((artifact) => artifact.taskRunId === run.id).map((artifact) => artifact.name).join('、') || '暂无 Artifact'}</dd></dl></details>)}</div>
+  const [runs, setRuns] = useState<TaskRunRecord[]>([])
+  const [artifacts, setArtifacts] = useState<import('./client-types.js').ArtifactRecord[]>([])
+  const [artifactsTruncated, setArtifactsTruncated] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string>()
+  const [hasMore, setHasMore] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(true)
+  const [historyError, setHistoryError] = useState<string>()
+  const [artifactError, setArtifactError] = useState<string>()
+  const historyGeneration = useRef(0)
+  const historyAbort = useRef<AbortController>()
+  const loadHistory = async (cursor?: string, append = false) => {
+    historyAbort.current?.abort()
+    const controller = new AbortController()
+    historyAbort.current = controller
+    const generation = ++historyGeneration.current
+    const resourceId = project.id
+    setHistoryLoading(true)
+    setHistoryError(undefined)
+    try {
+      const page = await loadProjectHistory<TaskRunRecord>(resourceId, 'task-runs', cursor, 50, controller.signal)
+      if (generation !== historyGeneration.current || resourceId !== project.id) return
+      if (!append) setArtifactError(undefined)
+      let artifactBatch: Awaited<ReturnType<typeof loadTaskRunArtifacts>> | undefined
+      if (page.items.length > 0) {
+        try {
+          artifactBatch = await loadTaskRunArtifacts(resourceId, page.items.map((item) => item.id), controller.signal)
+        } catch (error) {
+          if (!controller.signal.aborted && generation === historyGeneration.current) setArtifactError(messageOf(error))
+        }
+      }
+      if (generation !== historyGeneration.current || resourceId !== project.id) return
+      setRuns((current) => append ? [...current, ...page.items.filter((item) => !current.some((existing) => existing.id === item.id))] : page.items)
+      if (artifactBatch !== undefined) {
+        const batchItems = artifactBatch.items as unknown as import('./client-types.js').ArtifactRecord[]
+        setArtifacts((current) => append ? [...current, ...batchItems.filter((item) => !current.some((existing) => existing.id === item.id))] : batchItems)
+        setArtifactsTruncated((current) => (append && current) || artifactBatch.truncatedTaskRunIds.length > 0)
+      } else if (!append) {
+        setArtifacts([])
+        setArtifactsTruncated(false)
+      }
+      setNextCursor(page.nextCursor)
+      setHasMore(page.hasMore)
+    } catch (error) {
+      if (!controller.signal.aborted && generation === historyGeneration.current) setHistoryError(messageOf(error))
+    } finally {
+      if (generation === historyGeneration.current) setHistoryLoading(false)
+    }
+  }
+  useEffect(() => {
+    void loadHistory()
+    return () => { historyGeneration.current += 1; historyAbort.current?.abort() }
+  }, [project.id, state.snapshot.eventCursor])
+  return <div className="po-project-tab-body"><div className="po-section-heading"><div><h2>运行与证据</h2><p>{runs.length}{hasMore ? '+' : ''} 次 TaskRun · {artifacts.length}{artifactsTruncated ? '+' : ''} 份 Artifact</p></div></div>{historyError ? <div className="po-intervention-panel" role="status"><strong>运行历史暂时不可用</strong><span>{historyError}</span><ActionButton size="sm" variant="outline" disabled={historyLoading} onClick={() => void loadHistory()}>重试</ActionButton></div> : null}{artifactError ? <div className="po-intervention-panel" role="status"><strong>Artifact 暂时不可用</strong><span>{artifactError}</span></div> : null}{historyLoading && runs.length === 0 ? <p className="po-context-empty">正在读取运行历史…</p> : runs.length === 0 ? <EmptyState title="尚无运行证据" body="项目批准并执行后，Runtime、Session、测试和 Artifact 会汇总到这里。" /> : <>{runs.map((run) => <details key={run.id} className="po-run-disclosure"><summary><strong>TaskRun {run.id.slice(0, 8)} · {taskName(state.snapshot, run.taskId)}</strong><span>{run.status} · {formatDate(run.createdAt)}</span></summary><dl><dt>智能体</dt><dd>{agentName(state.snapshot, run.agentId)}</dd><dt>Runtime</dt><dd><button type="button" className="po-link-button" onClick={() => { model.setView('runtimes'); if (run.runtimeId) window.setTimeout(() => model.openRuntime(run.runtimeId!), 0) }}>{run.runtimeNameSnapshot ?? runtimeName(state.snapshot, run.runtimeId)}</button></dd><dt>Session</dt><dd>{run.sessionId ? <button type="button" className="po-link-button" onClick={() => model.openSession(run.sessionId!)}>{run.sessionId}</button> : '未记录'}</dd><dt>工作区</dt><dd>{run.workspace ?? run.cwd ?? '未记录'}</dd><dt>测试</dt><dd>{run.testExitCode === undefined ? '未记录' : `exit ${run.testExitCode}`}</dd><dt>证据</dt><dd>{artifacts.filter((artifact) => artifact.taskRunId === run.id).map((artifact) => artifact.name).join('、') || '暂无 Artifact'}</dd></dl></details>)}{hasMore && nextCursor !== undefined ? <div className="po-inline-actions"><ActionButton variant="outline" disabled={historyLoading} onClick={() => void loadHistory(nextCursor, true)}>{historyLoading ? '正在读取…' : '加载更多运行记录'}</ActionButton></div> : null}</>}</div>
 }
 
 function ProjectSquadBindingsSection({ project, state, model }: { project: ProjectRecord; state: WorkbenchState; model: WorkbenchModel }) {
@@ -2321,18 +2621,29 @@ function DirectoryBrowser({ listing, busy, error, navigate, select, close }: { l
 function IssueDialog({ state, model, issue }: { state: WorkbenchState; model: WorkbenchModel; issue: import('./client-types.js').IssueRecord }) {
   const [body, setBody] = useState('')
   const [note, setNote] = useState('')
+  const [context, setContext] = useState<IssueContext>()
+  const [contextError, setContextError] = useState<string>()
   const [assignmentMode, setAssignmentMode] = useState<'agent' | 'squad'>(issue.assigneeType === 'squad' ? 'squad' : 'agent')
   const [agentId, setAgentId] = useState(issue.assigneeType === 'agent' ? issue.assigneeId ?? '' : '')
   const [squadId, setSquadId] = useState(issue.assigneeType === 'squad' ? issue.assigneeId ?? '' : '')
   const [eligibleSquads, setEligibleSquads] = useState<SquadAvailability[]>([])
   const comments = state.snapshot.comments.filter((comment) => comment.issueId === issue.id)
-  const events = state.snapshot.activity.filter((event) => event.issueId === issue.id).slice(0, 20)
-  const runs = state.snapshot.taskRuns.filter((run) => run.issueId === issue.id).sort((a,b) => b.createdAt.localeCompare(a.createdAt))
-  const transcripts = state.snapshot.transcripts.filter((entry) => runs.some((run) => run.id === entry.taskRunId))
-  const artifacts = state.snapshot.artifacts.filter((artifact) => artifact.issueId === issue.id)
-  const activeRun = issue.activeTaskRunId ? state.snapshot.taskRuns.find((run) => run.id === issue.activeTaskRunId) : undefined
+  const events = context?.activity ?? state.snapshot.activity.filter((event) => event.issueId === issue.id).slice(0, 20)
+  const runs = context?.taskRuns ?? state.snapshot.taskRuns.filter((run) => run.issueId === issue.id).sort((a,b) => b.createdAt.localeCompare(a.createdAt))
+  const transcripts = context?.transcripts ?? []
+  const artifacts = context?.artifacts ?? []
+  const transcriptCount = context && context.totals.transcripts > transcripts.length ? `${transcripts.length}/${context.totals.transcripts}` : String(transcripts.length)
+  const artifactCount = context && context.totals.artifacts > artifacts.length ? `${artifacts.length}/${context.totals.artifacts}` : String(artifacts.length)
+  const activeRun = issue.activeTaskRunId ? runs.find((run) => run.id === issue.activeTaskRunId) : undefined
   const eligibleIssueAgentIds = issue.projectId === undefined ? undefined : new Set(projectMemberships(state.snapshot, issue.projectId).map((member) => member.agentId))
   const assignableAgents = state.snapshot.agents.filter((agent) => agent.status === 'active' && (eligibleIssueAgentIds === undefined || eligibleIssueAgentIds.has(agent.id)))
+  useEffect(() => {
+    const controller = new AbortController()
+    setContext(undefined)
+    setContextError(undefined)
+    void loadIssueContext(issue.id, controller.signal).then(setContext).catch((error) => { if (!controller.signal.aborted) setContextError(messageOf(error)) })
+    return () => controller.abort()
+  }, [issue.id, state.snapshot.eventCursor])
   useEffect(() => { if (issue.projectId) void readApi<SquadAvailability[]>(`/projects/${issue.projectId}/eligible-squads`).then(setEligibleSquads).catch(() => setEligibleSquads([])) }, [issue.projectId, state.snapshot.squads])
   const assignableSquads = eligibleSquads.filter((item) => item.eligible).map((item) => ({ availability: item, squad: state.snapshot.squads.find((candidate) => candidate.id === item.squadId) })).filter((item): item is { availability: SquadAvailability; squad: SquadRecord } => item.squad !== undefined)
   const openProjectAgents = () => { if (issue.projectId === undefined) return; model.setView('projects'); window.setTimeout(() => model.openProject(issue.projectId!, 'agents'), 0) }
@@ -2343,9 +2654,11 @@ function IssueDialog({ state, model, issue }: { state: WorkbenchState; model: Wo
     <div className="po-issue-detail">
       <section><h3>描述与属性</h3><p className="po-issue-description">{issue.description || '暂无描述。'}</p><div className="po-issue-facts"><span>状态 <strong>{issue.status}</strong></span><span>负责人 <strong>{issue.assigneeId ? assigneeLabel(state.snapshot, issue.assigneeType, issue.assigneeId) : '未分派'}</strong></span><span>分派版本 <strong>{issue.assignmentRevision ?? 0}</strong></span><span>Labels <strong>{issue.labels.join(', ') || '无'}</strong></span></div></section>
       <section><h3>Owner commands</h3><div className="po-assignment-mode po-segments" role="group" aria-label="Issue 分派模式"><Segment active={assignmentMode === 'agent'} onClick={() => setAssignmentMode('agent')}>Agent</Segment><Segment active={assignmentMode === 'squad'} onClick={() => setAssignmentMode('squad')}>Squad</Segment></div><div className="po-command-bar">{assignmentMode === 'agent' ? <select className="po-select" aria-label="选择 Agent" value={agentId} onChange={(event) => setAgentId(event.target.value)}><option value="">选择 Agent</option>{assignableAgents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select> : <select className="po-select" aria-label="选择 Squad" value={squadId} onChange={(event) => setSquadId(event.target.value)}><option value="">选择 eligible Squad</option>{assignableSquads.map(({ squad, availability }) => <option key={squad.id} value={squad.id}>{squad.name} · {availability.dispatchReady ? '可派发' : 'Runtime 警告'}</option>)}</select>}{!['done','in_review'].includes(issue.status) ? <ActionButton variant="primary" disabled={!(assignmentMode === 'agent' ? agentId : squadId) || state.loading} onClick={() => void assign()}>{issue.assigneeId ? '重新分派 Issue' : '分派 Issue'}</ActionButton> : null}{activeRun ? <ActionButton variant="outline" icon={<IconStopFill16 />} onClick={() => void command('stop_issue', { reason: note.trim() || 'Stopped by operator.' }, 'Issue 已停止。')}>停止执行</ActionButton> : null}{!activeRun && ['blocked','cancelled'].includes(issue.status) && issue.assigneeId ? <ActionButton variant="primary" onClick={() => void command('continue_issue', {}, 'Issue 已继续执行。')}>继续执行</ActionButton> : null}</div>{issue.projectId !== undefined && assignableAgents.length === 0 ? <div className="po-empty-project-note"><IconWarningOutline16 /><div><strong>当前项目没有可分派的智能体</strong><p>先把 active 智能体加入项目，再返回分派 Issue。</p></div><ActionButton size="sm" variant="outline" onClick={openProjectAgents}>管理项目智能体</ActionButton></div> : null}<textarea className="po-textarea" value={note} onChange={(event) => setNote(event.target.value)} placeholder="审核结论、停止原因或决定上下文" />{issue.status === 'in_review' ? <div className="po-inline-actions"><ActionButton variant="primary" disabled={!note.trim()} onClick={() => void command('approve_review', { note }, 'Issue 审核已批准。')}>批准审核</ActionButton><ActionButton variant="outline" disabled={!note.trim()} onClick={() => void command('reject_review', { note }, 'Issue 已退回修改。')}>退回修改</ActionButton></div> : null}</section>
-      <section><h3>当前运行与历史 <small>{runs.length} 次</small></h3>{runs.length === 0 ? <p className="po-context-empty">尚无执行记录。</p> : runs.map((run) => { const stat = state.snapshot.runStatistics.find((entry) => entry.taskRunId === run.id); return <details key={run.id} className="po-run-disclosure" open={run.id === activeRun?.id}><summary><strong>Attempt {run.attempt}</strong><span>{run.status} · {stat?.durationMs === undefined ? '时长 —' : formatDuration(stat.durationMs)} · {stat?.usageKnown ? `${(stat.inputTokens ?? 0) + (stat.outputTokens ?? 0)} tokens` : 'Tokens —'} · {stat?.costUsd === undefined ? '成本 —' : `$${stat.costUsd.toFixed(4)}`}</span></summary><dl><dt>Workspace</dt><dd>{run.workspace ?? run.cwd ?? '—'}</dd><dt>Branch</dt><dd>{run.branch ?? '—'}</dd><dt>Commits</dt><dd>{run.baseCommit ? `${run.baseCommit.slice(0,8)} → ${(run.headCommit ?? run.baseCommit).slice(0,8)}` : '—'}</dd><dt>Session</dt><dd>{run.sessionId ?? '—'}</dd><dt>Execution environment</dt><dd>{run.executionEnvironment === 'project_venv' ? `Project venv · ${run.virtualEnvPath ?? '.venv'}` : run.executionEnvironment === 'host_path' ? 'Host PATH' : '—'}</dd>{run.error ? <><dt>错误</dt><dd>{run.error}</dd></> : null}</dl></details> })}</section>
-      <section><h3>Transcript <small>{transcripts.length} 条</small></h3>{transcripts.length === 0 ? <p className="po-context-empty">执行完成后会投影脱敏的会话记录。</p> : <div className="po-transcript">{transcripts.map((entry) => <div key={entry.id}><strong>{entry.role}</strong><pre>{entry.text}</pre></div>)}</div>}</section>
-      <section><h3>Artifacts <small>{artifacts.length} 个</small></h3>{artifacts.length === 0 ? <p className="po-context-empty">尚无交付证据。</p> : <div className="po-artifact-list">{artifacts.map((artifact) => <details key={artifact.id}><summary><strong>{artifact.name}</strong><span>{artifact.kind} · {formatDate(artifact.createdAt)}</span></summary>{artifact.uri ? <a href={artifact.uri} target="_blank" rel="noreferrer noopener">打开 Artifact</a> : null}{artifact.content ? <pre>{artifact.content}</pre> : null}</details>)}</div>}</section>
+      {contextError ? <div className="po-inline-error" role="alert"><IconWarningOutline16 />Issue 运行证据读取失败：{contextError}</div> : null}
+      {context?.truncated ? <div className="po-intervention-panel" role="status"><strong>历史记录较多</strong><span>当前按需加载最近 {runs.length} 次 TaskRun、{transcripts.length} 条 Transcript 和 {artifacts.length} 份 Artifact；完整总量仍保留在本地存储。</span></div> : null}
+      <section><h3>当前运行与历史 <small>{context?.totals.taskRuns ?? runs.length} 次</small></h3>{context === undefined && contextError === undefined ? <p className="po-context-empty">正在读取 Issue 运行证据…</p> : runs.length === 0 ? <p className="po-context-empty">尚无执行记录。</p> : runs.map((run) => { const stat = state.snapshot.runStatistics.find((entry) => entry.taskRunId === run.id); return <details key={run.id} className="po-run-disclosure" open={run.id === activeRun?.id}><summary><strong>Attempt {run.attempt}</strong><span>{run.status} · {stat?.durationMs === undefined ? '时长 —' : formatDuration(stat.durationMs)} · {stat?.usageKnown ? `${(stat.inputTokens ?? 0) + (stat.outputTokens ?? 0)} tokens` : 'Tokens —'} · {stat?.costUsd === undefined ? '成本 —' : `$${stat.costUsd.toFixed(4)}`}</span></summary><dl><dt>Workspace</dt><dd>{run.workspace ?? run.cwd ?? '—'}</dd><dt>Branch</dt><dd>{run.branch ?? '—'}</dd><dt>Commits</dt><dd>{run.baseCommit ? `${run.baseCommit.slice(0,8)} → ${(run.headCommit ?? run.baseCommit).slice(0,8)}` : '—'}</dd><dt>Session</dt><dd>{run.sessionId ? <button type="button" className="po-link-button" onClick={() => model.openSession(run.sessionId!)}>{run.sessionId}</button> : "未记录"}</dd><dt>Execution environment</dt><dd>{run.executionEnvironment === 'project_venv' ? `Project venv · ${run.virtualEnvPath ?? '.venv'}` : run.executionEnvironment === 'host_path' ? 'Host PATH' : '—'}</dd>{run.error ? <><dt>错误</dt><dd>{run.error}</dd></> : null}</dl></details> })}</section>
+      <section><h3>Transcript <small>{transcriptCount} 条</small></h3>{transcripts.length === 0 ? <p className="po-context-empty">{context && context.totals.transcripts > 0 ? '最近加载的运行没有 Transcript，较早的运行仍有记录。' : '执行完成后会投影脱敏的会话记录。'}</p> : <div className="po-transcript">{transcripts.map((entry) => <div key={entry.id}><strong>{entry.role}</strong><pre>{entry.text}</pre></div>)}</div>}</section>
+      <section><h3>Artifacts <small>{artifactCount} 个</small></h3>{artifacts.length === 0 ? <p className="po-context-empty">{context && context.totals.artifacts > 0 ? '当前未加载 Artifact，完整记录仍在本地存储。' : '尚无交付证据。'}</p> : <div className="po-artifact-list">{artifacts.map((artifact) => <details key={artifact.id}><summary><strong>{artifact.name}</strong><span>{artifact.kind} · {formatDate(artifact.createdAt)}</span></summary>{artifact.uri ? <a href={artifact.uri} target="_blank" rel="noreferrer noopener">打开 Artifact</a> : null}{artifact.content ? <pre>{artifact.content}</pre> : null}</details>)}</div>}</section>
       <section><h3>评论</h3><div className="po-issue-comments">{comments.map((comment) => <div key={comment.id} className="po-issue-comment"><strong>{comment.authorType === 'human' ? '你' : comment.authorType}</strong><p>{comment.body}</p><time>{formatDate(comment.createdAt)}</time></div>)}</div><textarea className="po-textarea" value={body} onChange={(event) => setBody(event.target.value)} placeholder="补充上下文、决定或验收反馈" /><ActionButton variant="outline" disabled={state.loading || !body.trim()} onClick={() => void addComment()}>添加评论</ActionButton></section>
       <section><h3>Activity</h3><div className="po-issue-activity">{events.map((event) => <div key={event.id}><span>{event.type}</span><p>{event.message}</p><time>{formatDate(event.createdAt)}</time></div>)}</div></section>
     </div>

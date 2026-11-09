@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a62fa1c28209ffa016ad19d5f6e08819789c656608faeecdc:independent-gold-review:bcf4195f-d21a-4546-ba02-b4caa73f8cfe",
+    "reviewedAt": "2026-10-16T03:43:41.485Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes construction-time TypeError acceptance conditional, not authorization to select OPT-1. Gold correctly expects blocked readiness, requirement-decision-pending on DEC-001, and evidence through repository, requirements, and decisions only. Empty task and assignment expectations agree with the prohibition on generating assignable tasks in this scenario; TASK-IMPLEMENT and dependent TASK-VERIFY apply only after resolution. REQ-001, AC-001–AC-003, repository identity/base commit, paired-case identity, and inspection-owner paths agree across the specification and Gold. Supplied source supports shared core stringbool ownership, existing case normalization without trim, truthy-first overlap behavior, and classic/mini forwarding. Read-only forwarding owners need inspection, not mandatory edits; the supplied build configuration supports treating emitted declarations as generated. Regression and type-check configuration is consistent with the PRD's distinction between runtime and compile-time verification. Gold and preview releaseInput fingerprints agree for repository, source, team, decision inputs, prompts, model, sampling, budgets, and metric policy. The empty team catalog does not invalidate this expectation because the material decision gate precedes later reviewer and assignment prerequisites. Historical project reuse is not candidate evidence or a new human attestation, and the paired-case reference does not resolve this case's Decision. This approval concerns the frozen Gold expectation, not execution readiness or permission to dispatch work. I reviewed only the supplied data, did not execute code or independently recompute digests, and rely on the stated Service binding of digests to saved inputs.",
+    "goldDigest": "3d996633bb34ad5ee93c5148cb5479968eeca93c83a19ca77a0f55a6d4aea8a9"
+  }
+}

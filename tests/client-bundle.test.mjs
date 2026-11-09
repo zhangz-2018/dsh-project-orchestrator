@@ -20,8 +20,9 @@ test('client bundle registers with the Harness module loader', async () => {
   const dependency = new Proxy({}, { get: () => () => null })
   const exported = registration.factory(() => dependency)
   assert.equal(typeof exported.apply, 'function')
-  assert.deepEqual(Array.from(exported.inject), ['slots', 'workspaces'])
-  assert.ok(manifest.dsh.client.inject.includes('@deepseek-ai/dsh-client-runtime'))
+  assert.deepEqual(Array.from(exported.inject), ['slots', 'workspaces', 'uiWorkspace'])
+  assert.ok(manifest.dsh.client.inject.includes('@deepseek-ai/dsh-api-workspace-controller'))
+  assert.ok(manifest.dsh.client.inject.includes('@deepseek-ai/dsh-client-ui-workspace'))
   assert.ok(!manifest.dsh.client.inject.includes('workspaces'))
 })
 
@@ -135,14 +136,45 @@ test('client bundle exposes project membership and local usage workflows', async
   assert.match(source, /block\.documentKind !== 'technical_design'/)
 })
 
-test('client bootstraps from a snapshot, consumes event cursors, and forces post-mutation reconciliation', async () => {
+test('client bootstraps from a bounded projection, consumes event cursors, and forces post-mutation reconciliation', async () => {
   const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
   const api = await readFile(new URL('../src/api-client.ts', import.meta.url), 'utf8')
   assert.match(api, /\/events\?after=/)
+  assert.match(api, /\/bootstrap/)
+  assert.match(source, /loadWorkbenchBootstrap\(\)/)
+  assert.doesNotMatch(source, /await loadSnapshot\(\)/)
   assert.match(source, /loadDomainEvents\(this\.eventCursor\)/)
   assert.match(source, /this\.eventCursor = snapshot\.eventCursor/)
   assert.match(source, /this\.silentPollsSinceSnapshot < 15/)
   assert.match(source, /await this\.refresh\(true, true\)/)
+  assert.match(source, /private refreshInFlight: Promise<void> \| undefined/)
+  assert.match(source, /while \(this\.refreshPending !== undefined\)/)
+  assert.match(source, /loadProjectHistory<TaskRunRecord>/)
+  assert.match(source, /resourceId !== project\.id/)
+})
+
+test('project overview consumes bounded readiness facts and gates storage recovery by preview', async () => {
+  const source = await readFile(new URL('../src/client.tsx', import.meta.url), 'utf8')
+  const api = await readFile(new URL('../src/api-client.ts', import.meta.url), 'utf8')
+  const styles = await readFile(new URL('../src/styles.ts', import.meta.url), 'utf8')
+  for (const path of ['/readiness', '/overview', '/admin/storage-reconciliation']) assert.match(api, new RegExp(path.replaceAll('/', '\\/')))
+  for (const contract of [
+    'ProjectOperationalSummary',
+    '当前结论',
+    '明确下一步',
+    '规划准备',
+    '执行准备',
+    "state.preview.allowedActions.map",
+    "state.preview.verdict === 'manual_required'",
+    '自动恢复已禁用',
+    'expectedIntentDigest: preview.intentDigest',
+    'previewDigest: preview.previewDigest',
+    'expectedProjectRevision: preview.projectRevision',
+    'setOperationalVersion((value) => value + 1)',
+  ]) assert.match(source, new RegExp(contract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  assert.match(styles, /po-operational-summary/)
+  assert.match(styles, /po-readiness-grid/)
+  assert.match(styles, /po-reconciliation-panel/)
 })
 
 test('client exposes P0 Squad and Runtime management with context binding flows', async () => {
@@ -180,7 +212,7 @@ test('PDF.js worker and attachment runtime are included in the plugin package co
   assert.ok(manifest.files.includes('lib/pdf.worker.mjs'))
   assert.equal(manifest.dependencies['pdfjs-dist'].startsWith('^6.'), true)
   assert.match(source, /enableScripting:\s*false/)
-  assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-attachment'], '0.1.0-rc.6')
+  assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-attachment'], '0.2.2-rc.1')
   assert.match(serverSource, /'attachments'/)
   assert.match(serverSource, /'llm'/)
 })

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "24061706858c8d516120398df9a57219c579305b9ffbd8111113fdbef7b5bb0b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01aea49f83deabaf016ad1d419b0088195befa3f11f7d2e380:independent-gold-review:d0b31dcf-0f5f-4bb3-9204-330f3f2193a8",
+    "reviewedAt": "2026-10-16T07:37:12.906Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity agree across the original specification and Gold. DEC-001 materially controls overflow behavior and remains unconfirmed; AC-001 is explicitly conditional, not authorization to select OPT-1. Accordingly, blocked readiness with requirement-decision-pending at decisions, evidence stages repository/requirements/decisions, and no assignable task or assignment expectations are appropriate. The supplied implementation and package evidence support index.js and index.d.ts as maintained runtime and declaration owners, with test.js and index.test-d.ts as verification scope and xo/ava/tsd as the configured validation entry point. Shared runtime and option types require preserving other exports' contracts, but do not introduce additional owner paths. The empty trusted team catalog does not invalidate this earlier decision-stage block because later reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints, model identity, policy identity/version, and budgets agree. The provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization; the original specification's null releaseInput and remaining-work fields describe its pre-freeze state, while the supplied preview and Gold contain the frozen release input. Isolation evidence states that this Gold precedes every candidate on this bundle; historical project reuse supplies no candidate outputs or new human decision. This approval concerns the blocked planning expectation only, not implementation correctness or permission to execute or dispatch work. I relied on the supplied Service-bound fingerprints and provenance and did not independently recompute digests or execute code.",
+    "goldDigest": "3ec750812d4c02eb8ab32d7ad2c6644c63e5d1dcd12fd2833549eb7aeaf43701"
+  }
+}

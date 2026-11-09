@@ -22,6 +22,35 @@ function realServiceStore() {
   return store
 }
 
+test('native reads stay loopback and PR writes require same-origin writer serialization', async () => {
+  const calls = []
+  const native = {
+    diagnostics() { calls.push('diagnostics'); return { capabilities: [] } },
+    status(id) { calls.push(`status:${id}`); return { state: 'unbound' } },
+    async bind(id, body) { calls.push(`bind:${id}`); return body },
+    async unbind(id) { calls.push(`unbind:${id}`) },
+    async capture(id) { calls.push(`capture:${id}`); return { artifactId: 'a' } },
+  }
+  const handler = createHttpHandler({ nativeIntegration: native, async serializedMutation(work) { calls.push('lock'); return work() } })
+  const blocked = response()
+  await handler(new Request({ method: 'PUT', url: '/project-orchestrator/api/projects/p/pull-request', headers: { host: '127.0.0.1', origin: 'https://other.invalid' }, body: '{}' }), blocked)
+  assert.equal(blocked.statusCode, 403)
+  assert.deepEqual(calls, [])
+  const remote = response()
+  await handler(new Request({ url: '/project-orchestrator/api/native-capabilities', remoteAddress: '192.0.2.1' }), remote)
+  assert.equal(remote.statusCode, 403)
+  assert.deepEqual(calls, [])
+  const read = response()
+  await handler(new Request({ url: '/project-orchestrator/api/native-capabilities', headers: { host: '127.0.0.1' } }), read)
+  assert.equal(read.statusCode, 200)
+  for (const [method, suffix, expected] of [['PUT', '', 200], ['DELETE', '', 200], ['POST', '/evidence', 201]]) {
+    const res = response()
+    await handler(new Request({ method, url: `/project-orchestrator/api/projects/p/pull-request${suffix}`, headers: { host: '127.0.0.1', origin: 'http://127.0.0.1' }, body: '{}' }), res)
+    assert.equal(res.statusCode, expected, res.body)
+  }
+  assert.deepEqual(calls, ['diagnostics', 'lock', 'bind:p', 'lock', 'unbind:p', 'lock', 'capture:p'])
+})
+
 async function within(milliseconds, operation) {
   let timeout
   try {
@@ -65,9 +94,20 @@ function response() {
 function service() {
   return {
     snapshot() { return { projects: [], tasks: [], agents: [], approvals: [], runs: [], planHashes: {}, runtimes: [], resources: [], issues: [], taskRuns: [], activity: [], eventCursor: '0', comments: [], decisions: [], squads: [], delegations: [], transcripts: [], artifacts: [], commands: [], externalTriggers: [], skills: [], workspaceLeases: [], localDirectoryLocks: [], projectAgentMemberships: [], projectSquadBindings: [], projectAgentMembershipSources: [], featureUsageDaily: [], runtimeOverview: { defaultHost: { id: 'default-host', name: '本机默认环境', status: 'online', capabilities: [], boundAgentCount: 0 }, customCount: 0, abnormalCount: 0, archivedCount: 0 }, inbox: [], agentWorkloads: [], runStatistics: [] } },
+    getWorkbenchBootstrap() { return { schemaVersion: 1, snapshot: this.snapshot(), totals: { taskRuns: 0, activity: 0, transcripts: 0, artifacts: 0 } } },
+    getIssueContext(issueId) { return { issueId, taskRuns: [], activity: [], transcripts: [], artifacts: [], totals: { taskRuns: 0, activity: 0, transcripts: 0, artifacts: 0 }, truncated: false } },
+    getTaskRunArtifacts(projectId, taskRunIds) { return { projectId, taskRunIds, items: [], total: 0, truncatedTaskRunIds: [] } },
+    getTaskRunTranscript() { return [] },
+    getTaskRunArtifactsById() { return [] },
     getStorageCapabilities() { return { transactions: false, compareAndSwap: false, uniqueConstraints: false, orderedAppend: false, serializedDomainWrites: true, durableBeforeMemory: true } },
     listStorageMutationIntents() { return [] },
+    previewStorageReconciliation(intentId) { return { intentId, verdict: 'replay_safe', previewDigest: 'a'.repeat(64) } },
+    listStorageRecoveryAttempts(intentId) { return [{ id: 'attempt-1', intentId }] },
+    async executeStorageReconciliation(intentId, body) { return { id: 'attempt-1', intentId, status: 'completed', ...body } },
     listDomainEvents(after, limit, projectId) { return { events: [], nextCursor: String(after), latestCursor: '0', hasMore: false, limit, projectId } },
+    async getProjectReadiness(projectId) { return { projectId, projectRevision: 1, planningReadiness: { status: 'ready', checks: [] }, executionPreparation: { status: 'unknown', checks: [] } } },
+    getProjectOverview(projectId) { return { projectId, projectRevision: 1, status: 'draft', conclusionCode: 'planning_not_started', nextAction: { code: 'inspect_readiness' }, blockers: [], counts: { tasks: 0 } } },
+    getProjectHistory(projectId, kind, cursor, limit) { return { projectId, kind, cursor, limit, items: [], hasMore: false, watermark: '' } },
      async getInbox(query) { return query?.kind ? [{ id: 'filtered', kind: query.kind }] : [] },
      async getAgentWorkloads() { return [] },
      listProjectAgents(projectId) { return [{ id: `${projectId}:agent`, projectId, agentId: 'agent', status: 'active' }] },
@@ -102,9 +142,11 @@ function service() {
      listProjectRequirementDecisions() { return [] },
      getProjectRequirementMatrix(projectId) { return { project: { id: projectId }, bundles: [], items: [], decisions: [], acceptanceCriteria: [], rows: [] } },
      listProjectCapabilityClaims(projectId) { return [{ id: 'claim-1', projectId, status: 'active' }] },
+     async prepareProjectCapabilityClaims(projectId, body) { return body.capabilityIds.map((capabilityId) => ({ projectId, capabilityId, source: 'legacy_pending_mapping', status: 'pending' })) },
      listPlanningApprovalsV3(projectId) { return [{ id: 'approval-1', projectId, planSnapshotId: 'plan-1' }] },
      listExecutionDispatchesV3(projectId) { return [{ id: 'dispatch-1', projectId, outcome: 'waiting' }] },
      getProjectPlanningV3(projectId) { return { projectId, planningContractVersion: 3, planHealth: { approvable: true }, actions: ['approve_plan'] } },
+     async previewPlanningEvaluationInputV3(projectId) { return { projectId, releaseInput: { sourceDigest: 'a'.repeat(64) } } },
      getPlanningMetricPolicyV3(projectId) { return { id: 'metric-policy-1', scopeProjectId: projectId, version: 'v3.3' } },
      listPlanningMetricPoliciesV3(projectId) { return [{ id: 'metric-policy-1', scopeProjectId: projectId, version: 'v3.3' }] },
      listPlanningShadowEvaluationsV3(projectId) { return [{ id: 'shadow-1', projectId, planningOutcome: 'would_commit' }] },
@@ -184,6 +226,24 @@ test('snapshot endpoint returns no-store JSON', async () => {
   })
 })
 
+test('workbench bootstrap and on-demand evidence routes expose bounded read projections', async () => {
+  const fake = service()
+  const headers = { host: '127.0.0.1:3080' }
+  const bootstrap = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/bootstrap', headers }), bootstrap)
+  assert.equal(bootstrap.statusCode, 200)
+  assert.equal(JSON.parse(bootstrap.body).schemaVersion, 1)
+  assert.equal(bootstrap.headers.get('cache-control'), 'no-store')
+
+  const issue = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/issues/issue%201/context', headers }), issue)
+  assert.equal(JSON.parse(issue.body).issueId, 'issue 1')
+
+  const artifacts = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project%201/task-run-artifacts?taskRunId=run%201&taskRunId=run%202', headers }), artifacts)
+  assert.deepEqual(JSON.parse(artifacts.body).taskRunIds, ['run 1', 'run 2'])
+})
+
 test('event cursor and storage diagnostics endpoints validate pagination and expose operational state', async () => {
   const fake = service()
   const events = response()
@@ -197,12 +257,38 @@ test('event cursor and storage diagnostics endpoints validate pagination and exp
     assert.equal(invalid.statusCode, 400)
   }
 
+  const readiness = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/readiness', headers: { host: '127.0.0.1:3080' } }), readiness)
+  assert.equal(JSON.parse(readiness.body).planningReadiness.status, 'ready')
+  const overview = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/overview', headers: { host: '127.0.0.1:3080' } }), overview)
+  assert.equal(JSON.parse(overview.body).nextAction.code, 'inspect_readiness')
+  const history = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project-1/history?kind=task-runs&limit=25', headers: { host: '127.0.0.1:3080' } }), history)
+  assert.equal(JSON.parse(history.body).limit, 25)
+  for (const url of ['/project-orchestrator/api/projects/project-1/history?kind=unknown', '/project-orchestrator/api/projects/project-1/history?kind=task-runs&limit=101']) {
+    const invalid = response()
+    await createHttpHandler(fake)(new Request({ url, headers: { host: '127.0.0.1:3080' } }), invalid)
+    assert.equal(invalid.statusCode, 400)
+  }
+
   const capabilities = response()
   await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/admin/storage-capabilities', headers: { host: '127.0.0.1:3080' } }), capabilities)
   assert.equal(JSON.parse(capabilities.body).transactions, false)
   const reconciliation = response()
   await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/admin/storage-reconciliation?projectId=project-1', headers: { host: '127.0.0.1:3080' } }), reconciliation)
   assert.deepEqual(JSON.parse(reconciliation.body), [])
+  const preview = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/admin/storage-reconciliation/intent%20one/preview', headers: { host: '127.0.0.1:3080' } }), preview)
+  assert.deepEqual(JSON.parse(preview.body), { intentId: 'intent one', verdict: 'replay_safe', previewDigest: 'a'.repeat(64) })
+  const attempts = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/admin/storage-reconciliation/intent%20one/attempts', headers: { host: '127.0.0.1:3080' } }), attempts)
+  assert.deepEqual(JSON.parse(attempts.body), [{ id: 'attempt-1', intentId: 'intent one' }])
+  const execute = response()
+  const body = { expectedIntentDigest: 'b'.repeat(64), previewDigest: 'a'.repeat(64), expectedProjectRevision: 1, action: 'replay', idempotencyKey: 'recover-1', requestedBy: 'operator', reason: 'Resume.' }
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/admin/storage-reconciliation/intent%20one/execute', headers: { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080' }, body: JSON.stringify(body) }), execute)
+  assert.equal(execute.statusCode, 202)
+  assert.deepEqual(JSON.parse(execute.body), { id: 'attempt-1', intentId: 'intent one', status: 'completed', ...body })
 })
 
 test('read routes reject non-loopback peers before exposing project data', async () => {
@@ -284,6 +370,7 @@ test('Planning V3 read routes expose current health, audit records, and reachabl
   const headers = { host: '127.0.0.1:3080' }
   const cases = [
     ['/project-orchestrator/api/projects/project-1/planning', 'projectId', 'project-1'],
+    ['/project-orchestrator/api/projects/project-1/planning-evaluation-input', 'releaseInput.sourceDigest', 'a'.repeat(64)],
     ['/project-orchestrator/api/projects/project-1/planning-operations', '0.id', 'operation-1'],
     ['/project-orchestrator/api/projects/project-1/planning-operations/operation-1', 'id', 'operation-1'],
     ['/project-orchestrator/api/projects/project-1/capability-claims', '0.id', 'claim-1'],
@@ -306,9 +393,29 @@ test('Planning V3 read routes expose current health, audit records, and reachabl
   }
 })
 
+test('Planning evaluation input preview rejects non-loopback readers and returns provenance failures', async () => {
+  const fake = service()
+  let calls = 0
+  fake.previewPlanningEvaluationInputV3 = async (projectId) => { calls++; assert.equal(projectId, 'project one'); throw new WorkflowError('planning-evaluation-provenance-unavailable', 'Missing model provenance.', 409) }
+  const denied = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project%20one/planning-evaluation-input', headers: { host: '127.0.0.1:3080' }, remoteAddress: '203.0.113.1' }), denied)
+  assert.equal(denied.statusCode, 403)
+  assert.equal(calls, 0)
+  const unavailable = response()
+  await createHttpHandler(fake)(new Request({ url: '/project-orchestrator/api/projects/project%20one/planning-evaluation-input', headers: { host: '127.0.0.1:3080' } }), unavailable)
+  assert.equal(unavailable.statusCode, 409)
+  assert.equal(JSON.parse(unavailable.body).error.code, 'planning-evaluation-provenance-unavailable')
+  assert.equal(calls, 1)
+})
+
 test('Planning V3 mutations keep approval separate and preserve waiting versus started dispatch status', async () => {
   const fake = service()
   const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+
+  const prepared = response()
+  await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/capability-claims/prepare', headers, body: JSON.stringify({ capabilityIds: ['language.javascript'] }) }), prepared)
+  assert.equal(prepared.statusCode, 201)
+  assert.deepEqual(JSON.parse(prepared.body), [{ projectId: 'project-1', capabilityId: 'language.javascript', source: 'legacy_pending_mapping', status: 'pending' }])
 
   const confirmed = response()
   await createHttpHandler(fake)(new Request({ method: 'POST', url: '/project-orchestrator/api/projects/project-1/capability-claims/claim-1/confirm', headers, body: JSON.stringify({ confirmedBy: 'owner' }) }), confirmed)
@@ -396,6 +503,39 @@ test('real Requirement Decision HTTP mutations complete without nesting the non-
   assert.equal(JSON.parse(resolved.body).status, 'resolved')
 })
 
+test('real delivery lifecycle HTTP mutations complete without nesting the non-reentrant service lock', async () => {
+  const store = realServiceStore()
+  const real = new OrchestratorService({}, store)
+  const now = '2026-09-22T00:00:00.000Z'
+  const project = {
+    id: 'delivery-project', name: 'Delivery project', summary: '', prd: '', technicalDesign: '', owner: 'owner', cwd: '/tmp',
+    status: 'completed', deliveryStage: 'review', revision: 1, taskIds: [], resourceIds: [], issueIds: [], planningContractVersion: 2,
+    createdAt: now, updatedAt: now,
+  }
+  await store.projects.put(project.id, project)
+  await store.verificationEvidence.put('delivery-evidence', { id: 'delivery-evidence', projectId: project.id, acceptanceIds: [], kind: 'test_command', status: 'passed', createdAt: now })
+  await store.projectReviews.put('delivery-review', { id: 'delivery-review', projectId: project.id, revision: 1, evidenceIds: ['delivery-evidence'], acceptanceResults: [], waivers: [], status: 'pending', reviewerType: 'human', summary: 'pending', round: 1, createdAt: now })
+  await store.deliveryRecords.put('delivery-record', { id: 'delivery-record', projectId: project.id, revision: 1, reviewId: 'delivery-review', evidenceIds: ['delivery-evidence'], status: 'ready', createdAt: now })
+  const headers = { host: '127.0.0.1:3080', origin: 'http://127.0.0.1:3080', 'sec-fetch-site': 'same-origin' }
+  const handler = createHttpHandler(real)
+
+  const review = response()
+  await within(1_000, handler(new Request({ method: 'POST', url: `/project-orchestrator/api/projects/${project.id}/review/resolve`, headers, body: JSON.stringify({ decision: 'approve', actor: 'reviewer', note: 'approved', waivers: [] }) }), review))
+  assert.equal(review.statusCode, 200)
+  assert.equal(JSON.parse(review.body).status, 'approved')
+
+  const confirm = response()
+  await within(1_000, handler(new Request({ method: 'POST', url: `/project-orchestrator/api/projects/${project.id}/delivery/confirm`, headers, body: JSON.stringify({ actor: 'reviewer', note: 'confirmed' }) }), confirm))
+  assert.equal(confirm.statusCode, 200)
+  assert.equal(JSON.parse(confirm.body).status, 'delivered')
+
+  const close = response()
+  await within(1_000, handler(new Request({ method: 'POST', url: `/project-orchestrator/api/projects/${project.id}/delivery/close`, headers, body: JSON.stringify({ actor: 'reviewer', note: 'closed' }) }), close))
+  assert.equal(close.statusCode, 200)
+  assert.equal(JSON.parse(close.body).status, 'closed')
+  assert.equal(store.projects.get(project.id).deliveryStage, 'closed')
+})
+
 test('project creation starts planning and approval starts execution through one route', async () => {
   const fake = service()
   const createResponse = response()
@@ -446,7 +586,7 @@ test('project Workspace linking is same-origin and serialized', async () => {
   assert.equal(lockCalls, 1)
 })
 
-test('additional requirement decomposition route is same-origin and serialized', async () => {
+test('additional requirement decomposition keeps same-origin checks and leaves locking to Planning', async () => {
   const fake = service()
   let received
   let lockCalls = 0
@@ -460,10 +600,19 @@ test('additional requirement decomposition route is same-origin and serialized',
   }), res)
   assert.equal(res.statusCode, 202)
   assert.deepEqual(received, { id: 'project-1', body: { title: '权限审计', prd: '记录权限变更。', technicalDesign: '', taskLanguage: 'zh-CN' } })
-  assert.equal(lockCalls, 1)
+  assert.equal(lockCalls, 0, 'HTTP must not hold a non-reentrant outer lock while Planning reserves its operation')
+  received = undefined
+  const denied = response()
+  await createHttpHandler(fake)(new Request({
+    method: 'POST', url: '/project-orchestrator/api/projects/project-1/decompositions',
+    headers: { host: '127.0.0.1:3080', origin: 'https://untrusted.invalid' },
+    body: JSON.stringify({ title: 'Rejected', prd: 'Must not start.' }),
+  }), denied)
+  assert.equal(denied.statusCode, 403)
+  assert.equal(received, undefined)
 })
 
-test('targeted requirement revision route passes the current bundle id through the serialized boundary', async () => {
+test('targeted requirement revision route passes the current bundle id to Planning', async () => {
   const fake = service()
   let received
   fake.reviseDecomposition = async (id, bundleId, body) => { received = { id, bundleId, body }; return { id, status: 'decomposing' } }

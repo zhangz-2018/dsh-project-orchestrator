@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0564ed561077d2a4016ad23f048d0c8194ae448e3d411f273d:independent-gold-review:621d654a-70d1-4b87-bd6d-2abc0626b37d",
+    "reviewedAt": "2026-10-16T15:13:23.701Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001–AC-003 and DEC-001, matches the repository identity/base commit and paired-case identifier, and correctly requires repository, requirements and decisions evidence before blocking on the material unresolved DEC-001. Conditional acceptance criteria do not authorize selecting a default. Empty task and assignment expectations are appropriate: this case must stop at decisions rather than generate ready or assignable tasks. The nine listed source owners cover message construction, option declarations and normalization, registry filtering, forwarding, merging and public hook/instance consumers; inspection of existing generic forwarding and declaration consumers does not imply mandatory edits. The supplied build configuration supports treating distribution declarations as generated, and tsconfig.test.json includes the proposed test-d scope for separate compile-time checks. The empty team catalog does not invalidate this earlier deterministic decision block, and no later reviewer or capability eligibility is assumed. Gold and preview release fingerprints agree, with supplied provenance explaining the distinct manifest/evaluation source digest domains and whitespace-normalized saved PRD. The original specification's unfinished preparation fields are distinguishable from the subsequently supplied frozen release inputs. Project reuse and retained historical operations are not evidence of a candidate run on this bundle; no candidate output or human decision is inferred. This approval is based on the supplied specification, source evidence and Service-bound fingerprint assertions, not independent digest recomputation, code execution or human attestation.",
+    "goldDigest": "6c6b62b0988af499aeb3d98ac4687289cd77b8355a39dcb4a1d095606246a498"
+  }
+}

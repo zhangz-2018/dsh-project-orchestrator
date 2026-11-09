@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-ready-transitive-policy-v13-2026-10-16",
+  "createdAt": "2026-10-16T02:13:29.704Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "a87501ed36b64c7bc4f277878a4f17033a21993d62c6622e8b4d9703f9a8ce5f"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "goldDigest": "f9279f0b38cdecdaf9ff9edc50904f4838266d71a4a9ebb7d6b37c59fee9a2e2"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:585b75e1-e626-4ac2-b3b4-4bdf66a11cad",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/runs/fresh-2.json",
+      "startedAt": "2026-10-16T02:13:29.740Z",
+      "completedAt": "2026-10-16T02:24:54.214Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-2",
+      "operationId": "planning-v3:31f51933-ce8e-48d4-ad37-d9a19a9307c2",
+      "outcome": "infrastructure_failure",
+      "failureCode": "ERR_ASSERTION",
+      "startedAt": "2026-10-16T02:13:29.799Z",
+      "completedAt": "2026-10-16T02:26:29.586Z"
+    },
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13/fresh-3",
+      "operationId": "planning-v3:d64845a9-2308-4e62-8ae0-c72908e2a9c7",
+      "outcome": "infrastructure_failure",
+      "failureCode": "ERR_ASSERTION",
+      "startedAt": "2026-10-16T02:25:21.764Z",
+      "completedAt": "2026-10-16T02:33:20.797Z"
+    }
+  ]
+}

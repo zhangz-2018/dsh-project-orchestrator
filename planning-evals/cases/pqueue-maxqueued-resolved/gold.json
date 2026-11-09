@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6",
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "d6df484697591baf0f3b698a3cb4271d851a1967b9f23f1129958666c580769d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06252b8bc00d3494016ad1693be7dc8195bf787bdcf769b81d:independent-gold-review:0bb9d0d9-11db-4a51-8216-f0c2d1e863fd",
+    "reviewedAt": "2026-10-16T00:01:12.290Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C, without candidate results. The PRD explicitly fixes DEC-001=OPT-1 as hypothetical benchmark input, not a human Decision; only the RangeError branch is required. Thus C can be ready with no blocking reasons while preserving the rule that a materially unresolved DEC-001 must block B at decisions. REQ-001, AC-001–AC-003, task keys, repository identity/base commit, exact writable scopes, and evidence stages agree across the specification and Gold. The implementation owners and regression/type-test scopes fit the supplied source and build configuration; generated dist declarations do not require a separately maintained owner, and configuration inspection does not imply mandatory edits. TASK-VERIFY remains independent and depends on TASK-IMPLEMENT. The scoped active capability claims, roles, membership and available slots support the two designated assignees without relying on personas or pending claims. The independent active reviewer satisfies the supplied non-executing review prerequisite. Gold and preview release fingerprints match for repository, source, team, decision inputs, prompts, model, sampling, policy and budgets. The empty human-decision input is consistent with C's choice residing in the PRD. The original preparation snapshot's remaining items and runnable=false do not contradict planning readiness or authorize execution. Digests are accepted as Service-calculated and mechanically bound to saved inputs; I did not recompute them, execute code, or independently attest the referenced human confirmations. No material error or unresolved ambiguity was found.",
+    "goldDigest": "3fd30f4d3ddf79e48271e8a3ab69f3f4d837747a7564ae8bd0b8981f8bc11431"
+  }
+}

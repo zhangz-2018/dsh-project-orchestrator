@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scope-v3",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "b490248d963f55adef45f940abc2034b5fcc1b50dba8626ea812e69ffbb01aa0",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_048fdae5bdc40086016ad11ff337a481948c0c3843a13725a4:independent-gold-review:ec09e8fb-2ae5-4a98-8265-046280ea0a4a",
+    "reviewedAt": "2026-10-15T18:48:32.107Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this intentionally pending case. The original PRD explicitly leaves material DEC-001 unresolved and makes construction-time TypeError acceptance conditional, not authorization to select OPT-1. Gold therefore correctly expects blocked readiness with requirement-decision-pending on DEC-001, requires repository/requirements/decisions evidence, and contains no task assignments. This decision gate precedes Scenario Coverage, so the empty team catalog and absence of an independent project Reviewer do not require a later-stage blocking expectation here. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, paired-case identity, and inspection-owner paths are consistent across the supplied specification and Gold. Source inspection supports the stated existing behavior: shared core _stringbool performs case normalization without trimming, checks truthy before falsy, and is consumed by both classic and mini. Forwarding exports and declaration consumers are inspection scope, not mandatory edits; the supplied zshy build configuration supports treating generated declarations as build outputs rather than separately maintained owners. The mini test is correctly identified as proposed, and runtime versus type-check validation is distinguished. Gold's release fingerprints and model/policy/budget settings match the supplied preview releaseInput. I rely on the stated Service-calculated mechanical binding of digests; I did not recompute hashes, execute code, or review any candidate. Neither a paired case nor an explicitly fixed hypothetical C constitutes a human resolution of DEC-001. Approval concerns this independent blocked planning expectation, not execution, dispatch, or human attestation.",
+    "goldDigest": "db3ec6e75b9d7b4b5dcc166e9ff90dc8d4381ceb033c486e4ff807d4efb4adc1"
+  }
+}

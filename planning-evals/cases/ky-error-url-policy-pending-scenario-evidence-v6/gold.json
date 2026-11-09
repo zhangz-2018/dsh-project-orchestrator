@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04d12688c83bc33d016ad12cc63b88819094a463aaa402c419:independent-gold-review:6fb1be29-9dd7-4dc4-aa5f-a1f87f0b7dfb",
+    "reviewedAt": "2026-10-15T19:43:16.117Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation for the original PRD and frozen inputs; no candidate was supplied or used. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, paired-case identity, and inspection-owner paths are consistent. DEC-001 materially determines omitted-option behavior and remains intentionally unresolved with no human confirmation. B must therefore stop at decisions with requirement-decision-pending for DEC-001, before Scenario Coverage or assignment prerequisites. The required repository/requirements/decisions evidence stages, blocked readiness, and empty task and assignment expectations correctly reflect that gate. Conditional acceptance criteria and any explicitly fixed hypothetical C input do not resolve the human Decision. The supplied source supports the message-formatting, normalization, readonly snapshot, option-filtering, and inheritance expectations. Forwarding and declaration consumers require inspection, not mandatory edits; build configuration supports treating distribution declarations as generated rather than separately maintained owners. Runtime and compile-time verification are appropriately distinguished, and test-d is included in the supplied type-check configuration. Gold's repository/source/team/decision/prompt/model/sampling/policy fingerprints and budgets match the supplied preview releaseInput. The original specification's null releaseInput and remaining preparation items are historical preparation context, not overrides of that supplied freeze. The empty team catalog does not require a later-stage blocker because the material Decision gate precedes those prerequisites. This is a documentary review relying on Service-calculated, mechanically bound digests; I did not recompute hashes, execute code, attest human approval, or treat future review metadata as part of proposedGold.",
+    "goldDigest": "7465625a595c5a5469d6e13c3df7963ebefdaaf2d9acd562fd626dd7b977b9e3"
+  }
+}

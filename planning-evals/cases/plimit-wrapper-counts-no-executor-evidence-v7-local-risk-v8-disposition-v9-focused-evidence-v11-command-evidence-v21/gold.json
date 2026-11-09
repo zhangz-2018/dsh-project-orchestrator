@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f9e40e875ec8eaa016ad1ca948a848194a4630a111c7749f2:independent-gold-review:c9095dcc-a635-427a-b0ec-94f5c5d5c326",
+    "reviewedAt": "2026-10-16T06:56:34.243Z",
+    "rationale": "The supplied frozen Gold is coherent with the original PRD and is an appropriate independent pre-candidate expectation. REQ-001 and AC-001 through AC-003 match the supplied source: limitFunction currently forwards clearQueue but not the requested counts, and its declared return type likewise lacks those counts. The exact binding scope includes the runtime owner, maintained declaration, runtime regressions, and tsd regressions without requiring unnecessary edits or configuration changes. The implementation and dependent independent-verification tasks are consistent with the PRD. Neither task has an eligible execution member: the only project member is a non-auto-assignable reviewer with no capability claims. That reviewer can satisfy the stated earlier independent-review prerequisite without becoming an executor, so blocking at assignments with abstained-no-eligible for both tasks is appropriate. No material unresolved decision is supplied that would require an earlier decisions-stage block. Repository identity, base commit, stable keys, evidence stages, and release fingerprints are consistent across the supplied records; the provenance explicitly explains the distinct manifest, evaluation-source, and normalized PRD digest domains. Historical operations are retained as non-fresh evidence and no candidate outputs for this bundle are supplied. This approval concerns the independent Gold expectation, not execution, human attestation, or completion of the remaining negative controls. Digest bindings are accepted as supplied Service-calculated facts; I did not recompute hashes or execute code.",
+    "goldDigest": "64b2f0bfdda55afff8249776838b64c99f54ebcb81cdd83c330049913479236b"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "0067e964fdebde2b94a323f89e5183383f2c5ed0e9a4cc3f50af0589213f0289",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "997d50f41feb75f1585488fca813649368c3faf4e455878b94a31d36d4106ec2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00799d6a88db340e016ad1810d6300819383cdba222af36589:independent-gold-review:56b9d1f6-8c75-49ff-92d4-8a1529e634ab",
+    "reviewedAt": "2026-10-16T01:42:51.180Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this fixed C scenario. REQ-001, AC-001–AC-003, DEC-001 and both task keys agree with the original PRD. OPT-1 is explicitly a hypothetical benchmark input, not a human-confirmed Decision; ready with no decision blocker is therefore appropriate for C. An unresolved material DEC-001 in paired B must instead block at decisions. The exact implementation/test binding scope covers the bounded change and regression obligations. Supplied build configuration establishes that distribution declarations are generated, not separately maintained edit owners, and the test configuration includes the scoped test file for both runtime and compiler checks. Implementation followed by independent verification is appropriate. The allowed agents have the relevant active project-scoped trusted claims, distinct delivery roles and available capacity; eligibility does not rely on Persona or pending legacy claims. This invocation-local maxAge validation does not itself require shared-data or state capabilities. A distinct configured project reviewer is also supplied. Repository identity and base commit agree, and the frozen release fingerprints and budgets match between Gold and preview. The earlier preparation snapshot's remaining items do not override the subsequently supplied frozen inputs. Historical project reuse and retained old operations do not establish candidate contamination, given the explicit isolation facts. This review used only the supplied evidence: no code was executed, no new human attestation was made, and Service-calculated digests were not independently recomputed.",
+    "goldDigest": "0a9711a1ee97d508ce01c6db2cda7d25cc6411ef34b044b47351b63f974d139f"
+  }
+}

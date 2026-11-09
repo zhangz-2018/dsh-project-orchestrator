@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scope-v3",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "b490248d963f55adef45f940abc2034b5fcc1b50dba8626ea812e69ffbb01aa0",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07740a62f25337ba016ad11fd671ac81978a57ed2f5be06b27:independent-gold-review:0f219297-a234-437b-b421-b9898b147c48",
+    "reviewedAt": "2026-10-15T18:48:03.030Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. Repository identity, base commit, paired-case identity, REQ-001, AC-001–AC-003, owner-path bindings, readiness and required evidence stages agree with the original specification. DEC-001 materially controls omitted-option behavior and remains intentionally unresolved; conditional acceptance language does not select OPT-1 or OPT-2. B must therefore stop as blocked at decisions with requirement-decision-pending for DEC-001, without assignable tasks or assignments. This earlier deterministic gate makes the empty team catalog and missing later independent Reviewer non-blocking for this particular expectation. The nine supplied source owners coherently cover message construction, public and internal option types, normalization, option filtering, inheritance and hook consumers; forwarding and declaration consumers require inspection, not mandatory edits. The supplied build configuration supports treating distribution declarations as generated rather than separately maintained owners, and tsconfig.test.json includes the proposed test-d location for compile-time checks independently of AVA execution. The Gold and preview releaseInput fingerprints agree across repository, source, team, decision inputs, prompts, model, sampling, budgets and metric policy. Fingerprints are accepted as Service-calculated and mechanically bound to saved inputs; I did not recompute digests or execute code. No candidate was supplied or used, no human Decision or attestation is inferred, and any fixed hypothetical C input would not resolve B's pending DEC-001.",
+    "goldDigest": "dd92fe787065b59c896dbcfe31c47762c89e2bcedf541a68f7eaa40600dddf0a"
+  }
+}

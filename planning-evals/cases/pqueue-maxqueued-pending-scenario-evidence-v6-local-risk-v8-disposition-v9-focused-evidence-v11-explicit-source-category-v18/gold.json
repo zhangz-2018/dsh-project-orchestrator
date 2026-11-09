@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_020a3db6e653509c016ad1b6652d6c81969000806588b739a7:independent-gold-review:36861c07-5e4e-4a8d-825b-0d07fa6f8ebc",
+    "reviewedAt": "2026-10-16T05:30:23.828Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001 and AC-001 through AC-003 match the original PRD, and material DEC-001 remains explicitly unresolved without human confirmation. Blocking at decisions with requirement-decision-pending, requiring repository/requirements/decisions evidence, and leaving task and assignment expectations empty are therefore appropriate; the conditional acceptance criteria do not authorize selecting either error contract. The complete implementation-owner evidence supports source/index.ts and source/options.ts as the bounded binding owners. The package and compiler configuration establish the source build and generated dist declaration boundary, without requiring separately maintained declaration edits or release-configuration changes. Runtime regression checks and compile-time verification are correctly distinguished. The empty team catalog does not invalidate this intentional earlier decision block, since later reviewer and assignment prerequisites are not reached. Repository, source, team, decision, model, sampling, budget, prompt, and policy fingerprints are consistently frozen between Gold and preview. The supplied provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization. Historical project reuse is explicitly scoped, with historical operations retained and no candidate outputs supplied; the isolation record states this Gold precedes every candidate on the bundle. This approval concerns the expectation, not implementation correctness, task authorization, or execution. I relied on the supplied Service-bound fingerprints and provenance; I did not independently recompute digests, execute code, or supply human attestation.",
+    "goldDigest": "b88fa8a32d439ee19cc5130e1ad8a6f72affe4cba12de3e74c8d5d06816ee257"
+  }
+}

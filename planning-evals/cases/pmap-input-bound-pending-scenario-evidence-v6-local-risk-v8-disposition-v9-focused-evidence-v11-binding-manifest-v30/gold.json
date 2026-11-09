@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_05fd2dd906c721f5016ad23ef4e1588195b41c0021c59b91a9:independent-gold-review:fc4284f8-b7e4-426f-9f37-9f950b7117ce",
+    "reviewedAt": "2026-10-16T15:13:06.116Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending planning case. It preserves REQ-001, AC-001 through AC-003, and DEC-001; the conditional RangeError acceptance does not authorize selecting OPT-1. The material unresolved DEC-001 correctly blocks readiness at decisions, with repository, requirements, and decisions evidence required and no assignable tasks or assignment expectations. The empty team catalog does not invalidate this earlier deterministic block because the supplied policy places independent Scenario Coverage review and assignment prerequisites later. The complete implementation and declaration evidence supports index.js and index.d.ts as the bounded owners; shared runtime helpers and shared option types require inspection to preserve other exports, not expansion of the feature to them. package.json supports the stated separate AVA and tsd validation entry points. The test excerpts are explicitly truncated, so this approval does not attest to exhaustive existing test coverage. Repository identity, base commit, paired-case identifier, file fingerprints, and the Gold/preview release-input fingerprints are consistent as supplied. The provenance explains the distinct manifest/evaluation source digest domains and trimmed/untrimmed PRD fingerprints. I rely on the Service's stated mechanical binding of those fingerprints, including team, decision, prompt, model, sampling, budget, and policy inputs; I did not recompute digests or execute code. The historical operations are not supplied as candidate evidence and do not justify changing expectations. No human decision or attestation is inferred. No material error or unresolved ambiguity affecting this blocked-case Gold was identified.",
+    "goldDigest": "9a2928d73f04ca5e208ab08f734f2f3576973a20312336da1e9e761f08f091ea"
+  }
+}

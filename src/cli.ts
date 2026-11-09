@@ -12,7 +12,7 @@ const USAGE = `dsh-project-orchestrator ${VERSION}\n\nUsage:\n  dsh-project-orch
 const args = process.argv.slice(2)
 const command = args.shift()
 const baseUrl = takeOption(args, '--url') ?? process.env.DSH_PROJECT_ORCHESTRATOR_URL ?? 'http://127.0.0.1:3080/project-orchestrator/api'
-const DELIVERY_USAGE = "  dsh-project-orchestrator resolve-review PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator close-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n  dsh-project-orchestrator capture-planning-eval PROJECT_ID OPERATION_ID CASE_ID RUN_ID --output PATH [--url URL]\n  dsh-project-orchestrator capture-release-canary PROJECT_ID --output PATH [--url URL]\n"
+const DELIVERY_USAGE = "  dsh-project-orchestrator readiness PROJECT_ID [--url URL]\n  dsh-project-orchestrator overview PROJECT_ID [--url URL]\n  dsh-project-orchestrator resolve-review PROJECT_ID '<JSON>' [--url URL]\n  dsh-project-orchestrator close-delivery PROJECT_ID ACTOR [NOTE] [--url URL]\n  dsh-project-orchestrator capture-planning-eval PROJECT_ID OPERATION_ID CASE_ID RUN_ID --output PATH [--url URL]\n  dsh-project-orchestrator capture-release-canary PROJECT_ID --output PATH [--url URL]\n  dsh-project-orchestrator reconciliation-preview INTENT_ID [--url URL]\n  dsh-project-orchestrator reconciliation-attempts INTENT_ID [--url URL]\n  dsh-project-orchestrator reconciliation-execute INTENT_ID '<JSON>' [--url URL]\n"
 
 try {
   if (command === '--help' || command === '-h' || command === undefined) {
@@ -25,6 +25,10 @@ try {
     print(await request('/inbox'))
   } else if (command === 'stats') {
     print(await request('/stats'))
+  } else if (command === 'readiness' || command === 'overview') {
+    const projectId = args.shift()
+    if (projectId === undefined || projectId.trim() === '' || args.length !== 0) throw new Error(`${command} requires a PROJECT_ID.`)
+    print(await request(`/projects/${encodeURIComponent(projectId)}/${command}`))
   } else if (command === 'team-plan') {
     const projectId = args.shift()
     if (projectId === undefined || projectId.trim() === '') throw new Error('team-plan requires a PROJECT_ID.')
@@ -110,7 +114,20 @@ try {
     if (projectId === undefined || output === undefined || args.length !== 0) throw new Error('capture-release-canary requires PROJECT_ID and --output PATH.')
     const artifact = PlanningReleaseCanarySchema.parse(await request(`/projects/${encodeURIComponent(projectId)}/release-canary?releaseVersion=${encodeURIComponent(VERSION)}`))
     if (artifact.releaseVersion !== VERSION) throw new Error(`Harness canary releaseVersion does not match package version ${VERSION}.`)
+    if (artifact.schemaVersion !== 2) throw new Error('Harness canary must use schemaVersion 2 with verification and human delivery evidence.')
     print({ path: await writeArtifactExclusive(output, artifact), releaseVersion: artifact.releaseVersion, evidenceBundleDigest: artifact.evidenceBundleDigest })
+  } else if (command === 'reconciliation-preview') {
+    const intentId = args.shift()
+    if (intentId === undefined || args.length !== 0) throw new Error('reconciliation-preview requires INTENT_ID.')
+    print(await request(`/admin/storage-reconciliation/${encodeURIComponent(intentId)}/preview`))
+  } else if (command === 'reconciliation-attempts') {
+    const intentId = args.shift()
+    if (intentId === undefined || args.length !== 0) throw new Error('reconciliation-attempts requires INTENT_ID.')
+    print(await request(`/admin/storage-reconciliation/${encodeURIComponent(intentId)}/attempts`))
+  } else if (command === 'reconciliation-execute') {
+    const intentId = args.shift()
+    if (intentId === undefined) throw new Error('reconciliation-execute requires INTENT_ID and a JSON body.')
+    print(await request(`/admin/storage-reconciliation/${encodeURIComponent(intentId)}/execute`, parseJsonArgument(args)))
   } else if (command === 'command') {
     print(await request('/commands', parseJsonArgument(args)))
   } else if (command === 'trigger') {

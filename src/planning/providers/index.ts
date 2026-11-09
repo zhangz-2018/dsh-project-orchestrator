@@ -50,10 +50,15 @@ interface BuiltinProviderImplementations {
 
 const emptyQuery = async (): Promise<RepositoryProviderEvidenceResult> => ({ ownerPathsBySymbol: {} })
 
+function isTestPath(path: string): boolean {
+  return /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue)$/u.test(path)
+    && /(?:^|\/)(?:test|tests|__tests__)(?:\/|$)|(?:^|\/)test\.[^.]+$|\.(?:spec|test)(?:-d)?\.[^.]+$/u.test(path)
+}
+
 export function createBuiltinRepositorySemanticProviders(implementations: BuiltinProviderImplementations): RepositorySemanticProvider[] {
   return [
     {
-      id: 'typescript-compiler-api', version: '5.8-v1', stackTags: ['typescript', 'javascript'],
+      id: 'typescript-compiler-api', version: '5.8-v2', stackTags: ['typescript', 'javascript'],
       detect: (context) => {
         const evidenceIds = context.paths.filter((path) => /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs)$/u.test(path))
         return { detected: evidenceIds.length > 0, evidenceIds, stackTags: evidenceIds.some((path) => /\.(?:ts|tsx|mts|cts)$/u.test(path)) ? ['typescript'] : ['javascript'] }
@@ -68,14 +73,14 @@ export function createBuiltinRepositorySemanticProviders(implementations: Builti
       query: implementations.queryScriptOwners,
     },
     {
-      id: 'typescript-vue-test-provider', version: '1.0.0', stackTags: ['typescript', 'javascript', 'vue', 'nuxt'],
+      id: 'typescript-vue-test-provider', version: '1.0.1', stackTags: ['typescript', 'javascript', 'vue', 'nuxt'],
       detect: (context) => {
-        const evidenceIds = context.paths.filter((path) => /(?:^|\/)(?:test|tests|__tests__)(?:\/|$)|\.(?:spec|test)\.[^.]+$/u.test(path) && /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue)$/u.test(path))
+        const evidenceIds = context.paths.filter(isTestPath)
         return { detected: evidenceIds.length > 0, evidenceIds, stackTags: [] }
       },
       capabilities: () => ['tests'],
       index: async (context) => {
-        const tests = context.paths.filter((path) => /(?:^|\/)(?:test|tests|__tests__)(?:\/|$)|\.(?:spec|test)\.[^.]+$/u.test(path) && /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue)$/u.test(path))
+        const tests = context.paths.filter(isTestPath)
         const scriptStatus = context.coverageByCapability.get('symbols')?.status
         const covered = tests.length > 0 && scriptStatus === 'covered'
         return { coverage: [{ capability: 'tests', status: covered ? 'covered' : tests.length > 0 ? 'partial' : 'missing', ...(!covered ? { reason: tests.length === 0 ? 'No supported repository test surface was found.' : 'Test files do not have complete semantic provider coverage.' } : {}) }] }

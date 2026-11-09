@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "115c2144daad54db1e2958ebf98f4b19b1a5bd10dcffeb95f3c0a2b0f85cc1e9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cc234cbd7a646e2016ad26556cb0c81909fd83f93753009f2:independent-gold-review:85c4e833-2543-4df9-8ca2-81a441d30cb7",
+    "reviewedAt": "2026-10-16T17:56:50.760Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001 and AC-001 through AC-003, identifies source/index.ts and source/options.ts as the implementation owners, and correctly requires evidence only through repository, requirements, and decisions. DEC-001 materially affects the public rejection contract, is explicitly unresolved and not human-confirmed, and must block at decisions without selecting either option or producing assignable tasks. Empty task and assignment expectations therefore agree with the PRD. The empty trusted team catalog does not invalidate this earlier deterministic block; later reviewer and capability prerequisites are not reached. Source evidence supports the owner scope and distinguishes runtime testing from compilation and nz type verification. Build configuration supports treating dist declarations as generated rather than separately maintained owners. The truncated runtime-test excerpts do not prevent review of this decisions-stage expectation. Repository identity, base commit, paired case, stable keys, and the supplied release fingerprints are consistent across Gold and preview. The different manifest and evaluation source digests, and original versus saved PRD digests, are explained by explicit digest domains and trim-only persistence provenance. Historical project reuse supplies no candidate outputs or authority to resolve DEC-001. The original specification's null release input and remaining-work list describe its preparation state; the frozen release input is supplied consistently in Gold and preview. Approval concerns the benchmark expectation, not implementation readiness, task dispatch, human attestation, or successful validation. I relied on the supplied Service-calculated fingerprints and mechanical-binding provenance; I did not recompute digests or execute code.",
+    "goldDigest": "fcf5e67bd73e6912372991e1403825a08a77a29705d3534fa5d13138ceb9dd89"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "27fef76fb745e781fd280b3455f0ea4489b8cb92a1bf72200480d68f3d890e49",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "b3d23b76f6946419a8c858eded1f18e6baf663fafd6fc42b15ebcefe7ef067b4",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f7171115672457780da39cd027b62693ccb39267421dda91686ad8b48a3dc47d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_046bc2883de20546016ad1b036bc888190a87de696ecb5ca31:independent-gold-review:b65f9bfe-deca-427e-924c-8c47dd705ee8",
+    "reviewedAt": "2026-10-16T05:04:04.051Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001–AC-003 preserve exact-key counting, live map/array state, duplicate registration semantics, compatibility, and event-key typing. The exact writable binding scope includes the implementation and both regression owners without requiring gratuitous edits. Repository configuration and the supplied microbundle source establish declaration generation, so index.d.ts is not a separately maintained owner; build-before-test and separate compile-time validation are supported. TASK-IMPLEMENT and the dependent, independent TASK-VERIFY are consistent with the specification. Their allowed agents have the relevant supplied active trusted capability claims, including shared-data/state capabilities and verification capability for the verifier; pending legacy claims and personas are not needed to justify eligibility. A distinct active project reviewer is supplied for the earlier review prerequisite. No unresolved material Decision is present in this case, so ready with no blocking reasons is appropriate. The frozen preview release inputs agree with Gold across repository, source, team, decision, prompt, model, sampling, budget, and policy fingerprints. The provenance explains the distinct source-digest domains and PRD whitespace normalization; the original preparation-time null release input and remaining-work markers do not override the subsequently supplied frozen preview. This approval concerns planning expectations only, not task authorization or successful execution. I reviewed only the supplied evidence, used no candidate outputs, performed no execution, and did not independently recompute Service-calculated digests or provide a human attestation.",
+    "goldDigest": "368f67c321b7534295fd168f9e48e45eb1783208d3411d0fb72fa8fec3988014"
+  }
+}

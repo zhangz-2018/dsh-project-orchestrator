@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_09a585ddcbd04bf8016ad254211ec481908d4a9fa13b0b9bbe:independent-gold-review:9a609ba8-a6af-4595-9df2-a6b8ad24d766",
+    "reviewedAt": "2026-10-16T16:43:25.621Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001 through AC-003 retain their stable keys and cover live, read-only wrapper counts, queue-clearing boundaries, and compatibility with the existing limiter. The source evidence supports the exact binding scope: index.js owns the wrapper implementation, index.d.ts directly maintains its exported return type, and test.js plus index.test-d.ts own runtime and compile-time regressions. package.json confirms the stated xo && ava && tsd verification entry point. The implementation/independent-verification task split and verification dependency are consistent with the specification. Neither task has an eligible execution member: the sole project member is a non-autoassignable reviewer without execution capability claims. That reviewer can satisfy the supplied earlier independent-review prerequisite without becoming an implementer or verifier, so reaching assignments and blocking both tasks with abstained-no-eligible is appropriate. No unresolved material business Decision is present in this case. Gold and preview release fingerprints match, and the supplied provenance explains the distinct source-manifest, evaluation-source, and normalized PRD digest domains. I rely on the Service's stated mechanical binding of these digests; I did not recompute hashes or execute code. The isolation evidence distinguishes retained historical operations from this bundle and supplies no candidate outputs. Approval concerns the pre-candidate Gold expectation only, not task dispatch, execution success, or completion of the remaining fresh negative controls.",
+    "goldDigest": "701fa9a374a0523476c26443ba55ca8b7f71a074cc58cbd5e029e6d7bd22e655"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "aa9d1803194e9acaeac819a2789e4931de23bc622f51b39065dd955883940011",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b60f17a5d05a6bf016ad1fe427b2c81968d46ae2123ea3b08:independent-gold-review:06eccdaf-ce58-4d59-8862-dc997e939cad",
+    "reviewedAt": "2026-10-16T10:37:02.524Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. DEC-001=OPT-1 is explicitly fixed hypothetical input, not a human Decision; only that branch is required under the retained REQ-001 and AC-001–AC-003 keys. Thus C can be ready without a human decision record, while a material unresolved DEC-001 in B must still block at decisions. The exact four-file binding scope matches the implementation, maintained declaration, runtime-test and type-test owners supported by the source and package configuration; it does not require gratuitous edits or configuration changes. The two task roles, independent verification dependency and required acceptance coverage are consistent with the PRD. Supplied active trusted capability claims support the allowed implementer and verifier, including data.change, domain.state and integration.consumer; pending security.authorization claims are not needed for this scope. A separate active, non-autoassignable reviewer satisfies the stated earlier review prerequisite without requiring execution claims. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct source-manifest/evaluation digest domains and original/saved PRD whitespace normalization. Model, policy, sampling and budget fingerprints are specified consistently. The original specification's remaining preparation items describe the earlier preparation state, not a conflicting planning-readiness expectation. This approval relies on supplied Service-bound fingerprints and isolation facts, not independent digest recomputation, code execution, test success or new human attestation. No candidate outputs were used, and approval does not authorize task dispatch or repository changes.",
+    "goldDigest": "f3106c1ce3b4b2b6125d8cb3fad7c3800e0d912b079c104d5973f89fcf5d77c7"
+  }
+}

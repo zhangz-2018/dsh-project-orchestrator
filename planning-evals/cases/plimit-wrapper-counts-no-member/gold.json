@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-member",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4f6a662cce150d42da2d54a01b19562ef8aebb0a655cd82e5e59d3d63239b110",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01c5a81afc5e7e70016ad11627f9b08197859c4850a7d103ff:independent-gold-review:1db88230-8068-4bf5-9b01-e5f98cb1d41c",
+    "reviewedAt": "2026-10-15T18:06:43.682Z",
+    "rationale": "The supplied Gold is a coherent independent, pre-candidate expectation for this case. REQ-001 and AC-001–AC-003 agree with the original PRD and supplied source: limitFunction already uses one internal limiter and forwards clearQueue, but its returned function lacks the requested count properties in both runtime implementation and public typing. The exact binding scope appropriately includes index.js, index.d.ts, test.js, and index.test-d.ts without requiring gratuitous edits. package.json establishes index.d.ts as the public declaration entry and xo && ava && tsd as the verification entry; no supplied build evidence establishes generated declarations or additional mandatory owners. The stable requirement, acceptance, and task keys align. The original task expectations require implementation and independent verification covering every required acceptance criterion, with TASK-VERIFY depending on TASK-IMPLEMENT. The empty project membership and runtime facts support no eligible agents for either task, explicit abstention for both, blocked readiness, and evidence through assignments rather than premature termination. This case specifies no unresolved business decision or DEC-001; the general B/C conditions do not introduce one into this case. Gold and preview release-input fingerprints agree field-for-field for repository, source, team, decision input, prompts, policy, model, sampling, and budgets. Digests are treated as Service-calculated bindings, not independently recomputed values. No code, tests, candidates, or negative controls were executed or assumed. Approval concerns the frozen expectation only, not task dispatch, release readiness, or completion of the remaining benchmark operations.",
+    "goldDigest": "458c050645d7ab57304212137d9d9680a3652fb8e083447dca5905f0902e5cfb"
+  }
+}

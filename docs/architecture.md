@@ -21,6 +21,8 @@ The Web shell is not replaced and no second application server is required.
 | Task | Approved plan dependency, assigned Agent, and independent verification gate |
 | Issue | Collaboration lifecycle, assignment revision, review status, active TaskRun pointer |
 | TaskRun | One queue/execution attempt, workspace lease, Session and delivery evidence |
+| VerificationSpec / Invocation / Evidence | Approved verification mapping, one real execution context, and evidence bound to the TaskRun, source state, and scenario results |
+| StorageMutationIntent / RecoveryAttempt | Frozen before/after facts for recoverable writes, plus every recovery request and result |
 | Command | Idempotency key, mutation result or durable failure receipt |
 | Runtime | Local Host dispatch eligibility and workspace metadata |
 | Squad / Delegation | Team configuration and one parent/child Issue collaboration contract |
@@ -36,7 +38,7 @@ Project Agent membership is an eligibility boundary, not the execution assignmen
 - `queued`: durable and unclaimed; survives Runtime offline and restart.
 - `waiting_local_directory`: eligible but blocked by a canonical in-place directory lock.
 - `dispatched`: capacity and workspace lease acquired.
-- `running`: Harness Agent active.
+- `running`: the RuntimeAdapter has started the bound execution; the TaskRun retains the adapter, execution, and claim-version binding.
 - terminal: evidence and workspace cleanup have stabilized.
 
 A stale TaskRun may retain terminal evidence but cannot advance an Issue after its assignment revision changes.
@@ -47,7 +49,24 @@ A stale TaskRun may retain terminal evidence but cannot advance an Issue after i
 
 ## Process model
 
-Current Harness Agents execute in the Host process. Runtime records do not represent remote workers. The storage mutation boundary serializes one Host process and is not a distributed transaction or compare-and-swap protocol.
+The default `inline-runtime` executes Harness Agents in the Host process. The Service drives a RuntimeAdapter through `prepare -> persist binding -> start -> observe -> collectArtifacts`. If `start` returns an uncertain error, the Service observes the existing execution instead of blindly starting it again. Cancellation propagates to the adapter, and failed or cancelled executions can still return diagnostic artifacts. The Service remains the sole owner of TaskRun, Issue, and Project terminal transitions.
+
+A Runtime record does not imply that a remote worker exists, and this repository does not currently register a production daemon adapter. In-memory inline executions cannot survive a Host restart. The storage mutation boundary serializes one Host process and is not a distributed transaction or compare-and-swap protocol.
+
+## Service boundaries
+
+- `OrchestratorService` remains the HTTP/CLI facade and final state owner.
+- `ExecutionBroker` freezes the claim, lease, and execution contract; `RuntimeAdapter` only executes and observes.
+- `VerificationService` creates versioned invocations, runs controlled commands, and consumes structured browser reports.
+- `DeliveryService` owns delivery projections, immutable records, confirmation/closure, V3 Git Integration, and Convergence; `OrchestratorService` retains compatibility delegation and cross-domain terminal coordination that has not yet moved.
+- `StorageReconciliationService` derives previews from durable before/after facts and executes digest- and revision-guarded recovery.
+- `QueryService` produces overview, readiness, and watermark-based history pages; these read projections do not mutate business facts.
+
+## Planning semantic support
+
+Built-in production providers cover TypeScript/JavaScript symbols, relationships, and consumers; Vue/Nuxt routes; Prisma schemas; test relationships; and trusted manifest commands. Path aliases, re-exports, and reverse consumers feed one TypeScript relationship graph with explicit file and byte budgets. Exceeding a budget produces `partial` evidence.
+
+Python, Java/Spring, and Go are explicitly unsupported today because they have no production semantic provider. Projects can still use the generic workflow, but that does not prove Planning V3 can identify code owners or a complete impact surface for those languages.
 
 ## Compatibility storage
 

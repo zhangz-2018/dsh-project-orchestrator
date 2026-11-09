@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "7ca0dbc49a0dd9860103bcc0c1a89adae20cfe163b9e36d506faa693c4dcf5db",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06277aa5c18e4cce016ad20fcb3c5c8195bd60727b143b822e:independent-gold-review:816ce477-d9eb-43f9-ad36-350a71c26c95",
+    "reviewedAt": "2026-10-16T11:51:51.776Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes the recommended construction-time TypeError behavior conditional, not an authorized choice. Gold correctly requires repository, requirements, and decisions evidence, blocks at decisions with requirement-decision-pending for DEC-001, preserves REQ-001 and AC-001 through AC-003, and supplies no task or assignment expectations. The source evidence supports shared core ownership: classic and mini delegate to core._stringbool, which currently normalizes case without trimming and gives truthy matches precedence. The listed forwarding/export consumers are appropriate inspection owners, not mandatory edits; the build configuration supports generated declarations rather than separately maintained declaration owners. Runtime regression and compiler-based type verification are properly distinguished. The empty scoped team catalog does not invalidate an earlier deterministic decision block, since later reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and trimmed/original PRD domains. Historical project reuse is explicitly disclosed without supplying historical candidate outputs or copying attestations; this review neither resolves DEC-001 nor treats the paired hypothetical case as a human decision. Approval is based solely on the supplied specification and frozen evidence before any candidate on this bundle, accepting Service-calculated digest bindings without independently recomputing hashes or executing code.",
+    "goldDigest": "1eec5cfc727ee7026d6e69acc8320af62d0effd6c2667134ce91e84924541c83"
+  }
+}
