@@ -4,7 +4,7 @@ import ts from 'typescript'
 import type { RepositoryContextSnapshotV3Record, RepositoryEvidenceRetrievalReport } from '../types.js'
 import { digestObject } from '../workflow.js'
 
-const INDEX_VERSION = 'repository-evidence-index-v3.6.4'
+const INDEX_VERSION = 'repository-evidence-index-v3.6.5'
 const DEFAULT_SELECTION_LIMIT = 2_000
 const PER_REQUIREMENT_LIMIT = 80
 const MAX_INDEXED_SOURCE_BYTES = 512 * 1024
@@ -14,6 +14,11 @@ const EXCLUDED_PATH = /(?:^|\/)(?:node_modules|vendor|dist|build|coverage|\.next
 const TEXT_EVIDENCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|json|ya?ml|toml|md|prisma|java|kt|kts|py|go|rs|sql|graphql|gql)$|(?:^|\/)(?:\.gitignore|\.npmignore|\.dockerignore)$/iu
 const SOURCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|java|kt|kts|py|go|rs)$/iu
 const STOP_TERMS = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'must', 'should', 'when', 'then', 'into', '需求', '必须', '需要', '实现', '支持', '功能', '系统', '任务', '正确'])
+
+/** 识别约定的运行器配置路径；仅保留源码供审查，不推定配置被命令加载或测试已执行。 */
+export function isVerificationConfigPathV3(path: string): boolean {
+  return /(?:^|\/)(?:vite|vitest|jest|playwright|cypress)\.config\.(?:[cm]?[jt]s|json)$/iu.test(path)
+}
 
 type EvidenceCategory = 'source' | 'test' | 'schema' | 'migration' | 'workflow' | 'docs' | 'manifest' | 'other'
 
@@ -66,7 +71,7 @@ function normalizedRepositoryPath(path: string): string {
 }
 
 function categoryForPath(path: string): EvidenceCategory {
-  if (/(?:^|\/)(?:package\.json|tsconfig[^/]*\.json|pom\.xml|build\.gradle(?:\.kts)?|go\.mod|pyproject\.toml)$/iu.test(path)) return 'manifest'
+  if (isVerificationConfigPathV3(path) || /(?:^|\/)(?:package\.json|tsconfig[^/]*\.json|pom\.xml|build\.gradle(?:\.kts)?|go\.mod|pyproject\.toml)$/iu.test(path)) return 'manifest'
   if (/(?:^|\/)(?:test|tests|__tests__|e2e|browser)(?:\/|$)|\.(?:spec|test)\.[^.]+$/iu.test(path)) return 'test'
   if (/\.prisma$|(?:^|\/)schemas?(?:\/|$)|\.(?:graphql|gql)$/iu.test(path)) return 'schema'
   if (/(?:^|\/)(?:migrations?|db\/migrate)(?:\/|$)|\.sql$/iu.test(path)) return 'migration'

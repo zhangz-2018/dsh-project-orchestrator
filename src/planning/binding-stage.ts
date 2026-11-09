@@ -16,7 +16,7 @@ import { readFile, realpath, stat } from 'node:fs/promises'
 import { isAbsolute, relative, resolve, posix } from 'node:path'
 import { gitProcess } from '../execution/git-command.js'
 import ts from 'typescript'
-import { referencedPackageEntryPaths } from './repository-evidence.js'
+import { isVerificationConfigPathV3, referencedPackageEntryPaths } from './repository-evidence.js'
 import { sourcePathTokens, stripSourcePathTokens } from './source-path-tokens.js'
 
 export interface BindingEvidenceContent {
@@ -257,6 +257,8 @@ export class BindingStage {
     const explicitPaths = focus === undefined ? [] : references.filter(r => focus.includes(r.artifactId)).map(r => r.artifactId)
     const sources = new Map<string, { bytes: Buffer; excerpt: string; complete: boolean; dependencies: Array<{ path: string; typeOnly: boolean }> }>()
     const priority = (path: string): number => {
+      // 发现/排除规则决定验证是否覆盖目标，必须与命令清单一起保留；路径命中不代表运行器实际加载。
+      if (isVerificationConfigPathV3(path)) return 0
       if (/(?:^|\/)(?:package|tsconfig[^/]*)\.json$/u.test(path) && (!path.includes('/') || path.startsWith('.configs/') || explicitPaths.some(p => p.startsWith(path.slice(0, path.lastIndexOf('/') + 1))))) return 0
       return explicitPaths.includes(path) ? 1 : 2
     }

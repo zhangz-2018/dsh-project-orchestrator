@@ -106,6 +106,37 @@ test('BindingStage bounds source excerpts and labels incomplete evidence explici
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage preserves complete runner discovery configuration without requiring a lexical match', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-runner-config-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const path = 'vitest.config.ts'
+    const source = `import { defineConfig } from 'vitest/config'\n${'// unrelated runner setup\n'.repeat(80)}export default defineConfig({ test: { projects: [{ test: { include: ['src/**/*.test.ts'], exclude: ['**/sandbox/**'] } }] } })\n`
+    await writeFile(join(root, path), source)
+    const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+    const digest = digestObject({ path, blob: stdout.trim() })
+    const files = [{ path, digest }]
+    const references = [{ ref: 'ref-config', kind: 'repository_evidence', artifactId: path, artifactDigest: digest }]
+    for (let index = 0; index < 8; index++) {
+      const ownerPath = `owner-${index}.ts`
+      await writeFile(join(root, ownerPath), `export const callback = '${'x'.repeat(20_000)}'\n`)
+      const { stdout: blob } = await run('git', ['hash-object', '--no-filters', '--', ownerPath], { cwd: root })
+      const ownerDigest = digestObject({ path: ownerPath, blob: blob.trim() })
+      files.push({ path: ownerPath, digest: ownerDigest })
+      references.push({ ref: `ref-owner-${index}`, kind: 'repository_evidence', artifactId: ownerPath, artifactDigest: ownerDigest })
+    }
+    const contents = await new BindingStage(store()).loadFrozenEvidence(
+      { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
+      { projectId: 'project', operationId: 'operation', references },
+      `Change callback compatibility request in ${files.slice(1).map(file => file.path).join(' ')}.`,
+    )
+    const config = contents.find(item => item.path === path)
+    assert.equal(config.content, source)
+    assert.equal(config.truncated, false)
+    assert.ok(contents.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage exposes complete focused JSON members with source locations without inventing absent exports', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-json-members-'))
   try {

@@ -157,7 +157,17 @@ Gold 工具补充 active 声明在原数组中的位置、逐项摘要、重算�
 
 本机追加证据：`stage-disclaimer-focused-domain-facts.json`、`stage-disclaimer-hono-domain-facts.json`、`domain-before-compiler-excerpts-install.json`、`hono-compiler-excerpt-capture.json`、`compiler-excerpts-installed.json`、`compiler-excerpts-historical-observation.json`、`gold-compiler-excerpts-ready/`、`gold-compiler-excerpts-blocked/`、`gold-compiler-excerpts-team-clarification/`、`compiler-excerpts-completion/`。回归日志为 `output/formal-170-compiler-excerpts-verify-2026-11-10.log`，兼容日志为 `output/formal-170-compiler-excerpts-host-compatibility-2-2026-11-10.log`。以上仍用于验收与恢复，保留本机，不提交原始日志、领域快照或凭据。
 
-提交 `329bcd8` 的 Linux/macOS CI 和 CodeQL 均已通过；上述摘录修复仍需自身提交的 CI。正式 1.7.0 仍未通过发布验收，未合并、未创建 tag、未发布 npm 或 GitHub Release。
+提交 `329bcd8`、`ff21f38` 和 `993f03b` 的 Linux/macOS CI 和 CodeQL 均已通过。正式 1.7.0 仍未通过发布验收，未合并、未创建 tag、未发布 npm 或 GitHub Release。
+
+### 运行器配置证据修复（2026-11-10）
+
+`compiler-excerpts-v42` 的 Hono 首次候选 `planning-v3:184635a4-b6de-4dff-9d46-78424d6ea669` 在 `scenario_completion` 阻塞：现有命令是 `tsc -p tsconfig.spec.json && vp test --run`，编译器已能证明类型检查发现范围，但提供给模型的证据未建立运行器对 `src/middleware/cors/index.test.ts` 的发现。该候选与失败指标完整保留，未重采样覆盖失败。p-retry 同批候选已 committed；p-queue 自动政策后继及 p-map 当时仍在收尾，不提前计为通过。
+
+只读检查确认 Hono 存在 `vite.config.ts`、`vitest.config.ts` 和三个 runtime 配置。根 `vitest.config.ts` 中的 main project 明确包含 `src/**/(*.)+(spec|test).+(ts|tsx|js)`，但旧检索只把 package/tsconfig 等当作必选清单，运行器配置会被词法相关性上限挤出。修复将约定的 Vite/Vitest/Jest/Playwright/Cypress 配置作为 manifest 证据保留，并在冻结交接时与命令/编译配置一起优先分配现有字节预算。文件路径命中不代表运行器实际加载了该配置；缺失的调用链仍应阻塞，不新增验证命令或扩大写入范围。
+
+新增回归先复现检索遗漏，修后相关 42 项测试通过。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，552 项 Node 测试、7 项浏览器测试、类型与文档检查、固定样本和 clean install/package smoke（169 文件）通过。基于 Hono 原冻结快照的本机只读复现确认根 `vitest.config.ts` 的 1,881 字节正文完整保留，配置与其余源码合计仍为 98,304 字节；没有模型调用或领域写入。
+
+本机新增 `hono-runner-config-capture.json`、`output/formal-170-runner-config-verify-2026-11-10.log`。另在独立 `hono-runner-runtime/` 准备版本匹配的运行器依赖，安装禁用生命周期脚本；需等旧操作全部终态后才接入评测仓库并重新冻结新版输入。以上仍是验收依赖，保留本机，不提交原始日志、领域快照或凭据。该修复尚未完成真实模型复验，不能宣布正式验收通过。
 
 ## 实际验证
 

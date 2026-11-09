@@ -122,6 +122,22 @@ test('Repository Evidence retains spec and test TypeScript configurations as man
   } finally { await rm(context.root, { recursive: true, force: true }) }
 })
 
+test('Repository Evidence retains runner discovery configurations when unrelated owners fill the lexical cap', async () => {
+  const configs = ['vitest.config.ts', 'vite.config.mts', 'runtime-tests/node/vitest.config.ts', 'jest.config.cjs', 'playwright.config.ts', 'cypress.config.ts']
+  const context = await fixture({
+    ...Object.fromEntries(Array.from({ length: 90 }, (_, i) => [`src/noise-${i}.ts`, 'export const callback = "compatibility request"\n'])),
+    'src/api.ts': 'export const callback = true\n',
+    ...Object.fromEntries(configs.map(path => [path, "export default { test: { include: ['**/*.test.ts'], exclude: ['**/sandbox/**'] } }\n"])),
+    'unrelated.config.ts': 'export default {}\n',
+  })
+  try {
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
+      requirements: [{ key: 'REQ-CONFIG', statement: 'Add callback compatibility request in src/api.ts.', acceptanceStatements: [] }] })
+    for (const path of configs) assert.ok(report.selectedEvidenceIds.includes(path), `${path} must survive lexical selection`)
+    assert.equal(report.selectedEvidenceIds.includes('unrelated.config.ts'), false)
+  } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
 test('Repository Evidence admits tracked ignore policies without admitting arbitrary dotfiles', async () => {
   const context = await fixture({
     'src/api.ts': 'export const value = true',
