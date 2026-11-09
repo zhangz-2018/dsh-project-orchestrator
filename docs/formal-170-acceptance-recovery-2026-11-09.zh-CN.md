@@ -97,11 +97,26 @@ p-retry 的源码与现行 `v3.3.14` 能力规则复核确认需要 `data.change
 
 任务规划契约升级至 `evidence-grounded-v3.3.30`，动态列出 Service 冻结的正式 `decisionKeys`；空集合必须输出 `[]`。源文假设、比较、历史或 pending 标签没有引用权限，固定假设输入按需求行为执行，不能因此虚构正式 Decision。新增空集合与真实 `DEC-REAL` 集合回归先失败再通过，原未知引用拒绝未放宽。
 
-中间版 `tool-decision-v38` 的两份 Gold 已批准，但没有启动候选；随后修复工具预算误标，旧 Gold 保留为已审阅未使用，不能算成绩。当前 `tool-closure-v39` 的 bundle SHA-256 为 `480d4c03a6595bec2022eef7003dbb8b3eb31c1b3a80be0e1f6aedba1b74b88c`，隔离安装与本地构建一致。两份新 Gold 均在该版任何候选启动前获独立批准，p-queue 与 p-retry 的真实 fresh-1 正在观察。
+中间版 `tool-decision-v38` 的两份 Gold 已批准，但没有启动候选；随后修复工具预算误标，旧 Gold 保留为已审阅未使用，不能算成绩。`tool-closure-v39` 的 bundle SHA-256 为 `480d4c03a6595bec2022eef7003dbb8b3eb31c1b3a80be0e1f6aedba1b74b88c`，隔离安装与本地构建一致。两份新 Gold 均在该版任何候选启动前获独立批准，实际结果如下：
+
+- p-queue `planning-v3:a62af2e4-26c2-402e-bcf4-1eb541b31c86` 在场景审核阻塞，`event-observable-fact-missing`。持续收集器及检查点本身可执行，但同一重入夹具中将“运行任务结算前，被拒绝调用不得发 next”和“运行任务结算后发出 next”合并在单一 present 清单项，独立 absent 事实仍缺失。
+- p-retry `planning-v3:cbfe7934-1cc9-406d-8acc-0691becce7f3` 因安装工具后仓库证据摘要变化被 supersede；策略种子集与 extractor 均相同，确定性基线检查仍要求重新冻结。自动后继 `planning-v3:96837130-06c5-40b1-9d80-825ac7823a0f` 已通过场景及绑定审核，在任务规划调用中失败。Harness 原始 `turn/end` 证实 `PI_AI_ERROR / stream_read_error`，不能归因为产品契约校验，也不能记为成功。根失败及后继历史分别保留，后继不计 fresh。
+
+两次根请求及自动后继均已终态；领域只读核验确认累计 20 个操作，无计划审批、执行派发或交付。脱敏错误证明为本机 `pretry-tool-closure-stream-failure.json`，引用原始压缩会话的摘要，没有重发该请求。
 
 本版完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，549 条 Node 测试、7 条浏览器测试、类型及文档检查、固定样本和 clean install/package smoke（169 文件）通过。8 项真实隔离 Host 兼容检查通过，使用确定性模型，未计作真实候选。没有修改主项目依赖。
 
 本机追加证据：`event-variant-domain-facts.json`、`pretry-tool-closure-evidence.json`、`tsd-oracle-probe.json`、`tool-closure-installed.json`、`tool-closure-historical-observation.json`、`gold-tool-closure-focused/`、`candidates-tool-closure-focused.json`；回归及兼容日志为 `output/formal-170-tool-closure-verify-2026-11-10.log`、`output/formal-170-tool-closure-host-compatibility-2026-11-10.log`，兼容报告为 `output/compatibility/dsh-0.2.2-rc.1-1794243698679.json`。所有失败、未使用审阅和实验夹具均保留本机，供验收与恢复使用。
+
+### 同一夹具的事件阶段清单
+
+针对 `tool-closure-v39` 的实际拒绝，场景生成契约升级至 `scenario-coverage-review-v3.3.20`。事件事实按夹具分支、调用或生产者、事件名、观察区间及 present/absent 拆分；同一收集器的“结算前 absent”和“结算后 present”分别使用独立 key 和检查点。已有持续收集器可复用，不新增生产事件通道或 payload；独立审核、原始需求和正式门槛均未修改。新增契约断言先失败再通过。
+
+`event-phase-v40` 的 bundle SHA-256 为 `2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff`，安装摘要与本地构建一致。完整 `pnpm verify` 退出 0，549 条 Node 测试、7 条浏览器测试及其余检查通过；8 项真实隔离 Host 兼容检查通过，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794244681518.json`。本次未改主项目依赖。
+
+隔离重启第一次漏带 `DSH_PLANNING_CONTRACT_MODE=v3-candidate`，Gold 本地预检返回 `409 planning-v3-disabled`；补齐参数后的下一次请求早于 Host 就绪，返回 `ECONNREFUSED`。这两次未发送模型请求，未登记候选。完成 writer 健康与 V3 只读预览检查后，使用新目录 `gold-event-phase-focused-3/` 完成两份独立 Gold，均获批准后才启动该版真实 fresh-1。目前正在观察 p-queue 与 p-retry，尚无该版通过结论。
+
+追加本机证据：`domain-before-event-phase-install.json`、`tool-closure-domain-facts.json`、`tool-closure-policy-successors.json`、`event-phase-installed.json`、`event-phase-historical-observation.json`、`gold-event-phase-focused-3/`、`candidates-event-phase-focused.json`。完整回归日志为 `output/formal-170-event-phase-verify-2026-11-10.log`。这些文件仍用于正式验收与恢复，不清理、不提交原文。
 
 ## 实际验证
 

@@ -3210,6 +3210,10 @@ test('Planning V3 event oracle keeps reentrant emissions observable after a once
   assert.match(prompt, /faulty producer that emits a forbidden nested event and then rejects/)
   assert.match(prompt, /Variant event coverage grounding/)
   assert.match(prompt, /A present event in one variant cannot be covered by an absent event in another/)
+  assert.match(prompt, /Event phase coverage grounding/)
+  assert.match(prompt, /one entry must not combine an earlier absence with a later presence/)
+  assert.match(prompt, /EVT-AC-001-REENTRANT-BEFORE-SETTLEMENT-ABSENT/)
+  assert.match(prompt, /EVT-AC-001-REENTRANT-AFTER-SETTLEMENT-PRESENT/)
   assert.match(prompt, /"required":true,"sourceAnchorIds":\["source-anchor-id"\],"eventObservables":\[/)
 })
 
