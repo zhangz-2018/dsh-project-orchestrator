@@ -19,12 +19,20 @@ if (selectedCaseIds !== undefined) {
   assert.ok(selectedCaseIds.every(id => packet.cases.some(c => c.caseId === id && c.expectedReadiness === readiness)))
 }
 const prepared = JSON.parse(await readFile(projectsPath, 'utf8'))
-const isolated = JSON.parse(await readFile(resolve('output/acceptance/isolated-harness-2026-10-14.json'), 'utf8'))
-const require = createRequire(await realpath(join(isolated.profile, 'node_modules/@deepseek-ai/dsh/package.json')))
+const isolated = JSON.parse(await readFile(resolve(process.env.PO_ACCEPTANCE_CONTEXT ?? 'output/acceptance/isolated-harness-2026-10-14.json'), 'utf8'))
+const require = createRequire(await realpath(join(isolated.runtimeRoot ?? isolated.profile, 'node_modules/@deepseek-ai/dsh/package.json')))
 const yaml = require('js-yaml')
-const settings = yaml.load(await readFile(join(isolated.home, 'settings.yaml'), 'utf8'))
+// 新版 Host 从 patch 层读取模型配置；旧环境继续按其原有 settings 格式核验。
+const patch = isolated.modelConfigPath === undefined ? undefined : yaml.load(await readFile(isolated.modelConfigPath, 'utf8'))
+const settings = patch === undefined ? yaml.load(await readFile(join(isolated.home, 'settings.yaml'), 'utf8')) : {
+  'llm-pi-ai': patch.find(item => item.id === 'llm-pi-ai')?.config,
+  'agent-default-model': patch.find(item => item.id === 'agent-default-model')?.config,
+}
 const provider = settings['llm-pi-ai'].providers.pockapi
-const credential = yaml.load(await readFile(join(isolated.home, '.credentials.yaml'), 'utf8'))[provider.apiKeyEnv]
+const credentials = yaml.load(await readFile(join(isolated.home, '.credentials.yaml'), 'utf8'))
+const credential = (patch === undefined ? credentials : credentials.refs)[provider.apiKeyEnv]
+assert.equal(typeof credential, 'string', 'The isolated gateway credential reference must resolve')
+assert.equal(settings['agent-default-model'].provider, 'pockapi')
 assert.equal(settings['agent-default-model'].model, 'gpt-6.1-sol')
 assert.equal(provider.baseURL.replace(/\/$/u, ''), 'http://47.253.229.128:18080/v1')
 const hash = (v) => createHash('sha256').update(v).digest('hex')

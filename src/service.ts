@@ -9043,6 +9043,9 @@ export class OrchestratorService {
         accessSnapshot,
         repositoryDigest: repositoryCapture.snapshot.repositoryDigest,
         sourceEvidence: await bindingStage.loadFrozenEvidence(repositoryCapture.snapshot, bindingManifest, repositoryEvidenceFocus),
+        // 预检必须沿用上游冻结的完整场景和工具源码，不能仅凭任务摘要重建验收事实。
+        scenarios,
+        ...(repositoryCapture.snapshot.verificationTools === undefined ? {} : { verificationTools: repositoryCapture.snapshot.verificationTools }),
         operationId,
         now: createdAt,
         runReadOnly: async (prompt, agent) => (await this.runAgent({ cwd: project.cwd, persona: TASK_PREFLIGHT_PERSONA, prompt, operation, agent, allowReadOnlyTools: true, includeAssignedSkills: false })).text,

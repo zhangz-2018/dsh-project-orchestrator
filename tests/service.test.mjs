@@ -2069,6 +2069,10 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
       assert.match(preflightPrompt, /target file or directory may not exist yet/)
       assert.match(preflightPrompt, /configured free-form Agent skills are execution-time preferences/)
       assert.match(preflightPrompt, /"permissions":\["evidence_read","repository_read","worktree_write","command_execute","artifact_write"\]/)
+      const handedScenarios = JSON.parse(preflightPrompt.split('Frozen acceptance scenarios:\n')[1].split('\n\nInstalled verification tool evidence:')[0])
+      const handedTask = JSON.parse(preflightPrompt.split('Task proposal:\n')[1].split('\n\nFrozen acceptance scenarios:')[0])
+      assert.deepEqual(handedScenarios.map((item) => item.key), handedTask.scenarioKeys)
+      for (const scenario of handedScenarios) assert.deepEqual(store.acceptanceScenarios.get(scenario.id), scenario)
     }
     assert.equal((observation.sections ?? []).some((section) => section.name === 'deployment:assigned-skills' && section.text.includes('free-form-execution-skill-that-is-not-installed')), false)
     const scenarioPrompt = observation.prompts.find((prompt) => prompt.includes('Acceptance Scenario V3 JSON object'))

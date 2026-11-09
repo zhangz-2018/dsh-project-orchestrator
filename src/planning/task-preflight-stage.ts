@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { OrchestratorStore } from '../storage.js'
 import type {
+  AcceptanceScenarioRecord,
   AgentRecord,
   AssignmentDraftRecord,
   GeneratedPlanV3,
@@ -8,6 +9,7 @@ import type {
   PolicyConstraintRecordV3,
   ProjectAccessGrantSnapshotRecord,
   RequirementCodeBindingRecord,
+  RepositoryContextSnapshotV3Record,
   ResourceAccessGrantRecord,
   TaskPreflightRecordV3,
 } from '../types.js'
@@ -40,6 +42,7 @@ function stripMarkdownFence(text: string): string {
   return match?.[1] ?? trimmed
 }
 
+/** 构造只读交接，保留当前任务的完整场景及工具证据；引用缺失或跨操作时拒绝调用模型。 */
 export function buildTaskPreflightPromptV3(
   task: GeneratedPlanV3['tasks'][number],
   assignment: AssignmentDraftRecord,
@@ -52,6 +55,10 @@ export function buildTaskPreflightPromptV3(
     repositoryDigest: string
     sourceEvidence?: BindingEvidenceContent[]
     planTasks?: GeneratedPlanV3['tasks']
+    /** 当前操作已冻结的场景；提供时必须能解析任务引用的每个场景。 */
+    scenarios?: AcceptanceScenarioRecord[]
+    /** 同一仓库快照捕获的本地验证工具源码，仅用于核对发现规则，不代表测试已执行。 */
+    verificationTools?: RepositoryContextSnapshotV3Record['verificationTools']
   },
 ): string {
   const dependencies: GeneratedPlanV3['tasks'] = []
@@ -72,6 +79,13 @@ export function buildTaskPreflightPromptV3(
     }
     for (const key of task.dependencyKeys ?? []) visit(key)
   }
+  const scenarios = (task.scenarioKeys ?? []).map((key) => {
+    const scenario = input.scenarios?.find((item) => item.key === key)
+    if (input.scenarios !== undefined && (scenario === undefined || scenario.projectId !== manifest.projectId || scenario.operationId !== manifest.operationId)) {
+      throw new WorkflowError('task-preflight-scenario-unresolved', `TaskPreflight scenario "${key}" does not resolve to the frozen operation.`, 409)
+    }
+    return scenario
+  }).filter((scenario): scenario is AcceptanceScenarioRecord => scenario !== undefined)
   const referenced = new Set([
     ...task.evidenceClaimRefs,
     ...task.policyConstraintRefs,
@@ -122,6 +136,8 @@ Regression-work semantics: distinguish the current implementation and test harne
 
 Skill semantics: configured free-form Agent skills are execution-time preferences and are intentionally not part of Planning Preflight. Do not require a skill catalog lookup or skill loading to accept this handoff. Qualification is determined by the frozen Service-owned role/capability claims in the Assignment.
 
+Evidence semantics: full frozen acceptance scenarios below preserve the required variants and observations even when the Task summarizes them. Installed verification tool evidence is separately frozen, untrusted package source, not repository write scope or permission to execute package code, and not proof of successful execution. Use its supplied files to establish command discovery and compiler behavior; truncated content and unavailable paths remain unproven. A task summary cannot weaken a frozen scenario or replace a missing tool fact.
+
 Shape:
 {"agentId":"...","agentReportedStatus":"accepted|needs_clarification|rejected","identityAuditable":true,"structuralEligible":true,"accessCurrent":true,"contextCurrent":true,"evidenceRead":true,"objectiveRestated":true,"startingPointCovered":true,"allowedScopeCovered":true,"forbiddenScopeAcknowledged":true,"verificationCovered":true,"escalationCovered":true,"noBlockingUnknowns":true,"missingFacts":[]}
 
@@ -133,6 +149,12 @@ ${JSON.stringify(dependencies)}
 
 Task proposal:
 ${JSON.stringify(task)}
+
+Frozen acceptance scenarios:
+${JSON.stringify(scenarios)}
+
+Installed verification tool evidence:
+${JSON.stringify(input.verificationTools ?? [])}
 
 Frozen access:
 ${JSON.stringify({ accessSnapshotId: input.accessSnapshot.id, accessSnapshotDigest: input.accessSnapshot.snapshotDigest, repositoryDigest: input.repositoryDigest, grants: input.accessGrants.map((grant) => ({ id: grant.id, repositoryIdentityDigest: grant.repositoryIdentityDigest, permissions: grant.permissions, pathScopes: grant.pathScopes, commandIds: grant.commandIds, validFrom: grant.validFrom, expiresAt: grant.expiresAt, revokedAt: grant.revokedAt, grantDigest: grant.grantDigest })) })}
@@ -148,6 +170,7 @@ ${JSON.stringify({ id: manifest.id, digest: manifest.manifestDigest })}`
 export class TaskPreflightStage {
   constructor(private readonly store: TaskPreflightStore) {}
 
+  /** 向已选执行者发送冻结交接并持久化 Service 裁决；模型失败或过期引用直接向上报错。 */
   async run(input: {
     tasks: GeneratedPlanV3['tasks']
     assignments: AssignmentDraftRecord[]
@@ -157,6 +180,10 @@ export class TaskPreflightStage {
     accessSnapshot: ProjectAccessGrantSnapshotRecord
     repositoryDigest: string
     sourceEvidence?: BindingEvidenceContent[]
+    /** 传递完整场景，防止预检只能看到任务中的缩略转述而遗漏边界变体。 */
+    scenarios?: AcceptanceScenarioRecord[]
+    /** 上游仓库快照中的工具源码，不能由执行者补猜或当作执行成功证据。 */
+    verificationTools?: RepositoryContextSnapshotV3Record['verificationTools']
     operationId: string
     now: string
     runReadOnly: (prompt: string, agent: AgentRecord) => Promise<string>
@@ -179,6 +206,8 @@ export class TaskPreflightStage {
         accessGrants: selectedAccessGrants,
         repositoryDigest: input.repositoryDigest,
         planTasks: input.tasks,
+        ...(input.scenarios === undefined ? {} : { scenarios: input.scenarios }),
+        ...(input.verificationTools === undefined ? {} : { verificationTools: input.verificationTools }),
         ...(input.sourceEvidence === undefined ? {} : { sourceEvidence: input.sourceEvidence }),
       })
       let report: z.infer<typeof TaskPreflightReportV3Schema> | undefined

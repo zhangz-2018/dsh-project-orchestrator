@@ -90,6 +90,35 @@ test('TaskPreflightStage supports zero-tool handoff using only relevant frozen s
   assert.equal(preflights[0].serviceVerdict, 'accepted')
 })
 
+test('TaskPreflightStage hands off complete scenario variants and installed verification tool evidence', async () => {
+  const { store, input } = await fixture()
+  const scenario = { key: 'SCN-BOUNDARY', projectId: 'project-1', operationId: 'operation-1', trigger: 'maxQueued: -1, NaN, 0.5, -Infinity, undefined, null, "1", MAX_SAFE_INTEGER + 1', scenarioDigest: '3'.repeat(64) }
+  const unrelated = { ...scenario, key: 'SCN-UNRELATED', trigger: 'unrelated-scenario-do-not-disclose' }
+  const verificationTools = [{ packageName: 'nz', binName: 'nz', files: [{ path: 'distribution/index.js', content: 'checkProject("test-d/index.test-d.ts")', truncated: false }] }]
+  input.tasks[0].scenarioKeys = [scenario.key]
+  await new TaskPreflightStage(store).run({ ...input, scenarios: [scenario, unrelated], verificationTools, runReadOnly: async prompt => {
+    const scenarios = JSON.parse(prompt.split('Frozen acceptance scenarios:\n')[1].split('\n\nInstalled verification tool evidence:')[0])
+    assert.deepEqual(scenarios, [scenario])
+    const tools = JSON.parse(prompt.split('Installed verification tool evidence:\n')[1].split('\n\nFrozen access:')[0])
+    assert.deepEqual(tools, verificationTools)
+    assert.doesNotMatch(prompt, /unrelated-scenario-do-not-disclose/u)
+    assert.match(prompt, /not proof of successful execution/u)
+    return JSON.stringify(report())
+  } })
+})
+
+test('TaskPreflightStage rejects missing or foreign scenario contracts before the model handoff', async () => {
+  const { store, input } = await fixture()
+  input.tasks[0].scenarioKeys = ['SCN-BOUNDARY']
+  let calls = 0
+  const runReadOnly = async () => { calls++; return JSON.stringify(report()) }
+  for (const scenarios of [[], [{ key: 'SCN-BOUNDARY', projectId: 'other-project', operationId: 'operation-1' }], [{ key: 'SCN-BOUNDARY', projectId: 'project-1', operationId: 'other-operation' }]]) {
+    await assert.rejects(() => new TaskPreflightStage(store).run({ ...input, scenarios, runReadOnly }), error => error.code === 'task-preflight-scenario-unresolved')
+  }
+  assert.equal(calls, 0)
+  assert.equal([...store.taskPreflightsV3.entries()].length, 0)
+})
+
 test('TaskPreflightStage retries a malformed report once but does not retry a failed model call', async () => {
   const { store, input } = await fixture()
   const prompts = []
