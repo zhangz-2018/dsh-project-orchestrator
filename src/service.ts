@@ -6187,6 +6187,7 @@ export class OrchestratorService {
     }
   }
 
+  /** 只读冻结未批准初始需求的评测输入及同次发现的验证命令；不执行命令或持久化规划，历史来源不完整、活动项目或采集期间输入变化时拒绝。 */
   async previewPlanningEvaluationInputV3(projectId: string) {
     if (this.planningContractMode() !== 'v3-candidate') throw new WorkflowError('planning-v3-disabled', 'Evaluation input preview requires V3 candidate mode.', 409)
     const project = this.requireProject(projectId)
@@ -6217,6 +6218,8 @@ export class OrchestratorService {
     return {
       projectId, projectRevision: project.revision, preparedAt: new Date().toISOString(),
       repositoryBaseCommit: repository.snapshot.headCommit, sourceManifest: manifest, teamCatalogFacts,
+      // 与 repositoryDigest 中的命令逐字一致，供独立审阅采集对应工具，不代表命令已成功执行。
+      verificationCommands: repository.snapshot.verifiedCommands,
       releaseInput: { repositoryDigest: repository.snapshot.repositoryDigest, ...releaseFacts, metricPolicyId: policy.id, metricPolicyVersion: policy.version, metricPolicyDigest: policy.policyDigest, ...modelInput },
     }
   }
@@ -9587,6 +9590,7 @@ export class OrchestratorService {
     await Promise.allSettled(removedTaskIds.map((id) => this.store.tasks.delete(id)))
   }
 
+  /** 只读采集 project.cwd 的稳定 Git、命令与安装工具证据，返回绑定 operationId 的未持久化快照；仓库或工具两次观测不一致时拒绝，不执行验证命令。 */
   private async captureRepositorySnapshotV3(project: ProjectRecord, operationId: string): Promise<{ snapshot: RepositoryContextSnapshotV3Record; stackCapabilities: string[] }> {
     const canonicalRoot = await realpath(project.cwd)
     const capture = async (): Promise<{ headCommit: string; tree: string; status: string; patchDigest: string; entries: Array<{ path: string; blob: string }>; dirtyFiles: string[]; workingFiles: Array<{ path: string; digest: string }> }> => {
@@ -9650,8 +9654,9 @@ export class OrchestratorService {
         commandScriptHeaders[path] = (await readFile(candidate, 'utf8')).slice(0, 4_096)
       }
       const verifiedCommands = repositoryVerificationCommandsV3(paths, packageManifest, commandPolicyText, commandScriptHeaders)
-      const verificationTools = await captureVerificationToolEvidenceV3(canonicalRoot, packageManifest)
-      if (digestObject(verificationTools) !== digestObject(await captureVerificationToolEvidenceV3(canonicalRoot, packageManifest))) throw new WorkflowError('repository-tool-changing', 'Installed verification tool source changed during capture.', 409)
+      // 命令发现与工具证据共享同一输入，避免已允许的配置派生入口缺少实际编译器证明。
+      const verificationTools = await captureVerificationToolEvidenceV3(canonicalRoot, packageManifest, verifiedCommands)
+      if (digestObject(verificationTools) !== digestObject(await captureVerificationToolEvidenceV3(canonicalRoot, packageManifest, verifiedCommands))) throw new WorkflowError('repository-tool-changing', 'Installed verification tool source changed during capture.', 409)
       const dependencies = { ...(packageManifest?.dependencies ?? {}), ...(packageManifest?.devDependencies ?? {}) }
       const stackCapabilities = new Set<string>()
       if (paths.some((path) => /\.(?:ts|tsx|mts|cts)$/u.test(path))) stackCapabilities.add('language.typescript')

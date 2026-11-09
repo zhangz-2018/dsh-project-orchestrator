@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "fa43df3a61c234606ecdba874791cdc60f109562f09c203986f55ebf8d651126",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03681544fe86858a016af233a403a087d296bf1930e731c6c4:independent-gold-review:33022d26-0e40-4678-b072-9aadfbce0965",
+    "reviewedAt": "2026-11-09T20:57:19.711Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes construction-time TypeError rejection conditional on OPT-1, not authorization to select it. Therefore blocked readiness, requirement-decision-pending keyed to DEC-001, evidence through repository/requirements/decisions, and empty task and assignment expectations are appropriate. REQ-001 and AC-001 through AC-003 remain consistent across the specification and Gold. Supplied source establishes that classic and mini delegate to core._stringbool, which currently normalizes case without trimming and gives truthy matches precedence. The listed forwarding and declaration consumers are inspection owners, not mandatory edits; build configuration supports treating emitted declarations as generated artifacts. Runtime and type-check configuration support the stated verification scope without equating runtime execution with type checking. The empty team and capability claims do not introduce an earlier blocker because the unresolved Decision gate precedes scenario review and assignment prerequisites. Repository identity/base commit and release fingerprints agree between Gold and preview; supplied provenance explains the distinct manifest/evaluation source digest domains, PRD persistence trimming, and executing-bundle prompt fingerprint. Model, sampling, policy, and budget fingerprints are consistently frozen. Historical project reuse does not establish capabilities or resolve DEC-001, and no paired hypothetical is treated as a human Decision. This approval concerns expectation coherence, not execution readiness or human attestation. I reviewed only the supplied evidence, without tools, code execution, candidate outputs, or independent digest recomputation.",
+    "goldDigest": "f8b1748c03a245433ad14a1f88a365cc881ea9a7355b57978b45300db45a4096"
+  }
+}

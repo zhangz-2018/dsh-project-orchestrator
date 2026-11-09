@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "f755133c3198823a7f080a0d60aa1e5f20f85fdd4a3086bf50bf9888259f895e",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "2df506715a863061868429fc35634a83f4b729bd4fb0f0aff41f90e70b0c3750",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0961cd3e072758dc016af23439e18887d19b7cb15e8bb9e5ad:independent-gold-review:2cf0a083-b1e8-48e5-9898-34bb9592406b",
+    "reviewedAt": "2026-11-09T20:59:54.632Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The complete PRD explicitly fixes OPT-1 as hypothetical input, preserves humanConfirmed=false, and makes only the selected branch required; an empty human decision input is therefore consistent with ready and no decision blocker. This does not resolve DEC-001 for paired B, where a material unresolved decision must block at decisions. REQ-001, AC-001 through AC-003, DEC-001, and both task keys are consistent across the specification and Gold. The exact writable implementation/test scope is supported by the supplied source: construction-time validation is missing, while zero and finite-value serialization already work and may remain unchanged. The test file is included in tsconfig.spec.json and the main Vitest project, with separate compiler and runtime verification through the declared test script. Build configuration establishes that published declarations are generated, not separately maintained edit owners; configuration and read-only consumers need not become mandatory edits. The task split, verification dependency, independent agents, delivery roles, availability, and original project-scoped active capability claims support the assignment expectations without relying on personas or pending claims. This bounded validation change does not inherently require shared-data or state impacts merely because those capability names appear in the catalog. The configured planning reviewer is consistent with the supplied selection policy. Repository, source, team, decision, prompt/build, model, sampling, budget, and metric-policy fingerprints are internally consistent across the frozen inputs, with distinct source digest domains and PRD trimming explicitly accounted for. I rely on the supplied Service mechanical bindings and provenance, not independent digest recomputation or execution. The original preparation placeholders are historical preparation state, not evidence that the supplied frozen releaseInput is absent. No candidate output informed this review, and approval neither attests to test execution nor authorizes task dispatch.",
+    "goldDigest": "e787afc279dcb85474330936e467277dec8e610b4cf94c953ebe8c32c8fda6ec"
+  }
+}

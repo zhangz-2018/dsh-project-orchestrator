@@ -6,6 +6,31 @@ import { join } from 'node:path'
 import test from 'node:test'
 import * as plugin from '../lib/index.js'
 
+test('Verification tool evidence includes an installed compiler used by frozen config-derived commands', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-tool-config-command-'))
+  try {
+    const tool = join(root, 'node_modules/typescript')
+    await mkdir(join(tool, 'lib'), { recursive: true })
+    await mkdir(join(root, 'node_modules/.bin'))
+    await writeFile(join(tool, 'package.json'), JSON.stringify({ name: 'typescript', version: '5.5.4', bin: { tsc: './bin/tsc' } }))
+    await mkdir(join(tool, 'bin'))
+    await writeFile(join(tool, 'bin/tsc'), "require('../lib/tsc.js');\n")
+    await writeFile(join(tool, 'lib/tsc.js'), `// ${'unrelated '.repeat(9000)}\nfunction executeCommandLine() { throw new Error('MUST_NOT_EXECUTE'); }\n`)
+    await symlink('../typescript/bin/tsc', join(root, 'node_modules/.bin/tsc'))
+    const manifest = { packageManager: 'nub@0.5.0', devDependencies: { typescript: '~5.5.4' }, scripts: { test: 'nub exec --node vitest run' } }
+    assert.deepEqual(await plugin.captureVerificationToolEvidenceV3(root, manifest), [], 'Do not assume every declared dependency is a verification tool.')
+    const [evidence] = await plugin.captureVerificationToolEvidenceV3(root, manifest, [
+      'nub run test', 'nub exec --node tsc --noEmit --project packages/zod/tsconfig.test.json',
+    ])
+    assert.equal(evidence?.packageName, 'typescript', 'The frozen config-derived command also needs installed-tool evidence.')
+    assert.equal(evidence.version, '5.5.4')
+    assert.equal(evidence.binName, 'tsc')
+    assert.ok(evidence.sourceExcerpts.some(item => item.symbol === 'executeCommandLine'))
+    plugin.VerificationToolEvidenceV3Schema.parse(evidence)
+    assert.deepEqual(await plugin.captureVerificationToolEvidenceV3(root, { scripts: manifest.scripts }, ['nub exec --node tsc --noEmit']), [], 'Commands cannot invent a dependency declaration.')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Verification tool evidence follows complete Vitest discovery declarations across oversized chunks without execution', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-vitest-discovery-'))
   try {

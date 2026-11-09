@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_063ac2c7e0c561da016af22f6f596c87d2aa19ac9e0beb7d6e:independent-gold-review:14d91a88-fbb5-475c-84e3-14ab7ed445d2",
+    "reviewedAt": "2026-11-09T20:39:23.688Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and forbids selecting the recommended option or issuing assignable tasks. Gold correctly expects blocked readiness with requirement-decision-pending on DEC-001, evidence through repository, requirements and decisions, and no assignment expectations. REQ-001 and AC-001 through AC-003 are preserved consistently. The complete implementation and declaration evidence supports index.js and index.d.ts as the binding owners; package exports and the absence of a declaration-generation build support treating index.d.ts as maintained source. The configured verification entry is xo && ava && tsd, with runtime and compile-time checks appropriately distinguished. The empty team and capability claims do not invalidate an intentional stop at decisions because the supplied policy places that gate before mandatory scenario review and assignment prerequisites. Gold and preview release fingerprints agree across repository, source, team, decisions, executing prompt bundle, model, sampling, budgets and metric policy. Supplied provenance explains the distinct manifest/evaluation source digest domains, PRD trimming, and bundled prompt fingerprint. Historical operations are isolated from this bundle and supply neither candidate outcomes nor capability evidence. The truncated runtime-test excerpt does not prevent establishing this earlier decision-block expectation. This approval is based on the supplied evidence and Service-bound fingerprints, without code execution, independent digest recomputation, or human attestation.",
+    "goldDigest": "6e829b2a510aeae34b21687d77a236932fc4636db8354d34d25c38bfb663730c"
+  }
+}

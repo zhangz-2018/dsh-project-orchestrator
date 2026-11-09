@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "f755133c3198823a7f080a0d60aa1e5f20f85fdd4a3086bf50bf9888259f895e",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04cf8d23ab29da4f016af233944dcc87d1b23dfc05aea2d8e4:independent-gold-review:b7cbe715-d86f-4dbe-b4b3-0b3993b12d7e",
+    "reviewedAt": "2026-11-09T20:57:05.781Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved: AC-001 describes a conditional recommendation, not authorization to choose OPT-1. Gold correctly requires blocked readiness with requirement-decision-pending on DEC-001 and evidence through repository, requirements, and decisions. Empty task and assignment expectations are appropriate because this case must stop before generating assignable tasks. The preserved REQ-001 and AC-001 through AC-003 keys and paired-case identity agree with the specification. Supplied source establishes src/middleware/cors/index.ts as the implementation owner; the test file and configuration are verification or inspection scope, not additional mandatory implementation owners. Build configuration establishes generated declarations, so separate declaration edits are unnecessary. The test script separates TypeScript checking from runtime tests, and supplied configuration includes the CORS test in both relevant scopes. The empty team and trusted capability claims do not invalidate the earlier deterministic decision block; later review and assignment prerequisites are not reached. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains, PRD trimming, and executing-bundle prompt fingerprint. Historical project reuse supplies neither candidate evidence nor inferred capability attestations. Approval is limited to this frozen pending case, not the paired hypothetical or execution readiness. I reviewed the supplied data without running tools or code, independently recomputing digests, or treating this review as a human Decision.",
+    "goldDigest": "2e3d51bfa5a6a8644a9ed5e89d9c6cc488418c5c8c263f37455b26a85a1e2004"
+  }
+}

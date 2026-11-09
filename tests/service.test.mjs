@@ -4913,6 +4913,8 @@ test('Planning evaluation preview freezes independent inputs before any model re
     const first = await service.previewPlanningEvaluationInputV3(project.id)
     const second = await service.previewPlanningEvaluationInputV3(project.id)
     assert.deepEqual(first.releaseInput, second.releaseInput)
+    assert.deepEqual(first.verificationCommands, ['npm run verify'], 'Independent review receives the commands frozen into the repository digest.')
+    assert.deepEqual(first.verificationCommands, second.verificationCommands)
     assert.equal(observation.createCalls, undefined)
     assert.deepEqual(Object.fromEntries(Object.entries(store).filter(([, table]) => table instanceof MemoryTable).map(([name, table]) => [name, table.size])), sizes)
     await service.startDecomposition(project.id)

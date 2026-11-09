@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cbace5d8f3a15b5016af22f7e05fc87d28e5f990fd0c5c4c4:independent-gold-review:84b72dda-5e09-4e9e-8753-710381c09230",
+    "reviewedAt": "2026-11-09T20:39:39.535Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves the externally observable rejection type unresolved and prohibits selecting an option or publishing ready tasks. Accordingly, blocked readiness, requirement-decision-pending on DEC-001, evidence stages ending at decisions, and empty task and assignment expectations are appropriate. REQ-001 and AC-001 through AC-003 match the specification; TASK-IMPLEMENT and TASK-VERIFY apply only after resolution. The complete implementation-owner evidence supports source/index.ts and source/options.ts as the binding owner set. Package configuration and installed nz discovery evidence distinguish runtime regression testing from compile-time type testing; generated dist declarations do not require separately maintained ownership. The empty team and capability catalog does not introduce an earlier blocker because the material Decision gate precedes scenario review and assignment prerequisites. Gold and preview release fingerprints agree, with supplied provenance explaining the distinct original/saved PRD, manifest/evaluation-source, and executing-bundle digest domains. Historical project reuse does not constitute candidate evidence or trusted capability evidence. Approval concerns this blocked-case expectation, not implementation correctness or release authorization. I reviewed the supplied evidence without executing code, independently recomputing digests, or providing human attestation; truncated regression-test excerpts do not prevent establishing this decisions-stage expectation.",
+    "goldDigest": "644c609dc02f290bb5cbe1dcb785d4794fb978f67fe3b39f1e6fbd3b72e8b2ce"
+  }
+}

@@ -108,9 +108,11 @@ function captureVitestExcerpts(path: string, content: string, budget: number, li
   return excerpts
 }
 
-/** 只读冻结已安装且与声明最低版本一致的脚本工具；不安装或执行包，未解析依赖保留为证据缺口。 */
-export async function captureVerificationToolEvidenceV3(root: string, manifest: RepositoryCommandManifest | undefined): Promise<ToolEvidence[]> {
+/** 只读冻结脚本及 verifiedCommands 所用的已声明工具；后者须来自同次仓库命令发现，不接受模型计划命令。仅采集与声明最低版本一致的安装，不安装或执行包，未解析依赖保留为缺口。 */
+export async function captureVerificationToolEvidenceV3(root: string, manifest: RepositoryCommandManifest | undefined, verifiedCommands: readonly string[] = []): Promise<ToolEvidence[]> {
   const tokens = verificationScriptTokens(manifest)
+  // tsconfig 等仓库证据可产生未出现在 scripts 中的入口；沿用同次冻结命令，不另行推测工具或授权执行。
+  for (const command of verifiedCommands) for (const token of command.match(/[A-Za-z0-9@/_.-]+/gu) ?? []) tokens.add(token)
   // 使用命令的实际出现次序分配既有四工具预算，避免包名字母顺序挤掉较早调用的编译器。
   const priorities = new Map([...tokens].map((token, index) => [token, index]))
   const priority = (tool: ToolEvidence) => priorities.get(tool.binName)!

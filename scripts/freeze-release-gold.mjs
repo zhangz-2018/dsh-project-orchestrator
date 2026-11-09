@@ -174,7 +174,8 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
   }
   const reviewId = `independent-gold-review:${randomUUID()}`
   const packageManifest = JSON.parse(await readFile(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1], 'package.json'), 'utf8'))
-  const installedVerificationTools = await captureVerificationToolEvidenceV3(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1]), packageManifest)
+  assert.ok(Array.isArray(preview.verificationCommands), 'The evaluated Host must expose its frozen verification commands, not inferred review commands.')
+  const installedVerificationTools = await captureVerificationToolEvidenceV3(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1]), packageManifest, preview.verificationCommands)
   const verificationConfigurations = await captureVerificationConfigurations(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1]), item.repositoryBaseCommit)
   let previousIndependentReview
   for (const directory of JSON.parse(process.env.PO_GOLD_PREVIOUS_REVIEW_DIRS ?? '[]')) {

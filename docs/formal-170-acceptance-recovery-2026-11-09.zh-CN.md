@@ -273,6 +273,20 @@ Zod 预检要求核对 Vitest CLI 到项目选择、配置合并及 runtime/type
 
 当前仓库 `pnpm audit --json` 退出 0，各级漏洞均 0。隔离 runtime 的 `npm audit` 另外报告 205 项（4 moderate、201 high），包含大量 `/tmp` 与 `/private/tmp` 重复路径：实际顶层 zod 为 4.6.7、undici 为 8.12.2，但 Host 的 MCP client 2.2.0、LibreOffice Kit 下 fflate 0.8.2 及部分嵌套 zod 仍在告警范围。该报告保留于 `vitest-discovery-isolated-npm-audit.json`，不以仓库审计替代隔离依赖审计，也不自动执行破坏性 audit fix；尚未给出隔离依赖安全通过结论。
 
+### v47 真实预检与配置派生命令修复
+
+提交 `31755ba` 的 Linux/macOS CI 与 CodeQL 全部通过。v47 先完成 Zod trim 独立 Gold 审阅再发送一个根请求；根请求在 policy_snapshot 被 superseded，自动后继在 task_preflight blocked，不计 fresh。实现成员已 accepted，验证成员因 `ref-command-c015` 缺少实际 TypeScript 版本、tsc 映射及编译器诊断证据而 needs_clarification。原根账本、manifest、后继终态和领域核验均保留，没有登记审批或任务执行。
+
+实际 TypeScript 5.5.4 已安装且与声明 `~5.5.4` 相符。根因是命令发现器依据仓库 tsconfig 产生 tsc 入口，而工具采集器只从 package.json scripts 选择 binary。修复将同次 `repositoryVerificationCommandsV3` 结果传给工具采集器，仍要求原依赖声明、确切安装版本、binary 映射、路径隔离和原四工具预算；不接受模型补造的命令或执行工具。只读评测预览额外返回同次冻结的 `verificationCommands`，独立 Gold 采集沿用这份命令，防止审阅与生产使用不同工具集合。
+
+新增工具回归和预览字段断言在旧构建下均失败，修复后通过。实际 Zod 只读采集同时得到 TypeScript 5.5.4 的 19,137 bytes、13 条完整 AST 摘录，以及 Vitest 4.1.5 的 98,112 bytes、24 条摘录，两者分别保持原单工具预算。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：566 项 Node 测试、7 项浏览器测试及 170 文件安装包 smoke 通过。新构建尚待隔离安装及真实复验。
+
+v47 全部 25 个独立 Gold 审阅已收齐：24 个 approved，p-map completion observer 为 insufficient_evidence。两个审阅进程曾因其他项目的候选写入检查点触发全局快照一致性断言而退出，已保留日志，待候选终态后仅审阅未完成样本。p-map 原异议要求补充被截断的测试正文及默认发现的两个性能文件，不改变原需求或 Gold。新增只读 `prepare-pmap-gold-evidence.mjs` 核对固定 commit，补充完整类型测试、性能测试与 helpers，以及完整 pMap 相关 AST 节点，共 127,070 bytes、215 项；255 个未提供的表达式逐项列明，不以摘要声称其已覆盖。材料仍需独立审阅，不当作当前 Gold 已批准。
+
+同版 greeting revision 4 committed，四项独立审阅均 approved、两项预检 accepted。Plan digest 为 `de89e9e1adae442bf4b206915c0d52afd837072311eadb92fb77dc19a0f1d8e0`，尚未批准或派发；由于随后修复构建，本对象暂不用于登记，后续须重新绑定稳定构建，避免批准过时计划。原能力事实及重建基线保持不变。
+
+本机新增材料：`candidates-vitest-discovery-zod-first.json`、对应 `-policy-successors.json` 和 `-domain-facts.json`、`zod-vitest-discovery-production-tool-freeze.json`、`config-command-tools-capture.json`、`pmap-vitest-discovery-supplement.json` 及固定源码归档、`gold-vitest-discovery-*`、`domain-before-config-command-tools-install.json` 和 `canary-recovery/domain-before-config-command-tools-install.json`。完整回归日志为 `output/formal-170-config-command-tools-verify-2026-11-10.log`。材料继续用于正式验收、恢复和复现，保留本机。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。
