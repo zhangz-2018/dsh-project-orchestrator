@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-5",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [
+    {
+      "impact": "high",
+      "status": "pending"
+    }
+  ],
+  "bindings": [],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "reachedStage": "decisions",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:6e8d4414-9c1b-459b-8036-6be3491eb29b"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:6e8d4414-9c1b-459b-8036-6be3491eb29b:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:6e8d4414-9c1b-459b-8036-6be3491eb29b",
+        "decision-planning-effect:planning-v3:6e8d4414-9c1b-459b-8036-6be3491eb29b:DEC-001:precheck"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6",
+    "repositoryBaseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8",
+    "planningOperationId": "planning-v3:6e8d4414-9c1b-459b-8036-6be3491eb29b",
+    "planningOperationDigest": "afa408d57c92e7da1d99fca03c457c2c3fbc912237c2483ae8d05f3072098c63",
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-15T20:07:20.956Z",
+    "completedAt": "2026-10-15T20:08:54.733Z"
+  }
+}

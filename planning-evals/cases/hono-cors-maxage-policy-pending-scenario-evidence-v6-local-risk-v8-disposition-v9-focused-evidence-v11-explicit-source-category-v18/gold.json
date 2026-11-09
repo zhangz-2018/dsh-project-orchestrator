@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_09eb6e41e6727434016ad1b68c65e08190b89da5735fbf147c:independent-gold-review:ed7311f1-472c-4e32-8b51-add907f148b1",
+    "reviewedAt": "2026-10-16T05:31:05.471Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes AC-001 conditional, so the recommendation does not authorize OPT-1. Gold correctly expects blocked readiness at decisions, preserves REQ-001 and AC-001–AC-003, requires repository/requirements/decisions evidence, and supplies no task or assignment expectations. The supplied implementation establishes src/middleware/cors/index.ts as the bounded implementation owner; the test and configuration evidence supports the stated regression scope and separate compile-time checking through the existing test script. Build configuration establishes that dist declarations are generated, not separately maintained owners. The empty team catalog does not invalidate this expectation because the unresolved-decision gate precedes later reviewer and assignment prerequisites. Gold and preview release fingerprints agree across repository, source, team, decision, prompt, model, sampling, budgets, and metric policy. Supplied provenance explains the distinct source digest domains and whitespace-only PRD persistence normalization. The original specification's non-runnable preparation snapshot is distinguishable from the subsequently supplied frozen release inputs. Historical project operations are not evidence of a candidate run on this bundle; no candidate outputs or human decision confirmation were supplied or inferred. This approval concerns the benchmark expectation, not resolution of DEC-001, task dispatch, or execution readiness. Digest bindings and normalization assertions are accepted as Service-supplied mechanical evidence; I did not independently recompute digests or execute code.",
+    "goldDigest": "9cbd6bb7e530b6b5524093349e9f13ed875856efbd65bb53d4dff7cd05e46aa4"
+  }
+}

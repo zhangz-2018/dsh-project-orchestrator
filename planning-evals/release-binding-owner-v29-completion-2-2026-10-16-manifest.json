@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-binding-owner-v29-completion-2-2026-10-16",
+  "createdAt": "2026-10-16T14:48:21.934Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29",
+      "goldDigest": "134016e2b949a6b8468a77f9056c2c786b050396e9318cf5890c4502a92acf94"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29",
+      "attemptId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29/fresh-1",
+      "operationId": "planning-v3:76fc2242-ce23-4916-849c-3ca3d06fcdd7",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29/runs/fresh-1.json",
+      "startedAt": "2026-10-16T14:48:21.980Z",
+      "completedAt": "2026-10-16T15:08:24.718Z"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-type-oracle-presence-v27-completion-9-2026-10-16",
+  "createdAt": "2026-10-16T12:33:42.836Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "3e4f7bb78092ab9c73cbd16b760ad9cd6768b9a97f4bb40634ae4ada01d694c3"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-2",
+      "operationId": "planning-v3:599d36f6-f6f6-4679-9fd2-7f6cb7ea3550",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-2.json",
+      "startedAt": "2026-10-16T12:33:43.408Z",
+      "completedAt": "2026-10-16T12:59:55.246Z"
+    }
+  ]
+}

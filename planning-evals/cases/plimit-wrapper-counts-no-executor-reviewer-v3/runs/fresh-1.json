@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [
+    "index.js",
+    "index.d.ts",
+    "index.test-d.ts",
+    "test.js",
+    "readme.md",
+    "recipes.md",
+    "benchmark.js",
+    "package.json",
+    "scripts/benchmarker.js",
+    ".github/security.md",
+    ".github/workflows/main.yml"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    },
+    {
+      "key": "REQ-002"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "index.js",
+        "index.d.ts",
+        "index.test-d.ts",
+        "test.js",
+        "readme.md",
+        "recipes.md",
+        "benchmark.js",
+        "package.json",
+        ".github/workflows/main.yml"
+      ],
+      "ownerPaths": [
+        "index.js",
+        "index.d.ts",
+        "index.test-d.ts",
+        "test.js",
+        "readme.md",
+        "recipes.md",
+        "benchmark.js",
+        "package.json",
+        ".github/workflows/main.yml"
+      ]
+    },
+    {
+      "requirementKey": "REQ-002",
+      "evidenceIds": [
+        "index.js",
+        "index.d.ts",
+        "index.test-d.ts",
+        "test.js",
+        "package.json",
+        ".github/workflows/main.yml"
+      ],
+      "ownerPaths": [
+        "test.js",
+        "index.test-d.ts",
+        "index.js",
+        "index.d.ts",
+        "package.json",
+        ".github/workflows/main.yml"
+      ]
+    }
+  ],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "BINDING_ALLOWED_SCOPE_EXCEEDS_FROZEN_CONSTRAINT",
+      "subjectKeys": [
+        "BIND-REQ-001"
+      ]
+    }
+  ],
+  "reachedStage": "bindings",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b:BIND-REQ-001",
+        "code-binding:planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b:BIND-REQ-002"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "plimit-wrapper-counts-no-executor-reviewer-v3",
+    "repositoryBaseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb",
+    "planningOperationId": "planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b",
+    "planningOperationDigest": "252624ef6d69dd7ed139b6957e7f0127f28bbd273b5c5fd7cc67890d7d928436",
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "d1137e1f9dc08ae56e9554df8d0b48052630d145a274e6f2287d36e6f8d1e0f7",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-15T18:26:56.805Z",
+    "completedAt": "2026-10-15T18:31:30.827Z"
+  }
+}

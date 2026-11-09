@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-type-oracle-presence-v27-completion-16-2026-10-16",
+  "createdAt": "2026-10-16T13:05:18.052Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "goldDigest": "0df8cc6a97ce2215008dc4a2ae6e0b52d5e372ebcaf7dcdf93026bfb9541257f"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+      "attemptId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/fresh-1",
+      "operationId": "planning-v3:e756ea5f-1a3d-4ac6-93a1-f5b1d28ffff3",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27/runs/fresh-1.json",
+      "startedAt": "2026-10-16T13:05:18.439Z",
+      "completedAt": "2026-10-16T13:27:41.106Z"
+    }
+  ]
+}

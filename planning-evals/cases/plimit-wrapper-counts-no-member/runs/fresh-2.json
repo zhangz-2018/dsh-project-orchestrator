@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-2",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    },
+    {
+      "key": "REQ-002"
+    },
+    {
+      "key": "REQ-003"
+    },
+    {
+      "key": "REQ-004"
+    }
+  ],
+  "decisions": [],
+  "bindings": [],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "requirement-analysis-blocked",
+      "subjectKeys": []
+    }
+  ],
+  "reachedStage": "requirements",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:d3a66ea3-e19e-4575-b731-6c72432f23a4"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:d3a66ea3-e19e-4575-b731-6c72432f23a4:1"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "plimit-wrapper-counts-no-member",
+    "repositoryBaseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb",
+    "planningOperationId": "planning-v3:d3a66ea3-e19e-4575-b731-6c72432f23a4",
+    "planningOperationDigest": "2ff2c9abf0f7f4493254d598666e9bb254b8908380a212da071e5180955b844a",
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "4f6a662cce150d42da2d54a01b19562ef8aebb0a655cd82e5e59d3d63239b110",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-15T18:09:17.122Z",
+    "completedAt": "2026-10-15T18:10:23.648Z"
+  }
+}

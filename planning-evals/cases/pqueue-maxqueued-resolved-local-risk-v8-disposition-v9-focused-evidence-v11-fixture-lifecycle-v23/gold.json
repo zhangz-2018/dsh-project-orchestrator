@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "0b13d558b8b60038a8634c114f7d708078d1471904a5d5d69134cc7df888e03d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d8f412dd9ef4ca24937ee426858f257bc150d351baa903d193cb2dbb4bc8aa66",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a1983b7e54b8f42016ad1dad55ec4819083d5d37556827ce8:independent-gold-review:0e0c5981-7a5d-402f-80f0-c907b66d4a3f",
+    "reviewedAt": "2026-10-16T08:05:57.766Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C scenario. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, exact writable scopes, task keys, and evidence stages agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical input, establishing native RangeError capacity rejection without representing a human Decision; the empty decision-input fingerprint is therefore consistent. This does not waive the decisions-stage block required for a material unresolved DEC-001 in B. The supplied implementation and configuration evidence supports source/index.ts and source/options.ts as maintained owners, the three specified regression/type-test files as writable verification scope, and dist declarations as build outputs rather than separately maintained owners. Existing correct logic need not be edited merely to touch every scoped file. Runtime testing and compile-time/type verification remain distinct obligations. TASK-VERIFY depends on TASK-IMPLEMENT, with implementation and verification coverage required for every mandatory AC. The two allowed assignees have distinct delivery roles, available capacity, and supplied active project-scoped trusted claims covering the relevant contract, TypeScript, shared-data/state, asynchronous consumer, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Pending legacy claims and persona descriptions are not needed to establish eligibility. A separate configured project reviewer satisfies the stated non-executing review prerequisite. The release fingerprints and model/policy/budget fields match between Gold and preview; the supplied provenance explains the distinct PRD normalization, manifest, and evaluation-source digest domains. The earlier preparation placeholders do not override the later frozen release inputs. No candidate outputs were supplied or used. This approval relies on the supplied Service-bound evidence and fingerprints: I did not recompute digests, execute code or tests, or create any human attestation. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "1c2da7f8bac7e30f97c80e5affcac707fd49b60ff069a3ba71f3d6070e4f072b"
+  }
+}

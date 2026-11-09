@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a1ca24b2a455247016ad1a71deadc81948cc1f66f50ab0469:independent-gold-review:7ee2f3f2-0420-4bc1-b43a-03789590f401",
+    "reviewedAt": "2026-10-16T04:25:12.721Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001 and AC-001 through AC-003 preserve the original PRD’s stable keys and conditional semantics without selecting either DEC-001 option. The material unresolved DEC-001 correctly blocks readiness at decisions, before Scenario Coverage, Binding, or assignment; empty assignment expectations are therefore appropriate despite the empty team roster and absence of a later-stage independent Reviewer. The implementation-owner binding to index.js and index.d.ts matches the supplied implementation, maintained public declarations, and package exports. test.js and index.test-d.ts are verification scope, not additional mandatory implementation owners; package.json confirms the distinct xo, AVA, and tsd verification entry points. The supplied implementation supports the specified existing backoff calculation, zero-delay path, remaining-budget cap, and need for a post-hook cancellation check. The original specification’s null releaseInput and preparation checklist are distinguishable from the subsequently supplied frozen preview: proposedGold.releaseInput exactly matches preview.releaseInput across repository, source, team, decision, prompt, model, sampling, policy, and budget fields. The provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical operations are disclosed as retained project history, not candidate evidence or new human confirmation. Approval relies on the supplied Service-bound fingerprints and isolation facts; I did not recompute digests, execute code, infer human attestation, or use candidate outputs. The truncated runtime-test excerpt does not prevent establishing this decision-stage blocked expectation.",
+    "goldDigest": "3425aee024489454f0bf9b5a751ff586f3f4650884d3556ed3c8ccf101037984"
+  }
+}

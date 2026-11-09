@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "0067e964fdebde2b94a323f89e5183383f2c5ed0e9a4cc3f50af0589213f0289",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "edf3dc23c2ceb5c2eb442ddc2a2e9bb698ac0359c024383038bafbd51e0fff32",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a5d07b3079e8a06016ad1796677a08195a3d4ed34bb8eb729:independent-gold-review:98d9d43b-0823-4f7e-a1d4-b216ad7111c3",
+    "reviewedAt": "2026-10-16T01:10:14.584Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original specification and frozen C inputs. DEC-001=OPT-1 is explicitly fixed as a hypothetical benchmark input, not a human-confirmed Decision; ready with no blocking reasons is therefore appropriate for C, while a material unresolved DEC-001 in paired B must block at decisions. REQ-001, AC-001–AC-003, task keys and evidence stages agree with the PRD. The supplied source establishes that maxAge currently reaches OPTIONS header serialization without creation-time validation, while zero and omitted values already have the required behavior. The exact implementation/test binding scope is sufficient, without requiring gratuitous edits. Build configuration establishes generated declarations, so dist declarations are not separately maintained owners; export/configuration consumers need inspection rather than mandatory edits. The implementation and independent verification expectations, verification dependency, and coverage of all required acceptance criteria are coherent. The allowed agents have appropriate roles, availability and relevant active project-scoped trusted claims, including testing.verification for the verifier; pending legacy claims and personas need not establish eligibility. This bounded validation does not itself require a new shared-data or state impact. A separate active project reviewer is configured. Gold and preview release fingerprints match across repository, source, team, decision inputs, prompts, policy, model, sampling and budgets. Historical project reuse is consistent with retaining project-scoped attestations and old operations, and no candidate evidence was used. This review relies on the supplied Service-bound digests and static evidence; I did not recompute hashes, execute code, create human attestations or authorize task dispatch.",
+    "goldDigest": "0485e78d1816e7ad54d23c22efd7184c3fe08ff73bc1726e0af88f99166d9694"
+  }
+}

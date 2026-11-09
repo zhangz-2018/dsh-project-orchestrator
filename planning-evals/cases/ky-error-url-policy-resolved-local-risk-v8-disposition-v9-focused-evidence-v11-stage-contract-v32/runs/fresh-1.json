@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "ready",
+  "repositoryEvidenceIds": [
+    "test/hooks.ts",
+    "test/helpers/create-http-test-server.ts",
+    "source/core/Ky.ts",
+    "source/core/retry-timing.ts",
+    "source/errors/ForceRetryError.ts",
+    "source/errors/NetworkError.ts",
+    "source/errors/NonError.ts",
+    "source/errors/SchemaValidationError.ts",
+    "source/errors/TimeoutError.ts",
+    "source/types/ResponsePromise.ts",
+    "source/types/standard-schema.ts",
+    "source/utils/body.ts",
+    "source/utils/delay.ts",
+    "source/utils/is-network-error.ts",
+    "source/utils/is.ts",
+    "source/utils/normalize.ts",
+    "source/utils/timeout.ts",
+    "source/utils/type-guards.ts",
+    "source/types/options.ts",
+    "source/types/common.ts",
+    "source/types/retry.ts",
+    "source/types/hooks.ts",
+    "source/core/constants.ts",
+    "test/http-error.ts",
+    "source/utils/types.ts",
+    "source/utils/merge.ts",
+    "source/types/ky.ts",
+    "source/index.ts",
+    "source/errors/KyError.ts",
+    "source/errors/ResponseSizeError.ts",
+    "source/types/request.ts",
+    "source/types/response.ts",
+    "source/errors/HTTPError.ts",
+    "test/request-options.ts",
+    "source/utils/options.ts",
+    "test/retry.ts",
+    "test/main.ts",
+    "test/fetch.ts",
+    "readme.md",
+    "test/response-size.ts",
+    "test/browser.ts",
+    "test-d/normalized-options.ts",
+    "test/merge.ts",
+    "test/validation.ts",
+    "test/resilience.ts",
+    "test/stream.ts",
+    "test/request-construction.ts",
+    "test/retry-options.ts",
+    "test/errors.ts",
+    "test/context.ts",
+    "test/headers.ts",
+    "test/formdata-searchparams.ts",
+    "test/response-consumption.ts",
+    "test/response-handling.ts",
+    "test/retry-decisions.ts",
+    "test-d/hooks.ts",
+    "test-d/request-options.ts",
+    "test/http-response-bodies.ts",
+    "test/error-data.ts",
+    "test/base-url.ts",
+    "test/http-metadata.ts",
+    "test/http-redirects.ts",
+    "test/methods.ts",
+    "test-d/method-options.ts",
+    "test/http-semantics.ts",
+    "test/network-error.ts",
+    "test/request-stream-support-runtimes.ts",
+    "test/request-body-serialization.ts",
+    "test/type-guards.ts",
+    "test-d/response-size.ts",
+    "test/bytes.ts",
+    "test-d/fetch-request.ts",
+    "test/request-stream-support.ts",
+    "test/prefix.ts",
+    "test/normalize.ts",
+    "test-d/fetch-extensions.ts",
+    "test-d/request-clone.ts",
+    "test-d/error-names.ts",
+    "test-d/fetch-options.ts",
+    "test-d/url-options.ts",
+    "AGENTS.md",
+    "package.json",
+    "tsconfig.dist.json",
+    "tsconfig.json",
+    "tsconfig.test.json"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "test/hooks.ts",
+        "source/core/Ky.ts",
+        "source/utils/delay.ts",
+        "source/utils/normalize.ts",
+        "source/utils/timeout.ts",
+        "source/types/options.ts",
+        "source/types/retry.ts",
+        "source/types/hooks.ts",
+        "source/core/constants.ts",
+        "test/http-error.ts",
+        "source/utils/merge.ts",
+        "source/types/ky.ts",
+        "source/index.ts",
+        "source/errors/KyError.ts",
+        "source/types/request.ts",
+        "source/types/response.ts",
+        "source/errors/HTTPError.ts",
+        "test/request-options.ts",
+        "source/utils/options.ts",
+        "test-d/fetch-extensions.ts",
+        "package.json",
+        "tsconfig.dist.json",
+        "tsconfig.json",
+        "tsconfig.test.json"
+      ],
+      "ownerPaths": [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "test/http-error.ts",
+        "test/hooks.ts",
+        "test/request-options.ts",
+        "test-d/hide-error-url-search.ts"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "TASK-IMPLEMENT",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run test"
+      ]
+    },
+    {
+      "key": "TASK-VERIFY",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run test"
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "taskKey": "TASK-IMPLEMENT",
+      "outcome": "selected",
+      "agentId": "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+    },
+    {
+      "taskKey": "TASK-VERIFY",
+      "outcome": "selected",
+      "agentId": "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+    }
+  ],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [],
+  "reachedStage": "preflight",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81"
+      ]
+    },
+    {
+      "stage": "assignments",
+      "evidenceIds": [
+        "assignment-evaluation:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81:TASK-IMPLEMENT",
+        "assignment-evaluation:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81:TASK-VERIFY"
+      ]
+    },
+    {
+      "stage": "preflight",
+      "evidenceIds": [
+        "task-preflight:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81:TASK-IMPLEMENT",
+        "task-preflight:planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81:TASK-VERIFY"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+    "repositoryBaseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+    "planningOperationId": "planning-v3:9fa749a5-f9be-46ee-a996-037916bd2e81",
+    "planningOperationDigest": "f659c3b133afa29216a6c2ea0040db9e88da782c74a99322f8135e8510eba46b",
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "d7e3bc141c16126555ae01f34f1adf40c8ae3627def32c7eeb429ecfb6b4b3ee",
+    "teamCatalogDigest": "dd9326dc0e795029bfb874fc6cc3ac77c3c5d51d8d57f218702f7ca8891046a6",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-16T17:28:11.937Z",
+    "completedAt": "2026-10-16T17:50:10.513Z"
+  }
+}

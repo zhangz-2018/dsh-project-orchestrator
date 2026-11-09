@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "0067e964fdebde2b94a323f89e5183383f2c5ed0e9a4cc3f50af0589213f0289",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "c40f8bbe9864a94d7bd909bdbc700878fc9db75b9739ba92957c3a9ab5d3a5e3",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d76b8785244eae2016ad183e80cac81959f3a8aa7a0312490:independent-gold-review:a28e4c29-ac1e-4185-81b1-e13f9ce1650c",
+    "reviewedAt": "2026-10-16T01:55:04.100Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this frozen planning-only C scenario. REQ-001, AC-001–AC-003, DEC-001, task keys, repository identity and base commit agree with the original specification. OPT-1 is explicitly fixed hypothetical input, not a registered human Decision; the empty human-decision input is therefore consistent with ready status. An unresolved material DEC-001 in paired B must still block at decisions. The exact writable scope correctly comprises the CORS implementation and regression test; the supplied build configuration establishes that published declarations are generated, not separately maintained owners. The test file is included in both runtime discovery and the separate TypeScript checking configuration. Implementation and dependent independent verification must cover all required ACs. The allowed agents have matching delivery roles, availability, assignable memberships and supplied active project-scoped trusted claims for the bounded work, including testing.verification for the verifier. This invocation-local numeric validation does not require shared-data or state capabilities merely because those legacy claims remain pending. A distinct configured reviewer is supplied. Gold and preview release fingerprints agree across repository, source, team, decision input, prompt, model, sampling, budgets and metric policy. Historical project reuse and retained old operations do not constitute candidate evidence on this bundle under the supplied isolation facts. This approval relies on the supplied Service-bound digests and saved evidence; I did not recompute hashes, execute code, validate external attestations, or inspect candidate outputs.",
+    "goldDigest": "f9279f0b38cdecdaf9ff9edc50904f4838266d71a4a9ebb7d6b37c59fee9a2e2"
+  }
+}

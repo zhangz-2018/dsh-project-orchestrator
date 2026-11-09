@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06f9b16e79386a71016ad1b65cfd1c8193aa457924811437d2:independent-gold-review:d6b24a28-29dc-460a-87e4-760da1902d09",
+    "reviewedAt": "2026-10-16T05:30:18.118Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this frozen C bundle. The PRD explicitly fixes DEC-001=OPT-1 as a hypothetical benchmark input, not a human-confirmed Decision; therefore ready with no decision blocker is appropriate for C. This does not authorize bypassing a material unresolved DEC-001 in paired B, which must block at decisions. REQ-001 and AC-001–AC-003 consistently require construction-time TypeError for negative and non-finite maxAge, preservation of zero and omitted-value behavior, and compatibility of other CORS behavior. The supplied source establishes the implementation and regression-test files as the bounded writable owners. Build configuration establishes that published declarations are generated, not separately maintained owners. TASK-IMPLEMENT and independent TASK-VERIFY, with verification dependent on implementation and both covering all required acceptance criteria, agree with the original task expectations. The allowed agents have the relevant active project-scoped trusted claims, and an independent active reviewer is configured. Pending data.change and domain.state claims do not undermine eligibility for the specified invocation-local numeric validation; the scope does not require shared-data or state changes. The test configuration separately supports compilation and runtime regression verification. Repository identity, base commit, stable keys, and the frozen release fingerprints agree across the supplied records; provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. The original specification's remaining/readiness preparation fields are distinguished from the subsequently supplied frozen preview. Historical project reuse preserves scoped attestations without supplying candidate outputs, and the isolation record states that Gold precedes every candidate on this bundle. I reviewed the supplied records only: I did not execute code, independently recompute digests, or create or independently authenticate human attestations.",
+    "goldDigest": "2ee4cd7d707515da89644ac98f91367f132e63385bd445b65ac6afe80d7eddc5"
+  }
+}

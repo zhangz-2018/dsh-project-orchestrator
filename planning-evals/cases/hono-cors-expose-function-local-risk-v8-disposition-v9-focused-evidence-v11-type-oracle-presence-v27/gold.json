@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "7ca0dbc49a0dd9860103bcc0c1a89adae20cfe163b9e36d506faa693c4dcf5db",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f501930248c5b39016ad20f7c9a248190bb8a9389505ded53:independent-gold-review:3f9df26c-3b80-4e41-b323-4144c6a3d53d",
+    "reviewedAt": "2026-10-16T11:50:32.842Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, the exact writable implementation/test paths, and the implementation followed by independent verification task structure agree. The source establishes that exposeHeaders currently accepts only static arrays, so the requested callback support and strengthened regressions are justified. The designated test file is included in both runtime discovery and the separate TypeScript check; build configuration establishes that published declarations are generated, not separately maintained edit owners. This change concerns invocation-local values, not shared data or state, so the pending data.change and domain.state claims do not invalidate the assignments. The designated implementer and verifier have the relevant active trusted claims, with testing.verification additionally present for the verifier, and an independent active project reviewer is configured. No unresolved material DEC-001 is supplied for this case; ready with no blocking reasons is therefore consistent. Gold and preview release fingerprints match, and the supplied provenance explains the distinct source-manifest, evaluation-source, and PRD-normalization digest domains. Historical project reuse is explicitly separated from this bundle, for which no candidates have run. This approval concerns the independent planning oracle only, not implementation correctness, task dispatch, or release authorization. I reviewed the supplied evidence without executing code, independently recomputing digests, or supplying a human attestation.",
+    "goldDigest": "fd2009f96d4677532e1e4273c19cb03078a88452e38608bc75313af176d46089"
+  }
+}

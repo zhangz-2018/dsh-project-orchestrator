@@ -29,6 +29,12 @@
 
 Inbox 查询字段采用严格校验：`kind`、`projectId`、`issueId`，以及有上限的 `limit`。
 
+## 原生能力与 PR 只读接口
+
+`GET /native-capabilities` 返回实际 Host 服务存在性和命令后端。项目可使用 `GET /projects/:id/pull-request`、`/checks`、`/diff` 读取本地绑定和远端参考。`PUT /projects/:id/pull-request` 接受 `{url, expectedHead, expectedUpdatedAt}`；首次绑定使用 `expectedUpdatedAt: null`。`DELETE` 同路径要求 `{expectedUpdatedAt}`，仅解除本地绑定。`POST /projects/:id/pull-request/evidence` 保存完整检查参考并返回 `201`，不推进验收。
+
+所有写入继续要求 same-origin JSON 和 writer 串行边界；旧 head、检查截断和绑定 CAS 冲突会拒绝。没有远端 PR 写操作。详细限制和试点开关见[实施记录](dsh-native-integration-implementation-2026-11-09.zh-CN.md)。
+
 ## Project 创建与规划路由
 
 `POST /projects` 接受两种显式请求模式：

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f7171115672457780da39cd027b62693ccb39267421dda91686ad8b48a3dc47d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0c9bc5d0056ad328016ad1b0038a0481959ec84b72fe565e08:independent-gold-review:dbef192c-fd93-4efd-a80a-37f23e9dd2cc",
+    "reviewedAt": "2026-10-16T05:03:10.087Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, and paired-case identity agree with the original specification. DEC-001 is material and explicitly unresolved; AC-001 is conditional and does not authorize selecting OPT-1. Accordingly, blocked readiness, the requirement-decision-pending reason scoped to DEC-001, evidence through repository/requirements/decisions, and no assignable tasks or assignment expectations are appropriate. Complete implementation and declaration evidence supports index.js and index.d.ts as the binding-owner pair; package.json establishes the xo/ava/tsd validation entry point and provides no declaration-generation build. The test excerpts are marked truncated, but this does not undermine the decision-stage block or owner expectation. The empty team catalog does not require an additional later-stage blocker because the supplied policy places the unresolved material Decision gate before Scenario Coverage and assignment prerequisites. Gold and preview release fingerprints match, and the supplied provenance explains the distinct manifest/evaluation source-digest domains and PRD whitespace normalization. Historical operations are disclosed without candidate outputs and do not establish a resolution or execution result. This review relies on the Service's supplied mechanical bindings and isolation facts; I did not execute code, independently recompute digests, or supply human attestation. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "eef92bfb9dfff34cb13c7aa10ab2774764e7e4b06210cb11dd42a60ef248cdfb"
+  }
+}

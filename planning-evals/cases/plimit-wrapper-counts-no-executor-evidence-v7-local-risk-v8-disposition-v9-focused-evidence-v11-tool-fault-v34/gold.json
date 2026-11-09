@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e0bd943a792a88f5debdc5cfa8acafce6073e554908a2bf0ad02782a24abea1f",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_032b4aa58367580a016ad26dd495448194834a6e76282adcad:independent-gold-review:42f6eecf-f900-48d9-86c7-416f30effb76",
+    "reviewedAt": "2026-10-16T18:33:05.133Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original specification. REQ-001 and AC-001 through AC-003 consistently require live, read-only wrapper counts backed by the existing limiter, preserving Promise, scheduling, and clearQueue behavior. The supplied source shows the wrapper currently forwards clearQueue but not the counts; its maintained declaration likewise omits them. The exact four-file binding scope covers implementation, declarations, runtime regression, and tsd regression without requiring gratuitous edits or configuration changes. TASK-IMPLEMENT and dependent, independent TASK-VERIFY are consistent with the PRD's requirement for implementation and verification coverage of every required acceptance criterion. Both must abstain at assignments: the sole project member is a non-autoassignable reviewer with no execution roles or capability claims. That reviewer can satisfy the stated earlier independent-review prerequisite without qualifying for either execution task. No unresolved material business decision is supplied, so reaching assignments rather than blocking at decisions is appropriate. Repository identity, base commit, stable keys, readiness, blocking reasons, evidence stages, and the Gold/preview release fingerprints agree. The distinct source-manifest, evaluation-source, and trimmed/untrimmed PRD digest domains are explicitly explained and consistently linked by the supplied Service provenance. Historical operations are retained as old-bundle evidence and are not counted as fresh operations or supplied as candidate outputs. This approves the expectation, not execution readiness, task dispatch, human attestation, or completion of the outstanding fresh negative controls. I reviewed only the supplied data; I did not execute code or independently recompute digests.",
+    "goldDigest": "6bfc12d4bb277e6c82f82b42b105a9a999ef800b39ad3a390a3d0895be91d458"
+  }
+}

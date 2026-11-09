@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "scenario-trigger-invalid-compose-middleware-shape",
+      "subjectKeys": [
+        "SCN-AC-002-BOUNDARY"
+      ]
+    }
+  ],
+  "reachedStage": "decisions",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:7445259a-1426-4771-b12b-da7f9bab7c72"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:7445259a-1426-4771-b12b-da7f9bab7c72:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:7445259a-1426-4771-b12b-da7f9bab7c72"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+    "repositoryBaseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70",
+    "planningOperationId": "planning-v3:7445259a-1426-4771-b12b-da7f9bab7c72",
+    "planningOperationDigest": "4baa0e0717fcc2bc2827826e466d00d79a2e62c415a7f3178af5687a13209066",
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-16T17:28:14.566Z",
+    "completedAt": "2026-10-16T17:37:57.792Z"
+  }
+}

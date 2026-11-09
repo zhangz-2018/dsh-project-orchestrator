@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "8fe9642287ba0b0e17d3f7aaa98bee085eaf4578f72a80478bd130f78e809dd7",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_05aba4072ea3ffe9016ad1a7118e888196aa6aebc75381ec34:independent-gold-review:439c2924-8a16-4ba8-9884-7ce6f27855f3",
+    "reviewedAt": "2026-10-16T04:25:03.962Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation against the original PRD and frozen inputs. REQ-001 and AC-001–AC-003 retain their stable keys and cover notification-time eligibility, completion ordering, control-symbol exclusion, hook-error handling, and runtime/type isolation from the other exports. The exact four-file binding scope matches the maintained implementation, declaration, and regression owners; package.json establishes the separate AVA and tsd verification entry points without requiring configuration edits. TASK-IMPLEMENT and dependent TASK-VERIFY match the specified role split and required acceptance coverage. Their allowed agents have the relevant supplied active trusted capability claims, including data.change, domain.state, integration.async, and integration.consumer; the verifier additionally has testing.verification. Pending security.authorization claims are not treated as trusted qualifications or as a requirement introduced by this feature. A separate active project reviewer is configured for the earlier high-risk review prerequisite. No material unresolved Decision is present, so ready with no blocking reasons is appropriate as the planning expectation, not an execution or dispatch approval. Repository identity, base commit, file fingerprints, and release-input fields align across the supplied records. The source-manifest versus evaluation-source digest difference and original versus persisted PRD digest difference are explicitly explained by their distinct domains and trim-only persistence. I rely on the supplied Service binding and provenance assertions; I did not recompute hashes, execute code, or provide human attestation. The test excerpts are truncated, so this approval does not attest to their unseen contents or to test results. No candidate outputs were supplied or used.",
+    "goldDigest": "8d86a55a0ea791c1bf88af4aae8335b1ccda883e50fc6ba338a0dc0a2a7ab109"
+  }
+}

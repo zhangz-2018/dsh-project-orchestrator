@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-verify-scope-v5",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a660554847cd0cfff4df2c1cbdf63d3c22871e6298b569bf8a89eff8977c22dd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_020058b063618e8b016ad12723b1048193a2798e00bc666e1e:independent-gold-review:d6036a98-a702-477e-ae5d-6cc39a7d6b1f",
+    "reviewedAt": "2026-10-15T19:19:12.617Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. The original PRD and Gold preserve REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, and the paired-case identity consistently. DEC-001 materially affects default behavior and remains intentionally unresolved without human confirmation; therefore B must stop at decisions with requirement-decision-pending, before Scenario Coverage, binding, or assignment. The required repository/requirements/decisions evidence stages and empty task and assignment expectations correctly express that outcome. Later independent-reviewer and capability prerequisites do not override this earlier deterministic stop. The supplied source supports the owner scope: HTTPError message construction, option declarations and normalization, registry filtering, forwarding/merging, exports, and hook/API consumers. Forwarding and declaration consumers are inspection owners, not mandatory edits. The build configuration supports treating distribution declarations as generated outputs rather than separately maintained owners, and tsconfig.test.json includes the proposed test-d location for compile-time checks independently of AVA/tsx execution. The Gold and preview releaseInput fingerprints match across repository, source, team, decision, prompt, model, sampling, budgets, and metric policy. The source manifest digest is a distinct manifest field and is not assumed to equal the release source-input digest. Historical preparation fields do not authorize execution. Any fixed hypothetical C input is not a human resolution of DEC-001. This review uses the supplied evidence and Service-bound digests only; I did not recompute hashes, execute code, inspect a candidate, or attest to human approval.",
+    "goldDigest": "3561fe0436968e38a3eb9c10b90f30091e4189981bbbb4349dc0b8e7e3008332"
+  }
+}

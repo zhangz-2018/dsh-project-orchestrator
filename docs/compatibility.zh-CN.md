@@ -2,11 +2,17 @@
 
 [English](compatibility.md) | 简体中文
 
-## 已认证矩阵
+## 已验证源码矩阵
 
 | Plugin | DeepSeek Harness | Cordis | Node.js | Git | 平台 |
 |---|---|---|---|---|---|
-| 1.x | 0.1.0-rc.6 | 4.0.1 | >=22 | worktree 必需 | Linux 和 macOS CI；Windows 未认证 |
+| 当前工作区源码（未发布） | 0.2.2-rc.1 | 4.1.0 | >=24.9.0 | worktree 必需 | macOS 本地验证；Linux CI 已配置，本轮未运行；Windows 未认证 |
+
+旧 `0.1.0-rc.6` 验证仅对应历史源码和产物。当前包要求新版 Host 依赖，不再声明兼容旧 Host，也不再支持 Node.js 22。本轮没有升级用户现有 Host 进程或业务数据。
+
+本次改用 `dsh-agent-preset-registry`、`dsh-api-workspace-controller`、`dsh-client-ui-workspace`、`dsh-client-ui-renderer` 和 `sessionQuery.readSession()`，替代被移除或拆分的接口。前端 factory 加载协议、存储域名称及记录 Schema 版本保持原有契约。
+
+兼容性检查覆盖真实 CLI 和插件激活、Agent 预设/流/查询生命周期、模型错误、工具拒绝、取消、释放，以及 Host 重启后的 JSON 存储恢复。模型输出来自本地确定性适配器，这只能证明集成兼容性，不能证明真实模型规划质量或正式发布门禁通过。证据及复验方式见[适配验收记录](dsh-0.2.2-adaptation-2026-11-09.zh-CN.md)。
 
 Harness 预发布版本的 SemVer 不表示不同 release candidate 之间兼容。修改 peer 范围前，必须验证未来每一个 Harness RC 或稳定版本。Harness 软件包采用可选 peer，是因为 profile Host 会提供这些依赖；普通 npm 安装如果自动解析 peer，可能根据上游预发布范围构造出无效的混合 RC 依赖树。请使用 Harness `dsh plugin` 管理器和以 pnpm 为基础的 profile，不要把本软件包当作独立 Node 应用安装。
 

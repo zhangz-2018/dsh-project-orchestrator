@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "9ca1999e6426b4684b60d9623a0bf87b78776746b905b7b36c7980f8f1b79a80",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f87200e419a359d016ad1f633fc748190bb3cc8971ed1157d:independent-gold-review:fb971175-ad86-43f6-872e-ab56ad619a91",
+    "reviewedAt": "2026-10-16T10:02:40.734Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001–AC-003 preserve error identity, string-wrapper compatibility, retry termination, and declaration compatibility. The exact binding scope includes the runtime owner, maintained declaration owner, runtime regressions, and tsd regressions; package.json confirms the existing xo && ava && tsd verification entry point without requiring configuration edits. The focused test evidence is sufficient for this bounded review despite the disclosed truncation of unrelated test content. TASK-IMPLEMENT and dependent, independent TASK-VERIFY are consistent with the PRD. The supplied active project-scoped capability facts support the respective allowed agents, including testing.verification for the verifier; pending claims and personas are not needed to establish eligibility. This invocation-local error-property change does not require shared-data or shared-state impacts merely because it preserves an Error reference. An independent project reviewer is also configured. No unresolved material DEC-001 is present in this case, so ready with no blocking reasons is appropriate. The frozen release fingerprints agree across Gold and preview; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical operations are explicitly outside this bundle, with no candidate outputs supplied. I relied on the Service's mechanical digest bindings and supplied evidence, without independently recomputing digests, executing code, or creating human attestations. Approval concerns the planning expectation, not implementation correctness, test passage, task dispatch, or release authorization.",
+    "goldDigest": "3a1c0f0aad02759511c9db645a6f7728f1ea06017e45a11ba547136aa461f25f"
+  }
+}

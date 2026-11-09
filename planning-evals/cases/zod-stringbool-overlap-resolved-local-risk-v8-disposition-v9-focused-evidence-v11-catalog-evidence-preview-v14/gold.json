@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "fbb0907800c9bfd4b64367a10ca56a348b9ee47097038e8966899668b653c63a",
+    "teamCatalogDigest": "faeee3bdd0e3f30ae24fa57694edddf2fbe533db3f7d9b8ba3a80afc7b001287",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0afef64ec8617aac016ad196d335048193993cd55aa3230220:independent-gold-review:8a23ffc4-d931-4d09-b79b-c00fdddc80a1",
+    "reviewedAt": "2026-10-16T03:15:48.357Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. The PRD explicitly fixes OPT-1 as a hypothetical input, without asserting a human Decision; only that selected branch is required. Thus ready with no decision blocker is appropriate for C, while an unresolved material DEC-001 must still block paired B at decisions. REQ-001, AC-001–AC-003 and the two task keys are consistent across the specification and Gold. The supplied source establishes core/api.ts as the shared stringbool implementation used by classic and mini, supporting the exact writable scope comprising that implementation and the two regression files. Forwarders, parameter consumers and exports appropriately remain inspection owners; the build configuration supports treating emitted declarations as generated rather than separately maintained owners. Boundary and compatibility expectations preserve existing normalization, no-trim behavior, defaults, boolean inference and codec behavior outside overlapping configurations. TASK-VERIFY is independent and depends on TASK-IMPLEMENT, with all required acceptance criteria needing both relationships. The designated agents have appropriate roles, availability and supplied active project-scoped trusted claims for the bounded work, including data.change and verifier-only testing.verification; eligibility does not depend on persona or pending legacy claims. A distinct active, non-auto-assignable reviewer satisfies the supplied earlier review prerequisite without needing execution claims. Gold and preview release fingerprints agree for repository, source, team, decision inputs, prompts, model, sampling, budgets and metric policy. The original preparation placeholders are superseded by the supplied frozen preview, not evidence of a candidate result. Historical project reuse and retained old-version operation evidence do not constitute fresh candidate evidence on this bundle. This review relies on the supplied Service-bound digests and evidence; I did not recompute hashes, execute code, or provide human attestation.",
+    "goldDigest": "e420e36610e5d64b8c6437b9353f307377170ad97b870c02624880ebb236cc66"
+  }
+}

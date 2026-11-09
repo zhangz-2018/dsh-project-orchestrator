@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "0b13d558b8b60038a8634c114f7d708078d1471904a5d5d69134cc7df888e03d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "115c2144daad54db1e2958ebf98f4b19b1a5bd10dcffeb95f3c0a2b0f85cc1e9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04fd0e353e4482fd016ad2656a2c90819485d85002598e5562:independent-gold-review:b374edbd-3ae8-4897-8124-421991d8cbff",
+    "reviewedAt": "2026-10-16T17:57:11.248Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. REQ-001, AC-001 through AC-003, DEC-001, task keys, repository identity/base commit, and exact writable binding scopes agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical input, not a human Decision; ready with no decision blocker is therefore appropriate here, while a material unresolved DEC-001 must still block paired B at decisions. The implementation owners and bounded runtime/type regression files are supported by the supplied source and configuration evidence. The build configuration supports treating dist declarations as generated rather than separately maintained owners, and runtime tests are correctly distinguished from compile-time validation. The implementation/independent-verification split, verification dependency, and required AC coverage are explicit. The allowed implementer and verifier have matching roles, availability, and supplied active project-scoped trusted claims for the relevant contract, shared-data, state, asynchronous-consumer, TypeScript, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Eligibility need not rely on persona or pending legacy claims. A separate active project reviewer satisfies the stated non-executing review prerequisite. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and trim-only PRD normalization. Model, sampling, budgets, prompt, team, repository, decision-input, and metric-policy fingerprints are frozen. Historical old-version operations retained on the reused project do not constitute candidates on this bundle under the supplied isolation facts. This approval relies on the supplied Service-bound fingerprints and evidence; I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "bf8c53689a4b037434e16a72cc5eba5c362fc90447a9d82ea0c99eade25d723f"
+  }
+}

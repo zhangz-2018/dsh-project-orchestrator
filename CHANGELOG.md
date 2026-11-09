@@ -4,16 +4,19 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.0] - 2026-09-06
+## [1.7.0] - Unreleased
 
 ### Added
 
+- Integrate Harness `0.2.2-rc.1` native capability diagnostics, local pull-request bindings and read-only Forge evidence, Session navigation, and an opt-in bounded read-only Subagent pilot. Native evidence does not replace delivery approval.
 - Add evidence-grounded Planning Contract V3 with all-block source disposition, immutable Requirement/Acceptance Scenario/Decision facts, repository stack profiling and code binding, policy fixed-point handling, controlled capability derivation, assignment evaluation, and deterministic Task Preflight.
 - Add authoritative workspace writer fencing, immutable planning operations and repair lineage, approval/dispatch separation, runnable-frontier dispatch, canonical delivery integration, final repository convergence review, and convergence repair carry validation.
 - Add responsive Planning V3 health, lineage, gate, assignment, preflight, integration, and convergence projections to the Web workbench and loopback API.
 
 ### Fixed
 
+- Update Zod and source-map-js to patched versions for the production dependency audit.
+- Replace backtracking-prone source parsing with token scans, preserve literal argv execution, and validate TypeScript alias wildcard shapes following CodeQL findings.
 - Reject fabricated repository references, unsupported stacks, incomplete impact chains, uncovered scenario categories, uncontrolled overlapping write scopes, non-browser UI verification, zero eligible candidates, stale repository/access facts, and incomplete delivery evidence instead of publishing a superficially ready plan.
 - Derive browser, framework, verification, release, and other execution capabilities from frozen repository and task facts rather than Planner-authored free text.
 - Bound every Agent turn to ten minutes; a timeout now cancels the session, records a retryable Planning failure, restores the Project, and creates no Task, Approval, or Dispatch side effects.
@@ -23,7 +26,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - Move TypeScript, Vue SFC, and Prisma semantic parsers into runtime dependencies so clean package installations preserve the supported repository analysis boundary.
 - Tighten Agent Builder, default Agent, Issue, and Project Task prompts around explicit authorization, repository evidence, original acceptance criteria, declared capabilities, escalation, and honest verification reporting.
-- Expand release verification to 346 Node regression tests plus production-package clean install, dependency audit, real-model canaries, unsupported-stack rejection, and desktop/mobile workbench regression.
+- Expand local verification to 541 Node regression tests, seven browser tests, production-package clean install, and isolated Harness compatibility checks. Formal real-model release evaluation remains a separate mandatory gate and has not passed for this candidate.
 
 ## [1.6.0] - 2026-08-26
 

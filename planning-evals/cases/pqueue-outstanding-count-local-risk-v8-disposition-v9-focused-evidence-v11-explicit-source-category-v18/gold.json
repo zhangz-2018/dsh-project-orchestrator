@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "27d2e2ac5c13bcc86ff41aa762239dc84f3305aab8d75746641d9181555f1aaf",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03df8353ed72c81b016ad1b66b6d0081958d7f647f86ed1c3c:independent-gold-review:1667b387-4220-4a2a-9746-702e592a72c2",
+    "reviewedAt": "2026-10-16T05:30:31.381Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001–AC-003 preserve the original contract: a read-only, derived outstandingCount equal to size + pending, without a second counter or changes to scheduling, event order, or microtask accounting. The exact writable binding scope covers the implementation and required runtime/type regressions. The package/build evidence supports generated dist declarations rather than a separately maintained declaration owner, and distinguishes runtime tests from compile-time validation. TASK-IMPLEMENT and the dependent independent TASK-VERIFY match the specification; the allowed agents have the relevant supplied active trusted capability claims, roles, membership eligibility, and available capacity, including testing.verification for the verifier. Pending legacy claims and personas are not needed to establish eligibility. The configured independent reviewer satisfies the supplied earlier review prerequisite despite having no execution capability claims. No material unresolved Decision is present in this case, so ready with no blocking reasons is appropriate. Repository identity, base commit, stable keys, evidence stages, and release-input fingerprints agree across the Gold and frozen preview. The source provenance explains the distinct original, normalized saved-PRD, manifest, and evaluation digest domains. The original specification's remaining-work fields describe the earlier preparation snapshot, while the preview supplies the subsequent frozen team and release inputs. The isolation evidence permits project reuse without treating historical operations as candidates on this bundle. Review was based only on the supplied material; I did not execute code, independently recompute digests, or provide human attestation.",
+    "goldDigest": "236d631d676a59dede0a442206c76be18c01b59f38d08e74e68edf94c039fe29"
+  }
+}

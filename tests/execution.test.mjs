@@ -105,6 +105,8 @@ test('execution failure classification distinguishes dependency retry from busin
   assert.deepEqual(classifyExecutionFailure(new WorkflowError('execution-contract-stale', 'stale', 409)).disposition, 'non_retryable')
   assert.deepEqual(classifyExecutionFailure(new WorkflowError('task-run-lease-expired', 'lost', 409)).disposition, 'needs_reconciliation')
   assert.deepEqual(classifyExecutionFailure(new WorkflowError('task-run-heartbeat-failed', 'lost', 500)).disposition, 'needs_reconciliation')
+  assert.deepEqual(classifyExecutionFailure(new WorkflowError('runtime-start-uncertain', 'unknown', 500)).disposition, 'needs_reconciliation')
+  assert.deepEqual(classifyExecutionFailure(new WorkflowError('runtime-observe-failed', 'unknown', 500)).disposition, 'needs_reconciliation')
 })
 
 test('InlineRuntimeAdapter exposes prepare/start/observe/artifact and cancellation states', async () => {
@@ -121,4 +123,13 @@ test('InlineRuntimeAdapter exposes prepare/start/observe/artifact and cancellati
   await cancellable.start(pending.executionId)
   await cancellable.cancel(pending.executionId, 'operator stop')
   assert.equal((await cancellable.observe(pending.executionId)).status, 'cancelled')
+  assert.deepEqual(await cancellable.collectArtifacts(pending.executionId), [])
+
+  const diagnosticError = Object.assign(new Error('executor failed'), { artifacts: [{ kind: 'log', name: 'failure.log', contentDigest: 'b'.repeat(64) }] })
+  const failing = new InlineRuntimeAdapter(async () => { throw diagnosticError })
+  const failed = await failing.prepare({ taskRunId: 'run-3', cwd: '/tmp/project', contractDigest: 'd'.repeat(64), payload: null })
+  await failing.start(failed.executionId)
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.equal((await failing.observe(failed.executionId)).status, 'failed')
+  assert.equal((await failing.collectArtifacts(failed.executionId))[0].name, 'failure.log')
 })

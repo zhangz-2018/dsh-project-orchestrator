@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "releaseInput": {
+    "repositoryDigest": "27fef76fb745e781fd280b3455f0ea4489b8cb92a1bf72200480d68f3d890e49",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "e53dcc48df1322f7ecf516339d3410ceab0c2aee59f2c79e616e5a50c7b4f77c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00530d5140f1cd94016ad1b6bdf7b88194ab085ce90016cf12:independent-gold-review:a6282a02-775a-4fb4-81ae-41249dc80a05",
+    "reviewedAt": "2026-10-16T05:32:43.031Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. The original PRD explicitly fixes hypothetical OPT-1 without representing it as a human Decision; only that branch is required under the preserved REQ-001 and AC-001–AC-003 keys. This supports ready with no decision blocker in C, while a materially unresolved DEC-001 must still block paired B at decisions. The expectations cover pre-invocation removal, a per-registration fired guard against stale snapshots, synchronous exception propagation, ordinary/wildcard compatibility, and positive and negative overload checks. The exact writable owner scope matches the implementation and regression files. Repository configuration and supplied upstream build evidence establish that root declarations are generated rather than separately maintained owners, and establish build-before-test verification. The implementation and dependent independent-verification task expectations agree with the supplied roles, availability, and relevant active trusted capability claims; pending legacy claims and personas need not be used to establish eligibility. A separate configured reviewer satisfies the stated non-executing review prerequisite. Repository identity, evidence stages, and release fingerprints are consistent across Gold and preview. The provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization. The original preparation snapshot's remaining steps and runnable=false do not contradict the subsequently supplied frozen planning inputs or assert execution readiness. I relied on the Service's supplied mechanical digest bindings, did not independently recompute digests or execute code, and used no candidate outputs. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "ae32f55910aabd1b4413399fbf26ee649ef92850eb3f8fb61042e49df1e8437e"
+  }
+}

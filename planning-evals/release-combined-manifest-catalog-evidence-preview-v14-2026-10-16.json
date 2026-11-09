@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-catalog-evidence-preview-v14-2026-10-16",
+  "createdAt": "2026-10-16T03:19:40.888Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "8490192808611ff3d7f2b1f4dc5b7753e10b9d7cd98224b7beb5670bb150689f"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "bdd380ec254c65a1a4b6a7b8231eca0ad10fc8f88fa93cb95fb0a738846de4a7"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "79e01f659cae8cc2dc8ab6c5f200cf7aceb4693d78b94157ee4b2ca106a17065"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "538b10436f9ce6e729575721f1c03fe53e2c98e1657487221173229e3887981c"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "d37ca8245faca7b1984b92b813a4659437c5dce5fb785ddb731b01f25ca7aca0"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "0ce7f486304a51e3712f41c687d409050b51d002ea48e6e831159e679823d1b8"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "df5fe106611f2e41d7ef64e06d30cc6e2a7ad5a34b6f792d4544e0cad06eecd8"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "e86153ddd9ee6835799b6842a6940c2bb3d8cf089b40c86738057e58cd4bfeb6"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "aa16fb136c8572b689fa14a7141a92fd20390079a0c9377b1676ed6aefa20d0e"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "019241b9e8402ff4a4e74e5b4807e65d30d21398830380a5a0604c6aac163aa7"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "goldDigest": "5959adaec5e0bd400e7356f69d668acfb859d3a6481e11e32f8ac927097fe842"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-2",
+      "operationId": "planning-v3:0fb4814a-c936-405e-9b5e-7618a4732416",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-2.json",
+      "startedAt": "2026-10-16T03:19:40.904Z",
+      "completedAt": "2026-10-16T03:23:14.866Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:50f5efdd-63ac-452e-b2b2-760e71f6dcfc",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:19:40.910Z",
+      "completedAt": "2026-10-16T03:23:47.092Z"
+    },
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:a1f7c1dc-fc12-477a-935a-e8fb47b716b8",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:19:40.914Z",
+      "completedAt": "2026-10-16T03:31:27.114Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:fcbaa7fa-bce6-42f4-8129-636dc86653a7",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:19:41.035Z",
+      "completedAt": "2026-10-16T03:29:27.268Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-3",
+      "operationId": "planning-v3:3debfbb4-8aea-4b0b-94b0-2d400947e2d2",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-3.json",
+      "startedAt": "2026-10-16T03:23:17.750Z",
+      "completedAt": "2026-10-16T03:26:45.364Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-4",
+      "operationId": "planning-v3:507ed1a5-d91f-40cc-b216-691a8d7354f2",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-4.json",
+      "startedAt": "2026-10-16T03:23:53.365Z",
+      "completedAt": "2026-10-16T03:27:11.552Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-5",
+      "operationId": "planning-v3:ab43e7c1-4978-4900-8d99-8deebc2464c5",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-5.json",
+      "startedAt": "2026-10-16T03:26:49.829Z",
+      "completedAt": "2026-10-16T03:29:43.661Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:36ba6896-e731-40c5-a86c-463ebf8a9b7d",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:27:13.539Z",
+      "completedAt": "2026-10-16T03:30:02.792Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-2",
+      "operationId": "planning-v3:e7bbe0d4-1cf8-4969-9098-27f7a0ec00e4",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-2.json",
+      "startedAt": "2026-10-16T03:29:45.008Z",
+      "completedAt": "2026-10-16T03:32:13.069Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-3",
+      "operationId": "planning-v3:0295e314-dff9-48cc-ac12-c3eab8c9e1aa",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-3.json",
+      "startedAt": "2026-10-16T03:30:06.063Z",
+      "completedAt": "2026-10-16T03:32:40.650Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-4",
+      "operationId": "planning-v3:596eaa20-ca96-407b-85de-9b5251f3a964",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-4.json",
+      "startedAt": "2026-10-16T03:32:17.082Z",
+      "completedAt": "2026-10-16T03:34:34.627Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-5",
+      "operationId": "planning-v3:22cfe952-4427-493a-a24d-9ae7385a82f6",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-5.json",
+      "startedAt": "2026-10-16T03:32:43.301Z",
+      "completedAt": "2026-10-16T03:34:48.410Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-1",
+      "operationId": "planning-v3:e96746ca-a7eb-42ad-978e-a00935d0f6a6",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-1.json",
+      "startedAt": "2026-10-16T03:34:36.426Z",
+      "completedAt": "2026-10-16T03:36:45.696Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-2",
+      "operationId": "planning-v3:1ab9be40-f4dd-4902-94bb-ae59737a3a23",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-2.json",
+      "startedAt": "2026-10-16T03:34:53.125Z",
+      "completedAt": "2026-10-16T03:36:58.172Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-3",
+      "operationId": "planning-v3:486241b3-3f53-4084-bc0b-ab3ad0fcd969",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-3.json",
+      "startedAt": "2026-10-16T03:36:47.057Z",
+      "completedAt": "2026-10-16T03:39:39.700Z"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/fresh-4",
+      "operationId": "planning-v3:fe8a1257-ae96-4c6e-b998-654c7a95d86a",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14/runs/fresh-4.json",
+      "startedAt": "2026-10-16T03:37:02.391Z",
+      "completedAt": "2026-10-16T03:39:47.604Z"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-owner-v29",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1491d93392bea8611e41f3d5b2339a4e33ee93894418bceb2caf532706abe95c",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_065b347d23e7f064016ad23882b3ac8194bc351634ec63ae7b:independent-gold-review:ef54e559-6c09-4f35-a072-b3f183a603f8",
+    "reviewedAt": "2026-10-16T14:45:36.528Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes the recommended RangeError acceptance conditional, not an authorization to select OPT-1. Gold correctly requires blocked readiness at decisions, with requirement-decision-pending on DEC-001, evidence through repository/requirements/decisions, and no assignable tasks or assignment expectations. REQ-001 and AC-001–AC-003 retain their original stable keys. The complete implementation and declaration evidence supports index.js and index.d.ts as the binding owners; package.json directly exports both and supplies xo && ava && tsd as the verification entry point, with no declaration-generation evidence. The test excerpts are explicitly truncated, but their omitted portions do not prevent establishing this earlier decision gate. The empty team roster and absence of capability claims do not authorize assignments and do not invalidate the intentional block, which precedes the later independent-review prerequisite. Repository identity, base commit, file fingerprints, and all supplied release-input fingerprint fields agree across the relevant records. Provenance explicitly explains the distinct original-PRD, normalized saved-PRD, manifest, and evaluation-source digest domains, so their differing values are not contradictions. The original specification's null releaseInput and remaining preparation items are distinguishable from the subsequently supplied frozen preview. Isolation evidence states that Gold precedes every candidate on this bundle; retained historical operations are not candidate evidence or newly inferred human attestations. This approval relies on the supplied Service-calculated bindings and provenance: I did not recompute digests, execute code, or provide human decision attestation.",
+    "goldDigest": "bc987980d7193d71f6b882bea86fb0bf377386165f619c8da7f1d08669fc298c"
+  }
+}

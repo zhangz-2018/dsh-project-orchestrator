@@ -21,6 +21,8 @@
 | Task | 已批准计划依赖、执行智能体和独立验证门禁 |
 | Issue | 协作生命周期、分配 revision、评审状态、当前 TaskRun 指针 |
 | TaskRun | 一次排队/执行尝试、工作区 lease、Session 和交付证据 |
+| VerificationSpec / Invocation / Evidence | 已批准验证映射、单次真实执行上下文，以及绑定 TaskRun、源码状态和场景结果的证据 |
+| StorageMutationIntent / RecoveryAttempt | 可恢复写入的冻结前后状态，以及每次恢复请求与结果 |
 | Command | 幂等 key、变更结果或持久化失败回执 |
 | Runtime | 本地 Host 分派资格和工作区 metadata |
 | Squad / Delegation | 团队配置，以及一份父子 Issue 协作契约 |
@@ -36,7 +38,7 @@ Inbox、Agent 工作负载、Skills、本地功能使用聚合和统计数据都
 - `queued`：已持久化但尚未被领取；Runtime 离线或 Host 重启后仍会保留。
 - `waiting_local_directory`：具备执行资格，但被 canonical 原地目录锁阻塞。
 - `dispatched`：已获取容量和工作区 lease。
-- `running`：Harness Agent 正在运行。
+- `running`：RuntimeAdapter 已启动对应 execution；TaskRun 保存 adapter、execution 和 claim version 绑定。
 - 终态：证据和工作区清理均已稳定。
 
 当 Issue 的分配 revision 发生变化后，过期 TaskRun 可以保留终态证据，但不能继续推进该 Issue。
@@ -47,7 +49,24 @@ Inbox、Agent 工作负载、Skills、本地功能使用聚合和统计数据都
 
 ## 进程模型
 
-当前 Harness Agent 在 Host 进程中执行。Runtime 记录并不表示远程 worker。存储变更边界只串行化单个 Host 进程，并不是分布式事务或 compare-and-swap 协议。
+默认 `inline-runtime` 在 Host 进程中执行 Harness Agent。Service 按 `prepare → 持久化绑定 → start → observe → collectArtifacts` 驱动 RuntimeAdapter；`start` 返回不确定错误时先 observe，不会盲目重复启动。取消会传播到 adapter，失败和取消终态也可以提供诊断 artifact。TaskRun、Issue 和 Project 的最终推进仍由 Service 独占。
+
+Runtime 记录本身不表示已有远程 worker；仓库当前没有注册生产 daemon adapter。inline execution 的内存状态不能跨 Host 重启恢复。存储变更边界只串行化单个 Host 进程，并不是分布式事务或 compare-and-swap 协议。
+
+## 服务边界
+
+- `OrchestratorService` 保留 HTTP/CLI 使用的 facade 与最终状态 owner。
+- `ExecutionBroker` 冻结 claim、租约和 execution contract；`RuntimeAdapter` 只执行与观察。
+- `VerificationService` 创建版本化 invocation，执行受控命令并消费结构化浏览器报告。
+- `DeliveryService` 拥有交付投影、不可变记录、确认/关闭、V3 Git Integration 与 Convergence；`OrchestratorService` 只保留兼容委托和尚未下移的跨域终态协调。
+- `StorageReconciliationService` 从持久化 before/after 事实派生 preview，并执行有摘要与 revision 防护的恢复。
+- `QueryService` 生成 overview、readiness 和有 watermark 的历史分页；这些投影不修改业务事实。
+
+## 规划语义能力
+
+内置生产 Provider 覆盖 TypeScript/JavaScript 符号、关系与 consumer，Vue/Nuxt 路由，Prisma schema，测试关联及可信 manifest 命令。路径别名、re-export 与反向 consumer 进入同一 TypeScript 关系图，并受文件和边预算限制。超过预算会显式返回 partial。
+
+Python、Java/Spring 和 Go 当前明确为 unsupported，没有生产语义 Provider。项目仍可登记和使用通用工作流，但不能据此宣称 Planning V3 已具备这些语言的代码 owner 与完整影响面分析。
 
 ## 兼容性存储
 

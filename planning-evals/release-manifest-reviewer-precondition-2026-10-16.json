@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-reviewer-precondition-2026-10-16",
+  "createdAt": "2026-10-15T18:26:56.593Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-reviewer-v3",
+      "goldDigest": "f2bb34a5c59b7e65f5ee940d9958c1bef435837df96b645783f8ff2253c16c0a"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-reviewer-v3",
+      "attemptId": "plimit-wrapper-counts-no-executor-reviewer-v3/fresh-1",
+      "operationId": "planning-v3:69369c70-5c03-4a63-9a3b-85231347f02b",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-reviewer-v3/runs/fresh-1.json",
+      "startedAt": "2026-10-15T18:26:56.618Z",
+      "completedAt": "2026-10-15T18:31:30.827Z"
+    }
+  ]
+}

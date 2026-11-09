@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "releaseInput": {
+    "repositoryDigest": "eeeb2bfb5488123ee7b390ee25f96949381438699f26cd7319a013db172f4283",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e0bd943a792a88f5debdc5cfa8acafce6073e554908a2bf0ad02782a24abea1f",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_068a26dfc36997d9016ad26d73b2a481939c2c5ecb79246b59:independent-gold-review:41b51a23-83a7-4d7c-8328-191a6fc348e3",
+    "reviewedAt": "2026-10-16T18:31:26.633Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this intentionally pending planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity are consistent across the specification and Gold. DEC-001 materially affects the public rejection contract and is explicitly unresolved; conditional acceptance language does not authorize choosing an option. Gold correctly requires blocked readiness with requirement-decision-pending for DEC-001 and stops at repository, requirements, and decisions evidence. Empty task and assignment expectations correctly reflect the prohibition on generating assignable tasks before resolution. The complete implementation-owner evidence supports source/index.ts and source/options.ts; regression/type-test files are verification scope rather than additional mandatory implementation owners. Build configuration supports treating dist declarations as generated, not separately maintained owners. The supplied nz evidence establishes discovery and compile-time checking of test-d files, distinct from runtime tests. Truncated runtime-test excerpts do not prevent establishing this decision-stage expectation. The empty team catalog does not introduce an earlier blocker because the unresolved material Decision gate precedes later reviewer and assignment prerequisites. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and PRD whitespace normalization. Historical operations are retained without supplied candidate outputs or copied attestations, consistent with independent review before candidates on this bundle. This assessment relies on the Service's stated mechanical digest binding; I did not recompute digests, execute code, or provide human decision attestation. Approval concerns the blocked benchmark expectation, not implementation correctness or authorization to proceed.",
+    "goldDigest": "2ed390f7d5e615f5c6cf64e44bdd20057170d19a72ff137b36468a91d4844005"
+  }
+}

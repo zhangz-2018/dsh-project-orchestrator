@@ -43,6 +43,17 @@ test('CLI team queries encode identifiers and use the shared HTTP projections', 
   })
 })
 
+test('CLI readiness and overview use the bounded project query endpoints', async () => {
+  await withCliServer(async ({ requests, url }) => {
+    await execFileAsync(cli, ['readiness', 'project / one', '--url', url])
+    await execFileAsync(cli, ['overview', 'project / one', '--url', url])
+    assert.deepEqual(requests, [
+      { method: 'GET', url: '/project-orchestrator/api/projects/project%20%2F%20one/readiness', body: undefined },
+      { method: 'GET', url: '/project-orchestrator/api/projects/project%20%2F%20one/overview', body: undefined },
+    ])
+  })
+})
+
 test('CLI team mutations preserve the command payload through the shared HTTP boundary', async () => {
   await withCliServer(async ({ requests, url }) => {
     const payload = { taskId: 'task-1', agentId: 'agent-2', expectedRevision: 7, reason: 'Capacity changed.' }
@@ -109,12 +120,21 @@ function planningEvaluationArtifact() {
 
 function releaseCanaryArtifact() {
   return {
-    schemaVersion: 1, releaseVersion: '1.7.0', planningContractVersion: 3, projectKey: 'project:redacted',
+    schemaVersion: 2, releaseVersion: '1.7.0', planningContractVersion: 3, projectKey: 'project:redacted',
     planningOperationId: 'operation-1', planningOperationDigest: digest, sourceSnapshotDigest: digest,
     planSnapshotId: 'plan-1', planSnapshotDigest: digest, approvalId: 'approval-1', approvalDigest: digest,
     executionDispatches: [{ id: 'dispatch-1', digest }, { id: 'dispatch-2', digest }], taskRunCount: 2,
     deliveryIntegrationSnapshotId: 'integration-1', deliveryIntegrationDigest: digest, finalCommit: 'b'.repeat(40),
     convergenceReviewId: 'review-1', convergenceReviewDigest: digest, outcome: 'converged', falseReady: false, falseConverged: false,
+    verificationInvocations: [
+      { id: 'invocation-1', taskRunId: 'task-run-1', specId: 'spec-1', specDigest: digest, sourceStateDigest: digest, outputCommit: 'b'.repeat(40), outputTree: 'c'.repeat(40) },
+      { id: 'invocation-2', taskRunId: 'task-run-2', specId: 'spec-2', specDigest: digest, sourceStateDigest: digest, outputCommit: 'b'.repeat(40), outputTree: 'c'.repeat(40) },
+    ],
+    verificationEvidence: [
+      { id: 'evidence-1', taskRunId: 'task-run-1', invocationId: 'invocation-1', evidenceDigest: digest, requiredScenarioIds: ['scenario-1'], scenarioResultCount: 1 },
+      { id: 'evidence-2', taskRunId: 'task-run-2', invocationId: 'invocation-2', evidenceDigest: digest, requiredScenarioIds: ['scenario-2'], scenarioResultCount: 0 },
+    ],
+    humanDeliveryConfirmation: { projectReviewId: 'project-review-1', projectReviewDigest: digest, reviewDecision: 'approve', deliveryRecordId: 'delivery-1', deliveryRecordDigest: digest, deliveryStatus: 'delivered', deliveredBy: 'release-owner', deliveredAt: '2026-09-06T00:09:00.000Z' },
     requiredRequirementCoverage: 1, requiredAcceptanceCoverage: 1, evidenceRecordIds: ['evidence-1'], evidenceBundleDigest: digest,
     startedAt: '2026-09-06T00:00:00.000Z', completedAt: '2026-09-06T00:10:00.000Z',
   }

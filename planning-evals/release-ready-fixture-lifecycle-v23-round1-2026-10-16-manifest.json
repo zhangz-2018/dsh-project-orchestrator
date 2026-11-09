@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-ready-fixture-lifecycle-v23-round1-2026-10-16",
+  "createdAt": "2026-10-16T08:07:44.525Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "goldDigest": "d063e7e83cec74c8214c71ca16515007cea88ad717ed29c83e1dc32e629e69fd"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "goldDigest": "cdef2d75d93825cb3a9305e6b0260c943ef1b771a3d3c1820c8a59dbda0ce5f7"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "goldDigest": "be696bbaddb8d4443e17421f7b6cfacda2118b4184dd1b28a844fce333bb4ca2"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23/fresh-1",
+      "operationId": "planning-v3:90dfcbbe-7612-4d3d-b01a-baf8e170c433",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T08:07:44.561Z",
+      "completedAt": "2026-10-16T08:14:27.093Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "attemptId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23/fresh-1",
+      "operationId": "planning-v3:e58d04d6-2ac3-43c6-8acc-d224a0410298",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T08:07:44.571Z",
+      "completedAt": "2026-10-16T08:17:54.689Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23/fresh-1",
+      "operationId": "planning-v3:e5e5af30-e9f2-4404-8a4e-d4b7e6f45bd3",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fixture-lifecycle-v23/runs/fresh-1.json",
+      "startedAt": "2026-10-16T08:07:44.754Z",
+      "completedAt": "2026-10-16T08:25:55.033Z"
+    }
+  ]
+}

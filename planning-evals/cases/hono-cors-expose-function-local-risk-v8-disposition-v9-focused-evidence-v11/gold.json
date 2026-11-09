@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "08802d0c1d3e22bd47ff7d40a30fff2e08b0dca310a542517e3093dc11de1ac8",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "edf3dc23c2ceb5c2eb442ddc2a2e9bb698ac0359c024383038bafbd51e0fff32",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_066cedf90ef4427b016ad179562b2c8197a69de3f7f4397ba2:independent-gold-review:ef0c85d5-00c9-4ff3-93af-94aeb7ea98d1",
+    "reviewedAt": "2026-10-16T01:09:57.042Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation for the frozen inputs. REQ-001 and AC-001–AC-003 consistently specify synchronous/asynchronous exposeHeaders callbacks, original request Origin and Context identity, once-per-request invocation including OPTIONS, empty-array behavior, error propagation, and compatibility/type regressions. The exact writable owner scope contains the implementation/type declaration and regression test file. The supplied TypeScript and test configurations include that test file and distinguish compile-time checking from runtime testing. Build configuration establishes that distributed declarations are generated, not separately maintained owners; package export declarations require no mandatory edit. TASK-IMPLEMENT and dependent independent TASK-VERIFY are consistent with the PRD. Their allowed agents have the relevant active project-scoped trusted claims, including testing.verification for the verifier, and available capacity; pending legacy claims and personas are not needed to establish eligibility. The configured separate project reviewer satisfies the stated non-executing review prerequisite. This request-local transformation does not itself require shared-data or state impacts and their additional capabilities. No unresolved material DEC-001, B scenario, or hypothetical C input is supplied in this case, so none warrants an invented decision or blocker. Ready with no blocking reasons and all seven evidence stages is coherent as a planning expectation, not authorization to execute or dispatch. Repository identity/base commit and the Gold/preview release fingerprints agree, including source, team, decision, prompt, model, sampling, budgets, and metric policy. The earlier originalSpecification preparation fields are distinguishable from the later frozen preview. Historical project reuse and its retained operation do not establish candidate contamination under the supplied isolation facts. This review used only the supplied evidence: I did not execute code, independently recompute Service digests, or provide human attestation.",
+    "goldDigest": "93f7f76eec3233d411e53a4f32181b206ef6044a689474aaa38b9f26d601c06d"
+  }
+}

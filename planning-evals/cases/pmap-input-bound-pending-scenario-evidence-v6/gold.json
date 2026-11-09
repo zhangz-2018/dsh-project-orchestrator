@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f278d313aff70df016ad12cb7b8e08190a304366c8493bfb2:independent-gold-review:432294fd-8074-4e98-99d3-2d8b751480a7",
+    "reviewedAt": "2026-10-15T19:43:00.968Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, paired case, and binding-owner paths agree with the original PRD. DEC-001 materially controls overflow behavior and remains unresolved; the recommended RangeError acceptance is explicitly conditional, not authorization to select OPT-1. Accordingly, B must stop at decisions with requirement-decision-pending for DEC-001, without ready or assignable tasks. Empty task and assignment expectations are appropriate. The supplied runtime policy explicitly places this gate before Scenario Coverage, so the empty team catalog and absent independent project Reviewer do not introduce a mandatory earlier blocker. Source evidence supports index.js and the maintained index.d.ts as inspection/binding owners, with runtime and type verification in test.js and index.test-d.ts through the configured xo && ava && tsd entry point; it does not establish declaration generation or require unrelated consumer edits. Gold and preview releaseInput fingerprints match across repository, source, team, decision, prompt, model, sampling, budgets, and metric policy. The source-manifest digest identifies a separate manifest field and is not treated as an interchangeable release-source digest. The original specification's null releaseInput and remaining-preparation notes are historical preparation metadata, superseded for this review by the supplied frozen releaseInput. Truncated test excerpts do not prevent review of this pre-task decision-block expectation. No candidate was supplied or used, no hypothetical input was treated as a human Decision, and no execution or independent digest recomputation is claimed; digest binding is accepted as supplied by the Service.",
+    "goldDigest": "cec9350a7a5b9ff9952b26f460a83a1da358a3a0e948d8995c7c2654287fde1b"
+  }
+}

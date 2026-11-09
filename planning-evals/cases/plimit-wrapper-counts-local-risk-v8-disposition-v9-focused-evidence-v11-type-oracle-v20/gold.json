@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_049e2c555a125c5d016ad1c2dbaf2881969b856bc5d250566e:independent-gold-review:e2570bad-dcf5-41c5-bd87-f26687a44989",
+    "reviewedAt": "2026-10-16T06:23:37.911Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, repository identity/base commit, exact writable owner scopes, readiness, and evidence stages agree. The complete source evidence establishes that limitFunction already forwards clearQueue but lacks wrapper count properties and their return-type declarations; index.js, index.d.ts, test.js, and index.test-d.ts are appropriate bounded owners. package.json establishes separate runtime and tsd verification through xo && ava && tsd, supporting compile-time readonly negative assertions without executing them. TASK-IMPLEMENT and dependent, independent TASK-VERIFY match the specification. The allowed agents have the supplied active project-scoped trusted claims needed for the bounded JavaScript/TypeScript, shared-state/data, asynchronous-consumer, and testing work, including testing.verification for the verifier. Pending security.authorization claims are not used to establish eligibility for this requirement. The configured independent project reviewer satisfies the stated non-executing review prerequisite. No material unresolved DEC-001 is present in this bundle. Gold and preview release fingerprints agree; the documented source digest domains and trim-only PRD normalization explain the distinct manifest, evaluation-source, and PRD fingerprints. The supplied isolation evidence distinguishes retained old-version operations from this unevaluated bundle and supplies no candidate outputs. Original preparation placeholders are resolved by the supplied preview and frozen release inputs, rather than treated as candidate results. This approval is based solely on the provided records: I did not execute code, independently recompute digests, or create or renew human attestations.",
+    "goldDigest": "36aa39a144677297c3949dd9e5ad0e54510d7ecd63246168493743d43ddbe682"
+  }
+}

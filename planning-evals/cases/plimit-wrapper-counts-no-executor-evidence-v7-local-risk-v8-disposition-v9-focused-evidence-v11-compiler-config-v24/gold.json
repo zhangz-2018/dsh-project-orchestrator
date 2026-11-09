@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "9ca1999e6426b4684b60d9623a0bf87b78776746b905b7b36c7980f8f1b79a80",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_05a3b8c8fe79c70f016ad1f6a6e7a88194bfef1eb9da2b6c5a:independent-gold-review:235b8bfc-ccd8-4140-aa48-6ca863775627",
+    "reviewedAt": "2026-10-16T10:04:33.604Z",
+    "rationale": "The frozen Gold is a coherent independent planning expectation for the supplied original PRD and source evidence. REQ-001 and AC-001 through AC-003 consistently require live, read-only wrapper counts from the existing limiter, preserving scheduling, Promise behavior, and clearQueue. The exact writable scope covers the runtime owner, maintained declaration owner, runtime regressions, and tsd regressions; package.json establishes xo && ava && tsd without requiring configuration edits. The implementation/independent-verification task split, verification dependency, and required acceptance coverage are explicit. Both assignment abstentions are justified: the sole project member is a non-auto-assignable reviewer with no execution roles or capability claims. That reviewer satisfies the supplied earlier independent-review prerequisite without becoming an eligible implementer or verifier. No unresolved material Decision is present in this case, so reaching assignments and reporting blocked there is appropriate. Gold and preview release fingerprints agree; the provenance explains the distinct source-manifest, evaluation-source, and normalized PRD digest domains. Historical operations are explicitly old-version, non-fresh evidence, not candidates for this bundle. Remaining fresh controls and release preparation are not represented as completed. This review relies on the supplied Service-bound fingerprints and evidence; I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "43a8d3498797411b8bd06b1c889d2ef6d9609c14f656a8e9a2eb6a6fcda07825"
+  }
+}

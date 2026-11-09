@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [
+    "packages/zod/src/v4/classic/schemas.ts",
+    "packages/zod/src/v4/classic/checks.ts",
+    "packages/zod/src/v4/classic/parse.ts",
+    "packages/zod/src/v4/core/checks.ts",
+    "packages/zod/src/v4/core/json-schema-processors.ts",
+    "packages/zod/src/v4/core/regexes.ts",
+    "packages/zod/src/v4/core/standard-schema.ts",
+    "packages/zod/src/v4/core/to-json-schema.ts",
+    "packages/zod/src/v4/locales/en.ts",
+    "packages/zod/src/v4/mini/schemas.ts",
+    "packages/zod/src/v4/core/api.ts",
+    "packages/zod/src/v4/mini/parse.ts",
+    "packages/zod/src/v4/core/core.ts",
+    "packages/zod/src/v4/core/errors.ts",
+    "packages/zod/src/v4/core/registries.ts",
+    "packages/zod/src/v4/core/schemas.ts",
+    "packages/zod/src/v4/core/util.ts",
+    "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+    "packages/zod/src/v4/classic/external.ts",
+    "packages/zod/src/v4/classic/coerce.ts",
+    "packages/zod/src/v4/classic/compat.ts",
+    "packages/zod/src/v4/classic/deep-partial.ts",
+    "packages/zod/src/v4/classic/errors.ts",
+    "packages/zod/src/v4/classic/from-json-schema.ts",
+    "packages/zod/src/v4/classic/in-out.ts",
+    "packages/zod/src/v4/classic/iso.ts",
+    "packages/zod/src/v4/locales/index.ts",
+    "packages/zod/src/v4/mini/external.ts",
+    "packages/zod/src/v4/core/visit.ts",
+    "packages/zod/src/v4/locales/ar.ts",
+    "packages/zod/src/v4/locales/az.ts",
+    "packages/zod/src/v4/locales/be.ts",
+    "packages/zod/src/v4/locales/bg.ts",
+    "packages/zod/src/v4/locales/bn.ts",
+    "packages/zod/src/v4/locales/ca.ts",
+    "packages/zod/src/v4/locales/ckb.ts",
+    "packages/zod/src/v4/locales/cs.ts",
+    "packages/zod/src/v4/locales/da.ts",
+    "packages/zod/src/v4/locales/de.ts",
+    "packages/zod/src/v4/locales/el.ts",
+    "packages/zod/src/v4/locales/eo.ts",
+    "packages/zod/src/v4/locales/es.ts",
+    "packages/zod/src/v4/locales/fa.ts",
+    "packages/zod/src/v4/locales/fi.ts",
+    "packages/zod/src/v4/locales/fr-CA.ts",
+    "packages/zod/src/v4/locales/fr.ts",
+    "packages/zod/src/v4/locales/gu.ts",
+    "packages/zod/src/v4/locales/he.ts",
+    "packages/zod/src/v4/locales/hi.ts",
+    "packages/zod/src/v4/locales/hr.ts",
+    "packages/zod/src/v4/locales/hu.ts",
+    "packages/zod/src/v4/locales/hy.ts",
+    "packages/zod/src/v4/locales/id.ts",
+    "packages/zod/src/v4/locales/is.ts",
+    "packages/zod/src/v4/locales/it.ts",
+    "packages/zod/src/v4/locales/ja.ts",
+    "packages/zod/src/v4/locales/ka.ts",
+    "packages/zod/src/v4/locales/kh.ts",
+    "packages/zod/src/v4/locales/km.ts",
+    "packages/zod/src/v4/locales/kn.ts",
+    "packages/zod/src/v4/locales/ko.ts",
+    "packages/zod/src/v4/mini/checks.ts",
+    "packages/zod/src/v4/mini/coerce.ts",
+    "packages/zod/src/v4/mini/deep-partial.ts",
+    "packages/zod/src/v4/mini/in-out.ts",
+    "packages/zod/src/v4/mini/iso.ts",
+    "packages/zod/src/v4/core/compile.ts",
+    "packages/zod/src/v4/core/doc.ts",
+    "packages/zod/src/v4/core/json-schema-generator.ts",
+    "packages/zod/src/v4/core/json-schema.ts",
+    "packages/zod/src/v4/core/memoizer.ts",
+    "packages/zod/src/v4/core/parse.ts",
+    "packages/zod/src/v4/core/versions.ts",
+    "packages/zod/src/v4/classic/index.ts",
+    "packages/zod/src/index.ts",
+    "packages/zod/src/mini/index.ts",
+    "packages/zod/src/v4-mini/index.ts",
+    "packages/zod/src/v4/core/index.ts",
+    "packages/zod/src/v4/index.ts",
+    "packages/zod/src/v4/mini/index.ts",
+    ".configs/tsconfig.base.json",
+    "AGENTS.md",
+    "package.json",
+    "packages/bench/package.json",
+    "packages/bench/tsconfig.bench.json",
+    "packages/bench/tsconfig.json",
+    "packages/bench/typia-case/tsconfig.json",
+    "packages/docs/package.json",
+    "packages/docs/tsconfig.json",
+    "packages/docs/tsconfig.test.json",
+    "packages/integration/fixtures/ai-sdk/tsconfig.json",
+    "packages/integration/fixtures/drizzle-zod/tsconfig.json",
+    "packages/integration/fixtures/internal-types/tsconfig.bundler.json",
+    "packages/integration/fixtures/internal-types/tsconfig.node16-cjs.json",
+    "packages/integration/fixtures/internal-types/tsconfig.nodenext.json",
+    "packages/integration/package.json",
+    "packages/integration/tsconfig.json",
+    "packages/mini/package.json",
+    "packages/mini/tsconfig.build.json",
+    "packages/mini/tsconfig.json",
+    "packages/resolution/package.json",
+    "packages/resolution/tsconfig.build.json",
+    "packages/resolution/tsconfig.json",
+    "packages/treeshake/package.json",
+    "packages/tsc/package.json",
+    "packages/tsc/tsconfig.bench.json",
+    "packages/tsc/tsconfig.json",
+    "packages/zod/package.json",
+    "packages/zod/tsconfig.build.json",
+    "packages/zod/tsconfig.json",
+    "packages/zod/tsconfig.test.json",
+    "tsconfig.json"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/parse.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/mini/parse.ts",
+        "packages/zod/src/v4/core/core.ts",
+        "packages/zod/src/v4/core/schemas.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/in-out.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/in-out.ts",
+        "packages/zod/src/v4/core/parse.ts",
+        "packages/zod/src/v4/core/versions.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/index.ts",
+        "packages/zod/src/v4/mini/index.ts",
+        ".configs/tsconfig.base.json",
+        "package.json",
+        "packages/zod/package.json",
+        "packages/zod/tsconfig.json",
+        "packages/zod/tsconfig.test.json"
+      ],
+      "ownerPaths": [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    }
+  ],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "planning-evidence-insufficient",
+      "subjectKeys": [
+        "TASK-IMPLEMENT",
+        "TASK-VERIFY",
+        "ref-command-c008",
+        "ref-policy-p0004",
+        "ref-policy-p0006"
+      ]
+    },
+    {
+      "code": "planning-evidence-insufficient",
+      "subjectKeys": [
+        "AC-004",
+        "BIND-REQ-001",
+        "SCN-AC-003-COMPATIBILITY",
+        "SCN-AC-004-COMPATIBILITY",
+        "SCN-AC-004-HAPPY",
+        "ref-command-c009",
+        "ref-policy-p0006"
+      ]
+    },
+    {
+      "code": "planning-evidence-insufficient",
+      "subjectKeys": [
+        "BIND-REQ-001",
+        "TASK-IMPLEMENT",
+        "TASK-VERIFY",
+        "ref-command-c001",
+        "ref-policy-p0003",
+        "ref-policy-p0006"
+      ]
+    }
+  ],
+  "reachedStage": "tasks",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+    "repositoryBaseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44",
+    "planningOperationId": "planning-v3:2dc81702-36f1-4f99-8f1d-a05440fefb00",
+    "planningOperationDigest": "fe683f22964dceb28a9937c452aae5b992e71147f5e624d76c86c5f29d94d1c3",
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "b712d443cc4e84336041e1d2107ef101ea3c818c4cf0cbbc187ef460a3a21390",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-16T06:25:50.807Z",
+    "completedAt": "2026-10-16T06:36:42.730Z"
+  }
+}

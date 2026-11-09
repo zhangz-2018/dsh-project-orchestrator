@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "997d50f41feb75f1585488fca813649368c3faf4e455878b94a31d36d4106ec2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0319f84c8e688731016ad1812658ec8193a6b5a025a60a5dc9:independent-gold-review:3db8a0bc-06b4-4f9b-82a8-6dbe105cc83a",
+    "reviewedAt": "2026-10-16T01:43:18.122Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this intentionally pending planning case. The original PRD explicitly leaves material DEC-001 unresolved and prohibits ready or assignable tasks; Gold correctly expects blocked readiness with requirement-decision-pending on DEC-001 and evidence through repository, requirements, and decisions only. AC-001's recommended RangeError outcome is expressly conditional, not authorization to select OPT-1. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, and paired-case identity are consistent. Empty task and assignment expectations are appropriate before the decision gate, and the empty team catalog does not require an additional later-stage blocker because the supplied policy places this decision gate before Scenario Coverage and its independent-review prerequisite. The complete implementation and declaration evidence supports index.js and index.d.ts as the binding owners; package.json identifies these public entry points and the xo && ava && tsd verification script, with no declaration-generation evidence that would disqualify index.d.ts as a maintained owner. The truncated test excerpts do not prevent review of this decision-stage expectation. Gold's releaseInput matches the supplied frozen preview across repository, source, team, decision, prompt, model, sampling, policy, and budget fingerprints. I treat the original specification's null releaseInput and remaining preparation items as original preparation-state metadata, not as overriding the supplied frozen preview. Historical project reuse does not establish a new decision or attestation, and no such inference is needed. This review uses only the supplied specification and frozen evidence, without candidate outputs, code execution, human attestation, or independently recomputed digests; digest binding is accepted as Service-provided.",
+    "goldDigest": "648c4ada9594c9178669a02095c01a03624080dd50ff7efa4d1011de3eb3e38b"
+  }
+}

@@ -44,7 +44,19 @@ async function parseScriptSources(root: string, paths: string[]): Promise<ParseR
   const failures: string[] = []
   for (const path of paths) {
     try {
-      const result = ts.transpileModule(await readCanonicalSource(root, path), {
+      const content = await readCanonicalSource(root, path)
+      if (/\.d\.(?:ts|mts|cts)$/u.test(path)) {
+        // Declaration files have no JavaScript output. Check their syntax with
+        // the compiler instead of treating an emit failure as missing coverage.
+        const fileName = join(root, path)
+        const source = ts.createSourceFile(fileName, content, ts.ScriptTarget.ES2022, true)
+        const options = { noEmit: true, noResolve: true, noLib: true }
+        const host = { ...ts.createCompilerHost(options), getSourceFile: (name: string) => name === fileName ? source : undefined }
+        const program = ts.createProgram([fileName], options, host)
+        if (program.getSyntacticDiagnostics(source).some((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error)) failures.push(`${path} (syntax error)`)
+        continue
+      }
+      const result = ts.transpileModule(content, {
         fileName: path,
         reportDiagnostics: true,
         compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, jsx: ts.JsxEmit.Preserve, allowJs: true },
@@ -260,6 +272,6 @@ export async function buildRepositoryStackProfileV3(input: RepositoryStackProfil
     ...(supportStatus !== 'partial' ? [] : [{ code: 'repository-provider-incomplete', severity: 'blocking' as const, message: `Required semantic provider coverage is incomplete: ${missingCapabilities.join(', ')}. ${providerCoverage.filter((item) => item.status !== 'covered').map((item) => `${item.capability}: ${item.reason ?? item.status}`).join('; ')}`, subjectIds: missingCapabilities }]),
     ...(auxiliaryPythonPaths.length === 0 || unsupportedStacks.includes('python') ? [] : [{ code: 'repository-auxiliary-language-uncovered', severity: 'warning' as const, message: 'Auxiliary Python scripts are inventoried but are outside the supported semantic planning surface. Plans and bindings must remain within the covered TypeScript/JavaScript stack.', subjectIds: auxiliaryPythonPaths.slice(0, 100) }]),
   ]
-  const core = { projectId: project.id, operationId, repositorySnapshotId: repository.id, languages, frameworks, dataLayers, requiredSemanticCapabilities, providerCoverage, supportStatus, supportPolicyVersion: 'repository-stack-support-v3.4.0', diagnostics }
+  const core = { projectId: project.id, operationId, repositorySnapshotId: repository.id, languages, frameworks, dataLayers, requiredSemanticCapabilities, providerCoverage, supportStatus, supportPolicyVersion: 'repository-stack-support-v3.4.1', diagnostics }
   return { id: `repository-stack-profile:${operationId}`, ...core, stackProfileDigest: digestObject(core), createdAt: new Date().toISOString() }
 }

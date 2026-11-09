@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "8fe9642287ba0b0e17d3f7aaa98bee085eaf4578f72a80478bd130f78e809dd7",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0427d4d0339385c5016ad1ca43ca688195abbd03eea181e45c:independent-gold-review:a9b40464-1e36-4efb-b79c-9ba7c262d711",
+    "reviewedAt": "2026-10-16T06:55:15.491Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001 through AC-003 preserve the specified notification timing, control-symbol exclusions, hook-error handling, default-pMap-only exposure, and type-inference compatibility. The exact writable scope includes the runtime owner, maintained declaration owner, and both regression files; package.json supports inspection of the existing xo && ava && tsd verification entry point without requiring a configuration edit. The supplied implementation and declaration evidence supports those owner boundaries, including the shared-engine and shared-Options isolation risks. TASK-IMPLEMENT and the dependent independent TASK-VERIFY are consistent with the specification, and their allowed agents have the relevant active trusted capability claims in the supplied project catalog, including data.change, domain.state, integration.async, integration.consumer, and verifier-only testing.verification. The separate configured reviewer satisfies the stated non-executing review prerequisite. No unresolved material Decision is supplied for this case, so ready with no blocking reasons is appropriate. Gold and preview release fingerprints agree; the provenance explicitly explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. The original preparation placeholders do not contradict the subsequently supplied frozen release inputs. Runtime and type-test excerpts are explicitly truncated, but the supplied complete owners, configuration, inventory, and bounded test evidence adequately support this planning expectation without asserting exhaustive test inspection. Candidate isolation is explicitly supplied, and no candidate outputs were used. This is a documentary review only: I did not execute code, independently recompute digests, create human attestations, or approve task dispatch.",
+    "goldDigest": "b77640de25c8a13d8afed5a8546d60aaab3d21567cce34f3302b01fa3edd28ce"
+  }
+}

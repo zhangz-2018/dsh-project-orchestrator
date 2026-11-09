@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a9e33dc21fe4fda016ad1c2d3659081969511c2935dd0680e:independent-gold-review:8da438b7-96b6-41c2-8187-3c661403b82e",
+    "reviewedAt": "2026-10-16T06:23:28.162Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD expressly leaves material DEC-001 unresolved and does not authorize adopting its recommended option. Gold therefore correctly expects blocked readiness at decisions, the requirement-decision-pending reason referencing DEC-001, repository/requirements/decisions evidence, and no task or assignment expectations. REQ-001 and AC-001–AC-003 retain their original stable keys and conditional semantics, including delay calculation, zero-delay scheduling, cancellation, and option-dependent throw/abort precedence. The supplied implementation and package configuration support index.js and the directly maintained exported index.d.ts as the owner pair, with test.js and index.test-d.ts as verification scope and xo && ava && tsd as the configured validation entry point. No evidence establishes generated declarations or additional mandatory edit owners. The empty trusted team catalog does not invalidate this expectation: the supplied policy places the unresolved material Decision gate before independent scenario review and assignment prerequisites. Gold and preview releaseInput fingerprints match; the supplied provenance explains the distinct source-manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is explicitly isolated from candidate evaluation on this bundle and supplies no authority to resolve DEC-001. I rely on the Service's stated mechanical fingerprint bindings; I did not recompute digests, execute code, or infer human confirmation. The truncated test.js excerpt does not prevent assessing this decision-stage expectation, and no test execution or complete test-content inspection is claimed.",
+    "goldDigest": "fa822ed6ff71ae08995090e19edd501b9fa43f6515a4a3ac4cd8ebfd0e58de31"
+  }
+}

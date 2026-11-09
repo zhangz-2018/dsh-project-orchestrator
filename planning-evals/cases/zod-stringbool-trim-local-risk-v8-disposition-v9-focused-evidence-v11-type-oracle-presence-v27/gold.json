@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-presence-v27",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "b712d443cc4e84336041e1d2107ef101ea3c818c4cf0cbbc187ef460a3a21390",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "7ca0dbc49a0dd9860103bcc0c1a89adae20cfe163b9e36d506faa693c4dcf5db",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_085ce20ede232988016ad20f99a42c81908386770f4a875a81:independent-gold-review:7d0f46ab-11cf-43ff-b108-d5d6a1b46783",
+    "reviewedAt": "2026-10-16T11:51:06.094Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001–AC-003 consistently specify opt-in, input-only trimming before existing case handling, unchanged vocabulary whitespace, existing non-string errors, and preservation of encode behavior and boolean output inference. The source places the shared parameter declaration and transformation in core/api.ts; classic and mini already forward the shared parameters, so their factories, utilities, and exports appropriately remain inspection owners rather than mandatory edits. The exact writable scope includes both required regression files, with the mini file correctly identified as new. Build configuration supports treating emitted declarations as generated rather than separately maintained owners. The supplied Vitest and TypeScript configurations distinguish runtime testing from compiler-backed checks and include the designated test files. Stable keys, implementation/independent-verification roles, dependency, required acceptance coverage, and evidence stages agree with the PRD. The designated agents have active project-scoped trusted claims supporting the bounded work, including data.change and the verifier-specific testing.verification claim; pending legacy claims and personas are not needed to establish eligibility. A configured independent reviewer satisfies the stated earlier review prerequisite. No unresolved material DEC-001 or hypothetical C decision is present in this case, making ready with no blocking reasons appropriate. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct source-manifest, evaluation-source, and normalized PRD digest domains. Historical project reuse is explicitly isolated from this bundle and does not constitute candidate evidence. The original specification's preparation flags are distinguished from the subsequently supplied frozen preview inputs. This assessment uses only the supplied records: I did not execute code, independently recompute digests, or provide human attestation.",
+    "goldDigest": "3e4f7bb78092ab9c73cbd16b760ad9cd6768b9a97f4bb40634ae4ada01d694c3"
+  }
+}

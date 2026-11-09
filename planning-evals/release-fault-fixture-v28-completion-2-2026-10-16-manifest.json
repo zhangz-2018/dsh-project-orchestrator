@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-fault-fixture-v28-completion-2-2026-10-16",
+  "createdAt": "2026-10-16T13:57:05.980Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "goldDigest": "127283073f20b3de87c708ca61ab7f797028c89e0b1e9fe57a33abf7b590dee3"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+      "attemptId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28/fresh-1",
+      "operationId": "planning-v3:96fa525b-09cc-436c-97e5-6a62a61040c1",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T13:57:06.014Z",
+      "completedAt": "2026-10-16T14:09:16.405Z"
+    }
+  ]
+}

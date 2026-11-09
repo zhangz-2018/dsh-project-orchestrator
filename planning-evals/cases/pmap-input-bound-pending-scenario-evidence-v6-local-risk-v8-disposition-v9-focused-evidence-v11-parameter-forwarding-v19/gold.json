@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "6fcae66eaca49d88deb33a00f18bdd4e9547df305c5b52133a370f741f68eaec",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0fd274cc43edd1dd016ad1bb3c864c8197ae79e320ecea8de3:independent-gold-review:fee1ccb9-d637-4076-8cf2-a8b7f75a669e",
+    "reviewedAt": "2026-10-16T05:51:04.397Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending planning case. The original PRD explicitly leaves the material overflow outcome unresolved in DEC-001; AC-001 is conditional, not authorization to select OPT-1. Gold therefore correctly expects blocked readiness at decisions, preserves REQ-001 and AC-001 through AC-003, requires repository/requirements/decisions evidence, and specifies no assignable tasks or assignments. The complete implementation and declaration evidence supports index.js and index.d.ts as the bounded owners: the shared runtime engine and shared option types require inspection to preserve other exports' contracts. package.json supports the stated xo/ava/tsd verification entry point and shows no declaration-generation build. Test excerpts are explicitly truncated, so this approval does not assert exhaustive review of existing tests or successful execution. The empty team catalog does not invalidate the earlier deterministic decision gate; later reviewer and capability prerequisites cannot authorize advancement past it. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and original/saved PRD whitespace normalization. I accept the Service's mechanical input binding without claiming independent digest recomputation. The supplied isolation facts place Gold before every candidate on this bundle and identify historical project reuse without supplied historical candidate outputs. No human Decision, attestation, candidate result, or execution is inferred. No material error or unresolved ambiguity in this blocked-case expectation was identified.",
+    "goldDigest": "339e41c0dee2e94149943eb05c79776f5165c711a2e622345d5a8732d91223a7"
+  }
+}

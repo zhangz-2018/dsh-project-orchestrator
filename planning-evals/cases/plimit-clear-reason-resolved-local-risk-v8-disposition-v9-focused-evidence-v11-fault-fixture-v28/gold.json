@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "c0f0ddb97491d6664455dd200bdf57fe97821437101fcbf415239349822b2f38",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ff65c5605823fe4016ad22c4a8424819093843eb610997928:independent-gold-review:72fce63b-eff4-4071-8372-e464e0772eb0",
+    "reviewedAt": "2026-10-16T13:53:28.507Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. The original PRD explicitly fixes OPT-1 as a hypothetical input, not a human Decision, so ready with no decision blocker is appropriate; this does not waive the decisions-stage block required for a material unresolved DEC-001 in B. REQ-001, AC-001 through AC-003, task keys, and evidence stages agree with the specification. The exact four-file binding scope covers the maintained runtime implementation, declarations, runtime regressions, and tsd checks. The existing limitFunction forwarding and Pick-based declaration reuse do not require separate edits. TASK-IMPLEMENT and the dependent independent TASK-VERIFY have distinct eligible members with active project-scoped trusted claims covering the applicable contract, shared-data/state, asynchronous-consumer, language, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Pending security.authorization claims are not needed for this change. A separate active project reviewer satisfies the stated earlier review prerequisite without execution claims. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct original-PRD, saved-PRD, manifest, and evaluation-source digest domains. Repository, team, decision, prompt, model, sampling, budget, and policy fingerprints are supplied consistently. The original specification's preparation-state placeholders are superseded by the supplied frozen preview rather than treated as runtime readiness blockers. Historical operations are retained only as old-version provenance, with no candidate outputs supplied and no fresh-candidate inference. This approval relies on the supplied Service-bound evidence; I did not execute code, independently recompute digests, or provide human attestation.",
+    "goldDigest": "0fa431f80efaeec00cc6d79162cb54003c8f7e9ed9815816d5d135a941dde45f"
+  }
+}

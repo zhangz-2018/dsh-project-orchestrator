@@ -40,6 +40,15 @@ interface InlineExecution<TPayload, TResult> {
   artifacts: RuntimeArtifact[]
 }
 
+function diagnosticArtifacts(error: unknown): RuntimeArtifact[] {
+  if (typeof error !== 'object' || error === null || !('artifacts' in error) || !Array.isArray(error.artifacts)) return []
+  return error.artifacts.filter((artifact): artifact is RuntimeArtifact => {
+    if (typeof artifact !== 'object' || artifact === null) return false
+    const candidate = artifact as Partial<RuntimeArtifact>
+    return typeof candidate.kind === 'string' && candidate.kind.trim() !== '' && typeof candidate.name === 'string' && candidate.name.trim() !== ''
+  })
+}
+
 export class InlineRuntimeAdapter<TPayload = unknown, TResult = unknown> implements RuntimeAdapter<TPayload, TResult> {
   readonly id = 'inline-runtime'
   readonly kind = 'inline' as const
@@ -65,6 +74,7 @@ export class InlineRuntimeAdapter<TPayload = unknown, TResult = unknown> impleme
       execution.observation = { ...execution.observation, status: 'succeeded', result }
     }, (error) => {
       if (execution.observation.status === 'cancelled') return
+      execution.artifacts = diagnosticArtifacts(error)
       execution.observation = { ...execution.observation, status: 'failed', error: error instanceof Error ? error.message : String(error) }
     })
   }
@@ -82,7 +92,7 @@ export class InlineRuntimeAdapter<TPayload = unknown, TResult = unknown> impleme
 
   async collectArtifacts(executionId: string): Promise<RuntimeArtifact[]> {
     const execution = this.require(executionId)
-    if (execution.observation.status !== 'succeeded') throw new WorkflowError('runtime-artifacts-unavailable', 'Artifacts are available only after successful execution.', 409)
+    if (!['succeeded', 'failed', 'cancelled'].includes(execution.observation.status)) throw new WorkflowError('runtime-artifacts-unavailable', 'Artifacts are available only after execution reaches a terminal state.', 409)
     return structuredClone(execution.artifacts)
   }
 

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "afe0153d034ba4ec036684db3babd0fc54436a040e887f274a9704a9faed5934",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "9ca1999e6426b4684b60d9623a0bf87b78776746b905b7b36c7980f8f1b79a80",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0287f538d3c2a273016ad1f6437c7c8190a0b954092428310f:independent-gold-review:918456e2-7b1e-410f-b494-1b9cef34e022",
+    "reviewedAt": "2026-10-16T10:02:59.167Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C input. REQ-001, AC-001–AC-003, DEC-001 and the task keys agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical benchmark input without asserting a human Decision; only that branch is required. An unresolved material DEC-001 in paired B must still block at decisions. The runtime and declaration evidence supports the exact four-file binding scope, reuse of the existing sampled and rounded delay, and the required post-hook cancellation check and thrown-value precedence. package.json establishes separate AVA runtime and tsd type-checking entry points; index.d.ts is a maintained public declaration owner, with no supplied generation evidence suggesting otherwise. The implementation and dependent independent-verification tasks, required acceptance coverage, role-specific eligible agents, and ready/no-blocker expectation are supported by the supplied project membership, availability and active trusted capability claims, including data.change, domain.state and integration.consumer. Pending legacy claims and personas are not needed to establish eligibility. The configured independent reviewer satisfies the stated non-executing review prerequisite. Original preparation placeholders do not contradict the later frozen preview or planning readiness. Gold and preview release fingerprints agree; the provenance explains the distinct source digest domains and PRD whitespace normalization. I rely on the Service's stated mechanical binding, not independent digest recomputation. Historical operations are identified as old-bundle evidence and are not treated as fresh candidate runs. No candidate output informed this review, and no code or tests were executed. I found no material error or unresolved ambiguity requiring a Gold change.",
+    "goldDigest": "8300d58b29ade283da64fa92d494525f26a9316c0e3d51f4a10f966ffe8b7347"
+  }
+}

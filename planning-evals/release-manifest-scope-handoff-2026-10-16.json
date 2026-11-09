@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-scope-handoff-2026-10-16",
+  "createdAt": "2026-10-15T18:40:27.870Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-scope-v4",
+      "goldDigest": "efe7187a40db95c4d8fe6bab98202641a909a9a0dff0a0c92ee1a5ed6de0f78b"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-scope-v4",
+      "attemptId": "plimit-wrapper-counts-no-executor-scope-v4/fresh-1",
+      "operationId": "planning-v3:a2ca096a-f9de-473e-9a53-2bda59d4a7e1",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-scope-v4/runs/fresh-1.json",
+      "startedAt": "2026-10-15T18:40:27.896Z",
+      "completedAt": "2026-10-15T18:47:10.791Z"
+    }
+  ]
+}

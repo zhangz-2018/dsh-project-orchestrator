@@ -13,15 +13,16 @@
 
 ## 开发环境设置
 
-要求：Node.js 22+、pnpm 10.34.5、Git，以及用于实时验证的受支持 DeepSeek Harness 环境。
+要求：Node.js >=24.9.0、pnpm 10.34.5、Git，以及用于实时验证的 DeepSeek Harness 0.2.2-rc.1 环境。
 
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
 pnpm verify
 ```
 
-测试套件使用 Node 的测试运行器，并使用真实的临时 Git 仓库覆盖 worktree 场景。测试不得依赖贡献者的绝对路径。
+测试套件使用 Node 测试运行器、真实临时 Git 仓库，以及由 Harness JSON 存储提供落盘能力的回环浏览器 Host。测试不得依赖贡献者的绝对路径或持久化 Profile 数据。
 
 ## Pull Request
 

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify / ${{ matrix.os }} / Node 22
+    name: Verify / ${{ matrix.os }} / Node 24
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     strategy:
@@ -28,7 +28,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
       - name: Enable pinned pnpm
         run: corepack enable

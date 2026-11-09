@@ -72,7 +72,7 @@ export function classifyExecutionFailure(error: unknown): ExecutionFailureClassi
     if (['runtime-offline', 'runtime-unavailable'].includes(error.code)) return { code: 'runtime_unavailable', disposition: 'retryable', status: 502 }
     if (error.code === 'dependency-failed') return { code: 'dependency_failed', disposition: 'retryable', status: 502 }
     if (['execution-contract-stale', 'task-run-claim-conflict'].includes(error.code)) return { code: 'contract_stale', disposition: 'non_retryable', status: 409 }
-    if (['task-run-lease-expired', 'task-run-heartbeat-failed'].includes(error.code)) return { code: 'runtime_lost', disposition: 'needs_reconciliation', status: 500 }
+    if (['task-run-lease-expired', 'task-run-heartbeat-failed', 'runtime-start-uncertain', 'runtime-observe-failed'].includes(error.code)) return { code: 'runtime_lost', disposition: 'needs_reconciliation', status: 500 }
   }
   return { code: 'unexpected_internal', disposition: 'non_retryable', status: 500 }
 }

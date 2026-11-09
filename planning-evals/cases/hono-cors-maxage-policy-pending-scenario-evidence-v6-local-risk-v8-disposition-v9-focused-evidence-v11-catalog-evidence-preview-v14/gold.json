@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_038c35c2c9ada88e016ad1970597348197bbc4c8ce645c913a:independent-gold-review:550a538c-9e51-4a63-8091-504ef14741e8",
+    "reviewedAt": "2026-10-16T03:16:34.678Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity, base commit and paired-case identity agree with the original specification. AC-001 is explicitly conditional on the recommended option and does not authorize resolving DEC-001. The material unresolved decision therefore correctly blocks readiness at decisions, after repository and requirements evidence, without requiring later Scenario Coverage reviewer or assignment prerequisites. Empty assignment expectations are appropriate because this case must not generate assignable tasks; TASK-IMPLEMENT and TASK-VERIFY apply only after decision resolution. The supplied implementation establishes src/middleware/cors/index.ts as the relevant maintained owner, with index.test.ts providing the bounded verification scope. Package and build configuration establish that published declarations are generated rather than separately maintained owners, and distinguish compile-time checking from runtime tests. The empty trusted team catalog does not justify inferred capabilities or assignments. The Gold releaseInput agrees field-for-field with the supplied preview releaseInput for repository, source, team, decision, prompt, model, sampling, policy and budgets. The original specification's null releaseInput and remaining preparation items describe its earlier preparation state, not a conflicting frozen fingerprint. Historical project reuse and retained operations do not supply a decision or candidate evidence. This approval is based solely on the supplied pre-candidate review data and Service-bound fingerprints; I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "79e01f659cae8cc2dc8ab6c5f200cf7aceb4693d78b94157ee4b2ca106a17065"
+  }
+}

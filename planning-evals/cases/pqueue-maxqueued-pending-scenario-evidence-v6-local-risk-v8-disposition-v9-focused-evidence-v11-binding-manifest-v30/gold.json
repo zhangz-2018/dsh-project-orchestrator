@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06897a1c89318ef0016ad23ee5afd88195aa021ebb90e8f964:independent-gold-review:c1837f51-f1b1-4ba3-9648-5a063781e9a0",
+    "reviewedAt": "2026-10-16T15:12:50.225Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this intentionally pending planning case. The original PRD explicitly leaves the externally observable rejection-type contract unresolved under material DEC-001 and prohibits publishing ready tasks. Gold correctly expects blocked readiness at decisions, with requirement-decision-pending referencing DEC-001, repository/requirements/decisions evidence, and no task or assignment expectations. REQ-001 and AC-001 through AC-003 preserve the original stable keys and conditional acceptance semantics without selecting either option. The complete supplied implementation owners support source/index.ts and source/options.ts as the bounded owner set; test files are verification scope, not additional implementation owners. Package and compiler configuration support generated dist declarations rather than separately maintained declaration owners, and distinguish runtime tests from compile-time validation. Truncated runtime-test excerpts do not prevent assessing this decision-stage stopping expectation. The empty trusted team catalog does not require later-stage reviewer or capability prerequisites because the material decision gate precedes those stages. Repository identity, base commit, paired case, and frozen release fingerprints agree across Gold and preview. The supplied provenance explains the distinct source-manifest and evaluation digest domains and PRD whitespace normalization. Original-specification preparation placeholders are superseded by the supplied frozen preview rather than evidence of a resolved decision. Historical project operations are not candidate evidence or new human confirmation; no candidate outputs were used. This approval relies on the Service's stated mechanical input bindings: I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "10e7d699a4e0840cde65c11ea6ac6864d060631272c2a418174788e88ac00e6e"
+  }
+}

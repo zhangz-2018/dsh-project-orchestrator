@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-task-boundary-v4",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved",
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "261a73ed104010a93fd8b143c36d047a5033bfc48ed32a174bfb5b595e1c077c",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_082a754a77aba509016ad122c218cc81959222686695dad587:independent-gold-review:5627a9cb-6b25-4f97-a329-994c476074d0",
+    "reviewedAt": "2026-10-15T19:00:29.839Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. It matches the original repository identity, base commit, paired-case reference, stable REQ-001 and AC-001–AC-003 keys, and implementation-owner set source/index.ts plus source/options.ts. DEC-001 materially affects the public rejection contract and remains intentionally unresolved; therefore B must stop at decisions with requirement-decision-pending for DEC-001, without choosing either option or generating assignable tasks. The required repository/requirements/decisions evidence stages, blocked readiness, empty task expectations and empty assignment expectations are coherent. The supplied runtime policy explicitly places this gate before Scenario Coverage, so the empty team catalog does not require adding a later reviewer or assignment blocker. Source evidence supports the owner boundaries and the distinction between runtime tests and compile-time verification. Package/build configuration establishes dist declarations as generated outputs, not separately maintained owners; read-only forwarding or declaration consumers need not become mandatory edits. The proposed Gold and preview releaseInput fields agree on repository, source, team, decision, prompt, model, sampling, policy and budget fingerprints. The sourceManifest digest is a separately labeled manifest fingerprint, not an asserted equality with the release sourceDigest. I rely on the Service's stated mechanical binding of digests to saved inputs; I did not recompute hashes, execute code, review a candidate, or attest to a human Decision. No hypothetical C input is treated as resolving DEC-001. The original preparation-status fields do not override the subsequently supplied frozen releaseInput.",
+    "goldDigest": "8936c932ac98366f83a3b0d6466b4cbe97a99a39204d0ed101d7e341b68d2f0f"
+  }
+}

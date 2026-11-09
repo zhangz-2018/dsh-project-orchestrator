@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f7171115672457780da39cd027b62693ccb39267421dda91686ad8b48a3dc47d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ad6ccd08fba76d2016ad1b0100df481978dcd32af90894dbc:independent-gold-review:85813beb-ba5d-4ba3-83dd-7ed39c4a9cce",
+    "reviewedAt": "2026-10-16T05:03:22.761Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and prohibits generating assignable tasks. Gold correctly expects blocked readiness at decisions, identifies DEC-001 as the blocking subject, requires repository/requirements/decisions evidence, and has no task or assignment expectations. REQ-001 and AC-001 through AC-003 are preserved consistently without selecting either default policy. The supplied source supports the nine inspection owners: HTTPError message construction, option declarations and normalization, lifecycle snapshots, option-key filtering, and direct/create/extend propagation. Existing generic forwarding logic and readonly declaration consumers need inspection, not mandatory edits; the build configuration supports treating distribution declarations as generated rather than separately maintained owners. Runtime and compile-time verification are distinguished, and test-d is included by tsconfig.test.json. The empty trusted team catalog is consistent with stopping at the earlier material-decision gate; later reviewer and assignment prerequisites do not override that gate. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and trimmed/untrimmed PRD fingerprints. Repository, team, decision, prompt, model, sampling, policy, and budget fingerprints are supplied consistently. Historical project reuse and retained operations do not constitute candidate evidence or a new human decision. This approval relies on the supplied Service mechanical bindings; I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "97e924f077eb064c52773ca0ac75f5cff7c01eb4c00482239a88872f90f65b8f"
+  }
+}

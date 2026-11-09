@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "24061706858c8d516120398df9a57219c579305b9ffbd8111113fdbef7b5bb0b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0124390ef3a68353016ad1d465cbd08193862993128d1fba44:independent-gold-review:ccb50188-7f27-443b-84c3-8f33961a9930",
+    "reviewedAt": "2026-10-16T07:38:33.100Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001–AC-003 consistently require live, read-only wrapper counts backed by the existing limiter, preserving Promise behavior, scheduling, and clearQueue. The supplied source establishes index.js and the maintained index.d.ts as implementation/declaration owners, with test.js and index.test-d.ts as the bounded regression scope; package.json confirms the separate AVA and tsd validation entry points. The four-file binding scope is appropriate without requiring gratuitous edits. The stable keys, implementation/verification task split, verification dependency, and required evidence stages match the specification. No unresolved material business Decision is supplied. The configured online, non-executing project reviewer satisfies the stated earlier independent-review prerequisite, while the catalog supplies no eligible implementer or verifier and no trusted capability claims. Consequently, both explicit assignment abstentions and blocked readiness are justified. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical operations are explicitly old-version, non-fresh evidence, not candidate evidence for this bundle. This approval concerns the frozen expectation only, not execution, human attestation, or completion of the outstanding negative controls. Digests and input binding are accepted as Service-supplied mechanical facts; I did not recompute hashes or execute code.",
+    "goldDigest": "8445b484d1a8d3499c7284b3b4553a880df2585a39f6097822f5fb471c835438"
+  }
+}

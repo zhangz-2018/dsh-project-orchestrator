@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "997d50f41feb75f1585488fca813649368c3faf4e455878b94a31d36d4106ec2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ba1136fb0d09bfb016ad18153e64481969fc9ba4a0618c4e7:independent-gold-review:0cc2b813-468d-4812-a4e5-5e475f4ae12b",
+    "reviewedAt": "2026-10-16T01:43:59.452Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes construction-time TypeError rejection conditional on OPT-1, not an authorization to select it. Gold correctly requires blocked readiness with requirement-decision-pending on DEC-001, evidence through repository, requirements and decisions, and no assignable task expectations. REQ-001, AC-001–AC-003, repository identity, base commit and paired-case identity agree with the specification. The supplied source establishes that classic and mini delegate to core._stringbool, whose existing behavior normalizes case without trimming and checks truthy before falsy. The owner scope is appropriate for inspection; forwarding exports and wrapper declarations need not be edited. Package/build configuration supports treating emitted declarations as generated rather than separately maintained owners. Runtime tests and TypeScript checking are distinguished, and the proposed mini test is correctly identified as new. The empty team catalog does not invalidate this expectation because the deterministic material-decision gate precedes independent-review and assignment prerequisites. No human decision or attestation is inferred from project reuse or the paired hypothetical case. Gold and preview release-input fingerprints agree across repository, source, team, decision inputs, prompts, policy, model, sampling and budgets. This review relies on the Service's stated mechanical binding of those fingerprints; I did not recompute digests or execute code. No candidate results were supplied or used.",
+    "goldDigest": "fa92884a681e893bda15a39f3c6d961e1254d2a7c51096cbcd08677cec50f907"
+  }
+}

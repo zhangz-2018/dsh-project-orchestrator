@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-branch-baseline-v25",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "369eacd56cbd166df19ec6efb72123c1863d3a5913e8ec2e4aeea3a777d88c75",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f583ba20c389820016ad1fe707c8881949b4bec28fdcb1c09:independent-gold-review:8c7bda82-3255-4089-a9e5-580b7b0d4d0a",
+    "reviewedAt": "2026-10-16T10:37:48.394Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD and Gold preserve REQ-001, AC-001–AC-003 and DEC-001, and consistently require blocked readiness at decisions for the material unresolved DEC-001. AC-001 is explicitly conditional on the recommended option and does not authorize selecting OPT-1. The distinct reentrancy and exception semantics of both options are retained. Empty task and assignment expectations are appropriate because this branch must stop before generating assignable tasks; later reviewer and capability prerequisites do not supersede the earlier decision gate. The supplied implementation supports src/index.ts as the maintained implementation/type owner, with the two test files providing regression and compile-time verification scope. Configuration and pinned upstream build-source evidence support treating index.d.ts and dist as generated outputs rather than separately maintained owners, and support rebuilding before root-import verification without implying execution. Repository identity, base commit, paired-case identity and release fingerprints agree across Gold and the supplied frozen preview. The source provenance explicitly explains the distinct manifest/evaluation digest domains and persistence trimming. The empty team catalog supplies no basis for inferred capability or assignment claims, which this blocked case does not require. Historical project reuse is disclosed without supplying candidate outputs or treating old operations as current-bundle execution. This approval concerns the independent Gold expectation, not human decision confirmation, task authorization or execution readiness. Digest binding and normalization assertions are accepted as supplied Service evidence; I did not independently recompute digests, execute code or attest to build/test results.",
+    "goldDigest": "a92be98ab6a13e34169ccc21d3835fe46c38e6a7d22419f1461ae372f20f88cb"
+  }
+}

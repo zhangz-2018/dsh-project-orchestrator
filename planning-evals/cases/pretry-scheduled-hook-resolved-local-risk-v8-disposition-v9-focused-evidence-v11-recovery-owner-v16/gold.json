@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "afe0153d034ba4ec036684db3babd0fc54436a040e887f274a9704a9faed5934",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0beea4cc466cae6f016ad1a69eb1ac8195af704054d4ec5c6b:independent-gold-review:50c5d539-8635-4cbf-bda7-459694d65f64",
+    "reviewedAt": "2026-10-16T04:23:11.093Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation. REQ-001, AC-001–AC-003, DEC-001, task keys, repository identity/base commit, and exact writable scopes agree with the PRD. The runtime and maintained declaration owners are index.js and index.d.ts; the regression scopes and package.json verification entry support test.js and index.test-d.ts without requiring unrelated configuration edits. Existing delay calculation supports reuse of the sampled, rounded, capped value, including decreasing backoff and zero delay. The acceptance criteria clearly specify termination exclusions, synchronous hook behavior, abort/error precedence, and cleanup. C explicitly fixes OPT-1 as a hypothetical input, not a human Decision, so ready with no blockers is appropriate; an unresolved material DEC-001 in B must still block at decisions. The two task roles and verification dependency are coherent, and the allowed agents have the supplied active project-scoped trusted claims needed for the bounded work, including data.change, domain.state, asynchronous integration, and verifier-only testing.verification. An independent active reviewer is configured; pending legacy claims and personas are not needed to establish eligibility. The preview and Gold release fingerprints agree, and the supplied provenance distinguishes source-manifest and evaluation-source digest domains. The original preparation placeholders are superseded by the supplied frozen preview facts. Historical project reuse does not establish candidate execution on this bundle or require copying attestations. This review relies on the Service's stated mechanical binding of digests to saved inputs; I did not recompute hashes, execute code, or provide human attestation.",
+    "goldDigest": "51b555f89732bdbe7cf1f300c535ffcba784cdc494500de53dea46d2a65c403d"
+  }
+}

@@ -378,8 +378,95 @@ export const AcceptanceCriterionRecordStorageSchema = z.custom<z.infer<typeof Ac
   'Acceptance criterion storage record is invalid.',
 )
 export const VerificationEvidenceStatusSchema = z.enum(['passed', 'failed', 'unavailable'])
-export const VerificationEvidenceKindSchema = z.enum(['test_command', 'artifact', 'delegation', 'review'])
-export const VerificationEvidenceRecordSchema = z.object({
+const LegacyVerificationEvidenceKindSchema = z.enum(['test_command', 'artifact', 'delegation', 'review'])
+export const VerificationEvidenceKindSchema = z.enum(['test_command', 'artifact', 'delegation', 'review', 'browser_test'])
+export const VerificationEvidenceRecordV1Schema = z.object({
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  taskId: z.string().min(1).optional(),
+  taskRunId: z.string().min(1).optional(),
+  attempt: z.number().int().positive().optional(),
+  planSnapshotId: z.string().min(1).optional(),
+  acceptanceIds: z.array(z.string().min(1)).max(100).default([]),
+  kind: LegacyVerificationEvidenceKindSchema,
+  status: VerificationEvidenceStatusSchema,
+  command: z.string().max(10_000).optional(),
+  exitCode: z.number().int().optional(),
+  output: z.string().max(70_000).optional(),
+  artifactIds: z.array(z.string().min(1)).max(500).default([]),
+  actorType: ActivityActorTypeSchema,
+  actorId: z.string().max(240).optional(),
+  createdAt: z.string().min(1),
+}).strict()
+
+export const VerificationTestMappingSchema = z.object({
+  scenarioId: z.string().min(1),
+  scenarioKey: z.string().min(1).max(500),
+  testFile: z.string().min(1).max(4_096),
+  testKey: z.string().min(1).max(500),
+  browserProject: z.string().min(1).max(240),
+}).strict()
+
+export const VerificationSpecRecordSchema = z.object({
+  schemaVersion: z.literal(1),
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  planSnapshotId: z.string().min(1),
+  taskId: z.string().min(1),
+  provider: z.enum(['command', 'playwright']),
+  providerContractVersion: z.string().min(1).max(100),
+  commandIds: z.array(z.string().min(1).max(10_000)).min(1).max(20),
+  requiredScenarioIds: z.array(z.string().min(1)).max(200),
+  reportContract: z.object({
+    version: z.literal(1),
+    reporterId: z.literal('dsh-playwright-json-v1'),
+    testMappings: z.array(VerificationTestMappingSchema).min(1).max(2_000),
+    requireAllMappedTests: z.literal(true),
+    allowFlakyPass: z.literal(false),
+  }).strict().optional(),
+  specDigest: Sha256Schema,
+  createdAt: z.string().min(1),
+}).strict().superRefine((value, context) => {
+  if (value.provider === 'playwright' && value.reportContract === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['reportContract'], message: 'Playwright verification requires a report contract.' })
+  if (value.provider === 'command' && value.reportContract !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['reportContract'], message: 'Command verification cannot declare a browser report contract.' })
+  if (value.reportContract !== undefined) {
+    const identities = value.reportContract.testMappings.map((mapping) => `${mapping.browserProject}\u0000${mapping.testFile}\u0000${mapping.testKey}`)
+    if (new Set(identities).size !== identities.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['reportContract', 'testMappings'], message: 'Verification test identities must be unique.' })
+    const mappedScenarios = new Set(value.reportContract.testMappings.map((mapping) => mapping.scenarioId))
+    const missing = value.requiredScenarioIds.find((scenarioId) => !mappedScenarios.has(scenarioId))
+    if (missing !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['requiredScenarioIds'], message: `Required Scenario "${missing}" has no test mapping.` })
+  }
+})
+
+export const VerificationInvocationRecordSchema = z.object({
+  schemaVersion: z.literal(1),
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  taskRunId: z.string().min(1),
+  attempt: z.number().int().positive(),
+  specId: z.string().min(1),
+  specDigest: Sha256Schema,
+  planSnapshotId: z.string().min(1),
+  executionContractDigest: Sha256Schema,
+  commandDigest: Sha256Schema,
+  sourceStateDigest: Sha256Schema,
+  reportNonce: z.string().min(16).max(500),
+  state: z.enum(['prepared', 'running', 'finished', 'cancelled', 'interrupted']),
+  outcome: z.enum(['passed', 'failed', 'unavailable']).optional(),
+  reportArtifactId: z.string().min(1).optional(),
+  reportDigest: Sha256Schema.optional(),
+  outputCommit: z.string().regex(/^[0-9a-f]{40,64}$/u).optional(),
+  outputTree: z.string().regex(/^[0-9a-f]{40,64}$/u).optional(),
+  startedAt: z.string().min(1).optional(),
+  completedAt: z.string().min(1).optional(),
+  failureCode: z.string().min(1).max(200).optional(),
+  createdAt: z.string().min(1),
+}).strict().superRefine((value, context) => {
+  if (value.state === 'finished' && (value.outcome === undefined || value.completedAt === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['state'], message: 'A finished verification invocation requires outcome and completedAt.' })
+})
+
+export const VerificationEvidenceRecordV2Schema = z.object({
+  schemaVersion: z.literal(2),
   id: z.string().min(1),
   projectId: z.string().min(1),
   taskId: z.string().min(1).optional(),
@@ -393,10 +480,35 @@ export const VerificationEvidenceRecordSchema = z.object({
   exitCode: z.number().int().optional(),
   output: z.string().max(70_000).optional(),
   artifactIds: z.array(z.string().min(1)).max(500).default([]),
+  invocationId: z.string().min(1).optional(),
+  specId: z.string().min(1).optional(),
+  specDigest: Sha256Schema.optional(),
+  sourceStateDigest: Sha256Schema.optional(),
+  outputCommit: z.string().regex(/^[0-9a-f]{40,64}$/u).optional(),
+  outputTree: z.string().regex(/^[0-9a-f]{40,64}$/u).optional(),
+  scenarioResults: z.array(z.object({
+    scenarioId: z.string().min(1),
+    scenarioKey: z.string().min(1).max(500),
+    testFile: z.string().min(1).max(4_096),
+    testKey: z.string().min(1).max(500),
+    browserProject: z.string().min(1).max(240),
+    status: z.enum(['passed', 'failed', 'skipped', 'xfail', 'flaky']),
+    retry: z.number().int().nonnegative().max(100),
+    error: z.string().max(20_000).optional(),
+  }).strict()).max(20_000).optional(),
+  reportDigest: Sha256Schema.optional(),
+  evidenceDigest: Sha256Schema.optional(),
   actorType: ActivityActorTypeSchema,
   actorId: z.string().max(240).optional(),
   createdAt: z.string().min(1),
-}).strict()
+}).strict().superRefine((value, context) => {
+  if (value.kind !== 'browser_test') return
+  for (const field of ['taskId', 'taskRunId', 'planSnapshotId', 'invocationId', 'specId', 'specDigest', 'sourceStateDigest', 'scenarioResults', 'reportDigest', 'evidenceDigest'] as const) {
+    if (value[field] === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: `Browser evidence requires ${field}.` })
+  }
+})
+
+export const VerificationEvidenceRecordSchema = z.union([VerificationEvidenceRecordV2Schema, VerificationEvidenceRecordV1Schema])
 export const ProjectReviewStatusSchema = z.enum(['pending', 'approved', 'rejected', 'waived'])
 export const ReviewerIndependenceWaiverSchema = z.object({
   reason: z.string().trim().min(1).max(10_000),
@@ -506,7 +618,9 @@ export const DeliveryRecordSchema = z.object({
   status: DeliveryRecordStatusSchema,
   deliveredBy: z.string().max(240).optional(),
   deliveredAt: z.string().min(1).optional(),
+  closedBy: z.string().max(240).optional(),
   closedAt: z.string().min(1).optional(),
+  pendingAuditEvents: z.array(z.enum(['project.delivery_confirmed', 'project.delivery_closed'])).max(2).optional(),
   note: z.string().max(20_000).optional(),
   createdAt: z.string().min(1),
 }).strict()
@@ -914,6 +1028,10 @@ export const TaskRunRecordSchema = z.object({
   leaseExpiresAt: z.string().min(1).optional(),
   lastHeartbeatAt: z.string().min(1).optional(),
   executionContractDigest: Sha256Schema.optional(),
+  runtimeBindingVersion: z.literal(1).optional(),
+  runtimeAdapterId: z.string().trim().min(1).max(200).optional(),
+  runtimeExecutionId: z.string().trim().min(1).max(500).optional(),
+  runtimeClaimVersion: z.number().int().positive().optional(),
   failureDisposition: z.enum(['retryable', 'non_retryable', 'needs_reconciliation']).optional(),
   status: TaskRunStatusSchema,
   trigger: z.enum(['assignment', 'mention', 'approval', 'retry', 'autopilot', 'system']),
@@ -992,6 +1110,8 @@ export const TaskRunRecordSchema = z.object({
 }).strict().superRefine((value, context) => {
   const claimed = value.claimTokenDigest !== undefined || value.claimOwnerId !== undefined || value.leaseExpiresAt !== undefined || value.executionContractDigest !== undefined
   if (claimed && (value.claimTokenDigest === undefined || value.claimOwnerId === undefined || value.leaseExpiresAt === undefined || value.executionContractDigest === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['claimTokenDigest'], message: 'A TaskRun execution claim requires token, owner, lease, and frozen contract digest.' })
+  const runtimeBound = value.runtimeBindingVersion !== undefined || value.runtimeAdapterId !== undefined || value.runtimeExecutionId !== undefined || value.runtimeClaimVersion !== undefined
+  if (runtimeBound && (value.runtimeBindingVersion === undefined || value.runtimeAdapterId === undefined || value.runtimeExecutionId === undefined || value.runtimeClaimVersion === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['runtimeExecutionId'], message: 'A TaskRun Runtime binding requires its version, adapter, execution id, and claim version.' })
   if (['dispatched', 'running'].includes(value.status) && value.claimTokenDigest !== undefined && value.lastHeartbeatAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['lastHeartbeatAt'], message: 'A claimed active TaskRun requires a heartbeat timestamp.' })
 })
 
@@ -1147,6 +1267,7 @@ export const TaskRecordSchema = z.object({
   capabilityRequirementId: z.string().min(1).optional(),
   assignmentDecisionId: z.string().min(1).optional(),
   taskContextPackDigest: Sha256Schema.optional(),
+  verificationSpecId: z.string().min(1).optional(),
   taskPreflightId: z.string().min(1).optional(),
   taskPreflightDigest: Sha256Schema.optional(),
   assignmentPolicy: TaskAssignmentPolicySchema.optional(),
@@ -1659,6 +1780,15 @@ export const PlanningOperationRecordSchema = z.object({
   metricPolicyVersion: z.string().min(1).max(100),
   metricPolicyDigest: Sha256Schema,
   modelExecutionProvenance: PlanningModelExecutionProvenanceSchema.optional(),
+  evaluationInput: z.object({
+    projectId: z.string().min(1), operationId: z.string().min(1),
+    repositorySnapshotId: z.string().min(1), repositoryBaseCommit: z.string().regex(/^[0-9a-f]{40,64}$/u),
+    repositoryDigest: Sha256Schema, sourceDigest: Sha256Schema, sourceInputDigest: Sha256Schema,
+    teamCatalogFacts: z.record(z.string(), z.unknown()), teamCatalogDigest: Sha256Schema,
+    decisionInputDigest: Sha256Schema, promptVersionsDigest: Sha256Schema,
+    model: PlanningModelExecutionProvenanceSchema,
+    inputDigest: Sha256Schema, frozenAt: z.string().min(1),
+  }).strict().optional(),
   idempotencyKey: z.string().min(1).max(200).optional(),
   sourceInputId: z.string().min(1).optional(),
   sourceInputDigest: Sha256Schema.optional(),
@@ -1738,7 +1868,7 @@ export const PlanningOperationRecordSchema = z.object({
 })
 
 export const PlanningEvaluationCandidateSchema = z.object({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.union([z.literal(1), z.literal(2)]),
   runId: z.string().min(1).max(240),
   executionKind: z.literal('real_model'),
   status: z.enum(['ready', 'blocked']),
@@ -1764,6 +1894,13 @@ export const PlanningEvaluationCandidateSchema = z.object({
     if ((value.outcome === 'selected') !== (value.agentId !== undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['agentId'], message: 'Selected assignments require exactly one Agent; blocked assignments cannot name one.' })
   })).max(1_000),
   substantiveRewriteRequired: z.boolean(),
+  blockingReasons: z.array(z.object({ code: z.string().min(1), subjectKeys: z.array(z.string().min(1)) }).strict()).optional(),
+  reachedStage: z.enum(['repository', 'requirements', 'decisions', 'bindings', 'tasks', 'assignments', 'preflight']).optional(),
+  completedStageEvidence: z.array(z.object({
+    stage: z.enum(['repository', 'requirements', 'decisions', 'bindings', 'tasks', 'assignments', 'preflight']),
+    evidenceIds: z.array(z.string().min(1)).min(1),
+  }).strict()).optional(),
+  humanReviewRefs: z.array(z.string().min(1)).optional(),
   provenance: z.object({
     caseId: z.string().min(1).max(240),
     repositoryBaseCommit: z.string().regex(/^[0-9a-f]{40,64}$/u),
@@ -1787,10 +1924,22 @@ export const PlanningEvaluationCandidateSchema = z.object({
     startedAt: z.string().min(1),
     completedAt: z.string().min(1),
   }).strict(),
-}).strict()
+}).strict().superRefine((value, context) => {
+  const v2Fields = ['blockingReasons', 'reachedStage', 'completedStageEvidence', 'humanReviewRefs'] as const
+  if (value.schemaVersion === 1) {
+    for (const field of v2Fields) if (value[field] !== undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: 'V1 cannot contain V2 evidence fields.' })
+    return
+  }
+  for (const field of v2Fields) if (value[field] === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: 'V2 requires this evidence field.' })
+  if (value.status === 'ready' && (value.reachedStage !== 'preflight' || value.blockingReasons?.length !== 0)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Ready V2 requires preflight and no blocking reasons.' })
+  if (value.status === 'blocked' && !value.blockingReasons?.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['blockingReasons'], message: 'Blocked V2 requires actual blocking reasons.' })
+  const stages = ['repository', 'requirements', 'decisions', 'bindings', 'tasks', 'assignments', 'preflight']
+  const completed = value.completedStageEvidence ?? []
+  if (new Set(completed.map((item) => item.stage)).size !== completed.length || completed.some((item) => stages.indexOf(item.stage) > stages.indexOf(value.reachedStage!))) context.addIssue({ code: z.ZodIssueCode.custom, path: ['completedStageEvidence'], message: 'Stage evidence must be unique and cannot exceed reachedStage.' })
+})
 
 export const PlanningReleaseCanarySchema = z.object({
-  schemaVersion: z.literal(1),
+  schemaVersion: z.union([z.literal(1), z.literal(2)]),
   releaseVersion: z.string().min(1).max(100),
   planningContractVersion: z.literal(3),
   projectKey: z.string().min(1).max(240),
@@ -1811,6 +1960,34 @@ export const PlanningReleaseCanarySchema = z.object({
   finalCommit: z.string().regex(/^[0-9a-f]{40,64}$/u),
   convergenceReviewId: z.string().min(1),
   convergenceReviewDigest: Sha256Schema,
+  verificationInvocations: z.array(z.object({
+    id: z.string().min(1),
+    taskRunId: z.string().min(1),
+    specId: z.string().min(1),
+    specDigest: Sha256Schema,
+    sourceStateDigest: Sha256Schema,
+    outputCommit: z.string().regex(/^[0-9a-f]{40,64}$/u),
+    outputTree: z.string().regex(/^[0-9a-f]{40,64}$/u),
+    reportDigest: Sha256Schema.optional(),
+  }).strict()).min(1).max(10_000).optional(),
+  verificationEvidence: z.array(z.object({
+    id: z.string().min(1),
+    taskRunId: z.string().min(1),
+    invocationId: z.string().min(1),
+    evidenceDigest: Sha256Schema,
+    requiredScenarioIds: z.array(z.string().min(1)).max(10_000),
+    scenarioResultCount: z.number().int().nonnegative(),
+  }).strict()).min(1).max(10_000).optional(),
+  humanDeliveryConfirmation: z.object({
+    projectReviewId: z.string().min(1),
+    projectReviewDigest: Sha256Schema,
+    reviewDecision: z.enum(['approve', 'waive']),
+    deliveryRecordId: z.string().min(1),
+    deliveryRecordDigest: Sha256Schema,
+    deliveryStatus: z.enum(['delivered', 'closed']),
+    deliveredBy: z.string().min(1).max(240),
+    deliveredAt: z.string().min(1),
+  }).strict().optional(),
   outcome: z.literal('converged'),
   falseReady: z.literal(false),
   falseConverged: z.literal(false),
@@ -1823,6 +2000,17 @@ export const PlanningReleaseCanarySchema = z.object({
 }).strict().superRefine((value, context) => {
   const dispatchIds = value.executionDispatches.map((dispatch) => dispatch.id)
   if (new Set(dispatchIds).size !== dispatchIds.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['executionDispatches'], message: 'Canary Dispatch ids must be unique.' })
+  if (value.schemaVersion === 2) {
+    if (value.verificationInvocations === undefined || value.verificationInvocations.length !== value.taskRunCount) context.addIssue({ code: z.ZodIssueCode.custom, path: ['verificationInvocations'], message: 'Canary V2 requires exact-one VerificationInvocation for every TaskRun.' })
+    if (value.verificationEvidence === undefined || value.verificationEvidence.length !== value.taskRunCount) context.addIssue({ code: z.ZodIssueCode.custom, path: ['verificationEvidence'], message: 'Canary V2 requires exact-one VerificationEvidence record for every TaskRun.' })
+    if (value.humanDeliveryConfirmation === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['humanDeliveryConfirmation'], message: 'Canary V2 requires a human delivery confirmation.' })
+    const invocationIds = value.verificationInvocations?.map((invocation) => invocation.id) ?? []
+    const invocationTaskRunIds = value.verificationInvocations?.map((invocation) => invocation.taskRunId) ?? []
+    const evidenceTaskRunIds = value.verificationEvidence?.map((evidence) => evidence.taskRunId) ?? []
+    if (new Set(invocationIds).size !== invocationIds.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['verificationInvocations'], message: 'Canary VerificationInvocation ids must be unique.' })
+    if (new Set(invocationTaskRunIds).size !== invocationTaskRunIds.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['verificationInvocations'], message: 'Canary TaskRuns must not have duplicate VerificationInvocations.' })
+    if (new Set(evidenceTaskRunIds).size !== evidenceTaskRunIds.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['verificationEvidence'], message: 'Canary TaskRuns must not have duplicate VerificationEvidence records.' })
+  }
   const startedAt = Date.parse(value.startedAt)
   const completedAt = Date.parse(value.completedAt)
   if (!Number.isFinite(startedAt)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['startedAt'], message: 'Canary start timestamp is invalid.' })
@@ -1931,7 +2119,7 @@ export const PlanningCheckpointRecordSchema = z.object({
   if (new Set(value.sideEffectIdempotencyKeys).size !== value.sideEffectIdempotencyKeys.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['sideEffectIdempotencyKeys'], message: 'Checkpoint side-effect idempotency keys must be unique.' })
 })
 
-export const StorageMutationIntentRecordSchema = z.object({
+export const StorageMutationIntentRecordV1Schema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1).optional(),
   aggregateType: z.string().min(1).max(100),
@@ -1959,6 +2147,86 @@ export const StorageMutationIntentRecordSchema = z.object({
   if (value.status === 'needs_reconciliation' && (value.errorCode === undefined || value.error === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Reconciliation intent requires a stable error.' })
 })
 
+const RecoverableRecordStateSchema = z.discriminatedUnion('state', [
+  z.object({ state: z.literal('absent') }).strict(),
+  z.object({ state: z.literal('present'), digest: Sha256Schema, valueRef: z.string().min(1).max(500) }).strict(),
+])
+
+export const StorageMutationIntentRecordV2Schema = z.object({
+  schemaVersion: z.literal(2),
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  aggregateType: z.string().min(1).max(100),
+  aggregateId: z.string().min(1).max(500),
+  idempotencyKey: z.string().min(1).max(500),
+  handler: z.enum(['planning-stage-write-v1', 'planning-publish-v1', 'verification-settlement-v1']),
+  expectedProjectRevision: z.number().int().nonnegative(),
+  expectedProjectPointerDigest: Sha256Schema,
+  expectedWrites: z.array(z.object({
+    stepId: z.string().min(1).max(200),
+    table: z.string().min(1).max(200),
+    recordId: z.string().min(1).max(500),
+    before: RecoverableRecordStateSchema,
+    after: RecoverableRecordStateSchema,
+  }).strict()).min(1).max(10_000),
+  expectedEvents: z.array(z.object({ eventId: z.string().min(1).max(500), payloadRef: z.string().min(1).max(500), payloadDigest: Sha256Schema }).strict()).max(1_000),
+  completedStepIds: z.array(z.string().min(1).max(200)).max(10_000),
+  status: z.enum(['pending', 'committed', 'needs_reconciliation', 'compensated']),
+  errorCode: z.string().min(1).max(200).optional(),
+  error: z.string().min(1).max(20_000).optional(),
+  intentDigest: Sha256Schema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  completedAt: z.string().min(1).optional(),
+}).strict().superRefine((value, context) => {
+  const stepIds = value.expectedWrites.map((write) => write.stepId)
+  const recordKeys = value.expectedWrites.map((write) => `${write.table}\u0000${write.recordId}`)
+  if (new Set(stepIds).size !== stepIds.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['expectedWrites'], message: 'Recoverable write step ids must be unique.' })
+  if (new Set(recordKeys).size !== recordKeys.length) context.addIssue({ code: z.ZodIssueCode.custom, path: ['expectedWrites'], message: 'Recoverable writes must target unique table and record pairs.' })
+  if (new Set(value.completedStepIds).size !== value.completedStepIds.length || value.completedStepIds.some((id) => !stepIds.includes(id))) context.addIssue({ code: z.ZodIssueCode.custom, path: ['completedStepIds'], message: 'Completed steps must be a unique subset of recoverable writes.' })
+  if (value.status === 'committed' && (value.completedStepIds.length !== stepIds.length || value.completedAt === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Committed V2 intent requires every step and completion time.' })
+  if (value.status === 'compensated' && value.completedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Compensated V2 intent requires a completion time.' })
+  if (value.status === 'needs_reconciliation' && (value.errorCode === undefined || value.error === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Reconciliation intent requires a stable error.' })
+})
+
+export const StorageMutationIntentRecordSchema = z.union([StorageMutationIntentRecordV2Schema, StorageMutationIntentRecordV1Schema])
+
+export const StorageMutationPayloadRecordSchema = z.object({
+  id: z.string().min(1),
+  intentId: z.string().min(1),
+  stepId: z.string().min(1).max(200),
+  phase: z.enum(['before', 'after', 'event']),
+  table: z.string().min(1).max(200),
+  recordId: z.string().min(1).max(500),
+  payloadDigest: Sha256Schema,
+  value: z.unknown(),
+  createdAt: z.string().min(1),
+}).strict()
+
+export const StorageRecoveryAttemptRecordSchema = z.object({
+  id: z.string().min(1),
+  intentId: z.string().min(1),
+  projectId: z.string().min(1),
+  intentDigest: Sha256Schema,
+  previewDigest: Sha256Schema,
+  observedStateDigest: Sha256Schema,
+  action: z.enum(['finalize', 'replay', 'compensate']),
+  idempotencyKey: z.string().min(1).max(500),
+  requestDigest: Sha256Schema,
+  status: z.enum(['running', 'completed', 'failed']),
+  completedStepIds: z.array(z.string().min(1).max(200)).max(10_000),
+  result: z.enum(['committed', 'compensated']).optional(),
+  errorCode: z.string().min(1).max(200).optional(),
+  error: z.string().min(1).max(20_000).optional(),
+  requestedBy: z.string().min(1).max(240),
+  reason: z.string().min(1).max(2_000),
+  createdAt: z.string().min(1),
+  completedAt: z.string().min(1).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.status === 'completed' && (value.result === undefined || value.completedAt === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Completed recovery attempts require a result and completion time.' })
+  if (value.status === 'failed' && (value.errorCode === undefined || value.error === undefined || value.completedAt === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'Failed recovery attempts require an error and completion time.' })
+})
+
 export const SourceDispositionBindingRecordSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -1971,6 +2239,16 @@ export const SourceDispositionBindingRecordSchema = z.object({
   targetDigest: Sha256Schema,
   bindingDigest: Sha256Schema,
   createdAt: z.string().min(1),
+}).strict()
+
+export const VerificationToolEvidenceV3Schema = z.object({
+  packageName: z.string().min(1).max(240),
+  declaredRange: z.string().min(1).max(240),
+  version: z.string().min(1).max(100),
+  binName: z.string().min(1).max(240),
+  entryPath: z.string().min(1).max(4_096),
+  files: z.array(z.object({ path: z.string().min(1).max(4_096), digest: Sha256Schema, content: z.string().max(65_536), truncated: z.boolean() }).strict()).max(24),
+  unavailablePaths: z.array(z.string().max(4_096)).max(1_000),
 }).strict()
 
 export const RepositoryContextSnapshotV3RecordSchema = z.object({
@@ -1991,6 +2269,7 @@ export const RepositoryContextSnapshotV3RecordSchema = z.object({
   workingFiles: z.array(z.object({ path: z.string().min(1).max(4_096), digest: RepositoryEvidenceDigestSchema }).strict()).max(22_000).optional(),
   dirtyFiles: z.array(z.string().min(1).max(4_096)).max(2_000).optional(),
   verifiedCommands: z.array(z.string().min(1).max(10_000)).max(100),
+  verificationTools: z.array(VerificationToolEvidenceV3Schema).max(4).optional(),
   status: z.enum(['ready', 'partial', 'failed', 'stale']),
   diagnostics: z.array(PlanningV3DiagnosticSchema).max(200).default([]),
   createdAt: z.string().min(1),
@@ -2172,14 +2451,28 @@ export const PlanningPromptReferenceManifestRecordSchema = z.object({
 })
 
 export const BindingImpactDimensionSchema = z.enum(['domain_owner', 'write_path', 'read_path', 'data', 'state', 'api', 'permission', 'async', 'consumer', 'failure', 'test', 'migration', 'release', 'rollback'])
+export const BindingCapabilitySurfaceSchema = z.enum(['call_value', 'shared_data', 'local_call', 'integration_boundary', 'unknown'])
+function validateBindingCapabilitySurface(value: { dimension: string; applicability: string; capabilitySurface?: string | undefined }, context: z.RefinementCtx): void {
+  if (value.capabilitySurface === undefined) return // Historical evidence retains its conservative mapping.
+  const allowed = value.dimension === 'data' ? ['call_value', 'shared_data', 'unknown'] : value.dimension === 'consumer' ? ['local_call', 'integration_boundary', 'unknown'] : []
+  if (value.applicability !== 'required' || !allowed.includes(value.capabilitySurface)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['capabilitySurface'], message: 'Capability surface must match its required data or consumer dimension.' })
+}
 export const BindingImpactAssessmentSchema = z.object({
   dimension: BindingImpactDimensionSchema,
   applicability: z.enum(['required', 'not_applicable', 'unknown']),
   evidenceRefs: z.array(z.string().min(1)).max(100),
   reason: z.string().trim().min(1).max(2_000),
+  capabilitySurface: BindingCapabilitySurfaceSchema.optional(),
 }).strict().superRefine((value, context) => {
+  validateBindingCapabilitySurface(value, context)
   if (value.applicability === 'required' && value.evidenceRefs.length === 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['evidenceRefs'], message: 'A required impact dimension needs repository evidence.' })
 })
+
+function validateEventFactDurability(value: { durability?: 'persisted' | 'transient' | undefined; persistedCollectionOwnerSymbols: string[] }, context: z.RefinementCtx): void {
+  if (value.durability === 'transient') {
+    if (value.persistedCollectionOwnerSymbols.length !== 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['persistedCollectionOwnerSymbols'], message: 'A transient event must not claim a persisted collection.' })
+  } else if (value.persistedCollectionOwnerSymbols.length === 0) context.addIssue({ code: z.ZodIssueCode.custom, path: ['persistedCollectionOwnerSymbols'], message: 'A persisted event requires a real persisted collection owner.' })
+}
 
 export const GeneratedBindingEventFactChainV3Schema = z.object({
   factKey: z.string().regex(/^[A-Z][A-Z0-9_-]{0,159}$/),
@@ -2187,14 +2480,15 @@ export const GeneratedBindingEventFactChainV3Schema = z.object({
   scenarioKeys: z.array(z.string().regex(/^SCN-[A-Z0-9_-]+$/)).min(1).max(100),
   eventTypes: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
   recordOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
-  persistedCollectionOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
+  durability: z.enum(['persisted', 'transient']).optional(),
+  persistedCollectionOwnerSymbols: z.array(z.string().trim().min(1).max(500)).max(20),
   readSurfaceOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
   producerOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
   fixtureEvidenceRefs: z.array(z.string().min(1)).min(1).max(20),
   assertionEvidenceRefs: z.array(z.string().min(1)).min(1).max(20),
   correlation: z.string().trim().min(1).max(2_000),
   assertsAbsence: z.boolean(),
-}).strict()
+}).strict().superRefine(validateEventFactDurability)
 
 export const GeneratedBindingAnalysisV3Schema = z.object({
   status: z.enum(['ready', 'blocked']),
@@ -2234,7 +2528,8 @@ export const RequirementCodeBindingRecordSchema = z.object({
     applicability: z.enum(['required', 'not_applicable']),
     evidenceIds: z.array(z.string().min(1)).max(100),
     reason: z.string().trim().min(1).max(2_000),
-  }).strict()).length(14),
+    capabilitySurface: BindingCapabilitySurfaceSchema.optional(),
+  }).strict().superRefine(validateBindingCapabilitySurface)).length(14),
   evidenceIds: z.array(z.string().min(1)).min(1).max(100),
   allowedPathScopes: z.array(z.string().min(1).max(4_096)).min(1).max(100),
   excludedPathScopes: z.array(z.string().min(1).max(4_096)).max(100),
@@ -2246,14 +2541,15 @@ export const RequirementCodeBindingRecordSchema = z.object({
     scenarioKeys: z.array(z.string().regex(/^SCN-[A-Z0-9_-]+$/)).min(1).max(100),
     eventTypes: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
     recordOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
-    persistedCollectionOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
+    durability: z.enum(['persisted', 'transient']).optional(),
+    persistedCollectionOwnerSymbols: z.array(z.string().trim().min(1).max(500)).max(20),
     readSurfaceOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
     producerOwnerSymbols: z.array(z.string().trim().min(1).max(500)).min(1).max(20),
     fixtureEvidenceIds: z.array(z.string().min(1)).min(1).max(20),
     assertionEvidenceIds: z.array(z.string().min(1)).min(1).max(20),
     correlation: z.string().trim().min(1).max(2_000),
     assertsAbsence: z.boolean(),
-  }).strict()).max(100).optional(),
+  }).strict().superRefine(validateEventFactDurability)).max(100).optional(),
   bindingDigest: Sha256Schema,
   createdAt: z.string().min(1),
 }).strict().superRefine((value, context) => {
@@ -2382,6 +2678,29 @@ export const ScenarioCoverageReviewRecordSchema = z.object({
   findings: z.array(PlanningReviewFindingSchema).max(1_000),
   reviewerPromptVersion: z.string().min(1).max(100),
   deterministicPolicyVersion: z.string().min(1).max(100),
+  sourceContext: z.object({
+    manifest: RequirementSourceManifestSchema,
+    analysis: RequirementAnalysisResultSchema,
+    resolvedDecisions: z.array(z.object({
+      key: z.string().min(1),
+      chosenOption: z.string().min(1).optional(),
+      resolution: z.string().optional(),
+      resolutionRevision: z.number().int().positive().optional(),
+      selectedOption: RequirementDecisionOptionSchema.optional(),
+    }).strict()).max(1_000),
+  }).strict().optional(),
+  repositoryEvidence: z.object({
+    repositoryDigest: Sha256Schema,
+    verificationCommands: z.array(z.string().min(1)).max(100).optional(),
+    verificationTools: z.array(VerificationToolEvidenceV3Schema).max(4).optional(),
+    contents: z.array(z.object({
+      ref: z.string().min(1),
+      path: z.string().min(1),
+      digest: Sha256Schema,
+      content: z.string(),
+      truncated: z.boolean(),
+    }).strict()).max(2_000),
+  }).strict().optional(),
   reviewInputDigest: Sha256Schema,
   reviewDigest: Sha256Schema,
   createdAt: z.string().min(1),
@@ -2484,7 +2803,15 @@ const GeneratedTaskContextPackV3Schema = z.object({
     persistedFactCorrelation: z.string().min(1).max(2_000),
     teardown: z.string().min(1).max(2_000),
   }).strict().optional(),
-  verificationSteps: z.array(z.object({ scenarioKey: z.string().min(1), action: z.string().min(1).max(2_000), expectedObservable: z.string().min(1).max(2_000), commandEvidenceRef: z.string().min(1).optional() }).strict()).min(1).max(100),
+  verificationSteps: z.array(z.object({
+    scenarioKey: z.string().min(1),
+    action: z.string().min(1).max(2_000),
+    expectedObservable: z.string().min(1).max(2_000),
+    commandEvidenceRef: z.string().min(1).optional(),
+    testFile: z.string().min(1).max(4_096).optional(),
+    testKey: z.string().min(1).max(500).optional(),
+    browserProject: z.string().min(1).max(240).optional(),
+  }).strict()).min(1).max(100),
   expectedArtifacts: z.array(z.string().min(1).max(2_000)).min(1).max(100),
   escalationConditions: z.array(z.string().min(1).max(2_000)).min(1).max(100),
   unknowns: z.array(z.object({ question: z.string().min(1).max(2_000), blocking: z.boolean(), owner: z.string().min(1).max(240) }).strict()).max(100),
@@ -2969,6 +3296,39 @@ export const DeliveryIntegrationOutputSchema = z.object({
   inclusionEvidenceIds: z.array(z.string().min(1)).max(100),
   audit: z.object({ actor: z.string().min(1).max(240), reason: z.string().min(1).max(2_000), at: z.string().min(1) }).strict().optional(),
 }).strict()
+
+export const DeliveryIntegrationIntentRecordSchema = z.object({
+  schemaVersion: z.literal(1),
+  id: z.string().min(1),
+  projectId: z.string().min(1),
+  approvedPlanSnapshotId: z.string().min(1),
+  integrationSnapshotId: z.string().min(1),
+  sequence: z.number().int().positive(),
+  taskId: z.string().min(1),
+  taskRunId: z.string().min(1),
+  repositoryIdentityDigest: Sha256Schema,
+  targetRef: z.string().min(1).max(500),
+  recoveryRef: z.string().min(1).max(500),
+  beforeCommit: z.string().regex(/^[0-9a-f]{40,64}$/u),
+  beforeTree: z.string().regex(/^[0-9a-f]{40,64}$/u),
+  afterCommit: z.string().regex(/^[0-9a-f]{40,64}$/u),
+  afterTree: z.string().regex(/^[0-9a-f]{40,64}$/u),
+  evidence: IntegrationInclusionEvidenceRecordSchema,
+  output: DeliveryIntegrationOutputSchema,
+  status: z.enum(['prepared', 'ref_updated', 'committed', 'manual_required']),
+  errorCode: z.string().min(1).max(200).optional(),
+  error: z.string().min(1).max(20_000).optional(),
+  intentDigest: Sha256Schema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+  completedAt: z.string().min(1).optional(),
+}).strict().superRefine((value, context) => {
+  if (value.evidence.integrationSnapshotId !== value.integrationSnapshotId || value.evidence.sequence !== value.sequence || value.evidence.taskId !== value.taskId || value.evidence.taskRunId !== value.taskRunId) context.addIssue({ code: z.ZodIssueCode.custom, path: ['evidence'], message: 'Integration intent evidence must match the intent identity.' })
+  if (value.output.sequence !== value.sequence || value.output.taskId !== value.taskId || value.output.taskRunId !== value.taskRunId || value.output.targetParentCommitBefore !== value.beforeCommit || value.output.targetTreeBefore !== value.beforeTree || value.output.targetCommitAfter !== value.afterCommit || value.output.targetTreeAfter !== value.afterTree || value.output.inclusionEvidenceIds.length !== 1 || value.output.inclusionEvidenceIds[0] !== value.evidence.id) context.addIssue({ code: z.ZodIssueCode.custom, path: ['output'], message: 'Integration intent output must match the frozen Git transition and evidence.' })
+  if (value.evidence.targetParentCommitBefore !== value.beforeCommit || value.evidence.targetTreeBefore !== value.beforeTree || value.evidence.targetCommitAfter !== value.afterCommit || value.evidence.targetTreeAfter !== value.afterTree) context.addIssue({ code: z.ZodIssueCode.custom, path: ['evidence'], message: 'Integration intent evidence must match the frozen Git transition.' })
+  if (value.status === 'committed' && value.completedAt === undefined) context.addIssue({ code: z.ZodIssueCode.custom, path: ['completedAt'], message: 'A committed Integration intent requires a completion time.' })
+  if (value.status === 'manual_required' && (value.errorCode === undefined || value.error === undefined)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['status'], message: 'A manual Integration intent requires a stable error.' })
+})
 
 export const DeliveryIntegrationSnapshotRecordSchema = z.object({
   id: z.string().min(1),
@@ -3767,6 +4127,9 @@ export type RequirementDecisionInput = z.infer<typeof RequirementDecisionInputSc
 export type RequirementDecisionResolution = z.infer<typeof RequirementDecisionResolutionSchema>
 export type AcceptanceCriterionRecord = z.infer<typeof AcceptanceCriterionRecordSchema>
 export type VerificationEvidenceRecord = z.infer<typeof VerificationEvidenceRecordSchema>
+export type VerificationSpecRecord = z.infer<typeof VerificationSpecRecordSchema>
+export type VerificationInvocationRecord = z.infer<typeof VerificationInvocationRecordSchema>
+export type VerificationTestMapping = z.infer<typeof VerificationTestMappingSchema>
 export type ProjectReviewRecord = z.infer<typeof ProjectReviewRecordSchema>
 export type ProjectReviewResolution = z.infer<typeof ProjectReviewResolutionSchema>
 export type DeliveryRecord = z.infer<typeof DeliveryRecordSchema>
@@ -3799,6 +4162,9 @@ export type RequirementDecisionPlanningEffectRecord = z.infer<typeof Requirement
 export type PlanningStageAttemptRecord = z.infer<typeof PlanningStageAttemptRecordSchema>
 export type PlanningCheckpointRecord = z.infer<typeof PlanningCheckpointRecordSchema>
 export type StorageMutationIntentRecord = z.infer<typeof StorageMutationIntentRecordSchema>
+export type StorageMutationIntentRecordV2 = z.infer<typeof StorageMutationIntentRecordV2Schema>
+export type StorageMutationPayloadRecord = z.infer<typeof StorageMutationPayloadRecordSchema>
+export type StorageRecoveryAttemptRecord = z.infer<typeof StorageRecoveryAttemptRecordSchema>
 export type PlanningSourceInputRecord = z.infer<typeof PlanningSourceInputRecordSchema>
 export type RequirementSourceProfileRecord = z.infer<typeof RequirementSourceProfileRecordSchema>
 export type RequirementSourceManifestRecord = z.infer<typeof RequirementSourceManifestRecordSchema>
@@ -3847,6 +4213,7 @@ export type PlanningMetricReleaseReportRecord = z.infer<typeof PlanningMetricRel
 export type TaskPreflightRecordV3 = z.infer<typeof TaskPreflightRecordV3Schema>
 export type PlanApprovalV3Record = z.infer<typeof PlanApprovalV3RecordSchema>
 export type ExecutionDispatchRecord = z.infer<typeof ExecutionDispatchRecordSchema>
+export type DeliveryIntegrationIntentRecord = z.infer<typeof DeliveryIntegrationIntentRecordSchema>
 export type DeliveryIntegrationSnapshotRecord = z.infer<typeof DeliveryIntegrationSnapshotRecordSchema>
 export type IntegrationInclusionEvidenceRecord = z.infer<typeof IntegrationInclusionEvidenceRecordSchema>
 export type DeliveryConvergenceFindingRecord = z.infer<typeof DeliveryConvergenceFindingRecordSchema>
@@ -3912,6 +4279,8 @@ export interface Snapshot {
   requirementDecisions?: RequirementDecisionRecord[]
   acceptanceCriteria?: AcceptanceCriterionRecord[]
   verificationEvidence?: VerificationEvidenceRecord[]
+  verificationSpecs?: VerificationSpecRecord[]
+  verificationInvocations?: VerificationInvocationRecord[]
   projectReviews?: ProjectReviewRecord[]
   deliveryRecords?: DeliveryRecord[]
   planningOperations?: PlanningOperationRecord[]
@@ -3921,6 +4290,8 @@ export interface Snapshot {
   planningStageAttempts?: PlanningStageAttemptRecord[]
   planningCheckpoints?: PlanningCheckpointRecord[]
   storageMutationIntents?: StorageMutationIntentRecord[]
+  storageMutationPayloads?: StorageMutationPayloadRecord[]
+  storageRecoveryAttempts?: StorageRecoveryAttemptRecord[]
   planningSourceInputs?: PlanningSourceInputRecord[]
   requirementSourceProfiles?: RequirementSourceProfileRecord[]
   requirementSourceManifests?: RequirementSourceManifestRecord[]
@@ -3961,6 +4332,7 @@ export interface Snapshot {
   taskPreflightsV3?: TaskPreflightRecordV3[]
   planApprovalsV3?: PlanApprovalV3Record[]
   executionDispatches?: ExecutionDispatchRecord[]
+  deliveryIntegrationIntents?: DeliveryIntegrationIntentRecord[]
   deliveryIntegrationSnapshots?: DeliveryIntegrationSnapshotRecord[]
   integrationInclusionEvidence?: IntegrationInclusionEvidenceRecord[]
   deliveryConvergenceFindings?: DeliveryConvergenceFindingRecord[]

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import { stripSourcePathTokens } from './planning/source-path-tokens.js'
 import {
   GeneratedPlanV2Schema,
   GeneratedBindingAnalysisV3Schema,
@@ -245,8 +246,11 @@ function extractJsonObject(raw: string): string | undefined {
   return undefined
 }
 
+/** 解析模型 JSON；围栏按固定前后缀移除，失败时保留既有修复与错误契约。 */
 function parsePlannerJson(raw: string): unknown {
-  const unfenced = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  let unfenced = raw.trim().replace(/^```(?:json)?\s*/i, '')
+  if (unfenced.endsWith('```')) unfenced = unfenced.slice(0, -3)
+  unfenced = unfenced.trim()
   try {
     return JSON.parse(unfenced)
   } catch {
@@ -366,7 +370,11 @@ function requirementSectionPathSegment(title: string): string {
   return `${title.slice(0, REQUIREMENT_SECTION_PATH_SEGMENT_MAX_LENGTH - digestSuffix.length)}${digestSuffix}`
 }
 
+/** 只依据业务描述推导来源提示；路径名称不代表数据、状态或权限行为。 */
 function sourceNormativeHints(text: string, section: 'acceptance' | 'questions' | 'other'): NonNullable<RequirementSourceManifest['anchors'][number]['normativeHints']> {
+  // Keep the source and its identity intact; filenames are inspection targets,
+  // not evidence of data/state/security behavior in the surrounding prose.
+  text = stripSourcePathTokens(text)
   const hints = new Set<NonNullable<RequirementSourceManifest['anchors'][number]['normativeHints']>[number]>()
   if (section === 'acceptance' || /验收|acceptance|应当|应该|shall|must|必须|需要|支持|允许|禁止|不得/iu.test(text)) hints.add(section === 'acceptance' ? 'acceptance' : 'functional')
   if (section === 'questions' || /待确认|未决|是否|question|decision|选择/iu.test(text)) hints.add('decision')
@@ -382,6 +390,15 @@ function sourceNormativeHints(text: string, section: 'acceptance' | 'questions' 
   return [...hints]
 }
 
+/** 只消费列表前缀，正文单独裁剪，避免空白与正文正则互相回溯。 */
+function markdownListContent(text: string): string | undefined {
+  const marker = /^(?:[-*+]|\d+[.)])\s/u.exec(text)
+  if (marker === null) return undefined
+  const content = text.slice(marker[0].length).trimStart()
+  return content === '' ? undefined : content
+}
+
+/** 从原始 Markdown/PDF block 建立稳定来源锚点，不丢弃规范性正文。 */
 export function buildRequirementSourceManifest(input: { prd: string; technicalDesign?: string; sourceRefs?: string[]; sourceBlocks?: RequirementSourceBlock[] }, options: { requireAllBlocks?: boolean } = {}): RequirementSourceManifest {
   const anchors: RequirementSourceManifest['anchors'] = []
   const scan = (source: 'prd' | 'technical-design', content: string): void => {
@@ -402,17 +419,17 @@ export function buildRequirementSourceManifest(input: { prd: string; technicalDe
         anchors.push({ id: sourceAnchorId('heading', locator, title), kind: 'heading', documentKind: source === 'prd' ? 'prd' : 'technical_design', sectionPath: sectionPath.filter(Boolean), ordinal: anchors.length, text: title, textDigest: digestObject(title), locator, normativeHints: sourceNormativeHints(title, section), contentClassification: 'context', classificationReason: 'Markdown heading provides structure and is not dispositioned as a standalone requirement.', requiredDisposition: false })
         continue
       }
-      const tableRow = /^\|.*\|$/u.test(text) && !/^\|?\s*:?-{3,}/u.test(text.replaceAll('|', ''))
-      const listItem = /^(?:[-*+]\s+|\d+[.)]\s+)(.+)$/u.exec(text)
-      const kind = section === 'acceptance' && listItem !== null
+      const tableRow = text.startsWith('|') && text.endsWith('|') && !/^\|?\s*:?-{3,}/u.test(text.replaceAll('|', ''))
+      const listItem = markdownListContent(text)
+      const kind = section === 'acceptance' && listItem !== undefined
         ? 'acceptance_item'
-        : section === 'questions' && listItem !== null
+        : section === 'questions' && listItem !== undefined
           ? 'open_question'
           : tableRow
             ? 'table_row'
             : 'paragraph'
-      const normalized = listItem?.[1]?.trim() ?? text
-      const requiredDisposition = options.requireAllBlocks === true || (section === 'acceptance' || section === 'questions') && (listItem !== null || tableRow)
+      const normalized = listItem?.trim() ?? text
+      const requiredDisposition = options.requireAllBlocks === true || (section === 'acceptance' || section === 'questions') && (listItem !== undefined || tableRow)
       anchors.push({ id: sourceAnchorId(kind, locator, normalized), kind, documentKind: source === 'prd' ? 'prd' : 'technical_design', sectionPath: sectionPath.filter(Boolean), ordinal: anchors.length, text: normalized, textDigest: digestObject(normalized), locator, normativeHints: sourceNormativeHints(normalized, section), contentClassification: 'normative', classificationReason: options.requireAllBlocks === true ? 'V3 treats every non-heading block from the normative PRD/design source as disposition-required.' : 'Acceptance and open-question items require explicit disposition.', requiredDisposition })
     }
   }
@@ -427,12 +444,11 @@ export function buildRequirementSourceManifest(input: { prd: string; technicalDe
     const sectionPath: string[] = []
     for (const block of sourceBlocks.filter((item) => item.documentKind === documentKind)) {
       const text = block.text.trim()
-      const heading = /^(?:#{1,6}\s+)?(.+)$/u.exec(text)
-      const title = heading?.[1]?.trim() ?? text
+      const title = text.replace(/^#{1,6}\s+/u, '').trim()
       if (/^(?:验收标准|acceptance(?: criteria)?)$/i.test(title)) section = 'acceptance'
       else if (/^(?:待确认事项|开放问题|未决问题|open questions?|questions?)$/i.test(title)) section = 'questions'
-      const listItem = /^(?:[-*+]\s+|\d+[.)]\s+)(.+)$/u.exec(text)
-      const tableRow = /^\|.*\|$/u.test(text) && !/^\|?\s*:?-{3,}/u.test(text.replaceAll('|', ''))
+      const listItem = markdownListContent(text)
+      const tableRow = text.startsWith('|') && text.endsWith('|') && !/^\|?\s*:?-{3,}/u.test(text.replaceAll('|', ''))
       const isHeading = /^(?:#{1,6}\s+)/u.test(text) || title === '验收标准' || title === '待确认事项'
       if (isHeading) {
         const level = /^(#{1,6})\s+/u.exec(text)?.[1]?.length ?? 1
@@ -441,15 +457,15 @@ export function buildRequirementSourceManifest(input: { prd: string; technicalDe
       }
       const kind = isHeading
         ? 'heading'
-        : section === 'acceptance' && listItem !== null
+        : section === 'acceptance' && listItem !== undefined
           ? 'acceptance_item'
-          : section === 'questions' && listItem !== null
+          : section === 'questions' && listItem !== undefined
             ? 'open_question'
             : tableRow
               ? 'table_row'
               : 'paragraph'
-      const normalized = listItem?.[1]?.trim() ?? text
-      const requiredDisposition = !isHeading && (options.requireAllBlocks === true || (section === 'acceptance' || section === 'questions') && (listItem !== null || tableRow))
+      const normalized = listItem?.trim() ?? text
+      const requiredDisposition = !isHeading && (options.requireAllBlocks === true || (section === 'acceptance' || section === 'questions') && (listItem !== undefined || tableRow))
       anchors.push({ id: sourceAnchorId(kind, block.locator, normalized), kind, documentKind, sectionPath: sectionPath.filter(Boolean), ordinal: anchors.length, text: normalized, textDigest: block.textDigest, locator: block.locator, normativeHints: sourceNormativeHints(normalized, section), contentClassification: isHeading ? 'context' : 'normative', classificationReason: isHeading ? 'Document heading provides structure.' : options.requireAllBlocks === true ? 'V3 treats every non-heading block from the normative source as disposition-required.' : 'Acceptance and open-question items require explicit disposition.', requiredDisposition })
     }
   }
@@ -492,19 +508,19 @@ export function validateRequirementAnalysis(analysis: RequirementAnalysisResult,
       throw new WorkflowError('requirement-decision-missing', `Unknown requirement "${requirement.key}" requires a Decision.`, 422)
     }
   }
-  const dispositionCounts = new Map<string, number>()
-  const consume = (sourceRefs: string[]): void => {
-    for (const ref of sourceRefs) dispositionCounts.set(ref, (dispositionCounts.get(ref) ?? 0) + 1)
+  const dispositionOwners = new Map<string, string[]>()
+  const consume = (sourceRefs: string[], owner: string): void => {
+    for (const ref of sourceRefs) dispositionOwners.set(ref, [...(dispositionOwners.get(ref) ?? []), owner])
   }
   for (const requirement of analysis.requirements) {
-    for (const criterion of requirement.acceptanceCriteria) consume(criterion.sourceRefs)
-    if (requirement.scope !== 'in_scope') consume(requirement.sourceRefs)
+    for (const criterion of requirement.acceptanceCriteria) consume(criterion.sourceRefs, `Acceptance ${requirement.key}/${criterion.key}`)
+    if (requirement.scope !== 'in_scope') consume(requirement.sourceRefs, `Requirement ${requirement.key} (${requirement.scope})`)
   }
-  for (const decision of analysis.decisions) consume(decision.sourceRefs)
-  const uncovered = manifest.anchors.filter((anchor) => anchor.requiredDisposition && (dispositionCounts.get(anchor.id) ?? 0) === 0)
+  for (const decision of analysis.decisions) consume(decision.sourceRefs, `Decision ${decision.key}`)
+  const uncovered = manifest.anchors.filter((anchor) => anchor.requiredDisposition && (dispositionOwners.get(anchor.id)?.length ?? 0) === 0)
   if (uncovered.length > 0) throw new WorkflowError('requirement-source-uncovered', `Required source anchors were not dispositioned: ${uncovered.map((anchor) => anchor.locator).join(', ')}`, 422)
-  const duplicate = manifest.anchors.filter((anchor) => anchor.requiredDisposition && (dispositionCounts.get(anchor.id) ?? 0) > 1)
-  if (duplicate.length > 0) throw new WorkflowError('requirement-source-duplicate', `Required source anchors were dispositioned more than once: ${duplicate.map((anchor) => anchor.locator).join(', ')}`, 422)
+  const duplicate = manifest.anchors.filter((anchor) => anchor.requiredDisposition && (dispositionOwners.get(anchor.id)?.length ?? 0) > 1)
+  if (duplicate.length > 0) throw new WorkflowError('requirement-source-duplicate', `Required source anchors were dispositioned more than once: ${duplicate.map((anchor) => `${anchor.locator} [${anchor.id}] consumed by ${dispositionOwners.get(anchor.id)!.join(' + ')}`).join('; ')}`, 422)
   const resolvedDecisionKeys = new Set(input.resolvedDecisionKeys ?? [])
   const pendingHighImpact = analysis.decisions.some((decision) => (decision.impact === 'high' || decision.impact === 'critical') && !resolvedDecisionKeys.has(decision.key))
   if (pendingHighImpact && analysis.status === 'ready') throw new WorkflowError('requirement-decision-pending', 'High-impact pending Decisions require needs_decision status.', 422)
@@ -644,6 +660,9 @@ export function parseGeneratedBindingAnalysisV3(
   input: {
     requirementKeys: string[]
     allowedEvidenceRefs: string[]
+    requireCapabilitySurfaces?: boolean
+    acceptanceKeys?: string[]
+    scenarioKeys?: string[]
     eventScenarios?: Array<{
       key: string
       requirementKey: string
@@ -652,7 +671,13 @@ export function parseGeneratedBindingAnalysisV3(
   },
 ): GeneratedBindingAnalysisV3 {
   const result = GeneratedBindingAnalysisV3Schema.parse(parsePlannerJson(raw))
-  const allowedDiagnosticSubjectIds = new Set([...input.requirementKeys, ...input.allowedEvidenceRefs])
+  const allowedDiagnosticSubjectIds = new Set([
+    ...input.requirementKeys,
+    ...input.allowedEvidenceRefs,
+    ...(input.acceptanceKeys ?? []),
+    ...(input.scenarioKeys ?? []),
+    ...(input.eventScenarios ?? []).flatMap(scenario => [scenario.key, ...(scenario.eventObservables ?? []).map(observable => observable.key)]),
+  ])
   for (const diagnostic of result.diagnostics) assertKnownValues(diagnostic.subjectIds, allowedDiagnosticSubjectIds, 'binding-diagnostic-subject-invalid', `Binding diagnostic "${diagnostic.code}"`)
   if (result.status === 'blocked') {
     if (result.bindings.length > 0) throw new WorkflowError('binding-blocked-with-proposals', 'A blocked binding analysis cannot publish bindings.', 422)
@@ -675,6 +700,13 @@ export function parseGeneratedBindingAnalysisV3(
     assertKnownValues(binding.evidenceRefs, allowedEvidenceRefs, 'binding-evidence-invalid', `Binding "${binding.key}"`)
     for (const assessment of binding.impactAssessments) assertKnownValues(assessment.evidenceRefs, allowedEvidenceRefs, 'binding-evidence-invalid', `Binding "${binding.key}" impact "${assessment.dimension}"`)
     if (binding.changeIntent === 'unknown') throw new WorkflowError('binding-intent-unresolved', `Binding "${binding.key}" has unresolved change intent.`, 422)
+    const requiredDimensions = new Set(binding.impactAssessments.filter((item) => item.applicability === 'required').map((item) => item.dimension))
+    for (const assessment of binding.impactAssessments.filter((item) => item.applicability === 'required')) {
+      if (input.requireCapabilitySurfaces && ['data', 'consumer'].includes(assessment.dimension) && assessment.capabilitySurface === undefined) throw new WorkflowError('binding-capability-surface-missing', `Binding "${binding.key}" must classify its ${assessment.dimension} capability surface.`, 422)
+      if (assessment.capabilitySurface === 'unknown') throw new WorkflowError('capability-surface-unresolved', `Binding "${binding.key}" has an unresolved capability surface.`, 422)
+      if ((assessment.capabilitySurface === 'call_value' && ((['write_path', 'state', 'migration'] as const).some((dimension) => requiredDimensions.has(dimension)) || binding.eventFactChains.length > 0))
+        || (assessment.capabilitySurface === 'local_call' && requiredDimensions.has('async'))) throw new WorkflowError('binding-capability-surface-contradiction', `Binding "${binding.key}" capability surface contradicts its state or integration impacts.`, 422)
+    }
     assertUniqueKeys(binding.eventFactChains.map((chain) => chain.factKey), 'duplicate-binding-event-fact-key')
     for (const chain of binding.eventFactChains) {
       assertKnownValues(chain.scenarioKeys, new Set(eventScenarioRequirementByKey.keys()), 'binding-event-scenario-invalid', `Binding "${binding.key}" event fact "${chain.factKey}"`)
@@ -956,6 +988,15 @@ export function parseGeneratedPlanV3(raw: string, input: GeneratedPlanV3Validati
     if (task.contextPack.verificationHarness !== undefined && !task.verificationCommandRefs.some((ref) => /(?:^|[\s:/.\-])(?:test|verify|browser|e2e|playwright|cypress)(?:[\s:/.\-]|$)/iu.test(verificationCommandByRef.get(ref) ?? ''))) {
       throw new WorkflowError('verification-harness-command-mismatch', `Task "${task.key}" declares a browser harness but none of its verification commands execute a test, verify, browser, or e2e lifecycle.`, 422)
     }
+    if (task.contextPack.verificationHarness !== undefined) {
+      const incompleteMapping = task.contextPack.verificationSteps.find((step) => step.testFile === undefined || step.testKey === undefined || step.browserProject === undefined)
+      if (incompleteMapping !== undefined) throw new WorkflowError('browser-test-mapping-incomplete', `Task "${task.key}" must bind every browser verification step to testFile, testKey, and browserProject.`, 422)
+      const mappedScenarioKeys = new Set(task.contextPack.verificationSteps.map((step) => step.scenarioKey))
+      const unmappedScenario = task.scenarioKeys.find((scenarioKey) => !mappedScenarioKeys.has(scenarioKey))
+      if (unmappedScenario !== undefined) throw new WorkflowError('browser-scenario-mapping-missing', `Task "${task.key}" has no browser test mapping for Scenario "${unmappedScenario}".`, 422)
+      const identities = task.contextPack.verificationSteps.map((step) => `${step.browserProject}\u0000${step.testFile}\u0000${step.testKey}`)
+      if (new Set(identities).size !== identities.length) throw new WorkflowError('browser-test-identity-duplicate', `Task "${task.key}" contains duplicate browser test identities.`, 422)
+    }
     const allowedBindingScopes = task.bindingKeys.flatMap((key) => input.bindingScopes?.[key] ?? [])
     if (allowedBindingScopes.length > 0 && task.changeContract.allowedPathScopes.some((scope) => !allowedBindingScopes.some((allowed) => scopeIsWithin(scope, allowed)))) {
       throw new WorkflowError('task-scope-expanded', `Task "${task.key}" expands beyond its evidence-backed Binding scope.`, 422)
@@ -1059,6 +1100,12 @@ const IMPACT_CAPABILITY: Partial<Record<GeneratedBindingAnalysisV3['bindings'][n
   release: 'release.delivery', rollback: 'release.rollback',
 }
 
+function impactCapability(assessment: GeneratedBindingAnalysisV3['bindings'][number]['impactAssessments'][number]): string | undefined {
+  if (assessment.capabilitySurface === 'unknown') throw new WorkflowError('capability-surface-unresolved', 'Capability derivation requires a resolved execution surface.', 422)
+  if ((assessment.dimension === 'data' && assessment.capabilitySurface === 'call_value') || (assessment.dimension === 'consumer' && assessment.capabilitySurface === 'local_call')) return undefined
+  return IMPACT_CAPABILITY[assessment.dimension]
+}
+
 export function derivePolicyCapabilityIdsV3(statement: string): string[] {
   const securityBoundary = /(?:\borigin\b|fetch\s+metadata|\bcsrf\b|\bauthori[sz](?:ation|ed?)\b|\bauthentication\b|\bpermission\b|loopback\s+(?:peer|host)|回环|同源|鉴权|授权|权限|身份认证)/iu
   return securityBoundary.test(statement) ? ['security.authorization'] : []
@@ -1070,6 +1117,13 @@ function scopeUsesLanguageCapability(scope: string, capability: string): boolean
   return false
 }
 
+/** manifest/lockfile 仅证明依赖存在，不能独自证明框架源码能力。 */
+function isFrameworkManifestPath(path: string): boolean {
+  const filename = path.slice(path.lastIndexOf('/') + 1).toLowerCase()
+  return filename === 'package.json' || filename.includes('lock')
+}
+
+/** 从冻结任务、绑定与仓库事实推导能力；缺少映射时拒绝，不接受模型自由声明。 */
 export function deriveCapabilityRequirementDraftsV3(
   plan: GeneratedPlanV3,
   bindingAnalysis: GeneratedBindingAnalysisV3,
@@ -1086,7 +1140,7 @@ export function deriveCapabilityRequirementDraftsV3(
 ): CapabilityRequirementDraftRecord[] {
   if (plan.status !== 'ready' || bindingAnalysis.status !== 'ready') return []
   const createdAt = input.now ?? new Date().toISOString()
-  const ruleVersion = input.derivationRuleVersion ?? 'v3.3.13'
+  const ruleVersion = input.derivationRuleVersion ?? 'v3.3.14'
   const bindings = new Map(bindingAnalysis.bindings.map((binding) => [binding.key, binding]))
   const tasks = new Map(plan.tasks.map((task) => [task.key, task]))
   const roleByRelationship: Record<GeneratedPlanV3['tasks'][number]['relationship'], DeliveryRole> = {
@@ -1110,7 +1164,7 @@ export function deriveCapabilityRequirementDraftsV3(
             || stackCapability.evidencePaths.some((path) => taskScopes.some((scope) => !/\.[a-z0-9]+$/iu.test(scope) && scopeIsWithin(path, scope)))
         }
         return stackCapability.evidencePaths.some((path) => taskScopes.some((scope) => pathsIntersect(path, scope))
-          && (!stackCapability.capability.startsWith('framework.') || !/(^|\/)(?:package\.json|[^/]*lock[^/]*)$/iu.test(path)))
+          && (!stackCapability.capability.startsWith('framework.') || !isFrameworkManifestPath(path)))
       })
       .map((stackCapability) => stackCapability.capability))
     for (const policyRef of task.policyConstraintRefs) {
@@ -1119,7 +1173,7 @@ export function deriveCapabilityRequirementDraftsV3(
     for (const assessment of sourceBindings.flatMap((binding) => binding.impactAssessments.filter((item) => item.applicability === 'required'))) {
       const evidencePaths = assessment.evidenceRefs.map((ref) => input.repositoryEvidencePathByRef[ref])
       if (evidencePaths.some((path) => path === undefined)) throw new WorkflowError('capability-evidence-unresolved', `Task "${task.key}" has an impact assessment with unresolved repository evidence.`, 422)
-      const capability = IMPACT_CAPABILITY[assessment.dimension]
+      const capability = impactCapability(assessment)
       const specializedRelationshipMatches = assessment.dimension === 'migration'
         ? task.relationship === 'migration'
         : assessment.dimension === 'release' || assessment.dimension === 'rollback'
@@ -1134,7 +1188,7 @@ export function deriveCapabilityRequirementDraftsV3(
       .flatMap((assessment) => assessment.evidenceRefs.map((ref) => input.repositoryEvidencePathByRef[ref])))
     if (consumerEvidencePaths.some((path) => path === undefined)) throw new WorkflowError('capability-evidence-unresolved', `Task "${task.key}" has a consumer impact with unresolved repository evidence.`, 422)
     for (const stackCapability of input.stackCapabilityEvidence.filter((item) => item.capability.startsWith('framework.'))) {
-      const frameworkConsumerPaths = stackCapability.evidencePaths.filter((path) => !/(^|\/)(?:package\.json|[^/]*lock[^/]*)$/iu.test(path)
+      const frameworkConsumerPaths = stackCapability.evidencePaths.filter((path) => !isFrameworkManifestPath(path)
         && consumerEvidencePaths.some((consumerPath) => pathsIntersect(path, consumerPath!)))
       const ownsFrameworkConsumerSurface = frameworkConsumerPaths.some((path) => taskScopes.some((scope) => pathsIntersect(path, scope)))
       if (ownsFrameworkConsumerSurface) capabilities.add(stackCapability.capability)
@@ -1168,7 +1222,7 @@ export function deriveCapabilityRequirementDraftsV3(
     directCapabilities.set(task.key, capabilities)
     impactCapabilitiesByTask.set(task.key, new Set(sourceBindings.flatMap((binding) => binding.impactAssessments
       .filter((assessment) => assessment.applicability === 'required')
-      .map((assessment) => IMPACT_CAPABILITY[assessment.dimension])
+      .map(impactCapability)
       .filter((capability): capability is string => capability !== undefined))))
   }
   const resolvedCapabilities = new Map<string, Set<string>>()

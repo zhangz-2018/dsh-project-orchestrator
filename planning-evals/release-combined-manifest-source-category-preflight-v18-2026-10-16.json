@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-source-category-preflight-v18-2026-10-16",
+  "createdAt": "2026-10-16T05:33:06.765Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "da766192325aba144a50f5cb24ed7739eb67716cf3d5fedc43276752aacf0937"
+    },
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "236d631d676a59dede0a442206c76be18c01b59f38d08e74e68edf94c039fe29"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "c1bfacbd64ec4bea7925e09f3b11a9a6c8cb450d27aab1c0ac6b9c3847c9f7b9"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "9fb6a45e83ce1fe51268b3dbba78d59a2ca670a85c9b7d3dc82b83e4c8041078"
+    },
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "1b6dc39c662d642b6ae194b93f866f02974ac0bdfd7f786c92cb0e75b3de35ed"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "8b64356f25248d854733093245db1213442f49dbcf0c2de6b164c6673e696d7c"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "b88fa8a32d439ee19cc5130e1ad8a6f72affe4cba12de3e74c8d5d06816ee257"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "a2bbe170d16f161a3780c65b68717c118d4f9a8e1125f31d90c0b5ace25a3853"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "1b0cd2a1e163b51d329e741f7aaeb63008b0e21ebde2b535828cef6bf8b419d3"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "9cbd6bb7e530b6b5524093349e9f13ed875856efbd65bb53d4dff7cd05e46aa4"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "d6a2a2147c6975e781f4d5757aa9d647f2224abc882f74e05b191ab6ff85be7d"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "goldDigest": "94a5e63545ad9caee7a9a19b86ea4026cda4cc417c0dddde4dfbee06c683d9c9"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/fresh-1",
+      "operationId": "planning-v3:d460e8af-465d-4296-8cd4-a150fc229542",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/runs/fresh-1.json",
+      "startedAt": "2026-10-16T05:33:06.796Z",
+      "completedAt": "2026-10-16T05:43:05.968Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/fresh-1",
+      "operationId": "planning-v3:7577e1fd-fce8-4713-94d9-85831fd54835",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/runs/fresh-1.json",
+      "startedAt": "2026-10-16T05:33:06.799Z",
+      "completedAt": "2026-10-16T05:38:32.783Z"
+    },
+    {
+      "caseId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "attemptId": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/fresh-1",
+      "operationId": "planning-v3:f5d1c685-482d-4df5-94aa-c32b8daef78d",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/runs/fresh-1.json",
+      "startedAt": "2026-10-16T05:33:06.960Z",
+      "completedAt": "2026-10-16T05:46:24.865Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+      "attemptId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/fresh-1",
+      "operationId": "planning-v3:a2f5f7f2-8c17-4cd9-8956-3cd3fe05ca56",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18/runs/fresh-1.json",
+      "startedAt": "2026-10-16T05:33:06.961Z",
+      "completedAt": "2026-10-16T05:47:41.789Z"
+    }
+  ]
+}

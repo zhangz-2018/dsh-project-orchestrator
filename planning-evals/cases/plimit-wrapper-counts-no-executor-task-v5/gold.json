@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-task-v5",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "261a73ed104010a93fd8b143c36d047a5033bfc48ed32a174bfb5b595e1c077c",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f1f5d48637a5078016ad120bc03208193b9ddc6e08ba1f5fd:independent-gold-review:1ddeb60f-3241-4a9a-a78d-f1a2b5a8d3b0",
+    "reviewedAt": "2026-10-15T18:51:51.780Z",
+    "rationale": "The supplied Gold is an appropriate independent pre-candidate expectation for this case. REQ-001, AC-001 through AC-003, repository identity/base commit, exact binding scopes, task keys, required evidence stages, and blocked readiness agree with the original specification. The supplied source establishes index.js as the wrapper implementation owner, index.d.ts as its maintained public declaration owner, and test.js/index.test-d.ts as the runtime/type regression owners; package.json confirms the xo && ava && tsd verification entry point. No declaration-generation build is shown, and no additional forwarding consumer requires a mandatory edit. TASK-IMPLEMENT and TASK-VERIFY must both exist, with independent verification depending on implementation and all required acceptance criteria covered. The catalog contains only a non-auto-assignable reviewer with no execution capability claims, so neither task has an eligible assignee. That active project reviewer satisfies the supplied earlier independent-review prerequisite without becoming an executor. No unresolved material DEC-001 or hypothetical C input is present in this case, so the appropriate block is at assignments rather than decisions. Gold's repository, source, team, decision, prompt, model, sampling, budget, and policy fingerprints match the preview release inputs. The source-manifest digest is a separately identified digest and is not presented as the release sourceDigest. Digest calculation and binding are accepted as Service-provided facts; I did not recompute hashes, execute code, run candidates, or provide human attestation. Approval concerns Gold coherence, not execution readiness or completion of the remaining negative controls.",
+    "goldDigest": "3f0c4a14bf7d101c111dd581159390299a92ea14e5ed7c3f0cdb3d827ae38db0"
+  }
+}

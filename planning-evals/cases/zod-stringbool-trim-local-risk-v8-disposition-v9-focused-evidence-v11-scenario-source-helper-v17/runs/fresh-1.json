@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "SOURCE_REQUIRED_CATEGORY_DISPOSITION_MISMATCH",
+      "subjectKeys": [
+        "AC-002"
+      ]
+    }
+  ],
+  "reachedStage": "decisions",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:003c6b49-b4b5-4d52-b64c-eab62f388f85"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:003c6b49-b4b5-4d52-b64c-eab62f388f85:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:003c6b49-b4b5-4d52-b64c-eab62f388f85"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-scenario-source-helper-v17",
+    "repositoryBaseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44",
+    "planningOperationId": "planning-v3:003c6b49-b4b5-4d52-b64c-eab62f388f85",
+    "planningOperationDigest": "8909f327ea34b76d79a148298496d9d85ac8dc23cc937a65168985167eddbe94",
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "b712d443cc4e84336041e1d2107ef101ea3c818c4cf0cbbc187ef460a3a21390",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "promptVersionsDigest": "f7171115672457780da39cd027b62693ccb39267421dda91686ad8b48a3dc47d",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-10-16T05:04:43.147Z",
+    "completedAt": "2026-10-16T05:09:39.095Z"
+  }
+}

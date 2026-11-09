@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_074995b540b6eafd016ad25e4efb648190b122b30484eac607:independent-gold-review:8f9871ef-a422-47e9-abbc-4eb2c70780d7",
+    "reviewedAt": "2026-10-16T17:26:50.956Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD expressly leaves material DEC-001 unresolved and makes the recommended rejection behavior conditional, so blocked readiness with requirement-decision-pending on DEC-001 and evidence stopping at repository, requirements, and decisions is appropriate. REQ-001 and AC-001 through AC-003 are preserved consistently; empty task and assignment expectations correctly avoid publishing assignable work before the decision. The supplied source shows shared core _stringbool ownership, existing case normalization without trimming, and truthy-first overlap behavior, with classic and mini forwarding to that core implementation. The listed export and declaration consumers are inspection scope, not mandatory edits; the package build configuration supports treating emitted declarations as generated artifacts. Regression and type-checking expectations are consistent with the supplied configurations. The empty team catalog does not introduce an earlier blocker because the material decision gate precedes later review and assignment prerequisites. Gold and preview release fingerprints agree across repository, evaluation source, team, decision, prompt, model, sampling, budgets, and policy fields. The distinct source-manifest/evaluation digest domains and original/saved PRD whitespace normalization are explicitly accounted for by the supplied Service provenance. Historical project operations do not constitute candidate evidence for this bundle, and no hypothetical paired-case input is treated as a human decision here. This approval concerns the benchmark expectation only, not execution or task authorization. I used only the supplied review data, did not execute code, independently recompute digests, or provide human attestation.",
+    "goldDigest": "c721140dc6f93a08dfe9752dd1a1e3788f6a70f2d0a673f9f53a581a83d20f6b"
+  }
+}

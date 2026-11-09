@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "115c2144daad54db1e2958ebf98f4b19b1a5bd10dcffeb95f3c0a2b0f85cc1e9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_08935470393b095d016ad26539a3fc8196b337e5f5c26b40b8:independent-gold-review:c7831500-9caf-4ccf-9b31-4de5debf18d1",
+    "reviewedAt": "2026-10-16T17:56:21.065Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 match the original PRD and supplied source: limitFunction already forwards clearQueue but lacks wrapper count properties and their declaration coverage. The exact writable scope correctly includes the maintained runtime and declaration owners plus both regression files; package.json establishes separate AVA and tsd validation without requiring a configuration edit. The implementation and dependent independent-verification task expectations are consistent with the PRD, including implementation and verification coverage of every required acceptance criterion. The allowed agents have the relevant active project-scoped trusted claims, including data.change, domain.state, integration.async and integration.consumer, with testing.verification additionally present for the verifier. Pending legacy claims are not treated as trusted capability evidence. A separate active, non-assignable reviewer satisfies the supplied earlier review prerequisite. No unresolved material Decision is supplied, so ready with no blocking reasons is appropriate. Repository identity, base commit, stable keys and release fingerprints agree across the supplied records; the distinct PRD, manifest and evaluation-source digest domains are explicitly explained, and the proposed Gold release input matches the preview freeze. Historical operations are identified as old-version records rather than candidates on this bundle. This review relies on the supplied source and Service-bound provenance; I did not execute code, independently recompute digests, or create or independently attest human capability confirmations.",
+    "goldDigest": "74f1ebcf185b558c215a128b39a3aa1f06c6c427fb3053a9e78b4bcde1cfeaca"
+  }
+}

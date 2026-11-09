@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "edf3dc23c2ceb5c2eb442ddc2a2e9bb698ac0359c024383038bafbd51e0fff32",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01dbd25a701b5aae016ad17a31f8bc819580d96f2ccf191c77:independent-gold-review:e3714646-877d-462a-a56d-3d325f4177a2",
+    "reviewedAt": "2026-10-16T01:13:34.615Z",
+    "rationale": "The supplied frozen Gold is a coherent independent expectation for the original PRD. REQ-001 and AC-001–AC-003 consistently require live, read-only wrapper counts from the existing limiter while preserving Promise, scheduling, and clearQueue behavior. The complete supplied source supports the exact binding scope: index.js owns the wrapper implementation, index.d.ts owns its maintained public declaration, and test.js and index.test-d.ts own runtime and type regressions. package.json confirms the xo && ava && tsd validation entry point; it need not be edited. The stable requirement, acceptance, and task keys agree across the specification and Gold. TASK-VERIFY depends on TASK-IMPLEMENT, and both must cover all required acceptance criteria. The project catalog contains only a non-auto-assignable reviewer with no execution claims, so neither execution role has an eligible member. That reviewer satisfies the supplied earlier independent-review prerequisite for this asynchronous, stateful change; therefore progressing through decisions, bindings, and tasks before blocking both assignments is appropriate. No material unresolved Decision is supplied or required by this PRD. Repository identity and base commit agree, and all release-input fingerprints and budgets match between Gold and preview. I accept the Service's stated mechanical binding of digests to saved inputs; I did not recompute hashes, execute code, assume human attestation, or use candidate outputs. The pending negative-control operations concern subsequent benchmark validation, not the coherence of this pre-candidate Gold.",
+    "goldDigest": "6c7fd079890a16951ee365a856339a4218f8fb2dbfdd5690858e3948b2bf982d"
+  }
+}

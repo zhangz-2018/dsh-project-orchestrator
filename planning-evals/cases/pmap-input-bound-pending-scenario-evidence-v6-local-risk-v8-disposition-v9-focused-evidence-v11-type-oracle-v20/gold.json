@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f13a4cc0b11112d016ad1c2ee594081948110489f85ccd407:independent-gold-review:40218165-ad76-4f51-ad1a-8dca175b48b8",
+    "reviewedAt": "2026-10-16T06:23:54.071Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved: AC-001 is conditional on the recommended option and does not authorize selecting it. Gold correctly expects blocked readiness at decisions, preserves REQ-001 and AC-001–AC-003, requires repository/requirements/decisions evidence, and contains no task or assignment expectations. The supplied implementation, declarations, exports, and test configuration support index.js and index.d.ts as the binding-owner scope and test.js/index.test-d.ts as verification scope, with xo, ava, and tsd as distinct configured checks. The empty trusted team catalog does not invalidate this earlier deterministic decision block; later reviewer and assignment prerequisites need not be satisfied. Gold and preview release-input fingerprints agree across repository, source, team, decision, prompt, model, sampling, budgets, and policy fields. The supplied provenance explains the distinct source-digest domains and whitespace-only PRD normalization. Historical project reuse is disclosed without supplying historical candidate outputs or treating old operations as candidates on this bundle. Truncated test excerpts do not undermine the owner identification or the decision-stage expectation. This approval concerns Gold coherence, not implementation correctness, human confirmation, or execution readiness. Digest bindings are accepted as Service-provided mechanical evidence; I did not independently recompute hashes or execute code.",
+    "goldDigest": "5e7bb6ef94941233ffc2338e8deb19317b31866bad288368cff411dfd23b8d46"
+  }
+}

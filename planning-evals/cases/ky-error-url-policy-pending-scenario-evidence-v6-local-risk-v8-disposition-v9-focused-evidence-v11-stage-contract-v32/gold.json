@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06700d7d52b2fdd9016ad25e3122008196b58a49abda20c8f1:independent-gold-review:34551144-db06-4a83-bd11-7fa2c43643ec",
+    "reviewedAt": "2026-10-16T17:26:19.256Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, paired case, and owner bindings agree with the original specification. DEC-001 materially controls omitted-option behavior and is explicitly unresolved without human confirmation; blocking at decisions with requirement-decision-pending, requiring repository/requirements/decisions evidence, and emitting no assignable tasks or assignment expectations are appropriate. The supplied implementation evidence supports the message-formatting, normalization, hook snapshot, inheritance, and fetch-filtering ownership chain. Forwarding and declaration consumers require inspection, not compulsory edits; the build configuration supports treating distribution declarations as generated rather than separately maintained owners. The empty team catalog does not invalidate this earlier decision-stage block because later reviewer and assignment prerequisites are not reached. Frozen release fingerprints match between Gold and preview, and the supplied provenance explains the distinct manifest/evaluation and original/saved PRD digest domains. Historical operations are disclosed without supplying candidate outputs or treating reused project history as a new attestation. This approval concerns the benchmark expectation only, not implementation readiness, execution, task dispatch, or resolution of DEC-001. I reviewed the supplied evidence without tools, code execution, or independent digest recomputation.",
+    "goldDigest": "f5767493bada774a5013f8c13ce9e1c3674be85d63504b6f211b4fd7108fe22e"
+  }
+}

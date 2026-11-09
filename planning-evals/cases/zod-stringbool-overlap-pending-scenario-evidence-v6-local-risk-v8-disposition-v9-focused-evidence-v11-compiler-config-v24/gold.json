@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "9ca1999e6426b4684b60d9623a0bf87b78776746b905b7b36c7980f8f1b79a80",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_09eac3182dbb6aca016ad1f6896f98819098b3b2621a0123a0:independent-gold-review:7b1075b9-fc5a-4ae8-952e-f18e88e76a21",
+    "reviewedAt": "2026-10-16T10:04:07.122Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, paired-case identity, owner scope, and required evidence stages agree with the original PRD. DEC-001 is materially unresolved: conditional acceptance of the recommended rejection strategy does not authorize selecting OPT-1. Blocking at decisions with requirement-decision-pending for DEC-001, without assignable tasks or assignment expectations, is therefore appropriate. The supplied source shows shared core stringbool behavior with case normalization, truthy-first overlap handling, no trimming, and classic/mini forwarding; forwarding and export owners require inspection, not mandatory edits. Build configuration supports generated declarations rather than separately maintained declaration owners. Runtime regression and TypeScript verification are distinguished, including the runtime-only compile-mode configuration. Empty trusted team facts do not invalidate this earlier decision-stage block, because later reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints agree; the differing manifest/evaluation source digests and original/saved PRD digests are explained by their declared domains and trim-only persistence normalization. Historical project reuse is not evidence of a candidate run on this bundle or of a new human decision, and no hypothetical paired input is treated as human confirmation. This approval concerns the Gold expectation, not execution, assignment, or release authorization. I relied on the supplied Service-calculated fingerprint bindings and performed no independent digest recomputation, code execution, or human attestation.",
+    "goldDigest": "4605d200811c9982d60a28f8b89ccab21c67c5e2d0f2bba0aa3d86cf9479dabb"
+  }
+}

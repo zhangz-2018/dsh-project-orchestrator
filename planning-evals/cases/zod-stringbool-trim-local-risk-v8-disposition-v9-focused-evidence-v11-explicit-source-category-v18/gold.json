@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "b712d443cc4e84336041e1d2107ef101ea3c818c4cf0cbbc187ef460a3a21390",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_08d70658970bfdb4016ad1b66c629081979e1ec703489646ad:independent-gold-review:475c0a5d-fc8d-4657-9da6-47a0637d3cf2",
+    "reviewedAt": "2026-10-16T05:30:32.491Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001, AC-001 through AC-003, repository identity/base commit, evidence stages and exact writable scopes agree with the original PRD. The source supports changing the shared parameter declaration and decode transform in core/api.ts while preserving vocabulary handling and encode behavior; classic/mini factories, normalization and export consumers are appropriately inspection-only. Build configuration supports treating emitted declarations as generated rather than separately maintained owners. Both regression paths are correctly scoped, including the explicitly proposed new mini test, and the supplied configuration distinguishes runtime tests from compiler-based type checking. TASK-IMPLEMENT and dependent independent TASK-VERIFY are consistent with the PRD; their allowed agents have the relevant active project-scoped trusted claims, including data.change and verifier-only testing.verification, without relying on pending legacy claims or personas. A configured independent reviewer is present. No unresolved material DEC-001 or hypothetical C input is included in this case, so the ready expectation and empty blocking reasons are consistent. Gold and preview release fingerprints agree across repository, evaluation source, team, decisions, prompts, model, sampling, budgets and metric policy; the supplied provenance explains the separate source digest domains and PRD whitespace normalization. Historical project reuse is explicitly isolated from this bundle's candidate evaluation. This review relies on the supplied Service-bound digest and provenance facts; I neither independently recomputed hashes nor executed code, and this approval does not authorize task dispatch or repository changes.",
+    "goldDigest": "da766192325aba144a50f5cb24ed7739eb67716cf3d5fedc43276752aacf0937"
+  }
+}

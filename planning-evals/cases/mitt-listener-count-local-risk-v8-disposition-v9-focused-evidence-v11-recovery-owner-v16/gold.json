@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "27fef76fb745e781fd280b3455f0ea4489b8cb92a1bf72200480d68f3d890e49",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "b3d23b76f6946419a8c858eded1f18e6baf663fafd6fc42b15ebcefe7ef067b4",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_072033ab638d5384016ad1a73a6c0481949477db9c130cfabe:independent-gold-review:91685751-5c23-4fef-9963-b09c2afa4f5c",
+    "reviewedAt": "2026-10-16T04:25:42.594Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001–AC-003 preserve exact-key counting, live reads of the existing handler map, duplicate registration semantics, compatibility, and compile-time key restrictions. The exact writable scope correctly includes src/index.ts and both regression files. The package configuration, CI sequence, ignore rules, and supplied upstream build source support treating root declarations and dist as generated artifacts rather than separately maintained owners; configuration and root-entry consumers require inspection, not mandatory edits. TASK-IMPLEMENT and dependent independent TASK-VERIFY are consistent with the PRD. Their allowed agents have the relevant active project-scoped trusted capability records, including data.change for shared in-memory state and testing.verification for the verifier; eligibility does not rely on pending claims or personas. A separate configured online reviewer satisfies the supplied earlier review prerequisite. No unresolved material Decision is present in this bundle, so ready with no blocking reasons is consistent. Repository identity, stable keys, and the preview and Gold release fingerprints agree; the documented normalization and distinct source-digest domains explain the differing PRD and manifest fingerprints. The original specification's preparation-time null release input and remaining-work fields are superseded by the supplied frozen preview rather than evidence of an outstanding planning blocker. The supplied isolation facts establish that this review precedes candidates on this bundle. I reviewed the supplied evidence only: I did not execute code, independently recompute digests, or perform human attestation. Approval concerns the benchmark expectation, not implementation completion, task dispatch, or release authorization.",
+    "goldDigest": "d9186a7b5bf4637802c20d7cfa174dd8f5773bfc298b8d86adac00933431ed6d"
+  }
+}

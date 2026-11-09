@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8157ff11f60f0f0e44215d27f8586f8f93e971b02a50467172605a5e17b20cdc",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "27d2e2ac5c13bcc86ff41aa762239dc84f3305aab8d75746641d9181555f1aaf",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_035e5bc656ba5020016ad23eeb8fa88193b77f9b0408aa9571:independent-gold-review:4627db2b-291f-4600-a25b-db5a91a0548d",
+    "reviewedAt": "2026-10-16T15:12:58.464Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001–AC-003, evidence stages, readiness, exact writable file scopes, and task identities agree with the specification. The getter can derive its value from existing size and pending without introducing another counter or changing scheduling; the acceptance criteria correctly preserve completed/error event timing and defer final zero assertions until onIdle. source/index.ts owns both implementation and its generated public declaration surface; package.json establishes the build path, so dist/index.d.ts is not a separately maintained edit owner. Runtime regression and compile-time verification are correctly distinguished, with the existing nz type-test entry available for the readonly negative assertion. The implementation and dependent independent-verification assignments are supported by the supplied project membership, availability, roles, and active trusted capability claims, including data.change, domain.state, integration.async, integration.consumer, and testing.verification for the verifier. Pending-only JavaScript and authorization claims are not necessary for this bounded TypeScript change. A separate configured reviewer satisfies the supplied earlier scenario-review prerequisite without requiring execution claims. No material unresolved DEC-001 or B/C scenario is present in this case, and the empty decision input is consistent with ready. Gold and preview release fingerprints match; the supplied provenance explains the distinct source-manifest/evaluation digest domains and PRD whitespace normalization. Historical operations are explicitly old-bundle records rather than candidate evidence for this bundle. The truncated runtime-test excerpts do not prevent assessment of this bounded planning expectation because the implementation owner, type-test file, configuration, file identities, and required scope are supplied. This review relies on the Service's stated mechanical digest bindings and supplied attestation records; I did not recompute digests, execute code, supply human attestation, or use candidate outputs.",
+    "goldDigest": "6a7f9ca296fc2ba9b8e3f6ead0c17e59b06bbc385ad8b71088042fd3c36fa2c1"
+  }
+}

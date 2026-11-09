@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-contract-v32",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "4c93ae3ccf1a9c78afa1dadbd39a70474adb85698dbbbc714ff44660d451afba",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "fb03944a7875c25bf42fc6efb7cca9486aece06dc63417454a4968c528e81892",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03aa69beac3db277016ad25dfc086c8195a91fa9c41afe77a5:independent-gold-review:5c3065bb-8648-441a-9048-d3e23494d7d3",
+    "reviewedAt": "2026-10-16T17:25:31.862Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. Repository identity and base commit, REQ-001, AC-001 through AC-003, exact writable owner paths, task keys, readiness, and evidence-stage order agree with the original specification. The source establishes that the CORS option declaration and runtime behavior are maintained in src/middleware/cors/index.ts; the specified test file is included in both runtime discovery and the separate TypeScript checking configuration. Build configuration establishes that published declarations are generated, so they are not additional maintained edit owners. The implementation/verification task split, verification dependency, and required implementation and verification coverage of all acceptance criteria are appropriate. The supplied scoped team facts support the designated implementer and independent verifier through active trusted claims; pending legacy claims and personas need not be used as capability evidence. This bounded request-local change does not inherently require shared-data or state impacts merely because arrays and Context are involved. A distinct configured reviewer is present for applicable independent-review prerequisites. No material unresolved DEC-001 is present in this case's supplied normative inputs, so ready with no blocking reasons is appropriate; the generic B/C review constraints do not introduce an absent decision into this case. Gold and preview release fingerprints match, and the supplied provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization. The original specification's remaining/runnable fields describe preparation state rather than contradicting the subsequently supplied freeze. Historical project reuse is explicitly isolated from this bundle, preserves existing scoped attestations, and supplies no historical candidate outputs. This approval reviews the supplied evidence and Service-bound fingerprints only: I did not recompute digests, execute code, independently attest human confirmations, or approve task dispatch.",
+    "goldDigest": "2e26706935822ccc5e85a15ebbb6cf1c3880d909381e53a51b82f4b3a9c7099c"
+  }
+}

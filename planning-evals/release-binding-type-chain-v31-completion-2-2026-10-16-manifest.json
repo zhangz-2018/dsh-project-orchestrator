@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-binding-type-chain-v31-completion-2-2026-10-16",
+  "createdAt": "2026-10-16T16:44:04.912Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "goldDigest": "eb22d170afafc6e4d642bbdcecc7b214e74457f87e0ea1ce23a0189120f8946c"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/fresh-1",
+      "operationId": "planning-v3:2b8d0ed6-3483-4957-8ca2-94ee1c755075",
+      "outcome": "model_failure",
+      "failureCode": "plan-reference-invalid",
+      "startedAt": "2026-10-16T16:44:04.968Z",
+      "completedAt": "2026-10-16T17:06:27.090Z"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-reviewer-v3",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d1137e1f9dc08ae56e9554df8d0b48052630d145a274e6f2287d36e6f8d1e0f7",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b5fa606a2de443f016ad11ad232ac81969ace6cfccf791f11:independent-gold-review:e2d820a2-9975-45ec-a873-5172dab587bd",
+    "reviewedAt": "2026-10-15T18:26:38.507Z",
+    "rationale": "The supplied Gold is a coherent independent pre-candidate expectation. REQ-001 and AC-001 through AC-003 match the original PRD and supplied source: limitFunction already forwards clearQueue but lacks wrapper count accessors and their return-type declarations. The exact writable scopes correctly include index.js, the directly maintained index.d.ts, test.js, and index.test-d.ts; package.json establishes the existing xo, AVA, and tsd verification entry without requiring a configuration edit. The stable implementation and verification task keys, verification dependency, and required evidence stages agree with the specification. The frozen team contains only a non-auto-assignable reviewer with no execution capability claims, so neither task has an eligible assignee. That reviewer satisfies the supplied earlier independent-review prerequisite without becoming an implementer or verifier, making the two assignment abstentions and blocked readiness appropriate. This case contains no material unresolved DEC-001 or hypothetical C input; no earlier decision block is established. Gold and preview release fingerprints agree across repository, source, team, decision input, prompts, model, sampling, budgets, and metric policy. The source-manifest digest and release source fingerprint are distinct supplied fields, not asserted to be the same digest. I reviewed the supplied records only, accepted their Service-calculated mechanical bindings, and neither recomputed digests nor executed code. This approves the proposed expectation, not task dispatch or benchmark execution; the separately listed negative-control operations remain outstanding.",
+    "goldDigest": "f2bb34a5c59b7e65f5ee940d9958c1bef435837df96b645783f8ff2253c16c0a"
+  }
+}

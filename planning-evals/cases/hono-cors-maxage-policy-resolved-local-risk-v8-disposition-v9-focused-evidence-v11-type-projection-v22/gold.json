@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-projection-v22",
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "24061706858c8d516120398df9a57219c579305b9ffbd8111113fdbef7b5bb0b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0c0b08b79f9ca02a016ad1d400484c81959039b9cebbca40e3:independent-gold-review:6e35ec45-5d23-4b5c-b42c-cb50d98d997d",
+    "reviewedAt": "2026-10-16T07:36:45.080Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C scenario. The original PRD explicitly fixes OPT-1 as a hypothetical benchmark input, not a human-confirmed Decision; ready with no decision blocker is therefore appropriate here. This does not waive the decisions-stage block for an unresolved material DEC-001 in B. REQ-001, AC-001–AC-003, the exact implementation/test binding scope, and the implementation plus dependent independent-verification task structure agree with the specification. The supplied source establishes that validation belongs at middleware construction, while zero, omission, finite nonnegative values, and unrelated CORS behavior must be preserved. The test file is included in the compile-time checking configuration as well as runtime test discovery. Build configuration establishes that published declarations are generated, so they are not separately maintained writable owners; configuration and declaration routing are inspection evidence, not mandatory edits. The bounded maxAge change does not require shared-data or persistent-state capabilities merely because it processes an options value. The allowed implementer and verifier have relevant active project-scoped trusted claims, including testing.verification for the verifier, and an independent active reviewer is configured. Pending legacy claims and persona descriptions are not needed to justify eligibility. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Repository, team, decision, prompt, policy, model, sampling, and budget fingerprints are supplied. Historical operations are explicitly old-bundle observations, not fresh candidate evidence. This approval relies on the supplied Service-bound inputs and provenance; I did not recompute digests, execute code, attest human confirmation, or infer candidate performance.",
+    "goldDigest": "dd199e52fd8862f68767e293352c8307f58a3e5160a72cb32cbb7d2ad70bfd12"
+  }
+}

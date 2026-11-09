@@ -48,6 +48,15 @@ The final verification must use the repository's existing non-interactive test c
 
 Planning is read-only. If the Planner reports missing repository evidence or an unconfirmed verification command, fix that repository prerequisite and run planning again instead of approving an invented command.
 
+After creation, inspect **Planning readiness** and **Execution preparation** on the Overview page, or read the same server-owned projections from the CLI:
+
+```bash
+dsh-project-orchestrator readiness <PROJECT_ID>
+dsh-project-orchestrator overview <PROJECT_ID>
+```
+
+Readiness only inspects paths, Git state, model routing, team eligibility, capabilities, access grants, the current plan, and storage consistency. It does not execute repository commands or invoke a model. `unknown` means the fact has not been frozen and is not equivalent to passed. Planning V3 currently provides semantic providers for TypeScript/JavaScript, Vue/Nuxt, Prisma, test files, and manifest commands. Python, Java/Spring, and Go do not yet have production semantic providers; treat those primary-stack findings as explicit blockers instead of treating generic file reads as complete V3 support.
+
 ## 4. Bind and assign a Squad
 
 1. Open **More > Squads** (`更多 > 团队编排`) and create a Squad with at least a Leader, an implementation member, and a test member. The Leader must also be in the Squad member list.
@@ -84,5 +93,6 @@ Finally, inspect `git status` and the repository diff yourself before keeping or
 - **Runtime unavailable:** use the default local environment or restore the bound custom Runtime to an online state.
 - **Planner blocked:** confirm the selected directory exists and that the repository exposes a non-interactive verification command.
 - **Execution needs a decision:** open **Inbox**, inspect the recorded context, and explicitly approve, reject, defer, or retry.
+- **Storage needs recovery:** inspect the Recovery Preview first. Execute `replay`, `compensate`, or `finalize` only when the server explicitly permits that action. A `manual_required` preview exposes no automatic recovery action and is not permission to edit the JSON storage directly.
 
 For backup, recovery, and production use, continue with [Operations](operations.md) and [Security](../SECURITY.md).

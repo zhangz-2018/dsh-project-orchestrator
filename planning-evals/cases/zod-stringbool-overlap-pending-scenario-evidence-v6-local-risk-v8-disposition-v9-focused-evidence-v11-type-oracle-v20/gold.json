@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-type-oracle-v20",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "a4b50ecc9279f4123a678d000c4ae7cb7f90d181dca4c9c80cae989104617fa4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06c663cfb9386b2f016ad1c31b07748195978b4032bfdb5fb5:independent-gold-review:2d579468-5fad-48ea-8d1c-261752be999b",
+    "reviewedAt": "2026-10-16T06:24:40.663Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, paired-case reference, and owner bindings agree with the original specification. DEC-001 materially determines overlap behavior and is explicitly unresolved; the conditional recommendation in AC-001 does not authorize selecting OPT-1. Accordingly, blocked readiness with requirement-decision-pending on DEC-001, evidence through repository/requirements/decisions, and no task or assignment expectations are appropriate. The supplied source establishes shared core stringbool behavior, existing truthy precedence, case normalization without trimming, and classic/mini forwarding. Forwarding/export owners require inspection rather than mandatory edits, and the build configuration supports treating emitted declarations as generated artifacts rather than separately maintained owners. Runtime and compile-time verification are correctly distinguished. Empty project team facts do not invalidate this expectation because the material decision gate precedes scenario-review and assignment prerequisites. The proposed Gold and preview release fingerprints agree across repository, evaluation source, team, decisions, prompts, model, sampling, budgets, and policy; the provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse is not treated as candidate evidence or as a new human attestation. This approval concerns the frozen expectation only, not decision resolution, task dispatch, or implementation correctness. I reviewed the supplied data without tools or execution and rely on the Service's stated mechanical digest bindings rather than claiming independent digest recomputation.",
+    "goldDigest": "60e4b4fc1269449ccdcaef1be80580b99e7d9bb63dfbee76aa0b90d1cf62384c"
+  }
+}

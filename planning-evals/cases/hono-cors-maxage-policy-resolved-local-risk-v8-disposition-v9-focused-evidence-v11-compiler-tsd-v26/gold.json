@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-tsd-v26",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-tsd-v26",
+  "releaseInput": {
+    "repositoryDigest": "298c50f553d421b9cbc3ec40d8d79ecf7bf2c2bae8796df2450f2007ffd25d47",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2998d6f9300ef04f05bec60364fb473664b5965406b5a123154592fa1c2182f1",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_013b3b6d82e3bb8c016ad203e810c48193ac42f3cfd5d5570c:independent-gold-review:3b66e0ed-8777-4f27-8163-377b9ccdf3d7",
+    "reviewedAt": "2026-10-16T11:01:07.542Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C scenario. REQ-001, AC-001–AC-003, DEC-001, and both task keys agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical input, not a human Decision, so ready with no decision blocker is appropriate; an unresolved material DEC-001 in paired B must still block at decisions. The exact writable scope covers the maintained implementation/options declaration and regression test. Build configuration establishes that dist declarations are generated, not separately maintained edit owners. The test file is included in tsconfig.spec.json and Vitest, and the documented test script separates compiler checking from runtime tests. Implementation and independent verification, with verification dependent on implementation and both covering all required acceptance criteria, are consistent with the specification. The designated agents have the relevant active trusted claims in the supplied project catalog; pending-only data.change and domain.state claims are not needed for this bounded stateless option validation. An independent non-executing reviewer is configured. Gold and preview release fingerprints agree, and the provenance explains the distinct source digest domains and PRD whitespace normalization. Historical operations are explicitly old-version observations, not candidates for this bundle. I relied on the supplied Service-bound fingerprints and evidence; I did not recompute digests, execute code, or provide human attestation. This approves the expectation, not task dispatch or implementation correctness.",
+    "goldDigest": "ff58f64ba05e4cc2cfd42320ddbfbf5bde9a3bf652c96f244939183a86b62558"
+  }
+}

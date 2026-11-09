@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "115c2144daad54db1e2958ebf98f4b19b1a5bd10dcffeb95f3c0a2b0f85cc1e9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03ecf191e7b33b04016ad265399ae08196bf190b869214dfec:independent-gold-review:4d4e0cf6-0bf5-4a61-ad02-6358d607de07",
+    "reviewedAt": "2026-10-16T17:56:25.346Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001–AC-003, repository identity/base commit, exact four-file writable scope, and implementation/independent-verification task split agree. The source evidence identifies index.js and the separately maintained index.d.ts as the implementation owners; package.json confirms the existing xo && ava && tsd verification entry point. The focused runtime-test excerpt and complete declaration/type-test evidence support the specified compatibility expectations despite the explicitly disclosed test.js truncation. The bounded change concerns an invocation-local error object and does not establish a required shared-data or state impact demanding the pending data.change or domain.state claims. The allowed implementer and verifier have the relevant supplied active project-scoped capability claims, with testing.verification additionally present for the verifier; an independent active reviewer is configured. No material unresolved decision is specified for this case. Planning readiness is distinct from the original preparation snapshot's runnable/review bookkeeping. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Historical operations are explicitly old-bundle records, not evidence of candidates on this bundle. I reviewed the supplied records without executing code, independently recomputing digests, or providing human attestation.",
+    "goldDigest": "86c91141029e447fa861e6d90e658cd2c71596fca58a054333e26008b8f5e4aa"
+  }
+}

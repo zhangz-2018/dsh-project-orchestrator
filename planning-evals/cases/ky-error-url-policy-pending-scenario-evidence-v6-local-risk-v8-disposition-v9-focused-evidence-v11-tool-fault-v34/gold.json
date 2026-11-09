@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e0bd943a792a88f5debdc5cfa8acafce6073e554908a2bf0ad02782a24abea1f",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_035151af158919f0016ad26d9258008197b223f74c91d37ffd:independent-gold-review:8560fa89-ad39-4870-8708-d9de3c496762",
+    "reviewedAt": "2026-10-16T18:31:58.757Z",
+    "rationale": "The frozen Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and the paired-case identity consistently with the original PRD. DEC-001 materially controls omitted-option behavior and remains intentionally unresolved, without human confirmation; therefore blocked readiness, the requirement-decision-pending reason keyed to DEC-001, evidence through repository/requirements/decisions, and no assignable task expectations are appropriate. Conditional OPT-1 acceptance language does not authorize selecting that default. The supplied implementation-owner evidence supports the listed message, option normalization, snapshot, registry/filtering, instance propagation, and hook/type inspection boundaries. Generic forwarding and declaration consumers need inspection, not mandatory edits. Build configuration supports treating distribution declarations as generated rather than separately maintained owners, and tsconfig.test.json includes the proposed test-d location for compile-time validation. The empty trusted team catalog does not invalidate a case that must stop at the earlier deterministic decision gate; later reviewer, capability, and assignment prerequisites are not reached. Gold and preview release-input fingerprints agree, and the supplied provenance explains the distinct original-PRD, normalized saved-PRD, source-manifest, and evaluation-source digest domains. Model, policy, sampling, and budget fingerprints are explicitly frozen. I rely on the Service's mechanical binding assertions; I did not recompute digests, execute code, infer human attestations, or consult candidate outputs. Approval concerns the benchmark expectation, not execution readiness, release authorization, or resolution of DEC-001.",
+    "goldDigest": "3113f2f802bd3497e44be98a8a54b02e33d4897bc8d3fbe9a0eb62069873448e"
+  }
+}

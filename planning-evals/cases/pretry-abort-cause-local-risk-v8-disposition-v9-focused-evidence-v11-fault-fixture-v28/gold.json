@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cf3c9cec1485418016ad22c3b1bd881979768ad5561e5ff27:independent-gold-review:adcffb61-1fd6-4f9e-9061-3c8a48b718f6",
+    "reviewedAt": "2026-10-16T13:53:16.041Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001 through AC-003 consistently require cause identity, compatible string wrapping, and preservation of original-error propagation and public signatures. The exact four-file writable binding scope matches the implementation, maintained declaration, runtime regression, and tsd owners; package.json establishes the separate runtime and compile-time verification entry points. The relevant AbortError regression evidence is present despite the explicitly truncated remainder of test.js. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the specification, and their allowed agents have active trusted claims for the relevant JavaScript, TypeScript, API-contract, failure-handling, asynchronous-consumer, and testing capabilities, including verification for the verifier. This change concerns invocation-local error objects, not shared data or persistent state, so pending data.change and domain.state claims do not invalidate those assignments. An independent active reviewer is configured. No material unresolved Decision is supplied. Repository identity, stable keys, readiness, evidence stages, and release fingerprints are consistent; the documented digest domains explain the source-manifest and evaluation-source differences. Historical operations are retained without being represented as candidates on this bundle. I relied on the supplied Service-bound fingerprints and provenance, did not independently recompute digests or execute code, and provide no new human attestation.",
+    "goldDigest": "e1d3fddf4b96af6b859fc334d0afcb391ee90bd1e688989046f67efc5ed8e96e"
+  }
+}

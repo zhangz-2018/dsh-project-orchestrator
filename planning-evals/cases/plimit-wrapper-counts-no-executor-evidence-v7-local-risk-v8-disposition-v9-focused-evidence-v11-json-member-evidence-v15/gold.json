@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-json-member-evidence-v15",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2137b251d948cf806c5c5aca4ecf760c3697e842cb66a293fb26543de5144b13",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0c838992a805136f016ad19d7b721481938168d02a9276bb3f:independent-gold-review:cfb98bf8-f59f-4b61-9dfa-77c9d688a21f",
+    "reviewedAt": "2026-10-16T03:44:07.965Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001–AC-003 retain their specified keys and behavior. The complete supplied source evidence supports the exact four-file binding scope: index.js owns the wrapper and its existing internal limiter, index.d.ts is the directly exported declaration owner with no indicated generation step, and test.js and index.test-d.ts own runtime and compile-time regressions. package.json is inspection/configuration evidence, not a required edit, and confirms the xo && ava && tsd verification entry point. The original specification requires implementation and independent verification tasks, coverage of every required acceptance criterion by both relationships, and verification dependent on implementation. Both assignment expectations correctly require abstention: the sole project member is a non-auto-assignable reviewer with no capability claims, not an eligible implementer or verifier. That configured online project reviewer satisfies the supplied earlier independent-review prerequisite without implying execution eligibility. There is no supplied unresolved material decision requiring an earlier decisions-stage block. Blocked readiness at assignments and both abstained-no-eligible reasons are therefore appropriate. Repository identity and base commit agree throughout, and the Gold and preview release-input fingerprints match for repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. I accept the stated Service mechanical binding of digests; I did not recompute them, execute code, or infer human attestation. This approval concerns the frozen expectation only, not benchmark execution or release readiness; the remaining fresh negative-control operations are not represented as completed.",
+    "goldDigest": "ec84db6ebf2fa1d950a95289d0e3bd9e3bac2c540a2479e2495ba793b1fa4afa"
+  }
+}

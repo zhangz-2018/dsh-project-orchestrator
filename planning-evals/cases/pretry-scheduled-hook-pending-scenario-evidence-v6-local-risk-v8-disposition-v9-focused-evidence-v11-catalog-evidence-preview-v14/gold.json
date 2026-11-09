@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "e2907d0492b4825637bdf0c9003e5c2efb612de905a852812be90adb20b13f46",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b6c72c09a1c159e016ad196cddd3c8196a83b9641ab191057:independent-gold-review:efde45a1-205c-4987-b944-07e471f62211",
+    "reviewedAt": "2026-10-16T03:15:40.678Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and prohibits ready or assignable tasks; Gold correctly expects blocked readiness at decisions, with requirement-decision-pending referencing DEC-001 and evidence stages repository, requirements, and decisions. REQ-001, AC-001 through AC-003, repository identity/base commit, paired-case identity, and the joint index.js/index.d.ts owner binding agree with the specification and supplied source evidence. The implementation supports the specified existing backoff calculation, zero-delay behavior, budget cap, and cancellation insertion point; package.json establishes separately maintained runtime and declaration owners and the xo/ava/tsd verification entry point. Empty assignment expectations are appropriate because task generation is prohibited until the decision is resolved. The empty trusted team catalog does not introduce an earlier blocker: the supplied policy places the unresolved material Decision gate before Scenario Coverage and its independent-review prerequisite. Conditional OPT-1/OPT-2 acceptance language does not resolve the Decision or supply human confirmation. Gold and preview release-input fingerprints match across repository, source, team, decision inputs, prompts, model, sampling, policy, and budgets. I rely on the stated Service binding of those fingerprints, without claiming to recompute digests or execute code. The truncated runtime-test excerpt does not prevent assessing this decision-gated expectation; no test success, human attestation, or candidate result is assumed. The supplied isolation record establishes that this review precedes candidates on this bundle.",
+    "goldDigest": "0ce7f486304a51e3712f41c687d409050b51d002ea48e6e831159e679823d1b8"
+  }
+}

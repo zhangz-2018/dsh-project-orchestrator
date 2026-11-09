@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-parameter-forwarding-v19",
+  "releaseInput": {
+    "repositoryDigest": "a97e814c2c12a5d41564829a50ae0ba2a6a0a7c7799ac859fad70d838d483aa6",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "46d8f3730dc8edca0911823f18f7aaa53bc36333f88ac43e972eff13479c62c9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "6fcae66eaca49d88deb33a00f18bdd4e9547df305c5b52133a370f741f68eaec",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cb896a1c8973262016ad1bb2b4bdc81938bb12a7011d0d40f:independent-gold-review:bd934c76-2e55-4b2e-b4b0-0da544a7e261",
+    "reviewedAt": "2026-10-16T05:50:47.907Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. The original PRD explicitly fixes OPT-1 as a hypothetical benchmark input, not a human-confirmed Decision; therefore ready with no decision blocker is appropriate here. This does not resolve the paired B scenario: a material unresolved DEC-001 must still block B at decisions. REQ-001 and AC-001–AC-003 consistently require construction-time TypeError for negative and non-finite maxAge values, preservation of zero and omitted-value behavior, and compatibility of unrelated CORS behavior. The complete supplied source supports the exact writable implementation/test scope. The build configuration establishes that distribution declarations are generated, so they are not additional maintained owners; configuration and declaration-routing evidence need inspection rather than mandatory edits. The implementation and independent dependent-verification task expectations agree with the PRD, including coverage of every required AC. The allowed agents have the relevant active project-scoped trusted claims, appropriate delivery roles, auto-assignable memberships and available capacity; pending legacy claims and personas are not needed to establish eligibility. This bounded invocation-local validation does not require shared-data or state capabilities merely because those claims remain pending. An independent active project reviewer is also configured. Repository identity, stable keys, evidence stages and the supplied release fingerprints are consistent across Gold and preview. The documented normalization and distinct manifest/evaluation digest domains explain the differing source fingerprints. The frozen preview supplies preparation facts absent from the retained original-specification snapshot. The isolation evidence permits historical project reuse without treating old operations as fresh candidates. This approval relies on supplied Service-bound evidence: I did not recompute digests, execute code, create human attestations, or review any candidate output.",
+    "goldDigest": "b7b9deaf5b7b8bf32c2c70fddbfcce14b156016c4c516fc1af224b7c6731f946"
+  }
+}

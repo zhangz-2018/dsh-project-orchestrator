@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-command-evidence-v21",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "49d2268f40476639bef4fe4416581aad39a43968847146db3381780377a1488d",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "b712d443cc4e84336041e1d2107ef101ea3c818c4cf0cbbc187ef460a3a21390",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d05a6d9b054fa7b63d6b8f36743664d7c8e24af2f7ce0ea92ff9f9b94f436b2b",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e94b2e1cac365a8016ad1ca3e92408190afdd2274fc1f2cab:independent-gold-review:5e2d2aa8-4705-4b46-ac76-cf53d5a88586",
+    "reviewedAt": "2026-10-16T06:55:10.261Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001, AC-001 through AC-003, the exact writable owner scopes, required evidence stages, and ready/no-blocker expectation agree with the original PRD. The source places the shared stringbool parameter declaration and decode transform in core/api.ts; classic and mini already forward the shared parameter type and arguments, while util and export consumers require inspection rather than mandatory edits. The existing encode implementation supports the specified case normalization, first-item selection, and empty-first-item fallback expectations. Build/package configuration establishes generated declaration outputs, not additional separately maintained owners. Both regression paths are appropriately included, with the mini file explicitly new; the supplied configurations distinguish runtime regression from TypeScript checking. The two stable task keys, independent verifier role, implementation dependency, and required implementation/verification coverage of every AC are coherent. The supplied project memberships, active trusted capability claims, availability facts, and configured independent reviewer support the allowed assignments without relying on persona or pending claims. No material unresolved DEC-001 is supplied for this case; an unresolved material decision in B would still have to block at decisions, and a fixed hypothetical C would not constitute a human Decision. Gold and preview release fingerprints agree; the source-manifest versus evaluation-source digest difference and PRD whitespace normalization are explicitly explained. Repository, team, decision, prompt, model, sampling, policy, and budget fingerprints are frozen. Earlier preparation placeholders and retained old-version project operations do not contradict the later freeze or establish candidate evidence on this bundle. This approval relies on the supplied evidence and Service-bound digest provenance; I did not execute code, independently recompute digests, or provide a human attestation.",
+    "goldDigest": "5f51d691b0b6c3251f4b690c9e49a453e2bb4b8b269aa1dd3316c1a79a6c2bf2"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "115c2144daad54db1e2958ebf98f4b19b1a5bd10dcffeb95f3c0a2b0f85cc1e9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_013ae73f13bac362016ad2659189548194bea027d12b382c84:independent-gold-review:f6b9dc46-b12b-4128-b8ab-bada5e943f44",
+    "reviewedAt": "2026-10-16T17:57:49.938Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved; its recommendation and conditional acceptance criteria do not authorize choosing OPT-1. Gold correctly requires blocked readiness with requirement-decision-pending on DEC-001, evidence through repository, requirements, and decisions, and no task or assignment expectations. REQ-001 and AC-001–AC-003, repository identity/base commit, paired-case identity, and inspection-owner paths agree across the specification and Gold. Supplied source shows that classic and mini forward to core._stringbool, which currently normalizes case without trimming and checks truthy before falsy. Forwarding/export consumers are inspection owners rather than mandatory edits; build configuration supports treating emitted declarations as generated, not separately maintained owners. Runtime regression and compiler-based type verification are appropriately distinguished. The empty scoped team does not invalidate this expectation because the deterministic decision gate precedes later reviewer and assignment prerequisites. Gold and preview release-input fingerprints agree for repository, evaluation source, team, decisions, prompts, model/sampling/budgets, and metric policy. The supplied provenance explains the distinct manifest/evaluation digest domains and whitespace-only PRD persistence normalization. Historical project operations are not candidate evidence for this bundle, and no human decision or execution is inferred. This approval relies on the supplied Service-bound digest and provenance assertions; I did not independently recompute digests or execute code. It approves the frozen expectation, not task dispatch or resolution of DEC-001.",
+    "goldDigest": "2033a4d388184839f2bbedee278f8093888013a77a50764d0ef7ec262da0ee12"
+  }
+}

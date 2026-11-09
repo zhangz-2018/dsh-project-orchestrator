@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-combined-binding-type-chain-v31-2026-10-17",
+  "createdAt": "2026-10-16T16:44:04.912Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "goldDigest": "90e20e60dcf358dd6c8cafd6442d353d3b5475847b9963b80986fba1af07f445"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "goldDigest": "eb22d170afafc6e4d642bbdcecc7b214e74457f87e0ea1ce23a0189120f8946c"
+    },
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "goldDigest": "bc34a6c39235f6134699023bfc0b039e33ad339b74671f000c6f3d89e3907339"
+    },
+    {
+      "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "goldDigest": "3377b0e9ab74f2923a173de17e8f502390ae41f3e723c0a5d7609eabf3f46f1b"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/fresh-1",
+      "operationId": "planning-v3:3099a978-7ef5-4837-bdf1-56e57752384e",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/runs/fresh-1.json",
+      "startedAt": "2026-10-16T16:44:04.960Z",
+      "completedAt": "2026-10-16T17:03:39.343Z"
+    },
+    {
+      "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "attemptId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/fresh-1",
+      "operationId": "planning-v3:b05bb32c-8bf3-45f1-bb4c-aad6843e04d2",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/runs/fresh-1.json",
+      "startedAt": "2026-10-16T16:44:04.962Z",
+      "completedAt": "2026-10-16T16:58:33.201Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "attemptId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/fresh-1",
+      "operationId": "planning-v3:aa21ae46-9d33-4e8f-9d53-e1665b527301",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/runs/fresh-1.json",
+      "startedAt": "2026-10-16T16:44:04.967Z",
+      "completedAt": "2026-10-16T17:05:21.228Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/fresh-1",
+      "operationId": "planning-v3:2b8d0ed6-3483-4957-8ca2-94ee1c755075",
+      "outcome": "model_failure",
+      "failureCode": "plan-reference-invalid",
+      "startedAt": "2026-10-16T16:44:04.968Z",
+      "completedAt": "2026-10-16T17:06:27.090Z"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "062479ecb2167f6725e9658f40183c386d68afb65ef31dead02244301741e302",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_05f841dbe1958c18016ad1694965cc8190b0831bd4adc62294:independent-gold-review:ad005d61-9912-47bc-81c1-21923dc8f89d",
+    "reviewedAt": "2026-10-16T00:01:27.381Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only case, reviewed before any candidate was supplied or run. Repository identity and base commit, REQ-001, AC-001 through AC-003, exact four-file writable binding scope, and required evidence stages agree with the original specification. The complete implementation and declaration evidence supports index.js and index.d.ts as maintained owners; package.json establishes the xo, ava, and tsd verification entry point. The test excerpts are explicitly truncated, but establish the designated regression files without implying that existing coverage is complete. The PRD sufficiently fixes notification-time settlement and boundary semantics, control-symbol exclusions, hook-error handling, default-pMap-only exposure, and callback inference expectations. TASK-IMPLEMENT and the dependent independent TASK-VERIFY are consistent with the specification; their allowed agents have the corresponding delivery roles, assignable memberships, available capacity, and relevant active capability claims, without relying on personas or pending claims as proof. The configured independent project reviewer satisfies the supplied non-executing review prerequisite. No material unresolved DEC-001 or hypothetical C input appears in this case, so neither an invented decision block nor a human decision is assumed. Ready denotes the expected planning outcome, not permission to dispatch or execute, and does not override the original preparation record's historical runnable=false state. All proposedGold release-input fingerprints and budgets match the supplied frozen preview releaseInput, including repository, source, team, decisions, prompts, model, sampling, and metric policy. The source manifest's separately labeled sourceDigest is not treated as the same digest scope as releaseInput.sourceDigest. Digests are accepted as Service-calculated and mechanically bound to saved inputs; I did not recompute them, execute code, or attest to external human confirmation.",
+    "goldDigest": "3219f350a44439aad3c5fde6040d69f8e79c9082d8773425d45a33286ae24e89"
+  }
+}

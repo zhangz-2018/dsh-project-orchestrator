@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-fault-fixture-v28",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "b712d443cc4e84336041e1d2107ef101ea3c818c4cf0cbbc187ef460a3a21390",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "29fe1cb14f0893249416f8b5301971afa6b6d1dc2e115caadd1d11fac09c676d",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0850857e55e0dce1016ad22c5c06f081978b6140bc669e6ad6:independent-gold-review:591e0d18-33fa-446f-8e00-e5ce22d53dec",
+    "reviewedAt": "2026-10-16T13:53:46.090Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001 through AC-003, the exact three-file writable binding scope, and the implementation/independent-verification task split agree with the specification. The source supports adding the shared parameter declaration and decode-only input trimming in core/api.ts while retaining vocabulary normalization and existing encode behavior. The classic/mini factories, normalization utility, and exports are correctly inspection owners rather than mandatory edits; the supplied build configuration supports generated declarations rather than separately maintained declaration owners. Runtime regression and compiler-based type validation are explicitly distinguished. The designated implementer and verifier have active project-scoped trusted claims supporting the bounded work, including data.change and the verifier's additional testing.verification claim; pending legacy claims and personas are not needed to establish eligibility. An independent active project reviewer is configured. No material unresolved DEC-001 or hypothetical C input is present in this case, so the empty decision input and ready expectation are consistent. Gold and preview release fingerprints and budgets agree, and the supplied provenance explains the distinct manifest/evaluation source-digest domains and PRD persistence normalization. Historical operations are explicitly retained as old-version observations, not fresh candidates on this bundle. This review relies on the supplied Service-bound fingerprints and evidence; I did not recompute digests, execute code, or provide a human attestation.",
+    "goldDigest": "b810669afd1bca34280ee97b0a3dc4cf46365789f135b9085523399d46fd1ed0"
+  }
+}

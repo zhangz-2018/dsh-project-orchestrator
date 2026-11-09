@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v13",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "c40f8bbe9864a94d7bd909bdbc700878fc9db75b9739ba92957c3a9ab5d3a5e3",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e5b0cff885e53f7016ad1845886d48196852e073b638a3c08:independent-gold-review:55fe125b-4b17-4aa4-b614-8dfdecb96be7",
+    "reviewedAt": "2026-10-16T01:56:55.707Z",
+    "rationale": "The supplied Gold is a coherent independent pre-candidate expectation. REQ-001 and AC-001 through AC-003 match the original PRD and the supplied source: limitFunction uses one internal limiter and currently forwards clearQueue but not its counters; its maintained return declaration likewise exposes only clearQueue. The exact binding scope correctly includes index.js, index.d.ts, test.js, and index.test-d.ts without requiring gratuitous edits. package.json establishes the existing xo, AVA, and tsd verification entry point; no declaration-generation evidence displaces index.d.ts as a maintained owner. The stable requirement, acceptance, and task keys agree across the specification and Gold. The specification requires implementation and independent verification coverage, with TASK-VERIFY depending on TASK-IMPLEMENT. Both tasks correctly have no eligible executor: the sole project member is a non-auto-assignable reviewer with no capability claims or execution runtime. That active project reviewer can satisfy the supplied earlier independent-review prerequisite without being eligible to implement or verify. No unresolved material Decision is supplied or required by this PRD, so reaching assignments and blocking there with the two specified abstentions is appropriate. The Gold and preview release-input fingerprints agree for repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. I accept their Service-calculated binding as supplied; I did not recompute digests, execute code, infer human attestation, or use candidate outputs. Approval concerns the frozen expectation, not operational readiness: the original specification remains non-runnable with fresh negative-control operations outstanding.",
+    "goldDigest": "4e256284f42d530f58ad6b3e283e01c99c5ee54f0ec8f8071f432a44de1cea51"
+  }
+}

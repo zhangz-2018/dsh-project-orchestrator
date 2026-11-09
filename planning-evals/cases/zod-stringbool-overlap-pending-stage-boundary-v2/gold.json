@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-stage-boundary-v2",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved",
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d1137e1f9dc08ae56e9554df8d0b48052630d145a274e6f2287d36e6f8d1e0f7",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_05e2ed85aa1bf839016ad11a6fa7b481938e3b6f93dbc980ca:independent-gold-review:ddeeb4ff-98e0-4cee-b0b6-d43ae868ce0b",
+    "reviewedAt": "2026-10-15T18:25:01.414Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. It agrees with the original PRD on repository identity and base commit, paired case, stable REQ-001 and AC-001–AC-003 keys, blocked readiness, and the DEC-001 blocking reason. DEC-001 materially changes overlap behavior and must block B at decisions after repository and requirements evidence; the conditional recommended acceptance does not authorize choosing OPT-1. Empty task and assignment expectations are therefore coherent, and the empty team catalog does not justify proceeding to assignment. The supplied source shows shared overlap behavior in core/api.ts: existing case normalization, no additional trimming, and truthy-first parsing, with classic and mini forwarding to that implementation. The listed forwarding/export and declaration consumers are inspection owners, not mandatory edits. Package build and export configuration supports treating emitted declarations as generated rather than separately maintained owners. Runtime and typechecking configurations support the stated verification distinction, and the mini test is correctly identified as proposed rather than existing. Gold and preview release fingerprints agree across repository, source, team, decision input, prompts, model, sampling, policy, and budgets. These are accepted as Service-calculated bindings, not independently recomputed digests. The historical specification preparation fields do not override the supplied frozen preview release input. No candidate, execution result, or human-confirmed Decision was assumed; any fixed hypothetical C input remains distinct from a human Decision. This approval concerns the benchmark expectation only, not implementation readiness or task dispatch.",
+    "goldDigest": "3c81d7318aa6da3066aedf898182267c0fbe766436309d4b78c654665791b8f0"
+  }
+}

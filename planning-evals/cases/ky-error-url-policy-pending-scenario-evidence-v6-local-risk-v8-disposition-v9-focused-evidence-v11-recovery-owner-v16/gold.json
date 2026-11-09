@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+  "releaseInput": {
+    "repositoryDigest": "e4fda4c87fc6daeb9635923a603752ad7d64cd09a42e37860549a0723f8f521f",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f4fa05a62734b4182c6002909c2e3206808585032359fb8d7b87ec854acf66df",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06e4cd590b130102016ad1a6b290b48196bed19fa9d6781631:independent-gold-review:0a6f7608-b067-49ed-a3d2-9ee64c2fe5f8",
+    "reviewedAt": "2026-10-16T04:23:25.841Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. It preserves REQ-001, AC-001–AC-003 and DEC-001, requires repository/requirements/decisions evidence, and correctly expects a material unresolved DEC-001 to block at decisions without assignable tasks or assignments. Conditional acceptance criteria do not authorize choosing a default. The nine binding inspection owners are supported by the supplied source: message construction, option contracts, normalization/snapshots, filtering, forwarding and hook/API consumers are covered without requiring edits to already-correct generic logic. The supplied build configuration supports treating distribution declarations as generated rather than separately maintained owners; runtime and compile-time verification remain distinct. Empty team facts do not invalidate this expectation because the decision gate precedes independent-review and assignment prerequisites. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest and evaluation source-digest domains. I rely on the Service's mechanical binding of digests to saved inputs; I did not recompute hashes or execute code. Retained historical project operations are not candidate evidence, and no candidate outputs informed this review. Approval concerns this Gold expectation, not execution readiness, human decision confirmation, task dispatch or release authorization.",
+    "goldDigest": "9a4ad2601e6c8bd045d80d5232775a1b603de5baf6f236c919d22eb9ce1077e0"
+  }
+}

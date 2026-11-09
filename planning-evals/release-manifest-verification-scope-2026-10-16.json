@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-verification-scope-2026-10-16",
+  "createdAt": "2026-10-15T19:20:40.757Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-clear-reason-pending-verify-scope-v5",
+      "goldDigest": "a952a3721f4b36c6bc1ce50cdcbee40aeb3f090869b16a562e073b3f9bd56bf3"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-verify-v6",
+      "goldDigest": "c922a87cf6e56c7187bbfa5260b6744fdb067800531f15032874874c63e6e23b"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-verify-scope-v5",
+      "goldDigest": "99d4c356fc0e32b7af9c6c96a7e5998251b2bc08d73b6a8396af8edd798bf456"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-verify-scope-v5",
+      "goldDigest": "f45672a98fb1af4d4a76f7e030440a300e4b9bcd2788849bf6385efb1b1613ac"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-verify-scope-v5",
+      "goldDigest": "9ab8c2cc09834bf861ab21797e17d0e8922a0d6e5ea9b85ebb59a442685a966c"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-verify-scope-v5",
+      "goldDigest": "3561fe0436968e38a3eb9c10b90f30091e4189981bbbb4349dc0b8e7e3008332"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-verify-scope-v5",
+      "goldDigest": "72060880109e6869b153a0ee8d6a53bbddced78e95e601f306cb10fa0ea393c7"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-verify-scope-v5",
+      "goldDigest": "a25eb65dad29e1e43f21dc2caeca6e3352939b77975723a7a63a1f965b3bdd77"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-verify-scope-v5",
+      "goldDigest": "6f84c9f22510746aef38f6c11156b79627d2977382e2fab58bf5fc085f37ce5c"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-clear-reason-pending-verify-scope-v5",
+      "attemptId": "plimit-clear-reason-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:8d0ef4f5-97c6-4692-9ab8-1f19ee91a890",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:20:40.794Z",
+      "completedAt": "2026-10-15T19:22:24.915Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-verify-v6",
+      "attemptId": "plimit-wrapper-counts-no-executor-verify-v6/fresh-1",
+      "operationId": "planning-v3:cd6b74ef-3956-48c6-ba7e-01fa2e5a1421",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-verify-v6/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:20:40.805Z",
+      "completedAt": "2026-10-15T19:27:49.111Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-verify-scope-v5",
+      "attemptId": "pretry-scheduled-hook-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:fed7e7f2-e0d9-4a88-898f-8704029d0d96",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:20:40.814Z",
+      "completedAt": "2026-10-15T19:22:27.226Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-verify-scope-v5",
+      "attemptId": "pqueue-maxqueued-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:23525366-bc86-4707-b4cf-ba08fc1a8802",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:20:40.824Z",
+      "completedAt": "2026-10-15T19:22:26.291Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-verify-scope-v5",
+      "attemptId": "pmap-input-bound-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:dcd94c2d-8101-4dfc-b646-3e9d03245595",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:22:27.747Z",
+      "completedAt": "2026-10-15T19:24:00.153Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-verify-scope-v5",
+      "attemptId": "ky-error-url-policy-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:e05d7a8c-1493-42cc-a710-96862fc3c4aa",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:22:28.113Z",
+      "completedAt": "2026-10-15T19:23:50.808Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-verify-scope-v5",
+      "attemptId": "hono-cors-maxage-policy-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:d550ea0b-9bf1-408b-a7f8-75ef86e5f08e",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:22:28.365Z",
+      "completedAt": "2026-10-15T19:24:11.116Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-verify-scope-v5",
+      "attemptId": "zod-stringbool-overlap-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:5f12b7c9-8eba-4504-807d-987ef42a7107",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:23:55.030Z",
+      "completedAt": "2026-10-15T19:25:22.172Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-verify-scope-v5",
+      "attemptId": "mitt-once-reentrancy-pending-verify-scope-v5/fresh-1",
+      "operationId": "planning-v3:e39911fe-d7c8-421f-9162-509719493b8a",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-verify-scope-v5/runs/fresh-1.json",
+      "startedAt": "2026-10-15T19:24:04.886Z",
+      "completedAt": "2026-10-15T19:25:37.982Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-verify-v6",
+      "attemptId": "plimit-wrapper-counts-no-executor-verify-v6/fresh-2",
+      "operationId": "planning-v3:7dd25d58-7e85-4cff-8852-0a4f29b77c87",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-verify-v6/runs/fresh-2.json",
+      "startedAt": "2026-10-15T19:28:19.848Z",
+      "completedAt": "2026-10-15T19:36:53.294Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-verify-v6",
+      "attemptId": "plimit-wrapper-counts-no-executor-verify-v6/fresh-4",
+      "operationId": "planning-v3:d984385a-0925-4155-8d1d-8885ee9a6a07",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-verify-v6/runs/fresh-4.json",
+      "startedAt": "2026-10-15T19:28:19.849Z",
+      "completedAt": "2026-10-15T19:31:44.606Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-verify-v6",
+      "attemptId": "plimit-wrapper-counts-no-executor-verify-v6/fresh-3",
+      "operationId": "planning-v3:2e517933-c340-4511-9323-de6ff8b17464",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-verify-v6/runs/fresh-3.json",
+      "startedAt": "2026-10-15T19:28:19.850Z",
+      "completedAt": "2026-10-15T19:34:44.735Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-verify-v6",
+      "attemptId": "plimit-wrapper-counts-no-executor-verify-v6/fresh-5",
+      "operationId": "planning-v3:0b66a361-4a19-41bd-b681-d0030f8e3f27",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-verify-v6/runs/fresh-5.json",
+      "startedAt": "2026-10-15T19:28:19.850Z",
+      "completedAt": "2026-10-15T19:37:05.920Z"
+    }
+  ]
+}

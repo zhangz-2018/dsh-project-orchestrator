@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-callable-fixture-v33",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "e53dcc48df1322f7ecf516339d3410ceab0c2aee59f2c79e616e5a50c7b4f77c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "115c2144daad54db1e2958ebf98f4b19b1a5bd10dcffeb95f3c0a2b0f85cc1e9",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_022d4e6ba3055ed5016ad265a57f588193923c8e673d64e0b7:independent-gold-review:0c0bc64c-d337-4afa-bfdc-bedf778d5a3e",
+    "reviewedAt": "2026-10-16T17:58:12.062Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. The PRD explicitly fixes OPT-1 as a hypothetical input, not a human-confirmed Decision; only that branch is required. Accordingly, ready with no blocking reasons is appropriate here, while a material unresolved DEC-001 in paired B must block at decisions. REQ-001, AC-001–AC-003, DEC-001 and both task keys are preserved. The exact writable binding scope covers the implementation and both regression/type-test owners without forcing unnecessary edits. Repository configuration and pinned upstream build evidence support treating index.d.ts and dist as generated outputs, with build preceding root-import runtime and type checks. The acceptance expectations correctly include unregister-before-callback, synchronous exception propagation, per-registration protection against stale snapshots, wildcard reentrancy, duplicate-registration independence and existing off/type compatibility. TASK-VERIFY appropriately depends on TASK-IMPLEMENT, with implementation and verification coverage required for every selected-branch AC. The allowed implementer and verifier have the relevant active project-scoped trusted claims, including shared-data/state capabilities and the verifier's additional testing.verification claim; pending legacy claims and persona descriptions are not needed to establish eligibility. A separate configured project reviewer satisfies the stated non-executing review prerequisite. These synchronous direct-module consumers do not require asynchronous integration capability merely because callbacks and recursive emits are involved. The release fingerprints agree between Gold and preview; the supplied provenance explains the distinct source digest domains and PRD whitespace normalization. I accept the Service's stated mechanical binding of digests without claiming independent recomputation. No candidate outputs were supplied or used, and this approval does not attest to execution, register a human Decision, authorize task dispatch or certify implementation correctness.",
+    "goldDigest": "bbb7b9da4de4846a8d81bfa8bdfd5b6fccbc36990fb2a4531a97bb884b8e6b35"
+  }
+}

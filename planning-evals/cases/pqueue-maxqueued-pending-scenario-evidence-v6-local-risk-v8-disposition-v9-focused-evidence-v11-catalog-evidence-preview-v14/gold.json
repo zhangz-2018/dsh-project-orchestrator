@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "03204a332909dfbb29d22844e5869edb1ff1ec7ab8720409155105e06f56578d",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0dc69fb31a3b4058016ad196de48348194aa3463e00a3cfdf8:independent-gold-review:7b77ef5f-171b-4a2c-b336-ebe16f5f4726",
+    "reviewedAt": "2026-10-16T03:15:53.490Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. It preserves the repository identity and base commit, REQ-001, AC-001–AC-003, DEC-001, and the paired-case identity consistently with the original PRD. DEC-001 materially determines the rejection error contract and is explicitly unresolved and not human-confirmed; Gold correctly expects blocked readiness at decisions, requires repository/requirements/decisions evidence, and does not authorize choosing an option or generating assignable tasks. Empty task and assignment expectations are therefore appropriate. The supplied implementation evidence supports source/index.ts and source/options.ts as the binding owners; runtime and type-test files are verification scope rather than additional implementation owners. Build configuration supports treating dist declarations as generated, not separately maintained owners. The empty team catalog does not invalidate this expectation because the material-decision gate precedes the independent-review and assignment prerequisites. Gold's complete releaseInput matches the supplied frozen preview across repository, source, team, decision, prompt, model, sampling, policy, and budget fingerprints. The original specification's null releaseInput and preparation checklist are distinguished from the subsequently supplied frozen preview. Historical project reuse does not supply a decision or candidate-derived expectation. Approval is based on the supplied specification and evidence, not execution, independent digest recomputation, or human attestation; truncated test excerpts do not prevent assessing this early decision-block expectation.",
+    "goldDigest": "df5fe106611f2e41d7ef64e06d30cc6e2a7ad5a34b6f792d4544e0cad06eecd8"
+  }
+}

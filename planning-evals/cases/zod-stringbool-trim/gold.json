@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a1ba51dedd94bed284933432fa963f5fb7e17cafbd7d513c07ed87ec2e128ee0",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "8cd80ba1be5f7911986c207b96a3838e444ae5459eb84c6c1884e2ee402e76d0",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e44964b5daf44cd016ad1699d16d881978bf70281409750a5:independent-gold-review:0327931d-ccf4-4d12-ab43-9711ddb63329",
+    "reviewedAt": "2026-10-16T00:02:51.490Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation, reviewed without any candidate. Repository identity and base commit, REQ-001, AC-001–AC-003, exact writable binding scopes, task keys, readiness, and evidence stages agree with the original PRD. The source supports adding the trim parameter and decode-only normalization in core/api.ts while preserving vocabulary normalization and existing encode behavior. Classic/mini factories, parameter normalization, and exports already forward the shared parameter type correctly; they are appropriately inspection owners rather than mandatory edits. Build configuration supports generated declarations, not separately maintained declaration owners. Both regression paths are appropriate, including the explicitly new mini test, and the supplied configuration distinguishes runtime tests from TypeScript checking. The implementation and independent verification assignments are supported by active relevant capability claims, delivery roles, assignable memberships, and available slots—not personas or pending legacy claims. An independent active project reviewer is supplied; execution capability claims are not required for that non-executing prerequisite. No unresolved material DEC-001 is present in this frozen case, so ready with no blocking reasons is appropriate; a B input containing such a decision would instead have to block at decisions, and a fixed hypothetical C would not constitute a human Decision. Gold and preview release fingerprints agree across repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. The source-manifest digest is a distinct fingerprint from the release source digest, not an asserted equality. I rely on the Service's stated mechanical binding of digests to saved inputs; I did not recompute digests, execute code, or independently attest the referenced human confirmations. Approval concerns the frozen planning expectation, not execution or dispatch authorization.",
+    "goldDigest": "f10a901cf86fbbb171e3bfab1a4117b8ed8dce809dc64b9387f1732de9f12855"
+  }
+}

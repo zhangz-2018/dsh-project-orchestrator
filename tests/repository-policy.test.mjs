@@ -63,3 +63,12 @@ test('Repository Policy fails closed when a scoped rule has no subject path fact
   assert.equal(decision.result, 'needs_confirmation')
   assert.equal(decision.reasonCode, 'selector-facts-missing')
 })
+
+test('Repository Policy command examples do not become target operation predicates', () => {
+  const selector = derivePolicyTargetSelectorV3({ sourcePath: 'AGENTS.md', statement: "Run scripts with `nub run`, repository TypeScript with `nub <file>`, and installed tools with `nub exec --node <tool>`. Keep third-party tools and built-package compatibility probes on plain Node; Nub's augmentation must not mask resolution errors or change test behavior. Use `nub install --frozen-lockfile` for reproducible installs and `nub add` / `nub remove` to manage dependencies." })
+  assert.deepEqual(selector.operationKinds, [])
+  const [decision] = mapPolicySubjectsV3(selector, [policySubjectFactsFromTextV3({ subjectType: 'scenario', subjectId: 'type-probe', text: 'Verify the tests with the configured compiler.', artifactKinds: ['test'], lifecycleStages: ['verify'] })])
+  assert.equal(decision.result, 'applicable')
+  const deletion = derivePolicyTargetSelectorV3({ sourcePath: 'AGENTS.md', statement: 'Before you delete records, you MUST run `npm test`.' })
+  assert.deepEqual(deletion.operationKinds, ['delete'])
+})

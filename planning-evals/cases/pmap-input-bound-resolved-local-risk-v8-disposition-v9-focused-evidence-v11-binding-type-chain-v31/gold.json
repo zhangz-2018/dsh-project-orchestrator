@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "aa9d1803194e9acaeac819a2789e4931de23bc622f51b39065dd955883940011",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0cc37a1784081ff6016ad253d5562c81909cfbae039de6dfbb:independent-gold-review:5121247d-3e4a-4fa1-b888-1b3a089d08b7",
+    "reviewedAt": "2026-10-16T16:42:10.737Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C input. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, exact writable binding scope, and implementation/verification task expectations agree with the original PRD. C explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision; only that branch is required. This does not justify bypassing the decisions-stage block for an unresolved material DEC-001 in paired B. The complete runtime and declaration owners establish the shared engine and shared Options/SettledOptions type chain, making index.js and index.d.ts appropriate owners alongside the two regression files; preserving other exports requires inspecting and isolating those shared paths, not adding unrelated mandatory edits. Package configuration establishes separate AVA and tsd checks and provides no declaration-generation evidence. The supplied active capability claims support the allowed implementer and verifier, including data.change, domain.state, asynchronous integration and consumer capabilities, with testing.verification additionally present for the verifier. Pending security.authorization claims are not treated as trusted eligibility evidence or inferred requirements. A distinct active, non-assignable project reviewer satisfies the stated pre-binding review prerequisite without requiring execution claims. Expected ready status and no blocking reasons are therefore supported for this planning-only case. Gold and preview release fingerprints agree; the manifest/evaluation source-digest difference and PRD whitespace normalization are explicitly explained by their distinct fingerprint domains. The original specification's preparation-time remaining list is superseded by the supplied frozen release and team facts. Test excerpts are marked truncated, but the complete implementation/declaration owners, inventory, configuration and explicit regression scope suffice for these planning expectations; no claim is made about unseen test contents. Review used only supplied pre-candidate data, with no execution, independent digest recomputation, new human attestation, or candidate-derived adjustment.",
+    "goldDigest": "dab8a75875b932cca4a09e812dd5932cf7f28605be836a894e3dca86bf1c85f9"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6",
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "432d719629bf634cd7f87cfd610c40fd565ab9d0a25e66b522a7ab089e33d95a",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0fdcfcc7ab0e4a93016ad16901d3488196bbb8531977b24520:independent-gold-review:cafa246b-34db-42e4-ab4e-d5ec6282f205",
+    "reviewedAt": "2026-10-16T00:00:14.473Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario, reviewed without any candidate. DEC-001=OPT-1 is explicitly fixed hypothetical source input, not a registered human Decision; the empty decision-input fingerprint and humanConfirmed=false are consistent with that distinction. Only the selected branch is required. This supports ready with no blocking reasons for C, while a materially unresolved DEC-001 in paired B must still block at decisions before later gates. REQ-001, AC-001–AC-003, DEC-001 and the task keys remain stable. The acceptance criteria consistently require identity-preserving custom rejection, explicit undefined distinguished from omission, and preservation of running-task and rejectOnClear=false behavior. The supplied source establishes index.js and the separately maintained index.d.ts as implementation/declaration owners, with test.js and index.test-d.ts covering runtime and tsd verification. The exact four-file binding scope is appropriate without requiring unnecessary edits to correct forwarding or Pick-based declaration consumers; package.json supplies inspection evidence for xo && ava && tsd, not a required configuration change. Implementation and dependent independent verification are consistent with the specified all-AC coverage obligations. The supplied active scoped capability claims, roles, auto-assignable memberships and availability support the two allowed assignees without relying on persona or pending claims. A separate online project reviewer satisfies the stated non-executing review prerequisite. Gold and preview release fingerprints agree for repository, source, team, decision inputs, prompts, model, sampling, budgets and metric policy. Digests are accepted as Service-calculated bindings, not independently recomputed. No tools, code execution, human attestation, task dispatch or repository modification is claimed. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "59cddf967119e840bfc19aba6ebc6f58b8daf1a6d15dcc28f3a9102cd2439a1a"
+  }
+}

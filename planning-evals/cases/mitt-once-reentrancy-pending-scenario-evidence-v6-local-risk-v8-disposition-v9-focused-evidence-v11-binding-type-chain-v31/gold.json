@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0213b188f8be57eb016ad254126a908196aa41e9c7d243c1ca:independent-gold-review:5866ca2c-7870-4f06-be21-3cbcc320c697",
+    "reviewedAt": "2026-10-16T16:43:10.902Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision bundle. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit, paired-case identity, and source-owner binding agree with the original specification. DEC-001 materially changes reentrancy and exception-cleanup behavior and remains explicitly unconfirmed; therefore B must stop at decisions with requirement-decision-pending, without selecting OPT-1 or OPT-2 or producing assignable tasks. AC-001 is expressly conditional, not an implicit resolution. The required repository, requirements, and decisions evidence stages, blocked readiness, and empty assignment expectations are appropriate. The supplied source supports src/index.ts as the implementation owner and the two test files as verification scope. Package configuration, CI ordering, ignore rules, and fixed upstream microbundle evidence support rebuilding generated root declarations rather than treating them as separately maintained owners; root-entry consumers require inspection and validation, not mandatory edits. The empty team catalog does not invalidate this expectation because the material-decision gate precedes reviewer and assignment prerequisites. Gold and preview release-input fingerprints match, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD trimming. Historical project reuse and retained operations do not supply candidate evidence or resolve the pending Decision; no hypothetical paired-case input is treated as human confirmation. This review relies on the Service's stated mechanical digest bindings: I did not recompute digests, execute code, assume successful builds, or attest a human decision. No material error or unresolved ambiguity was found in the supplied expectation.",
+    "goldDigest": "d8bd7a693c5c31a742bf574df120f8d5ea4620c4ee5c96cae11afdf03cb1ddd5"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-catalog-evidence-preview-v14",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "4c63a3335f3a609cf714d22dd270e5662cf914f01e30a13bcff2c71e9186bf48",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_093fc78c7bf25c20016ad196eaa9a88193982b6c9c6ea45940:independent-gold-review:943dcf1e-33ba-4731-852d-47c4290f0943",
+    "reviewedAt": "2026-10-16T03:16:05.902Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this intentionally pending planning case. The original PRD expressly leaves the material overflow outcome unresolved under DEC-001; AC-001 is conditional on the recommended option, not authorization to select it. Gold correctly expects blocked readiness with requirement-decision-pending for DEC-001, requires repository, requirements, and decisions evidence, and supplies no task or assignment expectations. The deterministic decisions gate precedes Scenario Coverage, so the empty team catalog and absence of a configured independent Reviewer do not introduce a mandatory earlier prerequisite. REQ-001, AC-001 through AC-003, DEC-001, repository identity, base commit, and paired-case identity are consistent. The complete implementation and declaration evidence supports index.js and index.d.ts as the bounded owners; shared runtime and option-type machinery makes preserving other exports relevant without requiring additional owner paths. The test excerpts and complete package configuration support separate AVA runtime and tsd type validation through xo && ava && tsd; they do not establish execution or comprehensive existing test coverage. Gold and preview releaseInput fingerprints match across repository, source, team catalog, decision inputs, prompts, model, sampling, budgets, and metric policy. The source-manifest digest is a distinct manifest-level value and is not treated as interchangeable with the release source fingerprint. I rely on the stated Service binding of digests to saved inputs and have neither recomputed hashes nor executed code. Historical project reuse and retained operations do not constitute candidate evidence or new human attestation. Approval is limited to this frozen blocked-case expectation and does not resolve DEC-001, authorize tasks, or attest to implementation correctness.",
+    "goldDigest": "e86153ddd9ee6835799b6842a6940c2bb3d8cf089b40c86738057e58cd4bfeb6"
+  }
+}

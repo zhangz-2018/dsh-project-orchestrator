@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-config-v24",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "8b824e0d5bf57b5347aa89f2336f0100a307a8f752723c936c65666638441850",
+    "sourceDigest": "efa6510e48ef367d3dfdcfc107a7be4c3340b4dd4fc15bd799892b76336ca18a",
+    "teamCatalogDigest": "1041f192f442373268478a2b73c8c3831f92bd5493ae4d21dbc32e18966d4f4d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "9ca1999e6426b4684b60d9623a0bf87b78776746b905b7b36c7980f8f1b79a80",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0c00e2df3b0eadc8016ad1f633e41481948a5e52da591bf362:independent-gold-review:6c25c6f5-d78a-4842-b67f-7188261383fb",
+    "reviewedAt": "2026-10-16T10:02:40.816Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001–AC-003 retain their original keys and cover live read-only counts from the existing internal limiter, queue-clearing boundaries, Promise/scheduling compatibility, and compile-time assignment rejection. The exact writable scope includes the maintained runtime and declaration owners plus both regression files; package.json is configuration evidence, not a required edit. Its xo && ava && tsd entry supports distinct runtime and type verification without release-configuration changes. The two task expectations agree with the specified implementation/independent-verification split and dependency. Supplied project-scoped active capability records support the allowed implementer and verifier, including data.change, domain.state, integration.async, integration.consumer, and the verifier's testing.verification; pending security.authorization claims are not needed for this bounded change. The configured independent reviewer satisfies the stated earlier risk-review prerequisite without requiring execution claims. No material unresolved Decision is supplied, so ready with no blocking reasons is appropriate. Repository identity, commit, file fingerprints, and release-input fields agree across the supplied records; the documented source-digest domains and PRD trimming explain their distinct fingerprints. Historical operations are explicitly old-bundle records, not candidates on this bundle, and do not undermine review independence. I rely on the Service's supplied mechanical bindings and attestation records; I have not recomputed digests, executed code, or performed human attestation. Approval concerns the Gold expectation only, not task dispatch or demonstrated implementation success.",
+    "goldDigest": "5d4214990434b581bc2aa88540ba3fd7ffd5b7c7689ef7a9e0c495fb5153d9ca"
+  }
+}

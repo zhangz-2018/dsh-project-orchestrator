@@ -13,15 +13,16 @@ Thank you for improving `dsh-project-orchestrator`.
 
 ## Development setup
 
-Requirements: Node.js 22+, pnpm 10.34.5, Git, and a supported DeepSeek Harness environment for live validation.
+Requirements: Node.js >=24.9.0, pnpm 10.34.5, Git, and DeepSeek Harness 0.2.2-rc.1 for live validation.
 
 ```bash
 corepack enable
 pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
 pnpm verify
 ```
 
-The test suite uses Node's test runner and real temporary Git repositories for worktree coverage. It must not depend on a contributor's absolute paths.
+The test suite uses Node's test runner, real temporary Git repositories for worktree coverage, and a loopback browser Host backed by the Harness JSON storage provider. It must not depend on a contributor's absolute paths or persistent profile data.
 
 ## Pull requests
 

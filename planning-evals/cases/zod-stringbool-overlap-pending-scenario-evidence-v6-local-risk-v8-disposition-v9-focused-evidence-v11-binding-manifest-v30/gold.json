@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-binding-manifest-v30",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1b9adaeb5d2f1e9a8a181485e8b7cc6664c902ef62f38e5a580124bcb2c47d60",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ad77b48b1e2129e016ad23f251ddc819581bf063872e6ac5c:independent-gold-review:1eaf8ed0-ce5b-447d-b070-ca4460f76a97",
+    "reviewedAt": "2026-10-16T15:13:56.059Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. REQ-001, AC-001–AC-003, DEC-001, repository identity/base commit and paired-case identity agree with the original PRD. DEC-001 is material and explicitly unresolved; the recommended TypeError behavior is conditional, not authorization to select OPT-1. Therefore blocked readiness, requirement-decision-pending for DEC-001, evidence through repository/requirements/decisions, and no assignable tasks or assignment expectations are appropriate. The supplied source shows shared core._stringbool ownership, existing case normalization without trimming, truthy-first overlap handling, and classic/mini forwarding consumers. The listed forwarding and declaration consumers are inspection scope, not mandatory edits; build configuration supports treating emitted declarations as generated rather than separately maintained owners. Runtime and compiler checks are distinguished, and the proposed mini test is correctly identified as new. The empty team catalog does not invalidate an intentional stop at decisions, before later reviewer and assignment prerequisites. Gold and preview release fingerprints and model/policy/budget settings agree; the supplied provenance explains the distinct source-manifest/evaluation digest domains and PRD whitespace normalization. Historical project reuse does not establish a current decision or candidate result. Approval is limited to this supplied pending case and does not attest a human decision for its hypothetical paired case, authorize execution, or assert runnable release readiness. This was a static review of the supplied inputs; I did not execute code or independently recompute digests.",
+    "goldDigest": "0b114a2e5086b4e06c079476ca04b79bdbefb87341a0b6dc2f55c4909f88bd14"
+  }
+}

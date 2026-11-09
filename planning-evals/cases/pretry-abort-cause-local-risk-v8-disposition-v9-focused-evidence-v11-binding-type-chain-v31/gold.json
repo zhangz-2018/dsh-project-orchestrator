@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "93dee6726d26bb918332777fd516d327070fa546d98cb7d8d9607073fdee126e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f170994f0cddc08e3e00a7dd63593bc6361395f1554e2014302672d34cf356c2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0485844565396bcc016ad253a0ce588193a5baea0c00d9611f:independent-gold-review:9bdaa8a4-7cdb-408a-90e8-6a496678878e",
+    "reviewedAt": "2026-10-16T16:41:19.523Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 preserve the Error/string constructor behavior and original-error retry termination contract while adding cause identity and readable declaration coverage. The exact four-file binding scope includes the maintained runtime and declaration owners plus runtime and tsd regression files; it permits unchanged correct logic rather than requiring edits to every file. Package configuration supports the stated xo, ava, and tsd verification chain. The original task expectations require separate implementation and verification, verification dependent on implementation, and both relationships covering every required acceptance criterion. The allowed implementer and verifier have the relevant supplied active project-scoped capability claims, with testing.verification additionally supported for the verifier. This bounded invocation-local error-property change does not itself require shared-data, domain-state, or authorization capabilities merely because pending claims for those capabilities appear in the catalog. Ready with no blocking reasons is appropriate: no material unresolved Decision is supplied, and an independent active project reviewer is configured. Historical operations are explicitly retained as old-bundle history, not fresh candidates or execution evidence. Repository, source, team, decision, prompt, model, sampling, budget, and policy fingerprints agree across the supplied release-input records; the provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. I rely on the supplied Service binding assertions, without independently recomputing digests, executing code, or creating a human attestation. The runtime test excerpt is marked truncated, but includes the relevant AbortError regressions and does not prevent review of this planning expectation.",
+    "goldDigest": "5cf84dd79b2f4497ba0d7092ac9c967ac235f1b3e40313a6abcec85c47f39f97"
+  }
+}

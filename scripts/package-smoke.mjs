@@ -35,7 +35,7 @@ try {
     if (/^(?:\.env|\.npmrc)$/.test(file)) throw new Error(`Packed package unexpectedly contains ${file}.`)
   }
   const manifest = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'))
-  if (manifest.name !== 'dsh-project-orchestrator' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(manifest.version) || manifest.private === true || manifest.engines?.node !== '>=22') throw new Error('Source manifest identity, version, or engine contract is invalid.')
+  if (manifest.name !== 'dsh-project-orchestrator' || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(manifest.version) || manifest.private === true || manifest.engines?.node !== '>=24.9.0') throw new Error('Source manifest identity, version, or engine contract is invalid.')
   if (entry.name !== manifest.name || entry.version !== manifest.version) throw new Error('Packed artifact identity does not match the source manifest.')
   const exportedTargets = new Set([manifest.main, manifest.types, ...Object.values(manifest.bin ?? {}), ...collectExportTargets(manifest.exports)])
   for (const target of exportedTargets) {
@@ -43,7 +43,8 @@ try {
     if (!files.has(packedPath)) throw new Error(`Manifest target is missing from package: ${target}.`)
   }
   for (const [peer, range] of Object.entries(manifest.peerDependencies ?? {})) {
-    if (peer.startsWith('@deepseek-ai/dsh-') && range !== '0.1.0-rc.6') throw new Error(`Uncertified Harness peer range: ${peer}@${range}.`)
+    // Harness 预发布包必须锁定同一版本，防止安装混合协议的 Host 依赖树。
+    if (peer.startsWith('@deepseek-ai/dsh-') && range !== '0.2.2-rc.1') throw new Error(`Uncertified Harness peer range: ${peer}@${range}.`)
     if (manifest.dependencies?.[peer] !== undefined) throw new Error(`Host peer ${peer} must not be duplicated in runtime dependencies.`)
     if (manifest.peerDependenciesMeta?.[peer]?.optional !== true) throw new Error(`Host peer ${peer} must be explicitly optional.`)
   }

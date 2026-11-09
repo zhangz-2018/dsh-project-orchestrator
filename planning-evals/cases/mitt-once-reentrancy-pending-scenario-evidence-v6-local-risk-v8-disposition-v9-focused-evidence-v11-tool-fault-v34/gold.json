@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-tool-fault-v34",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e0bd943a792a88f5debdc5cfa8acafce6073e554908a2bf0ad02782a24abea1f",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_09c5403cba2b4fda016ad26dc57a408194a403f9ecdf6e6457:independent-gold-review:1ada0e28-dc4d-488d-846f-0d6d238c098f",
+    "reviewedAt": "2026-10-16T18:32:49.697Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. It preserves REQ-001 and AC-001–AC-003, identifies src/index.ts as the implementation binding owner, and correctly expects a material unresolved DEC-001 to block B at decisions after repository and requirements evidence. AC-001 is explicitly conditional on the recommended option and does not authorize selecting OPT-1; AC-002 and AC-003 retain the distinct exception and reentrancy behavior of both options. Empty assignment expectations agree with the prohibition on generating assignable tasks while this decision remains pending. The empty team catalog and lack of an independent Reviewer do not introduce an earlier blocker under the supplied stage-order policy: the decision gate precedes Scenario Coverage and assignment. Source and configuration evidence support the stated test scope, separate runtime and compile-time validation, and build-before-test prerequisite. The package configuration, ignored outputs, and supplied upstream declaration-generation evidence support treating index.d.ts and dist as generated outputs rather than separately maintained owners. Repository identity, base commit, paired case, stable keys, readiness, evidence stages, and release-input fingerprints agree across the supplied specification, Gold, and preview. The different source digest domains and trimmed PRD persistence are explicitly accounted for by Service provenance. Historical project reuse does not supply candidate evidence or resolve DEC-001. This approval concerns the frozen expectation only, not execution readiness, a human decision, or successful verification. I reviewed the supplied data without tools, code execution, or independently recomputing digests; fingerprint binding and normalization comparisons are accepted as the supplied Service-calculated evidence.",
+    "goldDigest": "a9a3cd8a56d6281fb2961e20f8881e7e22e2e3ccb5b49095826cef6dd20c88b2"
+  }
+}

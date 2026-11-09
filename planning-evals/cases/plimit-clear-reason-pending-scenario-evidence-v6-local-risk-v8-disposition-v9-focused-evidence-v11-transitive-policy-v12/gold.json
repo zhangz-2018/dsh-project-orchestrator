@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-transitive-policy-v12",
+  "releaseInput": {
+    "repositoryDigest": "ffc1117142af12824077460be448b1a451dd9c5e9231f00f41f9fd1efa0c565d",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "997d50f41feb75f1585488fca813649368c3faf4e455878b94a31d36d4106ec2",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0562967fa4b42d3b016ad180f9b1248193a911d8f80728739a:independent-gold-review:c954167f-89ce-42e3-acb9-e86910a7ebbb",
+    "reviewedAt": "2026-10-16T01:42:30.717Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes AC-001 and AC-002 conditional, not authorization to select OPT-1. Gold correctly requires blocked readiness at decisions, with requirement-decision-pending for DEC-001 and evidence limited to repository, requirements, and decisions. REQ-001, AC-001–AC-003, repository identity, base commit, and paired-case identity agree with the specification. Empty task and assignment expectations correctly prohibit ready or assignable tasks; the later TASK-IMPLEMENT/TASK-VERIFY structure does not apply before resolution. The supplied source supports index.js and the maintained index.d.ts as the implementation/API owners, with test.js and index.test-d.ts as validation scope and package.json specifying xo && ava && tsd. Forwarding through limitFunction and its Pick-based declaration does not introduce additional mandatory edit owners. The empty team catalog does not invalidate this expectation because the deterministic decision gate precedes scenario-review and assignment prerequisites. Gold and preview releaseInput fingerprints agree across repository, source, team, decision input, prompts, policy, model, sampling, and budgets. I accept the stated Service binding of those fingerprints without claiming independent digest recomputation or code execution. The original preparation-time null review/release fields and remaining-work list are distinguishable from the supplied frozen release inputs. No candidate output or human decision was assumed, and no material error or ambiguity requiring correction was identified.",
+    "goldDigest": "e46c2507f2bb3c2586005e5e12373f30ef8f79d0f1936bc609de79694bf6646e"
+  }
+}

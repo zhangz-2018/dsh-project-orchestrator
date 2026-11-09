@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-blocked-recovery-owner-v16-round1-2026-10-16",
+  "createdAt": "2026-10-16T04:26:43.134Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "0bef9414dd9383cebb6726f13cdcf20b1d12962b04b3fe6122384644882fa111"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "3425aee024489454f0bf9b5a751ff586f3f4650884d3556ed3c8ccf101037984"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "55a6fde5524bd763ef778cecce122ebbd4405a553e3bbcc14568115199e685e3"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "e6cace4978384fbff6a4ef8dc905a15abb093cbc1da59bb91d18f066c229890b"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "9a4ad2601e6c8bd045d80d5232775a1b603de5baf6f236c919d22eb9ce1077e0"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "85fa5bb94e749ca02c25ddcfb5519546cb078a5f5be39bd8a7ab0348babd79f4"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "f631aefdf5f5f33eea172e06f7ecd50fdf8ee47fa25b58655ba0c3dca6855a65"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "beecb771dfe196929cb1b991cd29f5ee48e405e54b4cc87e6cb86f46307812a3"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "goldDigest": "b3c8c9b568d03daab773c77d49cf1562d3bc9d6d13da5ada546bc13f8b2ca903"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:caea50c3-fdcc-499f-b366-0185ee4afe91",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/runs/fresh-1.json",
+      "startedAt": "2026-10-16T04:26:43.168Z",
+      "completedAt": "2026-10-16T04:30:52.320Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:9a327ad3-d754-4d0d-8ad6-067fe2df6d01",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/runs/fresh-1.json",
+      "startedAt": "2026-10-16T04:30:56.608Z",
+      "completedAt": "2026-10-16T04:34:15.695Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:8e3ecba1-08b9-4431-a0bb-36dd8206df5d",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/runs/fresh-1.json",
+      "startedAt": "2026-10-16T04:34:20.730Z",
+      "completedAt": "2026-10-16T04:36:45.614Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/fresh-1",
+      "operationId": "planning-v3:12a0853c-782c-4a6f-bfa3-0703adb2157e",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-recovery-owner-v16/runs/fresh-1.json",
+      "startedAt": "2026-10-16T04:36:47.149Z",
+      "completedAt": "2026-10-16T04:38:43.961Z"
+    }
+  ]
+}

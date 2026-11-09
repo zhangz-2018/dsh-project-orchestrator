@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-binding-type-chain-v31-completion-4-2026-10-16",
+  "createdAt": "2026-10-16T16:44:04.912Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "goldDigest": "3377b0e9ab74f2923a173de17e8f502390ae41f3e723c0a5d7609eabf3f46f1b"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31",
+      "attemptId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/fresh-1",
+      "operationId": "planning-v3:b05bb32c-8bf3-45f1-bb4c-aad6843e04d2",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-binding-type-chain-v31/runs/fresh-1.json",
+      "startedAt": "2026-10-16T16:44:04.962Z",
+      "completedAt": "2026-10-16T16:58:33.201Z"
+    }
+  ]
+}

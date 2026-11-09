@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6",
+  "releaseInput": {
+    "repositoryDigest": "58b3edc9ef4e1ff981b4c179f091daf2ee6afa0c780c5897f775dd3f09193cd4",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "d0f895f0451bb499ea0d033b06e3627c95ecfb060888a956ba8ddd62316682a9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "205f2bcf8bfc95f2be986ad72f7ffdde9ca8bd99223dec315d0a3945f911c0cd",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0782d9677638f126016ad169586ae88196b242e0e76e518633:independent-gold-review:36729825-44b1-48c0-8029-3688e387c601",
+    "reviewedAt": "2026-10-16T00:01:41.166Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C, without reference to any candidate. The PRD explicitly fixes DEC-001=OPT-1 as hypothetical benchmark input, not a registered human Decision; the empty decision input is therefore consistent with ready status and no blocking reasons. Only OPT-1 is required in this scenario. This does not waive the decisions-stage block required for an unresolved material DEC-001 in paired case B. REQ-001, AC-001 through AC-003, the task keys, and all seven evidence stages agree with the original specification. The precise writable scope covers the implementation, maintained declarations, runtime regressions, and type regressions: index.js, index.d.ts, test.js, and index.test-d.ts. The supplied implementation and package configuration support those owners and the separate AVA/tsd verification entry points; no generation evidence establishes index.d.ts as generated. The scope permits preserving already-correct code rather than requiring edits to every file. TASK-VERIFY is independently staffed and depends on TASK-IMPLEMENT; both designated members have the relevant active capability claims, roles, auto-assignment eligibility, and available capacity. Pending legacy claims and persona descriptions are not needed to establish eligibility. The independent active project reviewer satisfies the supplied scenario-review prerequisite without requiring execution capabilities. Gold and preview releaseInput fingerprints agree across repository, source, team, decision input, prompts, model, sampling, budgets, and metric policy. These fingerprints are accepted as Service-calculated bindings to saved inputs, not independently recomputed hashes. The earlier preparation snapshot's remaining-work fields do not override the supplied frozen releaseInput and team facts. Source test excerpts are truncated, so this approval does not attest to exhaustive existing regression coverage. No code, tests, or candidates were executed, and this approval concerns the benchmark expectation rather than implementation success, human decision confirmation, task dispatch, or release authorization.",
+    "goldDigest": "b2b300f67049c7e3a26ba8e9fe16245362f831f9a04dbeadff1dc91f6b8cc6ea"
+  }
+}

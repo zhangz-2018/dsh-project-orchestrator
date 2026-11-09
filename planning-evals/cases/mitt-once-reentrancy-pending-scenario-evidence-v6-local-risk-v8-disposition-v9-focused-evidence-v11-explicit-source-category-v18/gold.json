@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-explicit-source-category-v18",
+  "releaseInput": {
+    "repositoryDigest": "27fef76fb745e781fd280b3455f0ea4489b8cb92a1bf72200480d68f3d890e49",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "083e630309398891258d06b98b5728a43ab9ff1457cca6a58d5fc70e0be0cb56",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "676d994e2b6fa855e1f4982ec0692d213922407562ea36a3811afb729e2aca6a",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 183616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b9437e96f11d866016ad1b6a81c588195948f226efc98a0e6:independent-gold-review:1bb349d4-ad4b-4bbe-b3ca-56071c8dc68e",
+    "reviewedAt": "2026-10-16T05:31:32.656Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved, makes the recommended behavior conditional rather than authorized, and prohibits ready or assignable tasks. Gold correctly expects blocked readiness at decisions, the DEC-001 blocking reason, repository/requirements/decisions evidence, stable REQ-001 and AC-001–AC-003 keys, and no task or assignment expectations. The supplied source supports src/index.ts as the implementation owner and the two test files as regression and type-verification scope. Package configuration, CI ordering, ignore rules, and fixed upstream build-source evidence support treating root declarations and dist as generated outputs rather than separately maintained owners. OPT-1's per-registration stale-snapshot protection and OPT-2's finally cleanup and bounded callback reentrancy are distinguished without prematurely choosing either option. The empty trusted team catalog does not undermine this expectation because the unresolved-decision gate precedes scenario-review and assignment prerequisites. Gold and preview release fingerprints agree across repository, evaluation source, team, decision, prompt, model, sampling, budgets, and metric policy; the supplied provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. I rely on the Service's stated mechanical digest bindings, without claiming independent recomputation or code execution. The supplied isolation record establishes that this expectation precedes candidates on this bundle; retained historical operations are not treated as candidate evidence or new human attestations. This approval concerns the frozen Gold expectation, not implementation readiness, execution success, or resolution of DEC-001.",
+    "goldDigest": "94a5e63545ad9caee7a9a19b86ea4026cda4cc417c0dddde4dfbee06c683d9c9"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-focused-evidence-v11-2026-10-16",
+  "createdAt": "2026-10-16T01:14:29.945Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "goldDigest": "93f7f76eec3233d411e53a4f32181b206ef6044a689474aaa38b9f26d601c06d"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "goldDigest": "0485e78d1816e7ad54d23c22efd7184c3fe08ff73bc1726e0af88f99166d9694"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "goldDigest": "292035b99e82b29585a6132f06c0d15e22a189f1ad577eb2b386c816ad7b293c"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "goldDigest": "d1d2da3829e3171025aae599d4bcc873dab506f3f3fd3a96127fed6d4b39e7f2"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11/fresh-1",
+      "operationId": "planning-v3:6ab081d0-0157-481e-9ef0-6ed6c3fc027a",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11/runs/fresh-1.json",
+      "startedAt": "2026-10-16T01:14:29.973Z",
+      "completedAt": "2026-10-16T01:19:58.497Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "attemptId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11/fresh-1",
+      "operationId": "planning-v3:ae039c22-1328-4d50-8f50-eefa421d2e64",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11/runs/fresh-1.json",
+      "startedAt": "2026-10-16T01:14:29.979Z",
+      "completedAt": "2026-10-16T01:20:23.726Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11/fresh-1",
+      "operationId": "planning-v3:ea739b07-0aa3-4850-bd11-9877a74e6bf6",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11/runs/fresh-1.json",
+      "startedAt": "2026-10-16T01:14:29.989Z",
+      "completedAt": "2026-10-16T01:20:27.075Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11",
+      "attemptId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11/fresh-1",
+      "operationId": "planning-v3:0380da3e-67f2-4044-99cb-6d497081a735",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-10-16T01:14:29.998Z",
+      "completedAt": "2026-10-16T01:21:10.022Z"
+    }
+  ]
+}
