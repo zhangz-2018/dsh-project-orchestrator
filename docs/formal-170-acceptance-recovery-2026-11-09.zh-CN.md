@@ -251,6 +251,8 @@ greeting 前版计划通过了全部规划审核及两项 TaskPreflight，但未
 
 验收脚本显式接收重建上下文、当前审阅、输出位置及最终技术验收材料，保留旧流程默认值和全部摘要、成员、独立验证及交付门禁。执行脚本的只读 snapshot 已实际验证当前两项任务仍为 draft，TaskRun 为零；未将旧人工批准或最终 commit 带入当前环境。生产工具采集的六项回归再次全部通过，文档检查通过；脚本及审阅材料变化不改变当前产品 bundle。
 
+修复提交 `0aa1066` 已推送至 PR #29，其 Linux/macOS CI 与 CodeQL 全部通过；本次完整 `pnpm audit --json` 退出 0，各级漏洞为 0，回执为 `script-tool-closure-audit.json`。本轮 mitt listener-count 首个独立候选 committed，全部适用指标通过。p-map 和 Zod 的首个根请求因政策快照变化被 superseded，自动后继正在观察，原失败保留且后继不计 fresh。尚未形成完整正式成绩。最终交付登记脚本也已改为显式绑定当前技术验收、revision 和审阅文档中的完整 commit；仅做语法检查，尚未登记任何当前最终交付确认。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。
