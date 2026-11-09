@@ -2,12 +2,15 @@ import assert from 'node:assert/strict'
 import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { execFile } from 'node:child_process'
 import { join, resolve } from 'node:path'
+import { promisify } from 'node:util'
 import ts from 'typescript'
 import { planningGoldDigest, validatePlanningGold } from '../planning-evals/contracts.mjs'
 import { assertGoldPrecedesBundleCandidates } from './release-gold-history.mjs'
 import { buildReleaseReviewRequest, readReleaseReviewText } from './release-model-route.mjs'
-import { buildRequirementSourceManifest, captureVerificationToolEvidenceV3, digestObject } from '../lib/index.js'
+import { buildScopedCapabilityProvenance } from './release-gold-provenance.mjs'
+import { buildRequirementSourceManifest, captureVerificationToolEvidenceV3, digestObject, isVerificationConfigPathV3 } from '../lib/index.js'
 
 const packetPath = resolve(process.argv[2])
 const projectsPath = resolve(process.argv[3])
@@ -40,9 +43,36 @@ assert.equal(settings['agent-default-model'].model, 'gpt-6.1-sol')
 assert.equal(provider.baseURL.replace(/\/$/u, ''), isolated.modelBaseURL ?? 'http://47.253.229.128:18080/v1')
 assert.equal(provider.api, isolated.modelApi ?? 'openai-completions', 'Review protocol changed outside the frozen context')
 const hash = (v) => createHash('sha256').update(v).digest('hex')
+// 回执路径由本批次显式提供；原样读取并核验，不恢复或重新登记人工事实。
+const capabilityReceipts = await Promise.all(JSON.parse(process.env.PO_GOLD_CAPABILITY_RECEIPTS ?? '[]').map(async path => {
+  const bytes = await readFile(resolve(path))
+  const receipt = JSON.parse(bytes)
+  return { path, sha256: hash(bytes), claims: receipt.registeredClaims ?? receipt.projects.flatMap(project => project.claims) }
+}))
+const runFile = promisify(execFile)
+/** 只附加固定 commit 中与工作树逐字一致的运行器配置；不执行配置、不改变 Gold，超预算即拒绝。 */
+async function captureVerificationConfigurations(root, commit) {
+  const { stdout } = await runFile('git', ['ls-tree', '-r', '--name-only', '-z', commit], { cwd: root, maxBuffer: 4 * 1024 * 1024 })
+  const paths = stdout.split('\0').filter(path => path && isVerificationConfigPathV3(path)).sort()
+  const files = []
+  let bytes = 0
+  for (const path of paths) {
+    const { stdout: committed } = await runFile('git', ['show', `${commit}:${path}`], { cwd: root, encoding: 'buffer', maxBuffer: 524_288 })
+    const current = await readFile(join(root, path))
+    assert.deepEqual(current, committed, 'Gold configuration evidence must match both the fixed commit and current worktree')
+    bytes += current.byteLength
+    assert.ok(bytes <= 98_304, 'Gold configuration evidence exceeds the existing source budget')
+    files.push({ path, repositoryBaseCommit: commit, sha256: hash(current), content: current.toString('utf8'), truncated: false })
+  }
+  return files
+}
 // 解释团队指纹及 reviewer 回退规则时附原样实现，禁止用角色名称推断运行时政策。
 const serviceSource = await readFile(resolve('src/service.ts'), 'utf8')
 const serviceMap = JSON.parse(await readFile(resolve('lib/index.js.map'), 'utf8'))
+// 将解释源码的 source map 和实际安装的执行模块逐字绑定，防止用另一构建的政策解释当前摘要。
+const installedPackageRoot = join(isolated.runtimeRoot ?? isolated.profile, 'node_modules/dsh-project-orchestrator')
+assert.deepEqual(await readFile(join(installedPackageRoot, 'lib/index.js')), await readFile(resolve('lib/index.js')))
+assert.deepEqual(await readFile(join(installedPackageRoot, 'lib/index.js.map')), await readFile(resolve('lib/index.js.map')))
 const serviceMapIndex = serviceMap.sources.findIndex(path => path.endsWith('/src/service.ts'))
 assert.ok(serviceMapIndex >= 0)
 assert.equal(serviceMap.sourcesContent[serviceMapIndex], serviceSource, 'Team policy evidence must match the built Service source')
@@ -106,6 +136,10 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
   assert.equal(preview.releaseInput.modelProvider, 'pockapi')
   assert.equal(preview.releaseInput.modelId, 'gpt-6.1-sol')
   const savedProject = before.projects.find(p => p.id === project.projectId)
+  const scopedCapabilityProvenance = readiness !== 'ready' || capabilityReceipts.length === 0 ? undefined : buildScopedCapabilityProvenance({
+    projectId: project.projectId, teamCatalogFacts: preview.teamCatalogFacts,
+    snapshotClaims: before.agentCapabilityClaims, apiClaims: await request(`/projects/${project.projectId}/capability-claims`), receipts: capabilityReceipts,
+  })
   assert.equal(hash(await readFile(resolve('lib/index.js'))), preview.releaseInput.promptVersionsDigest, 'Team policy explanation must describe the evaluated bundle')
   assert.equal(digestObject(preview.teamCatalogFacts), preview.releaseInput.teamCatalogDigest, 'Claims and reviewer selection must belong to the frozen team fingerprint')
   assert.equal(savedProject.prd, item.proposedPrd.trim())
@@ -141,6 +175,21 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
   const reviewId = `independent-gold-review:${randomUUID()}`
   const packageManifest = JSON.parse(await readFile(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1], 'package.json'), 'utf8'))
   const installedVerificationTools = await captureVerificationToolEvidenceV3(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1]), packageManifest)
+  const verificationConfigurations = await captureVerificationConfigurations(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1]), item.repositoryBaseCommit)
+  let previousIndependentReview
+  for (const directory of JSON.parse(process.env.PO_GOLD_PREVIOUS_REVIEW_DIRS ?? '[]')) {
+    let previous
+    try { previous = JSON.parse(await readFile(join(resolve(directory), `${item.caseId}.review.json`), 'utf8')) } catch (error) {
+      if (error.code === 'ENOENT') continue
+      throw error
+    }
+    assert.equal(previousIndependentReview, undefined, 'Supplemental review must identify one original review')
+    assert.equal(previous.status, 'insufficient_evidence', 'Only evidence gaps may use this supplemental review path')
+    const originalInput = JSON.parse(await readFile(join(resolve(directory), `${item.caseId}.input.json`), 'utf8'))
+    assert.deepEqual(core, originalInput.proposedGold, 'Supplemental provenance must not change the original Gold')
+    assert.deepEqual(item, originalInput.originalSpecification, 'Supplemental provenance must preserve the original specification')
+    previousIndependentReview = { report: previous, originalProposedGoldUnchanged: true, originalSpecificationUnchanged: true }
+  }
   if (toolEvidence !== undefined) {
     assert.equal(toolEvidence.repositoryIdentity, item.repositoryIdentity)
     assert.equal(toolEvidence.repositoryBaseCommit, item.repositoryBaseCommit)
@@ -153,6 +202,8 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
   }
   const input = { reviewId, proposedGold: core, proposedGoldSha256: hash(JSON.stringify(core)), originalSpecification: item, preview, sourceEvidence: evidence,
     installedVerificationTools,
+    // 配置仅说明其原样规则；工具加载链和成功执行仍须分别有证据。
+    verificationConfigurations,
     // 原样投影已有 active 记录，避免同能力 pending/active 并存时漏读；不新增或提升声明。
     activeCapabilityClaims: preview.teamCatalogFacts.claims.filter(claim => claim.status === 'active'),
     capabilityClaimProjectionProvenance: {
@@ -165,6 +216,18 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
       }]),
     },
     teamPolicySourceEvidence,
+    // import.meta.url 在打包后指向 lib/index.js；源码经 source map 逐字比对，两个摘要不是同一域。
+    teamPolicyBuildProvenance: {
+      promptVersionsDigestDomain: 'SHA256 of the executing module bytes resolved from import.meta.url; in the installed esbuild bundle this is lib/index.js, not the unbundled src/service.ts.',
+      localBundlePath: 'lib/index.js', localBundleSha256: hash(await readFile(resolve('lib/index.js'))),
+      sourceMapPath: 'lib/index.js.map', sourceMapSha256: hash(await readFile(resolve('lib/index.js.map'))),
+      serviceSourcePath: 'src/service.ts', serviceSourceSha256: hash(serviceSource),
+      sourceMapServiceContentEqualsCurrentSource: true,
+      installedBundleAndSourceMapEqualLocalBytes: true,
+      sourceDigestDomain: 'SHA256 of the unbundled UTF-8 src/service.ts; every excerpt uses this sourceDigest. The source map sourcesContent has been compared byte-for-byte to that source.',
+    },
+    ...(scopedCapabilityProvenance === undefined ? {} : { scopedCapabilityProvenance }),
+    ...(previousIndependentReview === undefined ? {} : { previousIndependentReview }),
     ...(toolEvidence === undefined ? {} : { supplementalFrozenToolEvidence: toolEvidence }),
     sourceFingerprintProvenance: {
       manifestDomain: 'buildRequirementSourceManifest in src/workflow.ts: digestObject({ prd, technicalDesign: technicalDesign ?? "", sourceRefs, sourceBlocks }); sourceBlocks are constructed by the source parser.',
@@ -175,7 +238,9 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
       savedPrdMatchesNormalizedOriginalSpecification: true, prdNormalization: 'String.prototype.trim() only; no internal content changes.', savedPrdSha256: hash(savedProject.prd),
       savedSourceManifestRebuiltAndCompared: true, sourceFingerprintInput, recomputedEvaluationSourceDigest: digestObject(sourceFingerprintInput),
     },
-    evaluationIsolation: { goldPrecedesEveryCandidateForThisBundle: true, historicalOperationCount, historicalCandidatesSupplied: false, scopedProjectReusedWithoutCopyingAttestations: historicalOperationCount > 0, terminalObservationProofs: historicalProof.terminalObservationProofs },
+    evaluationIsolation: { goldPrecedesEveryCandidateForThisBundle: true, historicalOperationCount, historicalCandidatesSupplied: false,
+      ...(scopedCapabilityProvenance === undefined ? {} : { originalProjectScopedClaimsVerified: true }),
+      projectHistoryIsNotCapabilityScopeEvidence: true, terminalObservationProofs: historicalProof.terminalObservationProofs },
     runtimeReviewPolicy: {
       source: 'src/service.ts: deriveScenarioCoverageFactsV3 and scenario_coverage_review',
       highRiskDimensions: ['data', 'state', 'permission', 'async', 'security', 'migration', 'release'],

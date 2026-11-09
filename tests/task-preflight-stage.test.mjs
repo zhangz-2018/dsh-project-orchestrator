@@ -90,6 +90,35 @@ test('TaskPreflightStage supports zero-tool handoff using only relevant frozen s
   assert.equal(preflights[0].serviceVerdict, 'accepted')
 })
 
+test('TaskPreflightStage passes the authoritative frozen commit without claiming checkout verification', async () => {
+  const { store, input } = await fixture()
+  const repository = { id: 'repo-1', projectId: 'project-1', operationId: 'operation-1', repositoryDigest: input.repositoryDigest,
+    headCommit: 'a'.repeat(40), trackedTreeDigest: 'b'.repeat(64), dirtyDigest: 'c'.repeat(64), canonicalRoot: '/private/should-not-be-projected' }
+  await new TaskPreflightStage(store).run({ ...input, repository, runReadOnly: async prompt => {
+    const identity = JSON.parse(prompt.split('Frozen repository identity:\n')[1].split('\n\nAssignment:')[0])
+    assert.deepEqual(identity, { snapshotId: repository.id, repositoryDigest: repository.repositoryDigest, headCommit: repository.headCommit,
+      trackedTreeDigest: repository.trackedTreeDigest, dirtyDigest: repository.dirtyDigest })
+    assert.doesNotMatch(prompt, /private\/should-not-be-projected/u)
+    assert.match(prompt, /Actual checkout verification remains execution-time work/u)
+    return JSON.stringify(report())
+  } })
+})
+
+test('TaskPreflightStage refuses a foreign or mismatched repository identity before a model call', async () => {
+  const { store, input } = await fixture()
+  const repository = { id: 'repo-1', projectId: 'project-1', operationId: 'operation-1', repositoryDigest: input.repositoryDigest,
+    headCommit: 'a'.repeat(40), trackedTreeDigest: 'b'.repeat(64), dirtyDigest: 'c'.repeat(64) }
+  let calls = 0
+  for (const mismatch of [{ projectId: 'other' }, { operationId: 'other' }, { repositoryDigest: '0'.repeat(64) }]) {
+    await assert.rejects(() => new TaskPreflightStage(store).run({ ...input, repository: { ...repository, ...mismatch }, runReadOnly: async () => {
+      calls++
+      return JSON.stringify(report())
+    } }), error => error.code === 'task-preflight-stale')
+  }
+  assert.equal(calls, 0)
+  assert.equal([...store.taskPreflightsV3.entries()].length, 0)
+})
+
 test('TaskPreflightStage hands off complete scenario variants and installed verification tool evidence', async () => {
   const { store, input } = await fixture()
   const scenario = { key: 'SCN-BOUNDARY', projectId: 'project-1', operationId: 'operation-1', trigger: 'maxQueued: -1, NaN, 0.5, -Infinity, undefined, null, "1", MAX_SAFE_INTEGER + 1', scenarioDigest: '3'.repeat(64) }

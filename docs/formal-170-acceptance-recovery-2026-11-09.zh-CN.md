@@ -169,6 +169,34 @@ Gold 工具补充 active 声明在原数组中的位置、逐项摘要、重算�
 
 本机新增 `hono-runner-config-capture.json`、`output/formal-170-runner-config-verify-2026-11-10.log`。另在独立 `hono-runner-runtime/` 准备版本匹配的运行器依赖，安装禁用生命周期脚本；需等旧操作全部终态后才接入评测仓库并重新冻结新版输入。以上仍是验收依赖，保留本机，不提交原始日志、领域快照或凭据。该修复尚未完成真实模型复验，不能宣布正式验收通过。
 
+### 冻结基线身份交接与新版复验（2026-11-10）
+
+`compiler-excerpts-v42` 最终 4 个根操作及 1 个自动后继均已终态。p-retry `planning-v3:0f3ab91d-97d0-44c8-943e-b3b821abd435` committed，适用指标全通过；p-queue 根 `planning-v3:712f55bd-97c5-4db0-8e86-037c86fd558b` 因政策固定点更新 superseded，后继 `planning-v3:7a1b2616-2feb-4eb4-bc3d-b7898bc1645a` committed，后继不计独立候选。Hono 保留前述配置证据阻塞。p-map `planning-v3:3c0f9fcd-a760-431b-91e5-4df7c6743318` 在 TaskPreflight 阻塞：任务明确要求首写前核对固定初始 commit，但交接仅提供仓库/source 摘要，没有提供已冻结的 `headCommit`。该阻塞仍计为失败，不能从摘要反推 SHA 或要求模型补猜。
+
+修复由 Service 传递同一仓库快照的 `id`、`headCommit`、tree/dirty 摘要及仓库摘要；TaskPreflight 在模型调用前核验 project、operation 与摘要一致，只投影身份字段，不传本机绝对路径。实际 checkout 比对仍属于执行前工作，不能用交接事实宣称检查已经完成。新输入可省略以兼容旧调用方；缺失必要基线时仍保留阻塞。新增正反例先失败后通过，Service 集成断言确认实际交接与持久快照逐项一致。规划版本为 `evidence-grounded-v3.3.32`，场景版本保持 `scenario-coverage-review-v3.3.21`。
+
+首次完整回归暴露新增段落影响测试夹具的 Assignment JSON 分段，修复段落位置后完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：554 项 Node 测试、7 项浏览器测试和其余检查通过。之后补充的 Service 集成断言及相关 TaskPreflight 用例共 12 项通过。完整依赖审计为 0 漏洞。8 项真实隔离 Host 兼容检查通过，报告 `output/compatibility/dsh-0.2.2-rc.1-1794248518875.json`，确定性模型结果不计入真实规划成绩。
+
+安装前只读核验确认累计 30 个领域操作均终态，4 本账本及政策后继观测一致；260 条 active/human_confirmed 记录与上次安装前快照逐项相等，无审批、执行派发或交付。原 Host 停止后，Hono 以独立目录安装 `vite-plus@1.0.0` 与 `vitest@5.0.1`，禁用生命周期脚本；首次 npm peer 解析内部异常保留，独立 manifest 使用 legacy peer 解析安装成功。该准备只提供源码证据，不表示 Hono 的项目测试已经执行或通过。主项目依赖不变。
+
+`runner-identity-v43` 的 bundle SHA-256 为 `e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293`，隔离安装摘要一致。重启时一次只读预览因 Host 默认 V2 模式被拒绝，未发送模型请求；随后显式恢复 `DSH_PLANNING_CONTRACT_MODE=v3-candidate` 和原 workspace identity `po-formal-170-20261109`，预览返回 200。61 个项目沿用原 ID、原需求和能力记录；历史隔离核验包含 11 组证据、4 个旧自动后继终态证明。Gold 工具额外只读附上固定 commit 与工作树逐字一致的运行器配置，分别保留摘要，不执行配置或修改 Gold。
+
+GitHub 提交 `2c6a253` 的 CI/CodeQL 首轮均无 job，CI 页面标注 `Internal server error`（correlation `40ebdc46-316e-4c77-9f0f-ffdb485a51f6`）；原失败保留。第二次 CodeQL 通过，CI 的 Linux job 通过，但整体 failure 且 API 未列出 macOS job，尚不能认定该提交 CI 全通过。以上新修复仍需其自身提交的 CI。验收未完成，不合并或发布。
+
+本机追加证据：`compiler-excerpts-completion/domain-facts-*.json`（精确为 1、2、3、4 四份）、`domain-before-runner-identity-install.json`、`runner-identity-installed.json`、`runner-identity-historical-observation.json`、`runner-identity-input/`、`runner-identity-projects.json`、`gold-runner-identity-{ready-a,ready-b,ready-c,blocked}/`；回归日志 `output/formal-170-runner-identity-verify-2-2026-11-10.log`，完整审计 `output/formal-170-runner-config-full-audit-2026-11-10.json`。本段目录和日志仍用于后续验收、恢复和审阅，保留本机。
+
+### Gold 作用域和构建摘要补证（2026-11-10）
+
+本版首轮 25 份独立 Gold 审阅中，22 份 approved、3 份 insufficient_evidence。ky HTTP 状态和 Zod trim 的审阅无法从删去 id/projectId 的团队投影判断原人工声明作用域；ky resolved 的审阅要求解释源码摘要与执行 bundle 摘要不同的原因。原异议与模型响应全部保留。
+
+`scripts/release-gold-provenance.mjs` 将当前快照、项目限定 GET、冻结 active 投影与原正式登记回执逐条比较。每条完整 claim 必须与一个原回执完全相等，包括 id、projectId、确认人、证据引用和摘要；拒绝作用域全局化、迁移项目、缺少回执或任何字段变化。移除以规划历史数量推导项目作用域的歧义描述；没有历史规划不代表改变了能力作用域。此过程只读，不新增登记，也没有复制声明。
+
+构建证明逐字核对本地与隔离安装的 `lib/index.js`、source map，以及 source map 中的 Service 源码。`promptVersionsDigest` 是打包后 `import.meta.url` 指向的 `lib/index.js` 的 SHA-256；政策摘录的 sourceDigest 是未打包 `src/service.ts` 的 SHA-256，两者有明确的不同对象和摘要域。补审强制比较原 proposedGold 和原始需求完全不变，并提供首次不足证据的审阅意见。
+
+补充证据后的 3 份独立审阅全部 approved，本版 25 份 Gold 已齐全。4 项新增证据校验测试通过，完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：558 项 Node 测试、7 项浏览器测试及类型、文档、固定样本与安装包检查（169 文件）通过。本版真实规划由单一采集器开始，优先 Hono、p-map、p-queue、p-retry；尚未获得完整同版候选成绩，不预判验收通过。
+
+补证回执为本机 `gold-runner-identity-provenance/`，完整回归日志为 `output/formal-170-provenance-verify-2026-11-10.log`；采集器目录为 `runner-identity-completion/`。所有文件仍用于正式验收和恢复，保留本机。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

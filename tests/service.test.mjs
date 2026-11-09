@@ -2061,7 +2061,11 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(observation.preflightCalls, 2)
     const preflightPrompts = observation.prompts.filter((prompt) => prompt.includes('TaskPreflight V3 JSON object'))
     assert.equal(preflightPrompts.length, 2)
+    const preflightRepository = store.repositorySnapshotsV3.get(committedOperation.repositorySnapshotId)
     for (const preflightPrompt of preflightPrompts) {
+      const handedRepository = JSON.parse(preflightPrompt.split('Frozen repository identity:\n')[1].split('\n\nAssignment:')[0])
+      assert.deepEqual(handedRepository, { snapshotId: preflightRepository.id, repositoryDigest: preflightRepository.repositoryDigest,
+        headCommit: preflightRepository.headCommit, trackedTreeDigest: preflightRepository.trackedTreeDigest, dirtyDigest: preflightRepository.dirtyDigest })
       assert.match(preflightPrompt, /opaque refs are identifiers, not repository filenames/i)
       assert.match(preflightPrompt, /Authoritative evidence projections:/)
       assert.match(preflightPrompt, /"repositoryPaths":\["src\/records\.ts"/)

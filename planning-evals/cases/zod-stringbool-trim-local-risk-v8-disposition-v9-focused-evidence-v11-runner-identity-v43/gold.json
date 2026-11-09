@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "45831fdf6eeca4730d19d4a9941d40974c67e35b0dfd8608978b3e24895d704e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e7e42b64253a879016af211bb61a887d191175977b81beec8:independent-gold-review:13da87ce-59e7-4ebd-8668-e72a7867a96c",
+    "reviewedAt": "2026-11-09T18:32:42.632Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only bundle. REQ-001, AC-001 through AC-003, task keys, readiness, and evidence stages agree with the original PRD. The source supports adding the shared trim parameter and decode-only input normalization in core/api.ts while preserving vocabulary handling, case behavior, encode selection and fallback, and existing inference. The exact writable scope includes both required regression files; forwarding factories, utilities, and exports are correctly inspection-only owners. Build configuration establishes generated declarations rather than separately maintained owners, and the supplied verification configuration distinguishes runtime tests from type checking. TASK-VERIFY remains independent and depends on TASK-IMPLEMENT. The supplied original-project claim records and registration-receipt provenance address the previous scope-evidence gap: the allowed agents have applicable active trusted claims for the bounded work, including testing.verification for the verifier, without relying on Persona or pending claims. The selected planning reviewer satisfies the stated read-only review prerequisite. This baseline supplies no unresolved material DEC-001; the stated rule still requires B to block at decisions when such a decision is unresolved, and hypothetical C is not a human resolution. Gold and preview release fingerprints agree, with explicit distinctions between original and saved PRD, manifest and evaluation source digests, and source-module and executing-bundle fingerprints. Model identity, budgets, and policy identifiers are consistently frozen. No candidate outputs informed this review. This approval is based solely on static inspection of supplied review data and Service-bound digest/provenance assertions; I did not execute code, independently recompute digests, create human attestations, or approve task dispatch.",
+    "goldDigest": "d4ad7c41d26c80f76d7eff5d619fec0e44e3b982201d65d4e5c7d2d21fb5ccdb"
+  }
+}

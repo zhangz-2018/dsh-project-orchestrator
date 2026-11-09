@@ -17,6 +17,8 @@ import { boundedText, evaluateTaskPreflightV3, WorkflowError } from '../workflow
 import type { BindingEvidenceContent } from './binding-stage.js'
 
 type TaskPreflightStore = Pick<OrchestratorStore, 'agents' | 'resourceAccessGrants' | 'taskPreflightsV3'>
+/** 只携带上游冻结的 Git 身份；不投影本机路径，不把摘要等同于实际 checkout 检查。 */
+type TaskPreflightRepository = Pick<RepositoryContextSnapshotV3Record, 'id' | 'projectId' | 'operationId' | 'repositoryDigest' | 'headCommit' | 'trackedTreeDigest' | 'dirtyDigest'>
 
 const TaskPreflightReportV3Schema = z.object({
   agentId: z.string().min(1),
@@ -53,6 +55,8 @@ export function buildTaskPreflightPromptV3(
     accessSnapshot: ProjectAccessGrantSnapshotRecord
     accessGrants: ResourceAccessGrantRecord[]
     repositoryDigest: string
+    /** 与 repositoryDigest 同属当前操作的权威基线，供首写前比对使用；旧调用方可不提供。 */
+    repository?: TaskPreflightRepository
     sourceEvidence?: BindingEvidenceContent[]
     planTasks?: GeneratedPlanV3['tasks']
     /** 当前操作已冻结的场景；提供时必须能解析任务引用的每个场景。 */
@@ -61,6 +65,9 @@ export function buildTaskPreflightPromptV3(
     verificationTools?: RepositoryContextSnapshotV3Record['verificationTools']
   },
 ): string {
+  if (input.repository !== undefined && (input.repository.projectId !== manifest.projectId || input.repository.operationId !== manifest.operationId || input.repository.repositoryDigest !== input.repositoryDigest)) {
+    throw new WorkflowError('task-preflight-stale', 'TaskPreflight repository identity does not match its frozen operation and digest.', 409)
+  }
   const dependencies: GeneratedPlanV3['tasks'] = []
   if (input.planTasks !== undefined) {
     const byKey = new Map(input.planTasks.map(item => [item.key, item]))
@@ -130,6 +137,8 @@ Dependency semantics: dependencyKeys define execution order inside this unapprov
 
 Measurement semantics: distinguish a frozen baseline revision from measurements of that revision. When this Task or a supplied dependency contract explicitly owns capturing comparable measurements before implementation, those values and artifacts are planned execution work, not facts that must already exist during preflight. Verify the actual producer, ordering, confirmed commands, comparison environment and evidence handoff. Do not infer a capture owner from an id alone, invent baseline numbers, treat a repository digest as measured data, or bypass a prohibition on baseline changes. A Task that merely assumes an external baseline without a supplied artifact or an authorized capture contract still has a concrete blocking gap.
 
+Repository identity semantics: the supplied frozen repository identity names the authoritative expected headCommit and tree/dirty digests captured for this operation. Actual checkout verification remains execution-time work; this projection neither proves the checkout still matches nor permits writes before that check. Do not infer a commit SHA from a repository digest. If no identity is supplied and the Task requires an external fixed baseline, retain that missing fact.
+
 Target-artifact semantics: a target file or directory may not exist yet when this Task explicitly owns its bounded path in allowedPathScopes and expectedChangeSurfaces and its criteria define creation. That absence is planned work, not a blocking missing fact. A missing current owner/evidence path, a required write surface outside allowedPathScopes, or a required owner explicitly excluded remains blocking.
 
 Regression-work semantics: distinguish the current implementation and test harness from the assertions this Task must add or strengthen. Verify the existing behavior owner, executable test/command entry point, bounded writable regression surface, and precise expected invariant from the supplied evidence and Task contract. A preservation requirement does not prove that a particular existing regression already exists. When the Task explicitly owns adding or strengthening that regression in its authorized files, missing assertions or unshown portions of a large test file are planned verification work; do not require human confirmation that the missing coverage may be added again. Never claim an unseen regression exists, is complete, or has run. Describe the coverage as pending work. If the Task actually depends on the identity or contents of a specific existing fixture/test, or if the current implementation/harness, expected result, or necessary write permission cannot be established, return the exact missing fact. Do not weaken any required behavior, compatibility assertion, policy, or verification command to accept a handoff.
@@ -140,6 +149,10 @@ Evidence semantics: full frozen acceptance scenarios below preserve the required
 
 Shape:
 {"agentId":"...","agentReportedStatus":"accepted|needs_clarification|rejected","identityAuditable":true,"structuralEligible":true,"accessCurrent":true,"contextCurrent":true,"evidenceRead":true,"objectiveRestated":true,"startingPointCovered":true,"allowedScopeCovered":true,"forbiddenScopeAcknowledged":true,"verificationCovered":true,"escalationCovered":true,"noBlockingUnknowns":true,"missingFacts":[]}
+
+Frozen repository identity:
+${JSON.stringify(input.repository === undefined ? null : { snapshotId: input.repository.id, repositoryDigest: input.repository.repositoryDigest,
+    headCommit: input.repository.headCommit, trackedTreeDigest: input.repository.trackedTreeDigest, dirtyDigest: input.repository.dirtyDigest })}
 
 Assignment:
 ${JSON.stringify({ agentId: assignment.executingAgentId, assignmentDigest: assignment.assignmentDraftDigest, dispatchStatus: assignment.dispatchStatus, candidate: assignment.candidates.find((candidate) => candidate.agentId === assignment.executingAgentId) })}
@@ -179,6 +192,8 @@ export class TaskPreflightStage {
     constraints: PolicyConstraintRecordV3[]
     accessSnapshot: ProjectAccessGrantSnapshotRecord
     repositoryDigest: string
+    /** 直接来自当前仓库捕获的 Git 身份；模型无权补填或推导该基线。 */
+    repository?: TaskPreflightRepository
     sourceEvidence?: BindingEvidenceContent[]
     /** 传递完整场景，防止预检只能看到任务中的缩略转述而遗漏边界变体。 */
     scenarios?: AcceptanceScenarioRecord[]
@@ -205,6 +220,7 @@ export class TaskPreflightStage {
         accessSnapshot: input.accessSnapshot,
         accessGrants: selectedAccessGrants,
         repositoryDigest: input.repositoryDigest,
+        ...(input.repository === undefined ? {} : { repository: input.repository }),
         planTasks: input.tasks,
         ...(input.scenarios === undefined ? {} : { scenarios: input.scenarios }),
         ...(input.verificationTools === undefined ? {} : { verificationTools: input.verificationTools }),

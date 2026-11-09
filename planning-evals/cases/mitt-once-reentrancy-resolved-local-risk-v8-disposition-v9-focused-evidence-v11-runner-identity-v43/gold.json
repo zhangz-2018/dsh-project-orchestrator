@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "6ab490c790258a276d8a589a2976c1faa513adb7794fa13865cde3d82bfd0edc",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0bb94e0c85acf1a1016af21092604087d191bf6ec579f7384b:independent-gold-review:89800058-9d34-4391-b436-91cebacf0b82",
+    "reviewedAt": "2026-11-09T18:27:48.047Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C case. The original PRD explicitly fixes OPT-1 as hypothetical input without creating a human Decision; only that branch is required under the preserved REQ-001, AC-001 through AC-003, and DEC-001 keys. Before-invocation removal plus a per-registration fired guard addresses both direct reentrancy and stale outer snapshots, including wildcard dispatch, while preserving ordinary subscription behavior and synchronous exception propagation. The exact writable binding scope includes the implementation and both regression/type-test owners without requiring unnecessary edits. Repository configuration and the supplied upstream build evidence establish that root declarations and dist are generated, with rebuilding required before tests that import the package root. TASK-IMPLEMENT and dependent independent TASK-VERIFY are consistent with the specification; the supplied active capability claims, delivery roles, membership eligibility, and capacity support the respective allowed agents without relying on Persona or pending claims. The selected verifier can serve as the independent read-only planning reviewer under the supplied policy. Ready denotes planning readiness, not execution, dispatch, or release approval. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains and trimmed/untrimmed PRD digests. The original specification's null releaseInput and remaining preparation items are distinguishable from the subsequently supplied frozen preview. Fingerprint bindings and attestations are accepted as supplied Service evidence, not independently recomputed or newly attested by this review. No tools or code were executed and no candidate output informed this assessment. For paired B, a material unresolved DEC-001 must block at decisions; this approval does not constitute a separate review of B's unsupplied complete inputs.",
+    "goldDigest": "500d00ad63215948ba5db2089ae231cd8f8f91b15f22a032f3c6da9ab4768164"
+  }
+}

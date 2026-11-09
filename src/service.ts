@@ -358,7 +358,7 @@ When the source explicitly groups behavior under a named Requirement key, preser
 Source disposition ownership is distinct from supporting evidence. Count consumption across all Acceptance.sourceRefs, all Decision.sourceRefs, and deferred/out_of_scope Requirement.sourceRefs; each requiredDisposition anchor must have exactly one such owner. In-scope Requirement.sourceRefs, Decision option evidenceAnchorIds and diagnostic sourceRefs support statements but do not consume anchors. An explicit acceptance item belongs to its Acceptance; a Decision can use that anchor in option evidenceAnchorIds without consuming it again in Decision.sourceRefs. When one source block contains both requested verification behavior and invocation constraints, preserve the complete block in one source-grounded Acceptance and keep its controls in that statement; do not also consume it in an out_of_scope Requirement. Before returning, construct the complete anchor-to-owner map and correct every duplicate or uncovered anchor without deleting source obligations or changing an unresolved choice.
 The independent reviewer must check this same stage boundary and source grouping. Reject an early blocked analysis, duplicated product obligations, or invented product obligations based only on execution eligibility or invocation controls; do not approve it merely because a later Service stage is expected to abstain.`
 const PLANNER_PROMPT_VERSION = 'delivery-plan-v2.1'
-const PLANNER_V3_PROMPT_VERSION = 'evidence-grounded-v3.3.31'
+const PLANNER_V3_PROMPT_VERSION = 'evidence-grounded-v3.3.32'
 const SCENARIO_POLICY_VERSION = 'scenario-coverage-policy-v3.3.8'
 // 场景执行契约改变后，禁止复用按旧观测器生命周期或阶段清单生成和审核的场景。
 const SCENARIO_REVIEW_PROMPT_VERSION = 'scenario-coverage-review-v3.3.21'
@@ -9043,6 +9043,8 @@ export class OrchestratorService {
         constraints: policy.constraints,
         accessSnapshot,
         repositoryDigest: repositoryCapture.snapshot.repositoryDigest,
+        // 传递同一快照的 commit/tree/dirty 身份，供执行前核对，不能从仓库摘要反推基线。
+        repository: repositoryCapture.snapshot,
         sourceEvidence: await bindingStage.loadFrozenEvidence(repositoryCapture.snapshot, bindingManifest, repositoryEvidenceFocus),
         // 预检必须沿用上游冻结的完整场景和工具源码，不能仅凭任务摘要重建验收事实。
         scenarios,
