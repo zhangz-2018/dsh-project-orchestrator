@@ -1,10 +1,46 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import * as plugin from '../lib/index.js'
+
+test('Verification tool evidence follows complete Vitest discovery declarations across oversized chunks without execution', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-vitest-discovery-'))
+  try {
+    const tool = join(root, 'node_modules/vitest')
+    await mkdir(join(tool, 'dist/chunks'), { recursive: true })
+    await mkdir(join(root, 'node_modules/.bin'))
+    await writeFile(join(tool, 'package.json'), JSON.stringify({ name: 'vitest', version: '4.1.5', type: 'module', bin: './vitest.mjs', types: './dist/types.d.ts' }))
+    await symlink('../vitest/vitest.mjs', join(root, 'node_modules/.bin/vitest'))
+    await writeFile(join(tool, 'vitest.mjs'), "import './dist/chunks/cac.fixture.js'; throw new Error('MUST_NOT_EXECUTE');\n")
+    const padding = `const irrelevant = ${JSON.stringify('x'.repeat(70_000))};\n`
+    const chunks = {
+      'cac.fixture.js': `${padding}function createCLI() { return 'run'; }\nasync function run() { return start(); }\nasync function start() { return import('./cli-api.fixture.js'); }\n`,
+      'cli-api.fixture.js': `${padding}import {configDefaults} from './defaults.fixture.js';\nclass TestProject { globTestFiles() { return {testFiles: configDefaults.include, typecheckTestFiles: []}; } }\nfunction resolveProjects() { return new TestProject(); }\n`,
+      'defaults.fixture.js': "export const configDefaults = {include: ['**/*.test.ts'], exclude: ['**/node_modules/**']};\n",
+    }
+    for (const [path, content] of Object.entries(chunks)) await writeFile(join(tool, 'dist/chunks', path), content)
+    await writeFile(join(tool, 'dist/types.d.ts'), Array.from({ length: 25 }, (_, index) => `import './type-${index}.d.ts';`).join('\n'))
+    for (let index = 0; index < 25; index++) await writeFile(join(tool, `dist/type-${index}.d.ts`), 'export {};\n')
+    const [evidence] = await plugin.captureVerificationToolEvidenceV3(root, {
+      devDependencies: { vitest: '^4.1.5' }, scripts: { test: 'vitest run' },
+    })
+    assert.ok(evidence?.sourceExcerpts?.some(item => item.symbol === 'createCLI'))
+    assert.ok(evidence.sourceExcerpts.some(item => item.symbol === 'TestProject' && item.content.includes('typecheckTestFiles')))
+    assert.ok(evidence.files.some(item => item.path === 'dist/chunks/defaults.fixture.js' && item.content.includes('**/*.test.ts')))
+    assert.ok(evidence.unavailablePaths.includes('dist/chunks/cli-api.fixture.js'), 'An excerpt does not establish the whole chunk.')
+    for (const excerpt of evidence.sourceExcerpts) {
+      const source = await readFile(join(tool, excerpt.path), 'utf8')
+      assert.equal(source.slice(excerpt.startOffset, excerpt.endOffset), excerpt.content)
+      assert.equal(excerpt.sourceDigest, createHash('sha256').update(source).digest('hex'))
+    }
+    const bytes = [...evidence.files, ...evidence.sourceExcerpts].reduce((sum, item) => sum + Buffer.byteLength(item.content), 0)
+    assert.ok(bytes <= 98_304)
+    assert.ok(evidence.sourceExcerpts.length <= 24)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
 
 test('Verification tool evidence follows declared script runners without executing scripts or unrelated lifecycle hooks', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-tool-script-graph-'))

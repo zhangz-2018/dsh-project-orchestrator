@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "ready",
+  "repositoryEvidenceIds": [
+    "src/index.ts",
+    "test/test-types-compilation.ts",
+    "test/index_test.ts",
+    ".github/workflows/main.yml",
+    ".gitignore",
+    "README.md",
+    "package.json",
+    ".github/workflows/compressed-size.yml",
+    "tsconfig.json",
+    ".github/PULL_REQUEST_TEMPLATE.md"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "src/index.ts",
+        "test/test-types-compilation.ts",
+        "test/index_test.ts",
+        ".github/workflows/main.yml",
+        ".gitignore",
+        "README.md",
+        "package.json",
+        ".github/workflows/compressed-size.yml",
+        "tsconfig.json"
+      ],
+      "ownerPaths": [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "TASK-IMPLEMENT",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005",
+        "AC-006"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run build",
+        "npm run test"
+      ]
+    },
+    {
+      "key": "TASK-VERIFY",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005",
+        "AC-006"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "npm run build",
+        "npm run test"
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "taskKey": "TASK-IMPLEMENT",
+      "outcome": "selected",
+      "agentId": "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+    },
+    {
+      "taskKey": "TASK-VERIFY",
+      "outcome": "selected",
+      "agentId": "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+    }
+  ],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [],
+  "reachedStage": "preflight",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e"
+      ]
+    },
+    {
+      "stage": "assignments",
+      "evidenceIds": [
+        "assignment-evaluation:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e:TASK-IMPLEMENT",
+        "assignment-evaluation:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e:TASK-VERIFY"
+      ]
+    },
+    {
+      "stage": "preflight",
+      "evidenceIds": [
+        "task-preflight:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e:TASK-IMPLEMENT",
+        "task-preflight:planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e:TASK-VERIFY"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+    "repositoryBaseCommit": "6b41670516ed8e8b738612f60491995470aa63b3",
+    "planningOperationId": "planning-v3:f9316a4e-12ee-49b7-b9a9-a19357afbf2e",
+    "planningOperationDigest": "8e4a06300f249d6bd73242e8f93958bda890d1a97fd8a863642e83e4d4ac4a0e",
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "1ac60bbc995a5f5941c07ac76db2bf8090d6a3c29851c96f48ac32d2387b0b06",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-11-09T19:58:11.888Z",
+    "completedAt": "2026-11-09T20:07:23.811Z"
+  }
+}

@@ -253,6 +253,26 @@ greeting 前版计划通过了全部规划审核及两项 TaskPreflight，但未
 
 修复提交 `0aa1066` 已推送至 PR #29，其 Linux/macOS CI 与 CodeQL 全部通过；本次完整 `pnpm audit --json` 退出 0，各级漏洞为 0，回执为 `script-tool-closure-audit.json`。本轮 mitt listener-count 首个独立候选 committed，全部适用指标通过。p-map 和 Zod 的首个根请求因政策快照变化被 superseded，自动后继正在观察，原失败保留且后继不计 fresh。尚未形成完整正式成绩。最终交付登记脚本也已改为显式绑定当前技术验收、revision 和审阅文档中的完整 commit；仅做语法检查，尚未登记任何当前最终交付确认。
 
+### v46 收齐终态与 Vitest 发现链修复
+
+`script-tool-closure-completion/` 已收齐 9 个独立根请求及 5 个自动后继，全部终态，采集器状态为 `stopped_for_diagnosis`。mitt listener-count、p-retry abort-cause 两项 committed，p-limit pending、p-retry scheduled-hook pending 两项按预期 blocked，四份有效候选的适用指标全部通过。其余五个根请求因政策变化 superseded，全部保留为 infrastructure_failure；自动后继不计 fresh。Zod trim 后继在 TaskPreflight blocked，其余四个后继 committed。九份领域核验均确认没有审批、任务派发、TaskRun 或交付登记。Zod 对应 job 的保留状态不改写为成功。
+
+Zod 预检要求核对 Vitest CLI 到项目选择、配置合并及 runtime/typecheck 分流的实际实现。Gold 的独立补证没有进入生产 TaskPreflight，不能以补审通过代替生产证据。修复在 `captureVerificationToolEvidenceV3`：只读使用 AST 摘录完整 CLI、TestProject、配置解析及 import/export 映射，附源文件摘要、原文 offsets/lines 和摘录摘要；原模块仍列入 unavailablePaths。运行链优先于宽泛声明文件，保持原 96 KiB、24 文件和 24 条摘录预算，不执行包代码或放宽拒绝规则。
+
+新增回归和预算压力复现均先失败后通过。实际 Vitest 4.1.5 首次采集缺 CLI API 的材料保留；优先级修复后采集 98,112 bytes、24 条摘录并通过 Schema，包含 CLI、TestProject、项目选择、配置合并与默认 include/exclude。未完整采集的 Typechecker 仍是缺口，不声称所有工具实现已闭合。
+
+完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：565 项 Node 测试、7 项浏览器测试和 170 文件安装包 smoke 通过。最终符号注释调整后再次 build，7 项相关回归、typecheck 与 diff 检查通过，源码与 source map 一致。新包位于 `pack-vitest-discovery/`；新版真实规划、同版 canary 和正式门禁仍待验证，不合并或发布。
+
+安装前已保存主 Host 61 项目、60 个终态规划和 260 条原人工确认；canary 1 项目、4 个终态规划和 9 条原人工确认。两个隔离 Host 均无运行操作、审批或任务执行，停机后仅升级隔离 runtime。旧 revision 3 审阅对象不用于新构建审批，后续须绑定新计划与最终交付产物。
+
+本机材料为 `script-tool-closure-completion/domain-facts-1.json` 至 `domain-facts-9.json`、`vitest-discovery-capture.json`、`vitest-discovery-capture-2.json`、`domain-before-vitest-discovery-install.json` 及 `canary-recovery/domain-before-vitest-discovery-install.json`；完整回归日志为 `output/formal-170-vitest-discovery-verify-2026-11-10.log`。上述材料仍有验收与恢复依赖，继续保留。提交 `584213b` 的 Linux/macOS CI 和 CodeQL 全通过，当前新修复仍需独立 CI。
+
+新版源码与隔离安装 bundle SHA-256 同为 `3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069`，四个安装文件逐字一致，8 项真实 Host 兼容检查通过。重启核验确认原规划、能力、审批和执行记录完全一致；既有 `migrateLegacyRecords` 为主环境六个项目及 canary 的草稿任务各补两条 Issue，仅更新相应任务的 issueId、项目 issueIds 和时间戳。该差异已按实际源码核对，不能声称全部领域数据逐字不变。回执为 `vitest-discovery-restart-domain-facts.json`，Host 报告为 `output/compatibility/dsh-0.2.2-rc.1-1794256547243.json`。
+
+`vitest-discovery-v47` 保留原 25 份需求和项目 ID，32 组历史证据覆盖全部 61 个项目及十个旧自动后继终态。Zod trim 独立 Gold 已 approved，首个真实候选与新版 canary 规划正在观察；其他样本独立 Gold 继续审阅。ready 审阅包装命令首次因 JavaScript 语法错误在请求前退出，日志保留，修正命令后启动；没有重发模型请求。
+
+当前仓库 `pnpm audit --json` 退出 0，各级漏洞均 0。隔离 runtime 的 `npm audit` 另外报告 205 项（4 moderate、201 high），包含大量 `/tmp` 与 `/private/tmp` 重复路径：实际顶层 zod 为 4.6.7、undici 为 8.12.2，但 Host 的 MCP client 2.2.0、LibreOffice Kit 下 fflate 0.8.2 及部分嵌套 zod 仍在告警范围。该报告保留于 `vitest-discovery-isolated-npm-audit.json`，不以仓库审计替代隔离依赖审计，也不自动执行破坏性 audit fix；尚未给出隔离依赖安全通过结论。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

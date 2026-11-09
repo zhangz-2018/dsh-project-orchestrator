@@ -70,6 +70,44 @@ function captureCompilerExcerpts(path: string, content: string, budget: number):
   return excerpts
 }
 
+/** 只读摘录 Vitest 的 CLI、配置及测试分流节点；budget 为剩余 UTF-8 字节，limit 为剩余条数，缺失节点保持未证明。 */
+function captureVitestExcerpts(path: string, content: string, budget: number, limit: number): NonNullable<ToolEvidence['sourceExcerpts']> {
+  if (!/^dist\/chunks\/(?:cac|cli-api|coverage|index)\.[^/]+\.js$/u.test(path)) return []
+  const source = ts.createSourceFile(path, content, ts.ScriptTarget.Latest, false, ts.ScriptKind.JS)
+  const symbols = new Set(['createCLI', 'run', 'start', 'startVitest', 'createVitest', 'VitestPlugin', 'WorkspaceVitestPlugin',
+    'initializeProject', 'resolveProjects', 'resolveTestProjectConfigs', 'resolveDirectoryConfig', 'TestProject', 'Typechecker', 'resolveConfig$1'])
+  const excerpts: NonNullable<ToolEvidence['sourceExcerpts']> = []
+  /** 仅加入完整声明或连续的完整 import 声明组；预算不足保留缺口，不截取节点正文。 */
+  const add = (symbol: string, startOffset: number, endOffset: number): void => {
+    const text = content.slice(startOffset, endOffset)
+    const bytes = Buffer.byteLength(text)
+    if (bytes > 65_536 || bytes > budget || excerpts.length >= limit) return
+    excerpts.push({ path, sourceDigest: hash(content), sourceBytes: Buffer.byteLength(content), symbol, startOffset, endOffset,
+      startLine: source.getLineAndCharacterOfPosition(startOffset).line + 1,
+      endLine: source.getLineAndCharacterOfPosition(endOffset - 1).line + 1, content: text, digest: hash(text) })
+    budget -= bytes
+  }
+  const imports = source.statements.filter(ts.isImportDeclaration)
+  // 保留关键模块的原样别名映射；index 大型报告模块仅提供完整 Typechecker，其他实现仍不可见。
+  if (!path.startsWith('dist/chunks/index.') && imports.length) {
+    const first = imports[0]!
+    const last = imports.at(-1)!
+    if (source.statements.slice(source.statements.indexOf(first), source.statements.indexOf(last) + 1).every(ts.isImportDeclaration)) add('imports', first.getStart(source), last.end)
+  }
+  for (const node of source.statements) {
+    if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) && node.name && symbols.has(node.name.text)) add(node.name.text, node.getStart(source), node.end)
+    if (ts.isVariableStatement(node)) {
+      const declaration = node.declarationList.declarations.find(item => ts.isIdentifier(item.name) && ['cliApi', 'CONFIG_REGEXP'].includes(item.name.text))
+      if (declaration && ts.isIdentifier(declaration.name)) add(declaration.name.text, node.getStart(source), node.end)
+    }
+    if (ts.isClassDeclaration(node) && node.name?.text === 'Vitest') {
+      for (const member of node.members) if (ts.isMethodDeclaration(member) && ts.isIdentifier(member.name) && ['_setServer', 'resolveProjects'].includes(member.name.text)) add(`Vitest.${member.name.text}`, member.getStart(source), member.end)
+    }
+    if (ts.isExportDeclaration(node)) add('exports', node.getStart(source), node.end)
+  }
+  return excerpts
+}
+
 /** 只读冻结已安装且与声明最低版本一致的脚本工具；不安装或执行包，未解析依赖保留为证据缺口。 */
 export async function captureVerificationToolEvidenceV3(root: string, manifest: RepositoryCommandManifest | undefined): Promise<ToolEvidence[]> {
   const tokens = verificationScriptTokens(manifest)
@@ -127,13 +165,31 @@ export async function captureVerificationToolEvidenceV3(root: string, manifest: 
             seen.add(path)
             try {
               if (!safePath(path) || (path !== relative(packageRoot, resolve(packageRoot, binPath)) && !/\.(?:[cm]?[jt]sx?|json)$/u.test(path))) throw new Error('Unsupported source path')
-              const content = await read(path, 65_536)
-              if (bytes + Buffer.byteLength(content) > 98_304) throw new Error('Package source budget exceeded')
-              bytes += Buffer.byteLength(content)
-              files.push({ path, digest: hash(content), content, truncated: false })
-              for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*|\bimport\s*\(\s*)['"](\.[^'"]+)['"]/gu)) {
-                queue.push(relative(packageRoot, resolve(packageRoot, dirname(path), match[1]!)))
+              let content = await read(path, name === 'vitest' && /\.[cm]?js$/u.test(path) ? 524_288 : 65_536)
+              const vitestExcerpts = name === 'vitest' ? captureVitestExcerpts(path, content, 98_304 - bytes, 24 - sourceExcerpts.length) : []
+              if (vitestExcerpts.length) {
+                sourceExcerpts.push(...vitestExcerpts)
+                bytes += vitestExcerpts.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0)
+                unavailablePaths.push(path)
+                // 先沿摘录直接引用的配置和实现继续读取；原模块未提供的其余正文仍保持 unavailable。
+                content = vitestExcerpts.map(item => item.content).join('\n')
+              } else {
+                if (Buffer.byteLength(content) > 65_536) throw new Error('Package source file exceeds the full-file budget')
+                if (bytes + Buffer.byteLength(content) > 98_304) throw new Error('Package source budget exceeded')
+                bytes += Buffer.byteLength(content)
+                files.push({ path, digest: hash(content), content, truncated: false })
               }
+              const referenced = [...content.matchAll(/(?:\bfrom\s*|\bimport\s*|\bimport\s*\(\s*)['"](\.[^'"]+)['"]/gu)]
+                .map(match => relative(packageRoot, resolve(packageRoot, dirname(path), match[1]!)))
+              if (name === 'vitest') {
+                // CLI 运行链先于宽泛声明文件；在原 24 文件预算内优先保留发现规则，不扩大预算。
+                const kinds = ['cli-api', 'defaults', 'coverage', 'index', 'constants']
+                const rank = (value: string): number => {
+                  const index = kinds.indexOf(/\/([^/.]+)\./u.exec(value)?.[1] ?? '')
+                  return index < 0 ? kinds.length : index
+                }
+                queue.unshift(...referenced.sort((left, right) => rank(left) - rank(right)))
+              } else queue.push(...referenced)
               // CommonJS 可省略扩展名或引用目录；使用 Node 的只读解析规则，仍禁止越出本包。
               const require = createRequire(join(packageRoot, path))
               for (const match of content.matchAll(/\brequire\s*\(\s*['"](\.[^'"]+)['"]/gu)) {

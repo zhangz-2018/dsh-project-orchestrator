@@ -2256,7 +2256,7 @@ export const VerificationToolEvidenceV3Schema = z.object({
     sourceDigest: Sha256Schema,
     /** 完整 UTF-8 源码字节数；采集器最多解析 8 MiB。 */
     sourceBytes: z.number().int().positive().max(8_388_608),
-    /** 以 AST 精确匹配的声明或诊断符号名称。 */
+    /** 以 AST 精确定位的声明、import/export 声明组或诊断符号名称。 */
     symbol: z.string().min(1).max(240),
     /** 源码字符串 UTF-16 起始偏移，包含该位置。 */
     startOffset: z.number().int().nonnegative(),
