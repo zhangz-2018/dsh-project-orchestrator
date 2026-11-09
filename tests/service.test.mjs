@@ -3146,6 +3146,53 @@ test('Planning V3 preserves explicit required source categories without borrowin
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('Planning V3 derives compatibility from explicit preserved contracts within the Acceptance source only', async () => {
+  const samples = [
+    { text: 'AC-COMPAT: greet("Ada") 的既有输出保持 "Hello, Ada!"。不改变导出名或函数签名。', required: true },
+    { text: '保持既有输出，并在输入规范化后返回问候语。', required: true },
+    { text: 'Preserve the existing output and retain the original function signature.', required: true },
+    { text: 'The existing public interface and output must remain unchanged.', required: true },
+    { text: 'Do not change the function signature when adding input normalization.', required: true },
+    { text: 'Maintain backwards compatibility with existing consumers.', required: true },
+    { text: '必须保持现有调用方的兼容性。', required: true },
+    { text: '检查 src/compatibility.ts 文件，测试标签使用 compatibility。', required: false },
+    { text: 'Inspect src/preserve-existing-output.ts without adding new behavior.', required: false },
+    { text: '保留内部缓存变量并返回新结果。', required: false },
+    { text: 'Use the existing node:test runner for the new regression.', required: false },
+    { text: '无需保持现有输出，按新契约返回结果。', required: false },
+    { text: 'We are not required to preserve the existing output.', required: false },
+  ]
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-preserved-contract-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    for (const sample of samples) {
+      const store = memoryStore()
+      const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+        const anchors = manifest.anchors.filter(anchor => anchor.requiredDisposition)
+        return { ...generated, requirements: [{ ...generated.requirements[0], sourceRefs: anchors.map(anchor => anchor.id),
+          acceptanceCriteria: anchors.map((anchor, index) => ({ key: `AC-${String(index + 1).padStart(3, '0')}`,
+            statement: anchor.text, required: true, scenario: 'happy_path', sourceRefs: [anchor.id] })) }] }
+      } }
+      const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+      try {
+        const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Preserved contract', cwd: repository,
+          prd: `# Contract\n\n${sample.text}\n\n执行独立的类型检查。` })
+        await service.startDecomposition(project.id)
+        await waitForPlanning(store, project.id)
+        const policies = [...store.acceptanceScenarioCoveragePolicies.records.values()]
+        assert.equal(policies.length, 2)
+        const own = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-001'))
+        const sibling = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-002'))
+        assert.equal(own.categories.find(item => item.category === 'compatibility').applicability, sample.required ? 'required' : 'not_applicable', sample.text)
+        assert.equal(sibling.categories.find(item => item.category === 'compatibility').applicability, 'not_applicable', 'Do not import preserved contracts from sibling source anchors')
+        const analysis = [...store.requirementAnalysisProposals.records.values()][0].analysis
+        assert.deepEqual(own.categories.find(item => item.category === 'compatibility').sourceAnchorIds, analysis.requirements[0].acceptanceCriteria[0].sourceRefs.slice().sort())
+        assert.equal(store.executionDispatches.size, 0)
+      } finally { await service.close() }
+    }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 recovery policy requires a recovery action or successful retry contract, not retry vocabulary', async () => {
   const cases = [
     { text: '次数耗尽、时间预算耗尽、AbortError、非网络 TypeError、shouldRetry=false 或已取消均不发事件。推荐方案下 hook 抛错原样终止；另一方案忽略同步抛错并继续，但仍执行取消检查。',

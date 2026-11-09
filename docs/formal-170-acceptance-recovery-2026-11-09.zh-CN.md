@@ -211,6 +211,20 @@ p-retry 的实现任务预检需要核对后继独立验证任务，但原交接
 
 本机追加证据为 `runner-identity-completion/domain-facts-1.json` 至 `domain-facts-4.json`、`domain-before-handoff-reservations-install.json`、`hono-regression-reservation-reproduction.json`、`handoff-reservations-installed.json`、`canary-recovery/context.json`。完整回归日志为 `output/formal-170-handoff-reservations-verify-2026-11-10.log`。本版隔离 Host 初次重启发现 npm legacy-peer 安装后缺少 Host 所需 peer 包；启动在模型请求前失败，正在修复隔离依赖，不涉及日常 Host。
 
+### v44 真实复验与 greeting 兼容策略缺口（2026-11-10）
+
+`handoff-reservations-v44` 的四个重点 Gold 均在本版候选前独立批准。Hono CORS expose、p-map completion observer、p-queue maxqueued resolved、p-retry abort cause 四个独立根请求全部 committed，全部适用指标通过；只读领域核验确认四份候选与原操作一致，没有审批、Dispatch 或 TaskRun。至此，前述测试正文预算与后继验证交接修复均已有真实规划验证，但仍不是完整发布成绩。
+
+隔离安装最初使用的 pnpm pack 会规范化 package.json，导致兼容工具的逐字比较拒绝。已按现有 smoke 流程改用 npm pack，并安装 Host 所需 peer 依赖；四个执行文件与源码构建逐字一致，八项真实 Host 兼容检查通过。报告为 `output/compatibility/dsh-0.2.2-rc.1-1794250588768.json`，当前完整依赖审计各级漏洞均为 0。修复提交 `0648554` 的 Linux/macOS CI、CodeQL 全部通过。
+
+重建 greeting 的首次真实规划 `planning-v3:5541d40e-2530-45ab-a9bb-82ec47e72914` 在 scenario_coverage_review 被正确阻塞。原 PRD 明确要求保持 greet("Ada") 的既有输出并禁止改变导出名、函数签名，但确定性策略只认 compatibility 提示或模型选择的单一场景标签，把该 Acceptance 的兼容类别标为 not_applicable。独立审阅拒绝这一遗漏；原始请求、策略、场景和审阅意见全部保留，没有登记审批或派发任务。
+
+新增回归先复现 not_applicable 与 required 不符，再修改策略归属层：仅从本 Acceptance 原始锚点识别保持旧输出、行为或公开契约的明确义务，不依赖模型的单一类别选择。复用现有路径 token 解析，避免把文件名当义务；普通测试标签、复用测试工具、明确免除保持义务的表述和相邻 Acceptance 均有反例。显式源类别声明、迁移要求与独立审阅仍保留。策略版本升至 `scenario-coverage-policy-v3.3.9`，规划版本升至 `evidence-grounded-v3.3.34`；新版尚待完整真实复验，v44 的四份成功不计入新版成绩。
+
+本机证据为 `candidates-handoff-reservations-focused.json`、`handoff-reservations-focused-domain-facts.json`、`handoff-reservations-npm-installed.json`、`canary-recovery/planning-handoff-reservations.json`，以及 `output/formal-170-preserved-contract-before-2026-11-10.log`、`output/formal-170-preserved-contract-focused-2-2026-11-10.log`。`plan-recovered-canary.mjs` 持久记录请求后仅观察，不自动重发不确定请求；更换 bundle 后的新请求必须显式引用旧阻塞终态，保持原始需求、能力和重建基线不变。原材料继续保留用于验收与恢复。
+
+最终修复完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：562 项 Node 测试、7 项浏览器测试、类型与文档检查、固定样本和 169 文件安装包 smoke 通过。新版隔离 Host 的八项兼容检查也通过。`preserved-contract-v45` 源码与安装 bundle SHA-256 同为 `bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf`；39 个旧正式操作均已终态，历史隔离只读核验覆盖 61 项目、16 组证据及五个旧自动后继证明。本版独立 Gold 审阅及新 greeting 规划已开始，尚未取得完整正式成绩。最终回归日志为 `output/formal-170-preserved-contract-verify-final-2026-11-10.log`，安装证明为 `preserved-contract-installed.json`，新 canary 请求账本为 `canary-recovery/planning-preserved-contract.json`。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

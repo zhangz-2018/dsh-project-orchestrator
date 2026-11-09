@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-handoff-reservations-v44-focused-2026-11-10",
+  "createdAt": "2026-11-09T18:57:56.303Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "goldDigest": "e0352e2960cc3ad1280dba95ed5afc918e7a702edd86ed7c18e839387b32069c"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "goldDigest": "35ba894957d2b74361444e331eb9156c8a8656c5f81fe948743354cb8c0a6faa"
+    },
+    {
+      "caseId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "goldDigest": "cc71f452fb69bca08821beff6588cfd3accde1375a3753d98c248d260881c008"
+    },
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "goldDigest": "27255eb36ce56e664b3b70f0ac55de86755671cbf2fe886614745ee76665204b"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "attemptId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/fresh-1",
+      "operationId": "planning-v3:59ceebfe-3892-451f-b581-ea371fb462a1",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/runs/fresh-1.json",
+      "startedAt": "2026-11-09T18:57:56.333Z",
+      "completedAt": "2026-11-09T19:06:05.510Z"
+    },
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "attemptId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/fresh-1",
+      "operationId": "planning-v3:2af06a83-fdbc-4dd1-85b7-1a072ea4c5ea",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/runs/fresh-1.json",
+      "startedAt": "2026-11-09T18:57:56.339Z",
+      "completedAt": "2026-11-09T19:07:43.150Z"
+    },
+    {
+      "caseId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "attemptId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/fresh-1",
+      "operationId": "planning-v3:33cd9676-095e-468d-9233-106a0ea713b7",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/runs/fresh-1.json",
+      "startedAt": "2026-11-09T18:57:56.350Z",
+      "completedAt": "2026-11-09T19:05:03.028Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+      "attemptId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/fresh-1",
+      "operationId": "planning-v3:eb9e977f-059e-4333-8c68-c0e3b0c324cf",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44/runs/fresh-1.json",
+      "startedAt": "2026-11-09T18:57:56.358Z",
+      "completedAt": "2026-11-09T19:08:52.178Z"
+    }
+  ]
+}

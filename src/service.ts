@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { captureVerificationToolEvidenceV3 } from './planning/verification-tool-evidence.js'
+import { stripSourcePathTokens } from './planning/source-path-tokens.js'
 import { access, lstat, mkdir, mkdtemp, readFile, realpath, rm, stat } from 'node:fs/promises'
 import { constants } from 'node:fs'
 import { isAbsolute, join, matchesGlob, posix, relative } from 'node:path'
@@ -358,8 +359,8 @@ When the source explicitly groups behavior under a named Requirement key, preser
 Source disposition ownership is distinct from supporting evidence. Count consumption across all Acceptance.sourceRefs, all Decision.sourceRefs, and deferred/out_of_scope Requirement.sourceRefs; each requiredDisposition anchor must have exactly one such owner. In-scope Requirement.sourceRefs, Decision option evidenceAnchorIds and diagnostic sourceRefs support statements but do not consume anchors. An explicit acceptance item belongs to its Acceptance; a Decision can use that anchor in option evidenceAnchorIds without consuming it again in Decision.sourceRefs. When one source block contains both requested verification behavior and invocation constraints, preserve the complete block in one source-grounded Acceptance and keep its controls in that statement; do not also consume it in an out_of_scope Requirement. Before returning, construct the complete anchor-to-owner map and correct every duplicate or uncovered anchor without deleting source obligations or changing an unresolved choice.
 The independent reviewer must check this same stage boundary and source grouping. Reject an early blocked analysis, duplicated product obligations, or invented product obligations based only on execution eligibility or invocation controls; do not approve it merely because a later Service stage is expected to abstain.`
 const PLANNER_PROMPT_VERSION = 'delivery-plan-v2.1'
-const PLANNER_V3_PROMPT_VERSION = 'evidence-grounded-v3.3.33'
-const SCENARIO_POLICY_VERSION = 'scenario-coverage-policy-v3.3.8'
+const PLANNER_V3_PROMPT_VERSION = 'evidence-grounded-v3.3.34'
+const SCENARIO_POLICY_VERSION = 'scenario-coverage-policy-v3.3.9'
 // 场景执行契约改变后，禁止复用按旧观测器生命周期或阶段清单生成和审核的场景。
 const SCENARIO_REVIEW_PROMPT_VERSION = 'scenario-coverage-review-v3.3.21'
 const BINDING_REVIEW_PROMPT_VERSION = 'binding-review-v3.3.22'
@@ -449,6 +450,7 @@ function scenarioRequiresForwardCompatibleStageIdentifierV3(scenario: Pick<Accep
 }
 
 
+/** 从已审阅需求的原始锚点推导场景义务；各 Acceptance 仅使用自身来源，缺少来源时拒绝生成策略。 */
 function deriveScenarioCoverageFactsV3(input: {
   projectId: string
   operationId: string
@@ -531,12 +533,25 @@ function deriveScenarioCoverageFactsV3(input: {
     const hasExplicitRecovery = /恢复|回滚|补偿|重放|重新启动|断点续传|\b(?:recover(?:y|ed|ing)?|rollback|compensat(?:e|ed|ion|ing)|replay|restart|resume)\b/iu.test(sourceText)
       || /重试[^。！？\n]{0,40}成功|\bretr(?:y|ies|ied|ying)\b[^.!?\n]{0,80}\b(?:succeed(?:s|ed|ing)?|success(?:ful(?:ly)?)?)\b|\bsuccessful\s+retr(?:y|ies)\b/iu.test(sourceText)
     const hasExplicitBoundary = /边界|边缘(?:情况|条件)?|极限|上限|下限|空值|缺失值|boundary|edge[ -]?case|limit|minimum|maximum|null|empty|missing/iu.test(sourceText)
+    // 明确保持旧输出或公开契约本身就是兼容义务，不依赖模型选择 compatibility 标签。
+    // 仅检查当前 Acceptance 的原始语句；文件名、工具复用和明确免除保持义务的语句均不增加场景。
+    const hasExplicitCompatibility = stripSourcePathTokens(sourceText).split(/[。！？\n;；]|[.!?](?=\s|$)/u).some(clause => {
+      if (/(?:无需|不必|不要求).{0,8}(?:保持|保留|维持)|\b(?:need not|do not|not required to)\s+(?:preserve|retain|maintain|keep)\b/iu.test(clause)) return false
+      const gap = String.raw`[^。！？\n;；]{0,60}`
+      const existing = String.raw`(?:既有|现有|原有|原本|原来)`
+      const contract = String.raw`(?:输出|行为|接口|契约|签名|返回值)`
+      return new RegExp(`(?:保持|保留|维持)${gap}${existing}${gap}${contract}|${existing}${gap}${contract}${gap}(?:保持|保留|维持|不变)`, 'u').test(clause)
+        || /\b(?:preserve|retain|maintain|keep)\b.{0,60}\b(?:existing|current|original|legacy|previous)\b.{0,60}\b(?:outputs?|behaviou?rs?|interfaces?|contracts?|signatures?|return values?)\b|\b(?:existing|current|original|legacy|previous)\b.{0,60}\b(?:outputs?|behaviou?rs?|interfaces?|contracts?|signatures?|return values?)\b.{0,60}\b(?:unchanged|stable|compatible|preserved)\b/iu.test(clause)
+        || /(?:不改变|不变更|不得改变|不得变更).{0,30}(?:导出名|函数签名|公开接口)|\b(?:do not|must not|without)\s+chang(?:e|ing)\b.{0,40}\b(?:export name|function signature|public interface|public api)\b/iu.test(clause)
+        // 粗粒度 normativeHints 也会命中文件名和测试标签，只有明确兼容义务才能补充必需类别。
+        || /向[前后]兼容|兼容(?:现有|既有|旧|原有)|(?:保持|确保|保留|维持|必须).{0,40}兼容|\b(?:backwards?|forwards?)\s+compatib|\b(?:preserve|retain|maintain|ensure|remain|must|shall|support|require)\b.{0,50}\bcompatib|\bcompatibility\b.{0,50}\b(?:must|shall|required)\b/iu.test(clause)
+    })
     const seedCategorySupported = criterion.scenario === 'happy_path'
       || (criterion.scenario === 'business_rejection' && (hints.has('permission') || /拒绝|禁止|无权|不允许|校验失败|business rejection|forbidden|denied|invalid/iu.test(sourceText)))
       || (criterion.scenario === 'boundary' && (hasExplicitBoundary || hints.has('data') || hints.has('state') || hints.has('failure')))
       || (criterion.scenario === 'dependency_failure' && hasExplicitDependencyFailure)
       || (criterion.scenario === 'security' && (hints.has('permission') || /安全|权限|认证|授权|security|permission|authentication|authorization/iu.test(sourceText)))
-      || (criterion.scenario === 'compatibility' && (hints.has('migration') || hints.has('compatibility') || /兼容|迁移|旧版本|升级|compatib|migration|upgrade/iu.test(sourceText)))
+      || (criterion.scenario === 'compatibility' && (hints.has('migration') || hasExplicitCompatibility))
       || (criterion.scenario === 'recovery' && (hasExplicitRecovery || hints.has('rollback')))
     const required = new Set<AcceptanceScenarioCategory>(['happy_path'])
     for (const category of explicitSourceCategories) required.add(category)
@@ -552,7 +567,7 @@ function deriveScenarioCoverageFactsV3(input: {
     if (hints.has('data')) { required.add('boundary'); dimensions.add('data') }
     if (hints.has('state')) { required.add('boundary'); dimensions.add('state') }
     if (hints.has('migration')) { required.add('compatibility'); dimensions.add('migration'); dimensions.add('release') }
-    if (hints.has('compatibility')) required.add('compatibility')
+    if (hasExplicitCompatibility) required.add('compatibility')
     if (hints.has('rollback')) { required.add('recovery'); dimensions.add('release') }
     if (hints.has('non_functional')) dimensions.add('performance')
     if (riskAnchors.some((anchor) => /\bapi\b|接口|路由|endpoint/iu.test(anchor.text ?? ''))) dimensions.add('api')

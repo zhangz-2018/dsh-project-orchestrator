@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "4dde9a7060578c08fe1cd0ea6a9a98e4bcdad7be8a99200b0ea3899d616214e0",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d607bc5026ced39a86e368028027005e23eb40615fa5c2f2238c50271aab3a96",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0bd3b25455bead23016af2177c002087d0836ed09a049b1e48:independent-gold-review:c393345d-a52a-4eec-abc4-e14faba03ed6",
+    "reviewedAt": "2026-11-09T18:57:17.580Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C. The original PRD explicitly fixes OPT-1 as hypothetical input, requiring native RangeError without asserting a human Decision; an unresolved material DEC-001 must still block paired B at decisions. REQ-001, AC-001 through AC-003, the exact five-file writable scope, and TASK-IMPLEMENT followed by independent TASK-VERIFY are consistent with the specification and supplied source evidence. Capacity, reentrancy, cancellation, event isolation, addAll propagation, and fixed/sliding-window requirements are implementable within that scope. Build configuration identifies dist declarations as generated, and the supplied nz implementation establishes compile-time discovery of test-d independently of runtime tests. Assignment expectations are supported by active project-scoped trusted claims, role eligibility, and available slots, including data.change and integration.consumer for both roles and testing.verification for the verifier. The configured verifier may serve as the independent read-only planning reviewer under the supplied policy, without waiving later execution independence. Historical project reuse preserves the original claim scope and does not establish candidate execution on this bundle. The release fingerprints agree across Gold and preview; supplied provenance explains the distinct source digest domains and executing-bundle prompt fingerprint. Original draft preparation markers are distinct from the later frozen preview and do not contradict planning readiness. This approval relies on the supplied Service-bound digests and provenance, not independent digest recomputation, code execution, new human attestation, or candidate outputs; it does not authorize task dispatch or release.",
+    "goldDigest": "27255eb36ce56e664b3b70f0ac55de86755671cbf2fe886614745ee76665204b"
+  }
+}
