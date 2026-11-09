@@ -4,7 +4,7 @@ import ts from 'typescript'
 import type { RepositoryContextSnapshotV3Record, RepositoryEvidenceRetrievalReport } from '../types.js'
 import { digestObject } from '../workflow.js'
 
-const INDEX_VERSION = 'repository-evidence-index-v3.6.5'
+const INDEX_VERSION = 'repository-evidence-index-v3.6.6'
 const DEFAULT_SELECTION_LIMIT = 2_000
 const PER_REQUIREMENT_LIMIT = 80
 const MAX_INDEXED_SOURCE_BYTES = 512 * 1024
@@ -15,9 +15,32 @@ const TEXT_EVIDENCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|json|ya?ml|to
 const SOURCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|java|kt|kts|py|go|rs)$/iu
 const STOP_TERMS = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'must', 'should', 'when', 'then', 'into', '需求', '必须', '需要', '实现', '支持', '功能', '系统', '任务', '正确'])
 
-/** 识别约定的运行器配置路径；仅保留源码供审查，不推定配置被命令加载或测试已执行。 */
+/** 识别运行器默认、命名 profile 及共享 root/workspace 配置；仅保留原样源码，不推定配置被命令加载或测试已执行。 */
 export function isVerificationConfigPathV3(path: string): boolean {
-  return /(?:^|\/)(?:vite|vitest|jest|playwright|cypress)\.config\.(?:[cm]?[jt]s|json)$/iu.test(path)
+  return /(?:^|\/)(?:vite|vitest|jest|playwright|cypress)\.(?:(?:[A-Za-z0-9_-]+\.)?config|root|workspace)\.(?:[cm]?[jt]s|json)$/iu.test(path)
+}
+
+/** 只读提取运行器配置中的静态文件字面量及 resolve/join(__dirname, ...literals)；仅返回冻结库存内的文件，不执行配置或展开变量、glob。 */
+export function referencedVerificationConfigPathsV3(path: string, content: string, paths: ReadonlySet<string>): string[] {
+  if (!isVerificationConfigPathV3(path)) return []
+  const result = new Set<string>()
+  const add = (value: string): void => {
+    if (isAbsolute(value) || value.includes('\\') || value.includes('\0')) return
+    const target = posix.normalize(posix.join(posix.dirname(path), value))
+    if (paths.has(target)) result.add(target)
+  }
+  const visit = (node: ts.Node): void => {
+    if (ts.isStringLiteral(node)) add(node.text)
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && ['resolve', 'join'].includes(node.expression.text)
+      && node.arguments.length > 1 && ts.isIdentifier(node.arguments[0]!) && node.arguments[0]!.text === '__dirname'
+      && node.arguments.slice(1).every(ts.isStringLiteral)) {
+      add(node.arguments.slice(1).map(argument => (argument as ts.StringLiteral).text).join('/'))
+    }
+    // 函数实参中的字面量不自动相对配置目录解析；只有上面明确的 __dirname 调用可建立路径。
+    ts.forEachChild(node, child => { if (!ts.isCallExpression(node) || !ts.isStringLiteral(child)) visit(child) })
+  }
+  visit(ts.createSourceFile(path, content, ts.ScriptTarget.Latest))
+  return [...result].sort()
 }
 
 type EvidenceCategory = 'source' | 'test' | 'schema' | 'migration' | 'workflow' | 'docs' | 'manifest' | 'other'
@@ -108,7 +131,8 @@ async function readEvidenceFile(root: string, path: string): Promise<{ content: 
 
 function importedSpecifiers(content: string): string[] {
   const values: string[] = []
-  for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*\(|\brequire\s*\()\s*['"]([^'"]+)['"]/gu)) {
+  // setup 常以副作用 import 初始化；它与具名导入、动态导入和 require 一样属于只读依赖。
+  for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)['"]([^'"]+)['"]/gu)) {
     if (match[1] !== undefined) values.push(match[1])
   }
   return [...new Set(values)].sort()
@@ -265,7 +289,8 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
   const dependencies = new Map<string, string[]>()
   const consumers = new Map<string, string[]>()
   for (const file of indexed) {
-    const resolved = file.imports.map((specifier) => resolveImport(file.path, specifier, pathSet, resolution)).filter((path): path is string => path !== undefined)
+    const resolved = [...file.imports.map((specifier) => resolveImport(file.path, specifier, pathSet, resolution)).filter((path): path is string => path !== undefined),
+      ...referencedVerificationConfigPathsV3(file.path, file.content, pathSet)]
     dependencies.set(file.path, [...new Set(resolved)].sort())
     for (const dependency of resolved) consumers.set(dependency, [...(consumers.get(dependency) ?? []), file.path])
   }
@@ -333,7 +358,21 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
     }
     rankedByRequirement.set(seed.requirementKey, [...expanded.values()].sort((left, right) => right.score - left.score || left.file.path.localeCompare(right.file.path)).slice(0, PER_REQUIREMENT_LIMIT))
   }
-  const mandatory = indexed.filter((file) => file.category === 'manifest' || /(?:^|\/)AGENTS\.md$/iu.test(file.path)).map((file) => ({ file, score: 1 }))
+  // 配置及其静态 setup/import 闭包不依赖需求词命中；沿用三层深度及总选取预算，缺失/动态路径仍不作推定。
+  const mandatoryPaths = new Set(indexed.filter(file => file.category === 'manifest' || /(?:^|\/)AGENTS\.md$/iu.test(file.path)).map(file => file.path))
+  const configQueue = indexed.filter(file => isVerificationConfigPathV3(file.path)).map(file => ({ path: file.path, depth: 0 }))
+  const visitedConfigs = new Set<string>()
+  while (configQueue.length && mandatoryPaths.size < selectionLimit) {
+    const current = configQueue.shift()!
+    if (visitedConfigs.has(current.path) || current.depth >= 3) continue
+    visitedConfigs.add(current.path)
+    for (const dependency of dependencies.get(current.path) ?? []) {
+      mandatoryPaths.add(dependency)
+      configQueue.push({ path: dependency, depth: current.depth + 1 })
+      if (mandatoryPaths.size >= selectionLimit) break
+    }
+  }
+  const mandatory = indexed.filter(file => mandatoryPaths.has(file.path)).map(file => ({ file, score: 1 }))
   const selected = new Map<string, { file: IndexedFile; score: number }>()
   for (let rank = 0; selected.size < selectionLimit && rank < PER_REQUIREMENT_LIMIT; rank += 1) {
     for (const seed of querySeeds) {

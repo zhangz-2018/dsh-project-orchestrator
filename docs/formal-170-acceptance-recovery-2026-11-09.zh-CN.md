@@ -299,6 +299,16 @@ v48 隔离安装 bundle 为 `7206d738c05dda9976a77b6b848a07fd1e84f077498f3628da5
 
 最新源码完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：568 项 Node 测试、7 项浏览器测试、类型及文档检查、固定规划样本和 170 文件安装包 smoke 通过。日志为 `output/formal-170-rejection-policy-final-verify-2026-11-10.log`；后续为耗时回溯回归增加子进程硬超时后，九项工具采集测试再次通过。新版仍需隔离安装、真实规划、当前 canary 及正式门禁，不以本地回归替代发布验收。
 
+### v48 终态与运行器配置闭包修复
+
+Zod 自动后继 `planning-v3:e00c6c46-ae88-4356-af63-ac5996639da8` 在 scenario_coverage_review blocked。独立审阅指出 `nub run test` 会加载 `vitest.compile.config.ts`，且其他项目配置导入 `vitest.root.mjs`，生产证据未提供这两个文件，不能据此证明运行时 oracle 可执行。原 superseded 根、后继拒绝、Gold 和领域核验均保留于 `candidates-config-command-tools-zod-first*`；没有有效 fresh 候选，不登记审批或任务执行。编译器修复尚未到达同一轮 TaskPreflight，不能宣称真实预检已通过。
+
+根因是配置分类器只识别 `<runner>.config.*`，而配置字符串内的 setup 文件也没有进入已有 import 图。`isVerificationConfigPathV3` 增加命名 profile 和共享 root/workspace 配置；`referencedVerificationConfigPathsV3` 只读解析 AST 中的静态文件字面量及 `resolve/join(__dirname, ...literals)`，仅采用冻结库存内的路径。配置及三层静态依赖闭包参与已有选择和字节预算，副作用 import 也作为依赖保留；不执行配置，不展开变量、glob 或库存外路径，不授权额外写入。证据索引升为 `repository-evidence-index-v3.6.6`，避免复用旧缓存。
+
+词法干扰压力回归先复现漏选，修复后通过；另外覆盖动态根、变量、glob、外部路径和非配置模块反例。真实 Zod 只读采集在原 98,304 bytes 预算内原样提供九份配置/setup 文件，包括被指出的两份配置、`scripts/fail-on-console.ts` 和 `scripts/enable-compile.ts`；选取 121 个证据文件，未执行仓库或调用模型。回执为 `zod-config-profiles-production-capture.json`。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：569 项 Node 测试、7 项浏览器测试及 170 文件安装包 smoke 通过，日志为 `output/formal-170-config-closure-final-verify-2026-11-10.log`；随后补充动态调用实参限制，另行复验相关测试和类型检查。
+
+提交 `b01fa1b` 的 Linux/macOS CI 与 CodeQL 已全部通过，原多项式回溯告警未被压制。当前配置闭包修复仍需独立 CI。升级前主 Host 的 64 个历史规划和 260 条人工确认、canary 的六个历史规划和九条人工确认均已保存；两个环境无运行规划、审批、TaskRun、派发或交付，已正常停止，仅升级隔离 runtime，日常 Host 不变。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

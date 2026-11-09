@@ -117,6 +117,27 @@ test('BindingStage preserves complete runner discovery configuration without req
     const digest = digestObject({ path, blob: stdout.trim() })
     const files = [{ path, digest }]
     const references = [{ ref: 'ref-config', kind: 'repository_evidence', artifactId: path, artifactDigest: digest }]
+    const variants = ['vitest.compile.config.ts', 'vitest.root.mjs', 'vitest.workspace.ts']
+    for (const variant of variants) {
+      await writeFile(join(root, variant), source)
+      const { stdout: blob } = await run('git', ['hash-object', '--no-filters', '--', variant], { cwd: root })
+      const variantDigest = digestObject({ path: variant, blob: blob.trim() })
+      files.push({ path: variant, digest: variantDigest })
+      references.push({ ref: `ref-${variant}`, kind: 'repository_evidence', artifactId: variant, artifactDigest: variantDigest })
+    }
+    const setupPath = 'setup-helper.ts'
+    const setup = `${'// setup context\n'.repeat(80)}export const initialized = true\n`
+    await writeFile(join(root, setupPath), setup)
+    const { stdout: setupBlob } = await run('git', ['hash-object', '--no-filters', '--', setupPath], { cwd: root })
+    const setupDigest = digestObject({ path: setupPath, blob: setupBlob.trim() })
+    files.push({ path: setupPath, digest: setupDigest })
+    references.push({ ref: 'ref-setup', kind: 'repository_evidence', artifactId: setupPath, artifactDigest: setupDigest })
+    const compileSource = source + "export const setupFiles = [resolve(__dirname, './setup-helper.ts')];\n"
+    await writeFile(join(root, variants[0]), compileSource)
+    const { stdout: compileBlob } = await run('git', ['hash-object', '--no-filters', '--', variants[0]], { cwd: root })
+    const compileDigest = digestObject({ path: variants[0], blob: compileBlob.trim() })
+    files.find(file => file.path === variants[0]).digest = compileDigest
+    references.find(reference => reference.artifactId === variants[0]).artifactDigest = compileDigest
     for (let index = 0; index < 8; index++) {
       const ownerPath = `owner-${index}.ts`
       await writeFile(join(root, ownerPath), `export const callback = '${'x'.repeat(20_000)}'\n`)
@@ -128,11 +149,18 @@ test('BindingStage preserves complete runner discovery configuration without req
     const contents = await new BindingStage(store()).loadFrozenEvidence(
       { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
       { projectId: 'project', operationId: 'operation', references },
-      `Change callback compatibility request in ${files.slice(1).map(file => file.path).join(' ')}.`,
+      `Change callback compatibility request in ${files.filter(file => file.path.startsWith('owner-')).map(file => file.path).join(' ')}.`,
     )
     const config = contents.find(item => item.path === path)
     assert.equal(config.content, source)
     assert.equal(config.truncated, false)
+    for (const variant of variants) {
+      const evidence = contents.find(item => item.path === variant)
+      assert.equal(evidence.content, variant === variants[0] ? compileSource : source, variant)
+      assert.equal(evidence.truncated, false, variant)
+    }
+    assert.equal(contents.find(item => item.path === setupPath).content, setup)
+    assert.equal(contents.find(item => item.path === setupPath).truncated, false)
     assert.ok(contents.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
   } finally { await rm(root, { recursive: true, force: true }) }
 })

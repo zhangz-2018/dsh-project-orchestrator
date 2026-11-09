@@ -16,7 +16,7 @@ import { readFile, realpath, stat } from 'node:fs/promises'
 import { isAbsolute, relative, resolve, posix } from 'node:path'
 import { gitProcess } from '../execution/git-command.js'
 import ts from 'typescript'
-import { isVerificationConfigPathV3, referencedPackageEntryPaths } from './repository-evidence.js'
+import { isVerificationConfigPathV3, referencedPackageEntryPaths, referencedVerificationConfigPathsV3 } from './repository-evidence.js'
 import { sourcePathTokens, stripSourcePathTokens } from './source-path-tokens.js'
 
 export interface BindingEvidenceContent {
@@ -256,10 +256,12 @@ export class BindingStage {
     let remainingBytes = focus === undefined ? 65_536 : 98_304
     const references = manifest.references.filter((item) => item.kind === 'repository_evidence')
     const explicitPaths = focus === undefined ? [] : references.filter(r => focus.includes(r.artifactId)).map(r => r.artifactId)
+    // 仅影响证据分配，不授权写入；完整配置及静态 setup 闭包共享原总字节预算。
+    const configurationPaths = new Set(references.filter(reference => isVerificationConfigPathV3(reference.artifactId)).map(reference => reference.artifactId))
     const sources = new Map<string, { bytes: Buffer; excerpt: string; complete: boolean; dependencies: Array<{ path: string; typeOnly: boolean }> }>()
     const priority = (path: string): number => {
       // 发现/排除规则决定验证是否覆盖目标，必须与命令清单一起保留；路径命中不代表运行器实际加载。
-      if (isVerificationConfigPathV3(path)) return 0
+      if (configurationPaths.has(path)) return 0
       if (/(?:^|\/)(?:package|tsconfig[^/]*)\.json$/u.test(path) && (!path.includes('/') || path.startsWith('.configs/') || explicitPaths.some(p => p.startsWith(path.slice(0, path.lastIndexOf('/') + 1))))) return 0
       return explicitPaths.includes(path) ? 1 : 2
     }
@@ -295,6 +297,9 @@ export class BindingStage {
           const selected = candidates.find(candidate => references.some(r => r.artifactId === candidate))
           return selected === undefined ? [] : [{ path: selected, typeOnly: importedModules.get(match[1]!) === true }]
         })
+        for (const dependency of referencedVerificationConfigPathsV3(path, sourceText, new Set(references.map(reference => reference.artifactId)))) {
+          if (!dependencies.some(item => item.path === dependency)) dependencies.push({ path: dependency, typeOnly: false })
+        }
         // Explicit implementation and regression owners need the same bounded
         // inspection allowance. A comment-heavy owner may fit in full after
         // compaction; do not discard its producer/getter chain for 8 KB windows.
@@ -312,6 +317,17 @@ export class BindingStage {
       contents.push({ ref: reference.ref, path, digest, content, truncated: content !== bytes.toString('utf8') })
     }
     if (focus !== undefined) {
+      const configQueue = [...configurationPaths].map(path => ({ path, depth: 0 }))
+      const visitedConfigs = new Set<string>()
+      while (configQueue.length) {
+        const current = configQueue.shift()!
+        if (visitedConfigs.has(current.path) || current.depth >= 3) continue
+        visitedConfigs.add(current.path)
+        for (const dependency of sources.get(current.path)?.dependencies ?? []) {
+          configurationPaths.add(dependency.path)
+          configQueue.push({ path: dependency.path, depth: current.depth + 1 })
+        }
+      }
       for (const path of referencedPackageEntryPaths([...sources].map(([path, source]) => ({ path, content: source.bytes.toString('utf8') })), focus)) {
         if (!explicitPaths.includes(path)) explicitPaths.push(path)
       }

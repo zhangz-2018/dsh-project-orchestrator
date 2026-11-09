@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, realpath, rename, rm, symlink, writeFile } from 'node:f
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { buildRepositoryEvidenceRetrievalReportV3, buildRepositoryStackProfileV3, RepositoryEvidenceRetrievalReportSchema } from '../lib/index.js'
+import { buildRepositoryEvidenceRetrievalReportV3, buildRepositoryStackProfileV3, referencedVerificationConfigPathsV3, RepositoryEvidenceRetrievalReportSchema } from '../lib/index.js'
 
 const digest = (value) => createHash('sha256').update(value).digest('hex')
 
@@ -123,19 +123,34 @@ test('Repository Evidence retains spec and test TypeScript configurations as man
 })
 
 test('Repository Evidence retains runner discovery configurations when unrelated owners fill the lexical cap', async () => {
-  const configs = ['vitest.config.ts', 'vite.config.mts', 'runtime-tests/node/vitest.config.ts', 'jest.config.cjs', 'playwright.config.ts', 'cypress.config.ts']
+  const configs = ['vitest.config.ts', 'vitest.compile.config.ts', 'vitest.root.mjs', 'vitest.workspace.ts', 'vite.config.mts', 'runtime-tests/node/vitest.config.ts', 'jest.config.cjs', 'playwright.config.ts', 'cypress.config.ts']
   const context = await fixture({
     ...Object.fromEntries(Array.from({ length: 90 }, (_, i) => [`src/noise-${i}.ts`, 'export const callback = "compatibility request"\n'])),
     'src/api.ts': 'export const callback = true\n',
     ...Object.fromEntries(configs.map(path => [path, "export default { test: { include: ['**/*.test.ts'], exclude: ['**/sandbox/**'] } }\n"])),
+    'vitest.compile.config.ts': "export default { test: { setupFiles: [resolve(__dirname, 'scripts', 'setup.ts')], tsconfig: './tsconfig.compile.json' } }\n",
+    'scripts/setup.ts': "import './assert-setup.ts'; throw new Error('MUST_NOT_EXECUTE')\n",
+    'scripts/assert-setup.ts': "export const initialized = true\n",
+    'tsconfig.compile.json': '{"include":["src"]}',
     'unrelated.config.ts': 'export default {}\n',
+    'vitest.compile.config.test.ts': 'export default {}\n',
   })
   try {
     const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
       requirements: [{ key: 'REQ-CONFIG', statement: 'Add callback compatibility request in src/api.ts.', acceptanceStatements: [] }] })
     for (const path of configs) assert.ok(report.selectedEvidenceIds.includes(path), `${path} must survive lexical selection`)
+    for (const path of ['scripts/setup.ts', 'scripts/assert-setup.ts', 'tsconfig.compile.json']) assert.ok(report.selectedEvidenceIds.includes(path), `${path} is frozen configuration evidence`)
     assert.equal(report.selectedEvidenceIds.includes('unrelated.config.ts'), false)
+    assert.equal(report.selectedEvidenceIds.includes('vitest.compile.config.test.ts'), false)
   } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
+test('Verification configuration references require static paths inside the frozen inventory', () => {
+  const files = new Set(['scripts/setup.ts', 'scripts/check.ts', 'vitest.root.mjs', 'private.key', 'src/ordinary.ts'])
+  const source = "import root from './vitest.root.mjs'; export default { setupFiles: [resolve(__dirname, 'scripts', 'setup.ts'), './scripts/check.ts', resolve(otherRoot, 'scripts', 'setup.ts'), variable, './scripts/*.ts', '../outside.ts', '/private.key'] };"
+  assert.deepEqual(referencedVerificationConfigPathsV3('vitest.compile.config.ts', source, files), ['scripts/check.ts', 'scripts/setup.ts', 'vitest.root.mjs'])
+  assert.deepEqual(referencedVerificationConfigPathsV3('src/ordinary.ts', source, files), [])
+  assert.deepEqual(referencedVerificationConfigPathsV3('vitest.config.ts', "export default { setupFiles: [resolve(otherRoot, './scripts/setup.ts'), resolve(__dirname, variable, './scripts/check.ts'), getPath('./scripts/check.ts'), variable, './scripts/*.ts', '../outside.ts', '/private.key'] }", files), [])
 })
 
 test('Repository Evidence admits tracked ignore policies without admitting arbitrary dotfiles', async () => {
