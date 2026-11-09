@@ -149,9 +149,13 @@ Hono 的编译器可用性证据另行冻结为 `hono-tool-proof/evidence.json`�
 
 `compiler-excerpts-v42` 的 bundle SHA-256 为 `df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345`，隔离安装与本地构建一致。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，550 条 Node 测试、7 条浏览器测试、类型与文档检查、固定样本及 clean install/package smoke（169 文件）通过。8 项真实隔离 Host 兼容检查通过，使用确定性模型，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794246913317.json`。首次兼容预检早于安装完成，因 bundle 摘要不一致而拒绝；未发送模型请求，该失败日志保留，安装完成后另行验证通过。
 
-上一版累计 25 个规划操作全部终态，领域核验确认没有审批、任务执行或交付；260 条已确认能力保持一致。新版保持原始需求、61 个项目 ID 和能力事实，仅隔离样本版本标识。7 组历史证明及 3 个旧自动后继均在新安装前得到终态核验，没有推断后继版本。当前先冻结 25 个样本的新版独立 Gold，完成后才启动对应真实候选；旧版成绩不能计为本版成绩。
+上一版累计 25 个规划操作全部终态，领域核验确认没有审批、任务执行或交付；260 条已确认能力保持一致。新版保持原始需求、61 个项目 ID 和能力事实，仅隔离样本版本标识。7 组历史证明及 3 个旧自动后继均在新安装前得到终态核验，没有推断后继版本。
 
-本机追加证据：`stage-disclaimer-focused-domain-facts.json`、`stage-disclaimer-hono-domain-facts.json`、`domain-before-compiler-excerpts-install.json`、`hono-compiler-excerpt-capture.json`、`compiler-excerpts-installed.json`、`compiler-excerpts-historical-observation.json`、`gold-compiler-excerpts-ready/`、`gold-compiler-excerpts-blocked/`。回归日志为 `output/formal-170-compiler-excerpts-verify-2026-11-10.log`，兼容日志为 `output/formal-170-compiler-excerpts-host-compatibility-2-2026-11-10.log`。以上仍用于验收与恢复，保留本机，不提交原始日志、领域快照或凭据。
+新版独立 Gold 首轮 23 份获批准。p-map completion-observer 被认为原目录缺少两条 TypeScript active 声明；只读定位确认两条实际均存在于 `preview.teamCatalogFacts.claims`，且顶层 active 投影就是同一数组的筛选。p-queue maxQueued 的审阅认为 verifier 不能成为规划 Reviewer；实际 `buildTeamCompositionSnapshot` 明确允许 reviewer 或 verifier 回退，规划阶段按配置的成员与规划作者检查独立性。没有修改原声明、成员角色、资格规则或 Gold。
+
+Gold 工具补充 active 声明在原数组中的位置、逐项摘要、重算并校验的团队指纹，以及对应 Service 的三个原样方法。源码与本地构建 source map 核对一致，实际 bundle 摘要与预览绑定；不把说明文本当作人工事实。补审输入的 `proposedGold` 与原输入逐项相等，两份均独立批准，首轮不同意见完整保留。最终 25 份 Gold 全部在该 bundle 的任何候选之前批准，回执为 `compiler-excerpts-gold-complete.json`。随后启动单一采集器，最多 4 路，优先复验 p-queue、Hono、p-retry、p-map，目标仍为每样本至少 5 次有效独立候选。此处仅记录批次已启动，不表示通过。
+
+本机追加证据：`stage-disclaimer-focused-domain-facts.json`、`stage-disclaimer-hono-domain-facts.json`、`domain-before-compiler-excerpts-install.json`、`hono-compiler-excerpt-capture.json`、`compiler-excerpts-installed.json`、`compiler-excerpts-historical-observation.json`、`gold-compiler-excerpts-ready/`、`gold-compiler-excerpts-blocked/`、`gold-compiler-excerpts-team-clarification/`、`compiler-excerpts-completion/`。回归日志为 `output/formal-170-compiler-excerpts-verify-2026-11-10.log`，兼容日志为 `output/formal-170-compiler-excerpts-host-compatibility-2-2026-11-10.log`。以上仍用于验收与恢复，保留本机，不提交原始日志、领域快照或凭据。
 
 提交 `329bcd8` 的 Linux/macOS CI 和 CodeQL 均已通过；上述摘录修复仍需自身提交的 CI。正式 1.7.0 仍未通过发布验收，未合并、未创建 tag、未发布 npm 或 GitHub Release。
 

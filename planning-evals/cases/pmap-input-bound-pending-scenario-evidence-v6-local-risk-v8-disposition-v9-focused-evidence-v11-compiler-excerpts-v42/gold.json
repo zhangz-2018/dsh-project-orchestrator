@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07b5637449518cec016af2094b6b4087d1b6d6baf3bdebe080:independent-gold-review:670ac27d-6b1d-477a-8c05-9ab1b487c9c0",
+    "reviewedAt": "2026-11-09T17:56:41.764Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved; AC-001 is conditional and does not authorize OPT-1. Gold correctly requires blocked readiness at decisions, identifies DEC-001 as the blocking subject, and requires repository, requirements, and decisions evidence without proceeding to later review, binding, or assignment prerequisites. REQ-001 and AC-001 through AC-003 retain their stable keys. Empty assignment expectations agree with the prohibition on assignable tasks in this case; TASK-IMPLEMENT and TASK-VERIFY apply only after resolution. The complete implementation and declaration evidence supports index.js and index.d.ts as owners, including the shared engine and option types whose other exports must retain their contracts. The supplied test excerpts and package configuration establish the runtime and separate tsd verification surfaces; truncated test bodies do not prevent evaluating this decision-blocked expectation. Gold and preview release fingerprints agree across repository, source, team, decision, prompt, model, sampling, budgets, and metric policy. Supplied Service provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Empty trusted team facts do not introduce a prerequisite before the material decision gate. Historical project reuse is consistent with the stated isolation, and no candidate results inform this review. This approval concerns the benchmark expectation, not a human decision, execution result, task authorization, or release readiness. Digest binding and provenance are accepted as supplied Service evidence; I did not recompute digests or execute code.",
+    "goldDigest": "68ab227e62ea2a11ae45c500f552ec9f8f49c3b70337b20a506635177f60f696"
+  }
+}

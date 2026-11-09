@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "311efee2ade8f9c4c151cfc63f14b238c45e0291597d3be061eb37a5990ef0fe",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b598b933e64f625016af2094ebbbc87d0a8ce9fbb7f56721c:independent-gold-review:be81333f-6164-43ae-8d2c-f997334c1dd2",
+    "reviewedAt": "2026-11-09T17:56:49.344Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C. The original PRD explicitly fixes hypothetical DEC-001=OPT-1 without claiming a human Decision, so ready with no blocking reasons is appropriate; an unresolved material DEC-001 in B must instead block at decisions before Scenario Coverage. REQ-001, AC-001 through AC-003, and the task keys are consistent. Only the selected option creates implementation and verification obligations. The four exact writable paths cover the runtime implementation, separately maintained public declaration, runtime regressions, and tsd regressions without requiring gratuitous edits. The supplied runtime source supports the specified existing delay calculation and identifies the need for cancellation checking after the synchronous hook, including zero delay and thrown-value precedence. Package configuration and tsd compiler excerpts establish distinct runtime and non-executing type-checking paths. TASK-VERIFY must depend on TASK-IMPLEMENT, and both relationships must cover every required AC. The designated implementer and independent verifier have the relevant active trusted capability claims, including data.change, domain.state, integration.async and integration.consumer; the verifier additionally has testing.verification. A separate configured online project reviewer satisfies the stated pre-Binding review prerequisite without requiring execution claims. Repository identity, base commit, file fingerprints, and the repeated releaseInput values agree. The supplied provenance explains the distinct manifest and evaluation source digest domains and the trim-only saved PRD normalization. Team, prompt, model, sampling, budget and policy fingerprints are frozen in releaseInput. The original specification's remaining preparation fields are historical preparation state, not evidence that C has an unresolved semantic decision. This approval concerns the independent expectation, not implementation correctness or test success. I reviewed only the supplied data, accepted Service-calculated digest bindings, and neither recomputed digests nor executed code. No candidate results informed this review.",
+    "goldDigest": "296dd77a124501f2328d3c7762ede12d9866bc78c6d7fbe7018f8050001998fa"
+  }
+}

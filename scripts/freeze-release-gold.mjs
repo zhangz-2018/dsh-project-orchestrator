@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
+import ts from 'typescript'
 import { planningGoldDigest, validatePlanningGold } from '../planning-evals/contracts.mjs'
 import { assertGoldPrecedesBundleCandidates } from './release-gold-history.mjs'
 import { buildReleaseReviewRequest, readReleaseReviewText } from './release-model-route.mjs'
@@ -39,6 +40,31 @@ assert.equal(settings['agent-default-model'].model, 'gpt-6.1-sol')
 assert.equal(provider.baseURL.replace(/\/$/u, ''), isolated.modelBaseURL ?? 'http://47.253.229.128:18080/v1')
 assert.equal(provider.api, isolated.modelApi ?? 'openai-completions', 'Review protocol changed outside the frozen context')
 const hash = (v) => createHash('sha256').update(v).digest('hex')
+// 解释团队指纹及 reviewer 回退规则时附原样实现，禁止用角色名称推断运行时政策。
+const serviceSource = await readFile(resolve('src/service.ts'), 'utf8')
+const serviceMap = JSON.parse(await readFile(resolve('lib/index.js.map'), 'utf8'))
+const serviceMapIndex = serviceMap.sources.findIndex(path => path.endsWith('/src/service.ts'))
+assert.ok(serviceMapIndex >= 0)
+assert.equal(serviceMap.sourcesContent[serviceMapIndex], serviceSource, 'Team policy evidence must match the built Service source')
+const parsedService = ts.createSourceFile('src/service.ts', serviceSource, ts.ScriptTarget.Latest, false)
+const teamPolicyMethods = new Set(['buildTeamCompositionSnapshot', 'evaluationTeamFactsV3', 'evaluationInputFactsV3'])
+const teamPolicySourceEvidence = []
+/** 仅摘录实际 Service 的完整方法；这些源码说明政策，不新增成员资格或人工事实。 */
+function collectTeamPolicyEvidence(node) {
+  if (ts.isClassDeclaration(node) && node.name?.text === 'OrchestratorService') {
+    for (const method of node.members) {
+      if (!ts.isMethodDeclaration(method) || !ts.isIdentifier(method.name) || !teamPolicyMethods.has(method.name.text)) continue
+      const startOffset = method.getStart(parsedService)
+      const content = serviceSource.slice(startOffset, method.end)
+      teamPolicySourceEvidence.push({ path: 'src/service.ts', sourceDigest: hash(serviceSource), symbol: method.name.text,
+        startLine: parsedService.getLineAndCharacterOfPosition(startOffset).line + 1,
+        endLine: parsedService.getLineAndCharacterOfPosition(method.end - 1).line + 1, content, digest: hash(content) })
+    }
+  }
+  ts.forEachChild(node, collectTeamPolicyEvidence)
+}
+collectTeamPolicyEvidence(parsedService)
+assert.equal(teamPolicySourceEvidence.length, teamPolicyMethods.size)
 const toolEvidencePath = process.env.PO_GOLD_TOOL_EVIDENCE_PATH
 const toolEvidence = toolEvidencePath === undefined ? undefined : JSON.parse(await readFile(resolve(toolEvidencePath), 'utf8'))
 const request = async (path) => {
@@ -80,6 +106,8 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
   assert.equal(preview.releaseInput.modelProvider, 'pockapi')
   assert.equal(preview.releaseInput.modelId, 'gpt-6.1-sol')
   const savedProject = before.projects.find(p => p.id === project.projectId)
+  assert.equal(hash(await readFile(resolve('lib/index.js'))), preview.releaseInput.promptVersionsDigest, 'Team policy explanation must describe the evaluated bundle')
+  assert.equal(digestObject(preview.teamCatalogFacts), preview.releaseInput.teamCatalogDigest, 'Claims and reviewer selection must belong to the frozen team fingerprint')
   assert.equal(savedProject.prd, item.proposedPrd.trim())
   assert.equal(hash(item.proposedPrd), item.proposedPrdSha256, 'Original specification bytes must match the declared digest.')
   assert.equal(hash(savedProject.prd), hash(item.proposedPrd.trim()), 'Persisted PRD must match the exact normalization of the original bytes.')
@@ -127,6 +155,16 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
     installedVerificationTools,
     // 原样投影已有 active 记录，避免同能力 pending/active 并存时漏读；不新增或提升声明。
     activeCapabilityClaims: preview.teamCatalogFacts.claims.filter(claim => claim.status === 'active'),
+    capabilityClaimProjectionProvenance: {
+      source: 'preview.teamCatalogFacts.claims; activeCapabilityClaims is exactly its status=active subset, not additional claims.',
+      teamCatalogDigest: preview.releaseInput.teamCatalogDigest,
+      recomputedTeamCatalogDigest: digestObject(preview.teamCatalogFacts),
+      activeClaimLocations: preview.teamCatalogFacts.claims.flatMap((claim, catalogIndex) => claim.status !== 'active' ? [] : [{
+        catalogIndex, agentId: claim.agentId, capabilityId: claim.capabilityId, capabilityVersion: claim.capabilityVersion,
+        source: claim.source, claimProjectionDigest: digestObject(claim),
+      }]),
+    },
+    teamPolicySourceEvidence,
     ...(toolEvidence === undefined ? {} : { supplementalFrozenToolEvidence: toolEvidence }),
     sourceFingerprintProvenance: {
       manifestDomain: 'buildRequirementSourceManifest in src/workflow.ts: digestObject({ prd, technicalDesign: technicalDesign ?? "", sourceRefs, sourceBlocks }); sourceBlocks are constructed by the source parser.',
@@ -143,6 +181,8 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
       highRiskDimensions: ['data', 'state', 'permission', 'async', 'security', 'migration', 'release'],
       highOrCriticalRisk: 'Before Binding, Scenario Coverage requires a configured independent active project Reviewer. A non-executing Reviewer may satisfy this prerequisite without having execution capability claims.',
       missingReviewer: 'A later assignment-abstention expectation is invalid when a mandatory earlier independent-review prerequisite is missing.',
+      reviewerSelection: 'buildTeamCompositionSnapshot selects the first active member matching reviewer OR verifier delivery roles or its review/QA/test role terms, excluding the lead. It does not require reviewer-only deliveryRoles. preview.teamCatalogFacts.reviewerAgentId is the actual selected id, not the identity of every member with a reviewer label. Source implementation is frozen in teamPolicySourceEvidence.',
+      planningReviewIndependence: 'Scenario review compares the configured selected reviewer id with the planning author ids; a verifier delivery role is not by itself disqualifying at this read-only planning stage. This does not waive independent execution verification or later approval/delivery ownership checks.',
       pendingDecision: 'The deterministic unresolved material Decision gate precedes Scenario Coverage; an intentional decision block need not satisfy later-stage prerequisites.',
       capabilityDerivation: 'Service rule v3.3.14 derives data.change from a required data impact classified shared_data; this includes shared in-memory state and data-model contracts, not only databases. Only a solely stateless invocation-local value transform can use call_value. Required state maps to domain.state. Required consumer classified integration_boundary maps to integration.consumer and includes asynchronous consumers without HTTP; only synchronous direct module/function calls can use local_call. Preserve every required impact. Do not approve hasEligibleMember=true when its allowed Agent lacks the corresponding project-scoped trusted claims. Both benchmark task roles own the listed bounded source/test scope; testing.verification is additionally required only for the verifier role.',
     },

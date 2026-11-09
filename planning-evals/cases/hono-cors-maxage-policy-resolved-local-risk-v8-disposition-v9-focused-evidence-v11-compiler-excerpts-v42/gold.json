@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "releaseInput": {
+    "repositoryDigest": "a653813c3f94437223571fef955edad4ea20b690fa5b9343cc1e430e7672fbdc",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "2df506715a863061868429fc35634a83f4b729bd4fb0f0aff41f90e70b0c3750",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07cf0d8c73a93d38016af209e64e1087d28f08e0206ac77d7a:independent-gold-review:532665e8-6be6-477e-b0d8-5807789fe1e1",
+    "reviewedAt": "2026-11-09T17:59:18.336Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The original PRD explicitly fixes OPT-1 as hypothetical input without asserting a human Decision, so ready with no blocking reasons is appropriate. A material unresolved DEC-001 in B must instead block at decisions, before later review prerequisites; this approval does not independently approve the unsupplied B bundle. REQ-001, AC-001 through AC-003, DEC-001 and the task keys remain consistent. Construction-time TypeError validation, zero and omitted-value behavior, finite nonnegative-number compatibility, and preservation of other CORS behavior are supported by the supplied source. The exact writable owner scope correctly comprises the CORS implementation and regression test; build configuration establishes that published declarations are generated, not separately maintained owners. The test file is included in the compiler configuration, and the test script distinguishes compilation from runtime tests. Task roles, independent verification and its implementation dependency agree with the PRD. The allowed agents have the supplied active project-scoped claims needed for bounded invocation-local validation and testing; advertised capabilities alone are not treated as trusted claims. An independent active reviewer is also configured. Repository identity, base commit and release fingerprints agree across Gold and preview. Provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Original preparation placeholders are distinguishable from the supplied frozen preview. This assessment relies on Service-calculated, mechanically bound fingerprints and supplied evidence; I did not recompute digests, execute code, or provide human attestation. No candidate outputs were used.",
+    "goldDigest": "f6ffbfceb8d3baa10abaa950e35df2c26dbe28302a49e2afe99426648084f49e"
+  }
+}

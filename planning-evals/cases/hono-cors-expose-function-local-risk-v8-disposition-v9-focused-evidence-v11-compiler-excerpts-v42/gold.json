@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a653813c3f94437223571fef955edad4ea20b690fa5b9343cc1e430e7672fbdc",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "8bb1ba1d9c66bf7fc46349a6b1d5aff300b13f422cdbd2197309c390b762ec41",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ea84c585519e663016af209d3fd8087d19be071b87c774107:independent-gold-review:34fa651b-3438-4f57-87b7-79cfe9397121",
+    "reviewedAt": "2026-11-09T17:59:00.425Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 match the original PRD, including raw request Origin, request-local Context, once-per-request callback evaluation, empty-array behavior, asynchronous error propagation, compatibility, and compiler-checked signatures. The exact writable scope covers the implementation/type declaration and regression owner; build configuration establishes that dist declarations are generated, not separately maintained owners. The configured test script includes TypeScript checking before runtime tests, and the supplied compiler excerpts support enforced negative type assertions without requiring their runtime execution. TASK-IMPLEMENT and dependent independent TASK-VERIFY have distinct eligible members with active project-scoped trusted claims for the bounded API, TypeScript, asynchronous, consumer, failure-handling, security, and testing work. This request-local transformation does not itself require shared-data or persistent-state changes, so untrusted data.change and domain.state labels are not needed to justify eligibility. A separate active project reviewer satisfies the stated earlier review prerequisite. No unresolved material DEC-001, B variant, or C hypothetical is present in these case inputs; no human Decision is inferred. Ready denotes expected planning readiness, not task dispatch or completed implementation, and does not contradict the original preparation snapshot's runnable=false. Repository identity, commit, source evidence fingerprints, stable keys, and the frozen release-input values agree across the supplied records. The provenance explains the distinct manifest/evaluation digest domains and trim-only PRD normalization. Source, team, prompt, model, sampling, budget, and metric-policy fingerprints are supplied as Service-bound facts. Historical project reuse does not supply candidate evidence or create new attestations. This review uses only the supplied material: no tools, code execution, independent digest recomputation, or new human attestation.",
+    "goldDigest": "bac7927df689be88aa351c3f736989e1ec3c879b17d3cad4c85f9c50fb3ce3e6"
+  }
+}
