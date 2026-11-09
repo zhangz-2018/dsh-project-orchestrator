@@ -15,6 +15,7 @@
 - `zod` 从 `4.4.3` 更新到 `4.6.7`，运行时最低版本设为 `^4.6.6`；修复审计报告中的 GHSA-mrhx-c7xc-m3w5。
 - `source-map-js` 从 `1.2.1` 更新到 `1.2.2`；修复 GHSA-68fv-2mgg-jv7q。
 - pnpm overrides 将本仓库的传递依赖统一到上述精确版本。Harness 存储开发依赖固定旧版 Zod，与新版 Schema 共存时类型不兼容；统一版本后类型检查通过，没有修改业务 Schema 或降低校验。
+- 后续完整审计发现 Host 开发依赖链中的 `undici@8.11.2` 告警；现有 pnpm overrides 增加修复版 `8.12.2`，锁文件同步更新，隔离 Host 也已安装该版本。完整 `pnpm audit --json` 退出 0，各级漏洞均为 0；不会自动升级用户日常 Host。修复后完整 `pnpm verify` 再次通过，543 条 Node 测试、7 条浏览器测试及其余检查通过，安装包 168 个文件。
 - `pnpm audit --prod --audit-level high`：退出 0，报告 0 漏洞。审计范围是本项目生产依赖，不代表用户另行安装的 Host 依赖已升级。依赖下游不会自动继承本仓库的 pnpm overrides。
 
 ## 正式发布门禁：未通过
@@ -46,6 +47,8 @@
 CodeQL 首轮结果报告 12 个 high 和 1 个 medium 告警，集中在来源/路径文本解析的正则回溯、别名通配符替换及动态 shell 分支。已按实际归属修复：完整 token 扫描与定界裁剪、单通配符校验及字面量替换、Node 后端显式区分 shell 程序与字面量 argv；未关闭扫描或登记忽略。长路径、连续空白、PDF 换行及特殊字符 argv 回归已补充。
 
 安全修复后，本机完整 `pnpm verify` 再次退出 0：541 个 Node 测试（0 失败、0 跳过）、7 个浏览器测试及其余检查通过，安装包 167 个文件。报告 `output/release-security-verify-2026-11-09.log`。CodeQL 是否清除告警以 PR 最新提交的结果为准，不以修复完成推定扫描通过。
+
+正式验收恢复提交 `04015b0`（PR #29）的 Linux/macOS CI 与 CodeQL 均已通过。后续 undici 依赖修复及文档变更需检查对应新提交的 CI，正式真实模型门禁仍未通过。
 
 ## 发布顺序与恢复
 
