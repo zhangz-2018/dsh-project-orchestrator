@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "f6deee899a297142c4589a0228b42323885064802589d5638528f2d2f7db13d9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_018b2a8c577422eb016af283250cdc87d08b33a89b56ef3f01:independent-gold-review:4c3ebd18-69a5-44bf-98a1-2025f3dc933d",
+    "reviewedAt": "2026-11-10T02:36:43.908Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, exact writable owner scopes, task keys, verification dependency, and required evidence stages agree. The source supports counting the current exact-key handler-array length without a second counter. The configuration and fixed upstream build evidence support treating index.d.ts and dist as generated outputs, not separately maintained owners. Verification must rebuild before checking root-entry imports, and new negative type assertions must remain non-executing because the Mocha directory argument can also collect the type-compilation file. Both allowed assignees have the supplied project-scoped active trusted claims for the bounded work, including data.change and domain.state; the verifier additionally has testing.verification. Pending legacy claims and Persona are not used as eligibility evidence. The configured verifier can satisfy the stated independent read-only planning-review prerequisite. Ready describes expected planning readiness, not permission to execute or a claim that the original preparation record was already runnable. No material unresolved DEC-001 or B/C variant is supplied in this case, so no decision blocker is indicated. Historical project reuse does not invalidate the preserved scoped claims or establish candidate contamination. Repository, source, team, decision, model, sampling, budget, prompt-module, and metric-policy fingerprints agree across the supplied frozen release inputs; the documented normalization and digest domains explain the differing source fingerprints. This assessment relies on the supplied Service-bound digest and provenance evidence: I did not recompute hashes, execute code, create human attestations, or inspect candidate outputs.",
+    "goldDigest": "34bf8b05ae96a715a465f05c93a98b7781fc6444aa36747c61dd2ae59e820d37"
+  }
+}

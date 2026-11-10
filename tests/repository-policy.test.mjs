@@ -45,6 +45,38 @@ test('Repository Policy maps mutation rules only to matching requirement operati
   assert.equal(decisions.find((item) => item.subjectId === 'req-write')?.result, 'applicable')
 })
 
+test('Repository Policy preserves nested API headings for subjectless parameter constraints', () => {
+  const statement = 'Must be a non-negative number, Infinity included, or undefined; anything else throws a TypeError.'
+  const content = `# Library
+## API
+### retry(options?)
+#### options
+##### delay
+Type: number
+${statement}
+\`\`\`md
+##### invented
+This example MUST NOT become policy.
+\`\`\`
+### fetch(options?)
+#### options
+##### timeout
+${statement}
+`
+  assert.deepEqual(extractNormativePolicyStatementsV3(content), [
+    `API > retry(options?) > options > delay: ${statement}`,
+    `API > fetch(options?) > options > timeout: ${statement}`,
+  ])
+})
+
+test('Repository Policy retains normative headings and their nested constraints', () => {
+  assert.deepEqual(extractNormativePolicyStatementsV3('# Changes MUST include tests\n## API\n### Requests MUST validate input\nValues must be strings.'), [
+    'Changes MUST include tests',
+    'API > Requests MUST validate input: Requests MUST validate input',
+    'API > Requests MUST validate input: Values must be strings.',
+  ])
+})
+
 test('Repository Policy directory scope does not leak across unrelated modules', () => {
   const selector = derivePolicyTargetSelectorV3({ sourcePath: 'src/payments/AGENTS.md', statement: 'Changes MUST include automated tests.' })
   const decisions = mapPolicySubjectsV3(selector, [

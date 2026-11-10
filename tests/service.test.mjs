@@ -3169,7 +3169,7 @@ test('Planning V3 preserves all clauses in a coarse source anchor without duplic
       assert.match(reviewPrompt, /Preserve every clause, its label and concrete expected outcome inside one compound acceptance criterion/)
       for (const stagePrompt of [prompt, reviewPrompt]) {
         assert.match(stagePrompt, /Do not require a separate structured Acceptance key for each label sharing that sole anchor/)
-        assert.match(stagePrompt, /Missing a labelled clause or its independent verification remains a blocking omission/)
+        assert.match(stagePrompt, /Missing a labelled clause or its independent verification obligation remains a blocking omission/)
       }
       const proposal = [...store.requirementAnalysisProposals.records.values()][0]
       assert.equal(proposal.analysis.requirements[0].acceptanceCriteria[0].statement, source)

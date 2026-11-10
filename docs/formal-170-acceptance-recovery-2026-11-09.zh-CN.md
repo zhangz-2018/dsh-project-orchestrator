@@ -388,6 +388,16 @@ Zod 进一步只读核查发现真实采样方法与当前候选存在冲突：`
 
 回归证实生成器有明确的复合锚点规则，而审核器缺少同等规则。将规则移到生成与独立审核共用的阶段边界，明确同一锚点下保留全部 AC 标签、具体结果及独立验证义务；没有新增多个 key 的表示要求，也不允许条款遗漏、重复消费来源或合并未决业务选择为 ready。分析 persona 及重复的“分别输出”措辞同步消歧，协议更新为 `requirements-v2.15`。新增断言在旧构建失败、修复后五项相关回归通过。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 再次退出 0，585 项 Node、7 项浏览器及其余检查通过；日志为本机 `output/formal-170-compound-review-{before,after,verify}.log`。修复尚需隔离升级和真实复验，不能据提示词或模拟回归宣称效果改善。
 
+### v53 终态与政策主体、类型证据修复
+
+三个重点根请求均已终态：mitt once `planning-v3:a8542ec7-606f-46ec-a3f6-1f706dcc04a6` committed，全部适用评分通过；Ky HTTP `planning-v3:6c62e591-81ec-4961-9570-464aca5063aa` blocked；Zod trim 根请求因政策变化 superseded，其自动后继 `planning-v3:2e54984e-efda-49ed-8d01-0c98789eaf54` 在 scenario_coverage_review blocked。后继不计独立根，也不将 superseded 改记为成功。只读领域核验通过，三个请求均无批准、派发或交付，原账本及自动后继观察保留。
+
+Ky 的 README 中 `delay` 规范句本身没有参数名，原逐行提取丢失 `ky.retry(options?) > options > delay` 标题上下文，使后续无法可靠识别规则主体。提取器现保留嵌套 ATX 标题作用域，同级或更高标题终止旧作用域；不丢原规范句或标题内的规范要求，超过既有长度预算时仍保留原句。相同限制属于不同参数时不跨参数去重。提取版本为 `repository-policy-v3.4.2`。新增标题主体及规范性标题回归，原缺陷均可在修复前复现。
+
+Zod 后继错误推断 mini 的 boolean 输出为 unknown。固定 commit 的 `$ZodBooleanInternals<T>` 实际继承 `$ZodTypeInternals<boolean, T>`，`T` 是输入类型；审核证据遗漏了这层声明。只读内存编译使用该仓库 TypeScript 5.5.4，classic/mini 的具体 parse 调用和 output 投影均通过 boolean 断言，字符串赋值负例也得到编译拒绝；没有执行产品代码或修改上游。证据分配现将小型继承/投影声明与调用链同级，继续延后大型结构，保留原深度、单文件及共享字节上限。新压力夹具在旧安装 bundle 上失败，修复后通过；冻结真实库存复查保留五层关键声明、完整验证配置，总量 131,072 bytes。真实效果仍须新版本独立 Gold 和候选验证，不能据编译探针推定正式通过。
+
+本机证据包括 `source-ownership-focused-domain-facts.json`、`candidates-source-ownership-focused-policy-successors.json`、`source-ownership-terminal-{main,canary}.json`、`zod-boolean-oracle.json`、`zod-inherited-contract-capture.json`；对应日志为 `output/formal-170-contract-pressure-{before,old-runtime,after}.log`。相关 36 项回归通过。加入类型链及规范性标题修复后，完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，588 项 Node、7 项浏览器、类型与文档检查、固定样本及 173 文件安装包 smoke 通过，日志为 `output/formal-170-inherited-contract-final-verify.log`。完整 `pnpm audit --json` 退出 0，各级漏洞均为 0。正式模型门禁仍未通过，未发布。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

@@ -465,12 +465,9 @@ export class BindingStage {
           let node: ts.Node = declaration
           while (node.parent !== undefined && !ts.isSourceFile(node.parent)) node = node.parent
           // 本地 helper 不消耗跨模块深度；同声明的已选优先级阻止循环重复入队，仍受原总字节上限约束。
-          // 直接参数/返回契约与调用链同级，更深的类型投影排在运行时声明之后。
+          // 小型继承/投影契约决定输入输出含义，与调用链同级；大型结构仍由 add 延后，避免抢占预算。
           const moduleDepth = depth - (node.getSourceFile() === reference.getSourceFile() ? 1 : 0)
-          let referenceOwner = reference
-          while (referenceOwner.parent !== undefined && !ts.isSourceFile(referenceOwner.parent)) referenceOwner = referenceOwner.parent
-          const nestedTypeProjection = ts.isInterfaceDeclaration(referenceOwner) || ts.isTypeAliasDeclaration(referenceOwner)
-          if (node.parent !== undefined && ts.isSourceFile(node.parent) && ts.isStatement(node) && !ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) add(node, moduleDepth, rootRank + (moduleDepth < depth ? 0.001 : 0) + (typeOnly && (depth > 1 || nestedTypeProjection) ? 10_000 : 0))
+          if (node.parent !== undefined && ts.isSourceFile(node.parent) && ts.isStatement(node) && !ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) add(node, moduleDepth, rootRank + (moduleDepth < depth ? 0.001 : 0))
         }
       }
       for (let index = 0; index < declarationQueue.length; index += 1) {

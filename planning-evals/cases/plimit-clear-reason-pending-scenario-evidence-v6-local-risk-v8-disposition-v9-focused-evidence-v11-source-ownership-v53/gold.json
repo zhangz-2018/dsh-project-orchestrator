@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "releaseInput": {
+    "repositoryDigest": "15801d93cb0cff38c3bdd9c36f8cafb9432f8657925a4b8684cd889d2145b03a",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_091568a0f9f9e862016af2829303ec87d1a5ff99c813af61f8:independent-gold-review:62f7e6e5-279e-41b6-9ff8-aca0f1f41c4a",
+    "reviewedAt": "2026-11-10T02:34:14.439Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes AC-001 and AC-002 conditional, without authorizing OPT-1. Blocking at decisions with requirement-decision-pending for DEC-001, preserving REQ-001 and AC-001 through AC-003, requiring repository/requirements/decisions evidence, and producing no assignable tasks or assignment expectations are consistent. The empty team and capability claims do not introduce an earlier prerequisite: the supplied policy places this decision gate before Scenario Coverage and its independent-review requirement. Source evidence supports index.js as the runtime owner and index.d.ts as the maintained public contract owner; package.json provides no declaration-generation build. limitFunction forwards the existing clearQueue function and its declaration reuses LimitFunction, so these consumers do not require additional mandatory edit owners. test.js and index.test-d.ts are appropriate runtime and compile-time verification scopes, with package.json and supplied tsd discovery/compiler evidence supporting xo && ava && tsd. Gold and preview release fingerprints match, and supplied provenance explains the distinct original/saved PRD, manifest/evaluation source, and source/bundled prompt digest domains. Repository identity, commit, source hashes, team scope, empty resolved-decision input, model identity, budgets, sampling fingerprint, and metric-policy identity/version/fingerprint are consistently frozen. Historical operations are not candidate results or capability evidence. Approval is limited to this supplied pending case, not the unsupplied paired hypothetical case or execution readiness. I reviewed the supplied data without running tools, executing code, independently recomputing digests, or asserting human confirmation.",
+    "goldDigest": "f513aa162a98a4f44605536ca2191f0091976dd07cdadcbd1e5530d1d6ad576f"
+  }
+}

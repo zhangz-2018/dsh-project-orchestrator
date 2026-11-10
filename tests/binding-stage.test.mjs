@@ -649,6 +649,36 @@ test('BindingStage preserves complete transitive output type projections without
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage retains small inherited output contracts under runtime owner pressure', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-contract-pressure-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const noise = Array.from({ length: 500 }, (_, i) => `export function noise${i}() { return '${i}'; }`).join('\n')
+    const sources = {
+      'api.ts': `import { Flag, Codec } from './factory.js';\n${noise}\nexport function convert(): Codec<Flag> { return Codec(); }`,
+      'factory.ts': `import type { FlagInternals, CodecInternals } from './internals.js';\n${noise}\nexport interface Flag<T = unknown> { internals: FlagInternals<T>; }\nexport interface Codec<T> { internals: CodecInternals<T>; }\nexport const Codec = () => ({ parse: () => true });`,
+      'internals.ts': `import type { ValueInternals } from './base.js';\n${noise}\nexport interface FlagInternals<T> extends ValueInternals<boolean, T> {}\nexport interface CodecInternals<T> extends ValueInternals<T['internals']['output'], unknown> {}`,
+      'base.ts': `${noise}\n/** ${'The first generic is output and the second is input. '.repeat(20)} */\nexport interface ValueInternals<O, I> { output: O; input: I; }`,
+      ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`owner${i}.ts`, `export function Owner${i}() { return [${Array.from({ length: 36 }, (_, j) => `helper${j}()`).join(',')}]; }\n${Array.from({ length: 36 }, (_, j) => `function helper${j}() { return '${'runtime payload '.repeat(20)}${j}'; }`).join('\n')}`])),
+    }
+    const files = []
+    for (const [path, content] of Object.entries(sources)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((f, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: f.path, artifactDigest: f.digest })) }
+    const focus = `Modify convert in api.ts; inspect ${Array.from({ length: 10 }, (_, i) => `Owner${i} in owner${i}.ts`).join(' ')}.`
+    const contents = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, focus)
+    for (const [path, declaration] of [['factory.ts', 'interface Flag<T = unknown>'], ['internals.ts', 'interface FlagInternals<T> extends ValueInternals<boolean, T>'], ['base.ts', 'interface ValueInternals<O, I> { output: O; input: I; }']]) {
+      assert.ok(contents.find(c => c.path === path).content.includes(declaration), `Missing inferred output contract: ${path}`)
+    }
+    assert.ok(contents.reduce((n, c) => n + Buffer.byteLength(c.content), 0) <= 98_304)
+    assert.doesNotMatch(contents.find(c => c.path === 'base.ts').content, /function noise/)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage keeps late requested symbols and verification configuration inside the shared evidence budget', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-focused-'))
   try {

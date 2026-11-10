@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_019d17ce3ed7527e016af282aa4e8487d0b1f1b99352f67fc2:independent-gold-review:bd2aa7e4-15f7-48a6-acf9-39b37eef61a1",
+    "reviewedAt": "2026-11-10T02:34:37.054Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001 and AC-001 through AC-003 match the original PRD, preserve stable local keys, and accurately describe the existing delay calculation and the required hook and cancellation behavior. DEC-001 remains materially unresolved without human confirmation; conditional acceptance language does not authorize selecting either option. Gold correctly expects blocked readiness at decisions, with requirement-decision-pending referencing DEC-001 and evidence limited to repository, requirements, and decisions. Empty assignment expectations agree with the explicit prohibition on generating assignable tasks in this scenario. The supplied runtime and declaration sources, package exports, and absence of a declaration-generation build support index.js and index.d.ts as the binding owners; test.js and index.test-d.ts are verification scope, not additional implementation owners. Package configuration and supplied tsd discovery/compiler evidence support the stated runtime and compile-time verification entry points, without implying execution. Although test.js is explicitly truncated, the complete implementation, declaration, configuration, and relevant test evidence suffice for this decision-stage expectation. The empty team catalog does not introduce an earlier blocker because the unresolved material Decision gate precedes Scenario Coverage and its independent-review prerequisite. Gold and preview release fingerprints agree across repository, source, team, decisions, executing prompt bundle, model, sampling, budgets, and metric policy. Supplied provenance explains the distinct manifest/evaluation source digest domains and trim-only PRD persistence normalization. Original preparation placeholders do not override the supplied frozen preview release inputs. No candidate outputs were used, no human attestation or hypothetical resolution was inferred, and no code was executed or digests independently recomputed; digest binding is accepted as the supplied Service-calculated evidence.",
+    "goldDigest": "1120f38fd0be79f4daba4464548a71b36292e215ba6fd01b0888e29211f8750e"
+  }
+}
