@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "releaseInput": {
+    "repositoryDigest": "f755133c3198823a7f080a0d60aa1e5f20f85fdd4a3086bf50bf9888259f895e",
+    "sourceDigest": "5e533193126862fc4f53401e5fc20d83008473f5a4c15650ef71364fb0a18dd6",
+    "teamCatalogDigest": "2df506715a863061868429fc35634a83f4b729bd4fb0f0aff41f90e70b0c3750",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0123b3f482d6969d016af2901f60a487d197adacfcce7795c3:independent-gold-review:a3c129eb-9fb7-4037-9d93-32827c7a60ba",
+    "reviewedAt": "2026-11-10T03:32:00.664Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The original PRD explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision; the empty human-decision fingerprint is therefore consistent with ready readiness and no blocking reasons. A material unresolved DEC-001 in paired B must instead block at decisions, before later prerequisites. REQ-001, AC-001 through AC-003, the exact implementation/test binding scope, and TASK-IMPLEMENT followed by independent TASK-VERIFY are consistent with the supplied source and configuration. The current implementation lacks construction-time rejection, already preserves zero through its null check, and provides the compatibility baseline. The test file is included in both runtime discovery and tsconfig.spec.json; runtime tests alone are not treated as type checking. Build configuration establishes that published CORS declarations are generated, not separately maintained writable owners. The allowed implementer and verifier have distinct roles, available capacity, and supplied original project-scoped active trusted claims appropriate to this invocation-local validation change; broader member capability labels and personas are not used as trusted claims. No shared-data or persistent-state obligation requires the unclaimed data.change or domain.state capabilities. The selected planning reviewer is consistent with the frozen reviewer-selection policy. Repository, source, team, decision, prompt/build, model, sampling, budget, and metric-policy fingerprints agree across the supplied frozen release inputs; the distinct manifest/evaluation digest domains and PRD trimming normalization are explained. The original specification's pending preparation fields are distinguished from the subsequently supplied frozen preview. Review independence is supported by the supplied isolation record, with no candidates on this bundle or historical candidate outputs supplied. This conclusion is based solely on the provided review data and Service-calculated mechanical bindings; I did not execute code, recompute digests, or create any human attestation.",
+    "goldDigest": "68dea2805c623ea11464f54a1b8e28dced69d7bc5257cca95e1e75734bed5862"
+  }
+}

@@ -398,6 +398,22 @@ Zod 后继错误推断 mini 的 boolean 输出为 unknown。固定 commit 的 `$
 
 本机证据包括 `source-ownership-focused-domain-facts.json`、`candidates-source-ownership-focused-policy-successors.json`、`source-ownership-terminal-{main,canary}.json`、`zod-boolean-oracle.json`、`zod-inherited-contract-capture.json`；对应日志为 `output/formal-170-contract-pressure-{before,old-runtime,after}.log`。相关 36 项回归通过。加入类型链及规范性标题修复后，完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，588 项 Node、7 项浏览器、类型与文档检查、固定样本及 173 文件安装包 smoke 通过，日志为 `output/formal-170-inherited-contract-final-verify.log`。完整 `pnpm audit --json` 退出 0，各级漏洞均为 0。正式模型门禁仍未通过，未发布。
 
+### v54 独立 Gold 完成，候选与交付状态
+
+当前已安装 bundle 为 `600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947`，生产源码仍为 `db865f4`，没有采用后续诊断 bundle。普通离线 npm 安装逐字核对四项构建产物，8 项真实隔离 Host 兼容检查通过；报告为本机 `output/compatibility/dsh-0.2.2-rc.1-1794280116856.json`。兼容检查使用确定性适配器，不计真实模型规划成绩。
+
+25 份 `policy-context-v54` 独立 Gold 均已 approved，冻结原需求、能力、模型和质量阈值。原分组审阅中一次连接失败保留；另因在全部 Gold 冻结结束前启动了 Zod 候选，同期领域写入触发其他分组的只读前后快照断言，原失败没有改判。主环境静止后，单独补齐缺失的 10 份审阅，其余 15 份不重做。恢复汇总为 `gold-policy-context-recovery-summary.json`。后续必须先完成全部独立 Gold 冻结，再启动主环境任一候选。
+
+Zod 根请求 `planning-v3:899ffd83-4e2b-47b7-9ee3-4943cca698b5` 在政策变化后 superseded；自动后继 `planning-v3:540fb9de-f885-4d68-b512-5c71c04aa9e3` 在 scenario_completion blocked。新增小型类型契约已进入证据，但核心解析、codec helper 及参数规范化的完整声明又被其他依赖挤出，新增测量入口的异常场景也未形成足够具体的校验与调用机制。原类型链检查只覆盖类型，不证明运行时闭包完整。根请求与后继均保留，后继不计独立根。
+
+Ky 根请求 `planning-v3:b8f0ae9f-ce4f-455c-a358-d4a2601a60c5` 同样 superseded；后继 `planning-v3:5f8127b6-1831-4355-a3ec-d2cc762ed130` 在 task_plan blocked。标题上下文已被识别，但拒绝理由将 hooks、retry、timeout、ky.retry 等多个 README API 规范都列为本次 HTTPError 变更必须补充的验证链；规则适用范围与相应证据选择仍需核实，不能删规则或把冻结范围外的改动自动加入任务。终态观察与领域核验为 `candidates-policy-context-ky-first-policy-successors.json`、`policy-context-ky-first-domain-facts.json`；两条根请求均无任务派发、人工批准或交付。
+
+本轮只读诊断比较了公开类型根、显式小模块依赖、大型结构依赖和声明排序。仅调整排序未同时保留全部必要声明。另一个派生 bundle 实验将共享容量从 128 KiB 增至 160 KiB，九个检查的声明标识均出现；该实验没有安装、没有完成 AST 全文比对或新真实模型验证，也未修改生产预算、测试断言或正式阈值，不是已采用的修复。材料为本机 `debug-evidence-priorities.json`、`probe-call-type-ranking.json`。
+
+greeting 同构建根请求因政策变化生成后继 `planning-v3:9e9cd022-375f-4766-82cb-8243a7be5923`，已 committed；四项独立审核通过，两项分配和两项预检通过。revision 3、planDigest `21aed08d2675877201267d16b55e25a160c29fb93d20541dd2674740bd157b05` 的[具体计划](canary-plan-policy-context-review-2026-11-10.zh-CN.md)尚未获得人工批准，未登记或执行。用户本次批准的旧最终 commit `d5bbf64bad16a3c98cb21290395fdfaba3c4cc6d` 已正式登记人工审阅、确认交付和导出，回执 `canary-recovery/export-verified-authorized-v50.json` 为 `canary_v2_verified`；该跨构建结果不能代签新计划或满足同版发布门禁。
+
+所有模型操作终态后，已保存 `policy-context-terminal-{main,canary}.json` 完整领域快照，并停止隔离 3087、3088 Host，没有遗留真实请求。日常 3080 未改。当前新增文件仅为 Gold、候选失败 manifest 和验收文档，没有新增生产代码修改；仍缺正式有效规划批次和同构建交付，不具备发布资格。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

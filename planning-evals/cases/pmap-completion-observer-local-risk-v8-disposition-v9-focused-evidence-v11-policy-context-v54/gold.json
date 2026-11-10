@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "0f3e22f3860cf3a2ed2ab168474d81d196414ed808f75d2e9e579deb9d643d53",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "af1759aceac798bbc1a720e9a258f436c6734166a2fe7166cc8a1b6ae319cd2a",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0b02b2d83a8310a9016af28d4974e887d1850a6dc7211f33c5:independent-gold-review:6ccc0fd3-1409-4d35-b3fd-62f1fdda7b8a",
+    "reviewedAt": "2026-11-10T03:20:02.883Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen bundle. REQ-001, AC-001 through AC-003, repository identity/base commit, exact writable scope, evidence stages, and readiness agree with the original PRD. The complete implementation and declaration evidence supports index.js and index.d.ts as maintained owners, with test.js and index.test-d.ts as regression owners; package.json establishes the existing xo/AVA/tsd verification entry without requiring configuration edits. The task contract preserves implementation and independent verification, the verification dependency, and both relationships covering every required AC. The designated implementer and verifier have the supplied active, project-scoped trusted claims needed for the stated state/data/async/consumer impacts; pending legacy claims and Persona fields are not used as eligibility evidence. The selected verifier can serve as the configured read-only planning reviewer under the supplied independence policy, without requiring reviewer-only delivery roles. Historical project reuse and retained old-version operations do not contradict the stated absence of candidates on this bundle. This case contains no material unresolved DEC-001 or B/C scenario requiring a different readiness expectation. The supplied provenance explains the distinct original/saved PRD, manifest/evaluation-source, and source/bundle fingerprint domains; the Gold and preview release fingerprints agree, including team, decisions, model, policy, sampling, and budgets. Truncated existing test excerpts do not prevent this bounded planning review because the maintained implementation/declaration owners and verification discovery evidence are supplied. Approval is based solely on the provided review data and Service-bound fingerprints, not independent digest recomputation, code execution, new human attestation, or candidate results.",
+    "goldDigest": "bf105865a745c114f33957a02c123e6a070f1df76ce675e0259c1b5a44c5ae76"
+  }
+}

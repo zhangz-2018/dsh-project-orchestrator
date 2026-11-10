@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-policy-context-v54-ky-first",
+  "createdAt": "2026-11-10T03:35:46.925Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+      "goldDigest": "d23800ae1a037884695f9b973656c6fdd24a877a3115892d12995e4b7a367cf4"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+      "attemptId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54/fresh-1",
+      "operationId": "planning-v3:b8f0ae9f-ce4f-455c-a358-d4a2601a60c5",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-11-10T03:35:46.968Z",
+      "completedAt": "2026-11-10T03:40:42.296Z"
+    }
+  ]
+}

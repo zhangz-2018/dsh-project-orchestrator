@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "releaseInput": {
+    "repositoryDigest": "0f3e22f3860cf3a2ed2ab168474d81d196414ed808f75d2e9e579deb9d643d53",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04d228217c3b758b016af28d3097f487d186d3d06f4ceec4a3:independent-gold-review:884e64eb-9786-4dc9-90a0-4bd68aa5791e",
+    "reviewedAt": "2026-11-10T03:19:29.363Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD expressly leaves material DEC-001 unresolved and makes AC-001 conditional, so the expected requirement-decision-pending block at decisions, with repository/requirements/decisions evidence and no assignable tasks or assignments, is appropriate. REQ-001, AC-001 through AC-003, DEC-001 and the paired-case identity are consistent. The supplied implementation and package exports support index.js and the maintained index.d.ts as the binding owners; test.js and index.test-d.ts are the runtime and compile-time verification scope, with xo && ava && tsd supported by package configuration. Shared runtime and declaration contracts require inspection to preserve other exports, without expanding mandatory edits to read-only consumers. The empty team and absence of capability claims do not invalidate this expectation because the unresolved-decision gate precedes Scenario Coverage and assignment prerequisites. Supplied provenance coherently distinguishes original versus trimmed saved PRD, manifest versus evaluation source digests, and service source versus executing-bundle fingerprints. Gold and preview release inputs agree on repository, source, team, decision, prompt, model, sampling, policy and budget fingerprints. The original specification's null release input and remaining preparation items describe the earlier specification state; the supplied preview provides the frozen release input. Historical operations are not treated as current candidate results, capability evidence or human resolution, and no resolution of the paired hypothetical case is inferred. Approval concerns the planning expectation only, not implementation correctness, test success or task authorization. I inspected the supplied review data without tools or code execution and rely on the Service's mechanical digest bindings, not independent digest recomputation.",
+    "goldDigest": "a228ce2dd45a3466bd072a926c316c5c9fa86d7d2c7437dc8c2c989a260f934f"
+  }
+}

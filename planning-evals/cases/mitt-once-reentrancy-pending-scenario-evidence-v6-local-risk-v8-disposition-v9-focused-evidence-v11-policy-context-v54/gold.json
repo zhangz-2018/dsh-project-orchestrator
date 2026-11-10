@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04f683d837ce75f2016af29040ecc887d28585a7ea0c3d9c81:independent-gold-review:f71c4da8-4d4d-47d4-b2cd-628c17b43bbf",
+    "reviewedAt": "2026-11-10T03:32:31.974Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this frozen pending-decision case. The original PRD explicitly leaves material DEC-001 unresolved and makes AC-001 conditional, so B must stop at decisions with requirement-decision-pending for DEC-001, without selecting OPT-1 or OPT-2 or producing assignable tasks. Required evidence stages, REQ-001, AC-001 through AC-003, repository identity/base commit, paired-case identity, empty task expectations and empty assignment expectations agree with that specification. The complete supplied source establishes src/index.ts as the implementation and public-type owner; tests and configuration are inspection/verification scope, while index.d.ts and dist are generated outputs rather than separately maintained owners. Build-before-test and distinct runtime/type-check validation are supported by the supplied configuration and upstream declaration-generation evidence. The empty team and capability claims do not invalidate this expectation because the deterministic decision gate precedes scenario-review and assignment prerequisites. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains, PRD trimming, and executing-bundle prompt fingerprint. Model, sampling, budgets and metric-policy fingerprints are consistently frozen. Historical project reuse does not establish capability scope or resolve DEC-001; no historical candidate outputs inform this review. No hypothetical C input is treated as a human decision. This approval concerns the planning expectation only, not execution or release readiness. Digests and mechanical bindings are accepted as supplied Service evidence; I did not recompute hashes, execute code, or provide human attestation.",
+    "goldDigest": "1324e5d51bea9890e981b8685a36d3d8b399dd74f6c500ec0ab3ff615370304b"
+  }
+}

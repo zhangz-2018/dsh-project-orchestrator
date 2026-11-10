@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts",
+        "packages/bench/stringbool-acceptance.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d47832b55e2b681494409bbd05566adb5799d4f17ef95fb5bf3780477c0aae52",
+    "sourceDigest": "f1bd2e857732f4aac6e3eb2ea21adee2f21f28ab50436fdbe605332447386b5b",
+    "teamCatalogDigest": "45831fdf6eeca4730d19d4a9941d40974c67e35b0dfd8608978b3e24895d704e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0efb568c5d87e5da016af28ce7f4b887d1bd00e80c1ee924fe:independent-gold-review:d9939b54-c66e-4dce-94ce-83ac5499df03",
+    "reviewedAt": "2026-11-10T03:18:25.606Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001, AC-001 through AC-003, both task keys, the verification dependency, and required evidence stages agree with the original PRD. The source supports a bounded change in core/api.ts: classic and mini already consume the shared parameter type and forward arguments, normalizeParams preserves additional parameters, and exports expose the existing factories. These forwarding consumers are inspection owners, not mandatory edits; the supplied build configuration supports treating generated declarations as build outputs rather than separately maintained owners. The exact writable scope includes the implementation, both regression files, and the explicitly absent, planned measurement entry. Trim is opt-in and input-only, with existing case normalization, untrimmed vocabularies, non-string rejection, and encode selection/fallback behavior preserved. Runtime and type checking are distinguished, and the measurement plan retains baseline-before-product-edit sampling, interleaved revision comparisons, retained-heap measurements, and separate classic/mini bundle obligations without claiming successful execution. The eligible implementer and verifier have the relevant active project-scoped trusted claims, roles, availability, and assignment membership; neither Persona capabilities nor pending legacy claims are needed. Supplied provenance preserves the historical project scope and separates old-version operations from this unevaluated bundle. The selected planning reviewer is consistent with the documented selection and independence policy. Ready denotes planning readiness, not execution or dispatch approval. No material unresolved DEC-001 is supplied for this case; an unresolved material DEC-001 in B must still block at decisions, and fixed hypothetical C must not be represented as a human Decision. Gold and preview release fingerprints agree, with the distinct PRD normalization, source-manifest, evaluation-source, and executing-module digest domains explained. Repository, team, decision, model, sampling, budget, and policy fingerprints are coherent on the supplied Service-bound evidence. I did not execute code, independently recompute digests, create human attestations, or use candidate outputs. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "ea5d70d9ba1b02fdddfbb300cb8f2106070215d1cfb75e9200628eef91dcaf76"
+  }
+}
