@@ -8,7 +8,7 @@ import { buildRepositoryEvidenceRetrievalReportV3, buildRepositoryStackProfileV3
 
 const digest = (value) => createHash('sha256').update(value).digest('hex')
 
-test('retrieval preserves source-declared measurement entry and local sampling harness outside product requirements', async () => {
+test('retrieval preserves source-declared measurement entry and local sampling harness outside product requirements', { timeout: 5000 }, async () => {
   const files = {
     'package.json': '{}',
     'src/api.ts': 'export function convert(value) { return value }',
@@ -17,8 +17,8 @@ test('retrieval preserves source-declared measurement entry and local sampling h
   }
   const { root, snapshot } = await fixture(files)
   try {
-    snapshot.verifiedCommands = ['nub --expose-gc packages/bench/memory.ts']
-    snapshot.plannedVerificationEntries = [{ command: 'nub --expose-gc packages/bench/new.ts', targetPath: 'packages/bench/new.ts', targetState: 'absent', templateCommand: snapshot.verifiedCommands[0], declarationDigest: 'a'.repeat(64) }]
+    snapshot.verifiedCommands = ['-'.repeat(100_000), 'nub --expose-gc packages/bench/memory.ts']
+    snapshot.plannedVerificationEntries = [{ command: 'nub --expose-gc packages/bench/new.ts', targetPath: 'packages/bench/new.ts', targetState: 'absent', templateCommand: snapshot.verifiedCommands[1], declarationDigest: 'a'.repeat(64) }]
     const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: snapshot.projectId, operationId: snapshot.operationId, repository: snapshot,
       requirements: [{ key: 'REQ-API', statement: 'Change src/api.ts convert behavior', acceptanceStatements: [] }], inspectionFocus: 'The authorized measurement entry must be created before running.' })
     for (const path of ['src/api.ts', 'packages/bench/memory.ts', 'packages/bench/harness.ts']) assert.ok(report.selectedEvidenceIds.includes(path), path)
@@ -123,6 +123,25 @@ test('Repository Evidence prioritizes exact requested files over broad vocabular
     const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot, selectionLimit: 2,
       requirements: [{ key: 'REQ-OWNER', statement: 'Maintain boolean parsing options compatibility fixtures declarations public factory in src/api.ts.', acceptanceStatements: ['Verify tests/stringbool.test.ts.'] }] })
     assert.deepEqual(new Set(report.selectedEvidenceIds), new Set(['src/api.ts', 'tests/stringbool.test.ts']))
+  } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
+test('Repository Evidence retains exact inspection owners omitted by summarized requirements before expanding barrels', async () => {
+  const context = await fixture({
+    'src/api.ts': "export * from './barrel.js'",
+    'src/barrel.ts': Array.from({ length: 90 }, (_, i) => `export * from './noise-${i}.js'`).join('\n'),
+    ...Object.fromEntries(Array.from({ length: 90 }, (_, i) => [`src/noise-${i}.ts`, 'export const compatibility = true'])),
+    'public/schemas.ts': "import { decode } from './parse.js'; export const stringbool = decode",
+    'public/parse.ts': 'export const decode = (value: unknown) => value',
+    'tests/stringbool.test.ts': 'export {}',
+  })
+  try {
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
+      inspectionFocus: 'Inspect public/schemas.ts and tests/stringbool.test.ts read-only; absent/new.ts is not existing evidence.',
+      requirements: [{ key: 'REQ-OWNER', statement: 'Maintain compatibility in src/api.ts.', acceptanceStatements: ['Preserve public stringbool parsing.'] }] })
+    for (const path of ['src/api.ts', 'public/schemas.ts', 'public/parse.ts', 'tests/stringbool.test.ts']) assert.ok(report.selectedEvidenceIds.includes(path), `Missing original inspection owner ${path}`)
+    assert.equal(report.selectedEvidenceIds.includes('absent/new.ts'), false)
+    assert.ok(report.selectedEvidenceIds.length <= 80)
   } finally { await rm(context.root, { recursive: true, force: true }) }
 })
 

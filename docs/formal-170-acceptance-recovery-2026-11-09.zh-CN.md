@@ -362,6 +362,24 @@ Zod 进一步只读核查发现真实采样方法与当前候选存在冲突：`
 
 该阶段追加证据为 `config-barrel-final-domain-proof.json`、两环境的 `domain-after-config-barrel-final.json`、`domain-after-local-boundary-restart-3.json`、`domain-after-local-boundary-restart-4.json` 及 `local-boundary-installed.json`。首次严格检查及本地核验脚本断言修正的失败日志均保留，不覆盖成通过记录。没有在此 bundle 上启动新 Gold 或模型候选；Zod 原样本范围的调整仍待用户决定。
 
+### v52 终态、已批准交付与源码来源修复
+
+用户已批准 greeting 最终 commit `d5bbf64bad16a3c98cb21290395fdfaba3c4cc6d`。人工审阅、确认交付及 canary 导出均已通过正式接口完成，导出复核通过；不重复索要已授权批准。具体见 [最终交付审阅](canary-delivery-review-recovered-2026-11-10.zh-CN.md)。该记录跨构建，仍不能替代正式发布构建的同版 canary。
+
+用户批准 Zod 测量范围调整后，新版 25 份独立 Gold 已 approved。`measurement-v52` 的三个重点根请求保留为失败：Zod trim 在 scenario_completion 缺少公开 factory/codec/parse 源码；mitt once 在 plan_review 错误判定运行器不加载类型测试；Ky HTTP 根请求因 policy superseded，后继在 scenario review 使用未实例化泛型方法的 `ReturnType` 形成错误的精确类型断言。后继不是有效独立根，均不计正式通过。73 个主环境操作及两个新版 canary 操作已终态，无批准、派发、TaskRun 或交付。证据为本机 `measurement-domain-terminal.json`、`candidates-measurement-focused.json` 及 `candidates-measurement-focused-policy-successors.json`。
+
+本轮修复位于实际证据输入与读取层：计划后仓库检查沿当前 V3 计划读取不可变来源；append/局部 revise 保留未被替换包的验证声明，缺失、篡改、跨项目或冲突均拒绝。原始冻结来源点名的只读路径参与精确检索，本地 helper 不消耗跨模块深度，公开 barrel API 沿真实 TypeScript 导出追踪。大型类型投影后移，同名 API 的多个真实实现与既有大类共用一次 32 KiB 补充额度，最高 128 KiB，不按出口数叠加。命令路径改用完整 token 扫描，消除旧正则的回溯风险；CodeQL 是否通过仍以新提交检查为准。
+
+场景审核协议更新为 `scenario-coverage-review-v3.3.23`：泛型输出须针对具体调用结果或支持的显式实例化；运行器发现须合并完整命令的位置参数与配置；区分文件加载与函数调用；新增已授权回归文件不要求事先存在。没有修改 Gold 或降低正式阈值。真实 Zod 冻结库存离线检查已提供两套公开工厂、解析调用、codec 及转换 helper 五项源码事实，总计 131,072 bytes；固定 commit 中不存在的 mini 测试仍保持不存在，未调用模型或执行目标仓库。
+
+压力测试首版夹具因单声明超过 16 KiB 文件上限而未触及总预算，失败保留；改为十个各自低于文件上限的真实实现后，BindingStage 28 项回归通过，原总量上下界断言保留。当前构建仍需完整验证、隔离安装和真实复验，不据离线检查宣称正式验收通过。
+
+随后完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：585 项 Node、7 项浏览器测试、类型及文档检查、固定样本和 173 文件 package smoke 通过；完整 `pnpm audit --json` 五级漏洞均为 0。日志分别为本机 `output/formal-170-source-ownership-verify-6.log`、`output/formal-170-source-ownership-audit.json`。安装包通过 `npm pack --ignore-scripts` 和普通离线隔离安装，四个文件逐字一致；新 bundle 为 `578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418`。8 项真实 Host 兼容检查通过，报告为 `output/compatibility/dsh-0.2.2-rc.1-1794277805213.json`，不计真实模型成绩。
+
+重启时主环境完整快照一致；canary 首次严格检查失败，既有迁移为 v52 的两项 draft Task 补建两个 todo Issue，更新 Task 的 issueId/updatedAt 与 Project 的 issueIds/updatedAt。逐字段重建迁移预期后完整快照相等，没有其他事实变化；主环境 260 条和 canary 9 条人工能力、原计划和失败记录保留，无批准、派发或交付。首次失败及独立增量证明分别保留于本机 `output/formal-170-source-ownership-restart.log`、`source-ownership-restart-projection-proof.json`，不能称首次重启无变更。
+
+新历史验证覆盖 38 组证据及 61 个项目，不推断后继 bundle，也不把后继计为独立根。首次历史核验误用领域全快照作为带 batchId 的事实报告而失败；补作正式只读事实核验后，重新逐字核验安装文件并生成新时间回执，原文件与失败均保留，不回填时间。新样本版本 `source-ownership-v53` 仅机械隔离版本名，25 份原需求及项目 ID 不变。独立 Gold 和新 canary 规划已启动，尚无本版正式通过结论。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

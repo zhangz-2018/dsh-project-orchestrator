@@ -253,7 +253,8 @@ export class BindingStage {
     const contents: BindingEvidenceContent[] = []
     // Multi-layer public factories can require more than 64 KB even after
     // comment compaction. Keep their frozen declaration closure bounded at
-    // 96 KB, with one additional 32 KB allowance for a large class below.
+    // 96 KB, with one additional 32 KB allowance for a large class or
+    // multiple implementations of the same public API below.
     let remainingBytes = focus === undefined ? 65_536 : 98_304
     const references = manifest.references.filter((item) => item.kind === 'repository_evidence')
     const explicitPaths = focus === undefined ? [] : references.filter(r => focus.includes(r.artifactId)).map(r => r.artifactId)
@@ -374,12 +375,15 @@ export class BindingStage {
       const program = ts.createProgram([...sources.keys()].filter(path => /\.[cm]?[jt]sx?$/u.test(path)).map(frozenPath), { noLib: true, types: [], allowJs: true, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.Latest }, host)
       const checker = program.getTypeChecker()
       const declaringPaths = new Set<string>()
+      // 同名公开 API 的不同实现出口必须各有声明；重导出到同一 owner 不重复计算。
+      const publicRuntimeOwners = new Map<string, Set<string>>()
       const namesByPath = new Map<string, Set<string>>()
       const selected = new Set<ts.Statement>()
       const declarationQueue: Array<{ node: ts.Statement; depth: number; rootRank: number }> = []
       const statementPriority = new Map<ts.Statement, number>()
       const add = (node: ts.Statement, depth: number, rootRank: number): void => {
-        const priority = rootRank + depth / 100
+        // 大型结构类型常枚举大量无关方法；先闭合可执行 owner，小型直接参数契约仍保持同级。
+        const priority = rootRank + depth / 100 + ((ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) && Buffer.byteLength(node.getText()) > 2_048 ? 10_000 : 0)
         if (depth > 4 || (statementPriority.get(node) ?? Infinity) <= priority) return
         const path = node.getSourceFile().fileName.slice(prefix.length)
         if (!sources.has(path)) return
@@ -423,17 +427,27 @@ export class BindingStage {
             }
           }
         }
-        // A public type may be named in prose rather than an existing test.
-        // Resolve only its actual type export, never same-named runtime helpers
-        // elsewhere in the barrel graph.
+        // 原文点名的公开 API 也可能只经过 barrel 导出；沿实际导出符号建立根，不能依赖碰巧存在的测试调用。
         if (parsed.statements.some(ts.isExportDeclaration)) {
           const moduleSymbol = checker.getSymbolAtLocation(parsed)
-          const terms = new Set(focus.match(/[A-Za-z_$][A-Za-z0-9_$]*/gu) ?? [])
+          const terms = [...new Set(stripSourcePathTokens(focus).match(/[A-Za-z_$][A-Za-z0-9_$]*/gu) ?? [])]
+          // boolean output 等基础类型描述不应额外建立同名运行时工厂的独立根。
+          const genericRuntimeNames = new Set(['string', 'boolean', 'number', 'bigint', 'symbol', 'undefined', 'null', 'unknown', 'any', 'void', 'object', 'true', 'false', 'input', 'output', 'required', 'default'])
           for (let symbol of moduleSymbol === undefined ? [] : checker.getExportsOfModule(moduleSymbol)) {
-            if (!terms.has(symbol.name)) continue
+            const requestedRank = terms.indexOf(symbol.name)
+            if (requestedRank < 0) continue
+            const genericRuntime = genericRuntimeNames.has(symbol.name)
             if (symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol)
             for (const declaration of symbol.declarations ?? []) {
-              if (ts.isTypeAliasDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)) add(declaration, 0, 0)
+              let node: ts.Node = declaration
+              while (node.parent !== undefined && !ts.isSourceFile(node.parent)) node = node.parent
+              if (genericRuntime && !ts.isTypeAliasDeclaration(node) && !ts.isInterfaceDeclaration(node)) continue
+              if (ts.isVariableStatement(node) || ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) {
+                const owners = publicRuntimeOwners.get(symbol.name) ?? new Set<string>()
+                owners.add(node.getSourceFile().fileName)
+                publicRuntimeOwners.set(symbol.name, owners)
+              }
+              if (node.parent !== undefined && ts.isSourceFile(node.parent) && ts.isStatement(node) && !ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) add(node, 0, ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node) ? 0 : requestedRank)
             }
           }
         }
@@ -450,7 +464,13 @@ export class BindingStage {
           if (ts.isSourceFile(declaration) || ts.isImportSpecifier(declaration) || ts.isNamespaceImport(declaration)) continue
           let node: ts.Node = declaration
           while (node.parent !== undefined && !ts.isSourceFile(node.parent)) node = node.parent
-          if (node.parent !== undefined && ts.isSourceFile(node.parent) && ts.isStatement(node) && !ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) add(node, depth, rootRank)
+          // 本地 helper 不消耗跨模块深度；同声明的已选优先级阻止循环重复入队，仍受原总字节上限约束。
+          // 直接参数/返回契约与调用链同级，更深的类型投影排在运行时声明之后。
+          const moduleDepth = depth - (node.getSourceFile() === reference.getSourceFile() ? 1 : 0)
+          let referenceOwner = reference
+          while (referenceOwner.parent !== undefined && !ts.isSourceFile(referenceOwner.parent)) referenceOwner = referenceOwner.parent
+          const nestedTypeProjection = ts.isInterfaceDeclaration(referenceOwner) || ts.isTypeAliasDeclaration(referenceOwner)
+          if (node.parent !== undefined && ts.isSourceFile(node.parent) && ts.isStatement(node) && !ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) add(node, moduleDepth, rootRank + (moduleDepth < depth ? 0.001 : 0) + (typeOnly && (depth > 1 || nestedTypeProjection) ? 10_000 : 0))
         }
       }
       for (let index = 0; index < declarationQueue.length; index += 1) {
@@ -539,11 +559,9 @@ export class BindingStage {
       const largeClassPaths = new Set([...declaringPaths].filter(path => [...selected].some(node => node.getSourceFile().fileName === frozenPath(path)
         && ts.isClassDeclaration(node) && Buffer.byteLength(node.getText()) > 24_576)
         && Buffer.byteLength(excerptFor(path, 32_768)) > 24_576))
-      // An intact large class plus its independent normalization/type owners
-      // cannot share the ordinary 96 KB envelope. One bounded 32 KB allowance
-      // covers this case; adding more classes never multiplies the allowance.
-      // Compact comments first rather than spending it on documentation.
-      if (largeClassPaths.size > 0) remainingBytes += 32_768
+      // 大类或同名 API 的多个真实出口需要额外的调用/类型闭包；共用一次 32 KiB 额度。
+      // 别名、出口数量和大类数量均不叠加，总上限仍为 128 KiB，未采到的内容仍标记截断。
+      if (largeClassPaths.size > 0 || [...publicRuntimeOwners.values()].some(owners => owners.size > 1)) remainingBytes += 32_768
       for (const [path, source] of sources) {
         if (!declaringPaths.has(path) || verificationPaths.has(path)) continue
         source.excerpt = excerptFor(path, largeClassPaths.has(path) ? 32_768 : explicitPaths.includes(path) ? 24_576 : 16_384)

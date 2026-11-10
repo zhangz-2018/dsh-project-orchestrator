@@ -3,8 +3,9 @@ import { isAbsolute, join, posix, relative, sep } from 'node:path'
 import ts from 'typescript'
 import type { RepositoryContextSnapshotV3Record, RepositoryEvidenceRetrievalReport } from '../types.js'
 import { digestObject } from '../workflow.js'
+import { sourcePathTokens } from './source-path-tokens.js'
 
-const INDEX_VERSION = 'repository-evidence-index-v3.6.8'
+const INDEX_VERSION = 'repository-evidence-index-v3.6.9'
 const DEFAULT_SELECTION_LIMIT = 2_000
 const PER_REQUIREMENT_LIMIT = 80
 const MAX_INDEXED_SOURCE_BYTES = 512 * 1024
@@ -28,7 +29,8 @@ export function verificationEntryEvidencePathsV3(repository: Pick<RepositoryCont
   const templates = new Set((repository.plannedVerificationEntries ?? []).map(entry => entry.templateCommand))
   const selected = new Set<string>()
   for (const command of repository.verifiedCommands ?? []) {
-    const tokens = command.match(/[A-Za-z0-9_./-]+\.[cm]?[jt]sx?/gu) ?? []
+    // 扫描完整 token 后检查扩展名，避免无匹配长输入在每个后缀上重复回溯。
+    const tokens = sourcePathTokens(command).filter(path => /\.[cm]?[jt]sx?$/u.test(path))
     for (const token of tokens) {
       const candidates = paths.has(token) ? [token] : [...paths].filter(path => path.endsWith(`/${token}`))
       if (candidates.length !== 1) continue
@@ -93,7 +95,7 @@ export interface BuildRepositoryEvidenceReportInput {
   operationId: string
   repository: RepositoryContextSnapshotV3Record
   requirements: RepositoryEvidenceRequirementInput[]
-  /** 冻结来源及适用政策的原文，仅辅助发现验证脚本；不新增产品需求或写权限。 */
+  /** 冻结来源及适用政策原文，用于保留精确点名的检查 owner 和验证脚本；不新增产品需求或写权限。 */
   inspectionFocus?: string
   selectionLimit?: number
   indexFileLimit?: number
@@ -341,7 +343,9 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
   const rankedByRequirement = new Map<string, Array<{ file: IndexedFile; score: number; matchedTerms: string[] }>>()
   for (const seed of querySeeds) {
     const requirement = input.requirements.find(item => item.key === seed.requirementKey)!
-    const source = [requirement.statement, ...requirement.acceptanceStatements].join('\n')
+    // 摘要可能省略只读 factory/consumer 路径；先保留原始来源点名的实际文件，再展开依赖。
+    // 原文只影响精确路径优先级，不扩大词法查询或创建缺失文件的 evidence ref。
+    const source = [requirement.statement, ...requirement.acceptanceStatements, input.inspectionFocus ?? ''].join('\n')
     const ranked = indexed.map((file) => {
       const scored = evidenceScore(file, seed.terms)
       return { file, ...scored, score: scored.score + (source.includes(file.path) ? 10_000 : 0) }

@@ -23,6 +23,7 @@ import {
   VerificationService,
   assertExecutable,
   buildPlanningCheckpointV3,
+  buildRequirementSourceManifest,
   digestObject,
   createHttpHandler,
   planDigest,
@@ -1789,6 +1790,42 @@ test('Repository command discovery honors declared runners and grounds type and 
     await service.store.planningOperations.put('revise-source', { id: 'revise-source', projectId: project.id, sourceInputId: frozenSource.id, sourceInputDigest: frozenSource.sourceInputDigest })
     assert.equal((await service.captureRepositorySnapshotV3(project, 'revise-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'An unpublished revision must use its frozen batch rather than the old Project PRD')
     assert.equal((await service.captureRepositorySnapshotV3(project, 'review-freshness', 'revise-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Review freshness must reuse the same frozen source')
+    await service.store.planSnapshots.put('revise-plan', { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'revise-source' })
+    const publishedRevision = { ...project, planningContractVersion: 3, currentPlanSnapshotId: 'revise-plan' }
+    for (const observation of ['approval-check', 'dispatch-check', 'startup-recovery-check', 'final-delivery']) {
+      assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, observation)).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, `${observation} must use the revised plan source while Project retains its original PRD`)
+    }
+    assert.equal((await service.deliveryService.dependencies.captureRepositorySnapshot(publishedRevision, 'final-delivery')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest)
+    const retained = { id: 'retained-bundle', projectId: project.id, prd: declared.prd, technicalDesign: '' }
+    retained.sourceDigest = buildRequirementSourceManifest(retained).sourceDigest
+    await service.store.requirementBundles.put(retained.id, retained)
+    const appendCore = { projectId: project.id, operationId: 'append-source', mode: 'append', prd: 'Add another requirement without removing existing verification.', technicalDesign: '' }
+    const appendSource = { id: 'frozen-append-source', ...appendCore, sourceInputDigest: digestObject(appendCore) }
+    await service.store.planningSourceInputs.put(appendSource.id, appendSource)
+    await service.store.planningOperations.put('append-source', { id: 'append-source', projectId: project.id, sourceInputId: appendSource.id, sourceInputDigest: appendSource.sourceInputDigest })
+    await service.store.planSnapshots.put('revise-plan', { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'revise-source', requirementBundleIds: [retained.id] })
+    assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, 'append-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Append must retain declarations owned by unchanged bundles')
+    await service.store.planSnapshots.put('revise-plan', { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'append-source', requirementBundleIds: [retained.id] })
+    assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, 'approval-check')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Published append must retain the same declaration set')
+    await service.store.requirementBundles.put(retained.id, { ...retained, prd: 'tampered' })
+    await assert.rejects(() => service.captureRepositorySnapshotV3(publishedRevision, 'approval-check'), error => error.code === 'planning-operation-source-stale')
+    await service.store.requirementBundles.put(retained.id, retained)
+    const revisionCore = { ...appendCore, operationId: 'targeted-source', mode: 'revise', reviseBundleId: retained.id }
+    const revisionSource = { id: 'frozen-targeted-source', ...revisionCore, sourceInputDigest: digestObject(revisionCore) }
+    await service.store.planningSourceInputs.put(revisionSource.id, revisionSource)
+    await service.store.planningOperations.put('targeted-source', { id: 'targeted-source', projectId: project.id, sourceInputId: revisionSource.id, sourceInputDigest: revisionSource.sourceInputDigest })
+    assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, 'targeted-source')).snapshot.repositoryDigest, snapshot.repositoryDigest, 'A targeted replacement must remove declarations owned only by its replaced bundle')
+    for (const invalidPlan of [
+      { id: 'revise-plan', projectId: 'another-project', planningContractVersion: 3, planningOperationId: 'revise-source' },
+      { id: 'revise-plan', projectId: project.id, planningContractVersion: 3 },
+      { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'missing-source' },
+    ]) {
+      await service.store.planSnapshots.put('revise-plan', invalidPlan)
+      await assert.rejects(() => service.captureRepositorySnapshotV3(publishedRevision, 'approval-check'), error => error.code === 'planning-operation-source-stale')
+    }
+    await service.store.planSnapshots.delete('revise-plan')
+    await assert.rejects(() => service.captureRepositorySnapshotV3(publishedRevision, 'approval-check'), error => error.code === 'planning-operation-source-stale')
+    await assert.rejects(() => service.captureRepositorySnapshotV3(project, 'review-freshness', 'missing-source'), error => error.code === 'planning-operation-source-stale')
     await service.store.planningSourceInputs.put(frozenSource.id, { ...frozenSource, prd: 'tampered' })
     await assert.rejects(() => service.captureRepositorySnapshotV3(project, 'review-freshness', 'revise-source'), error => error.code === 'planning-operation-source-stale')
     assert.equal((await execFileAsync('git', ['status', '--porcelain'], { cwd: repository })).stdout, '', 'Discovery must not execute commands or modify the checkout')

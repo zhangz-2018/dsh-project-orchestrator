@@ -525,6 +525,58 @@ test('BindingStage preserves local parameter contracts and whole small forwardin
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage follows named runtime barrel exports without treating path extensions as requested APIs', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-runtime-barrel-'))
+  try {
+    await run('git', ['init', '--initial-branch=main', root])
+    const sources = {
+      'entry.ts': "export * from './public.js';",
+      'package.json': '{}',
+      'public.ts': `${Array.from({ length: 500 }, (_, i) => `export function noise${i}() { return '${i}'; }`).join('\n')}\nexport const parse = () => first();\nfunction first() { return second(); }\nfunction second() { return third(); }\nfunction third() { return fourth(); }\nfunction fourth() { return 'public output'; }\nexport const json = () => unrelated();\nfunction unrelated() { return 'unrequested factory'; }`,
+    }
+    const files = []
+    for (const [path, content] of Object.entries(sources)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((file, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: file.path, artifactDigest: file.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Inspect entry.ts and package.json; preserve parse.')
+    const supplied = evidence.find(item => item.path === 'public.ts').content
+    for (const text of ['export const parse', 'function first()', 'function second()', 'function third()', 'function fourth()']) assert.ok(supplied.includes(text), text)
+    assert.doesNotMatch(supplied, /export const json|function unrelated|function noise/u)
+    assert.ok(evidence.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('BindingStage shares one bounded allowance across multiple real public runtime owners', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-multiple-owners-'))
+  try {
+    await run('git', ['init', '--initial-branch=main', root])
+    const sources = {}
+    // 每个声明低于单文件上限，十个实现的总量超过补充额度；出口不能继续扩大预算。
+    for (let i = 0; i < 10; i += 1) {
+      sources[`entry-${i}.ts`] = `export * from './owner-${i}.js';`
+      sources[`owner-${i}.ts`] = `export const parse = () => '${'x'.repeat(15_000)}';\n${Array.from({ length: 600 }, (_, n) => `export const unrelated${n} = ${n};`).join('\n')}`
+    }
+    const files = []
+    for (const [path, content] of Object.entries(sources)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((file, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: file.path, artifactDigest: file.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, `Preserve parse in ${Object.keys(sources).filter(path => path.startsWith('entry-')).join(', ')}.`)
+    const bytes = evidence.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0)
+    assert.ok(bytes > 98_304, 'Distinct implementations receive the shared allowance')
+    assert.ok(bytes <= 131_072, 'Additional implementations cannot multiply the allowance')
+    assert.ok(evidence.some(item => item.truncated), 'Omitted source must remain visibly truncated')
+    for (const item of evidence) assert.doesNotMatch(item.content, /export const unrelated/u)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage follows merged constructor initialization and generic defaults without expanding unrelated deferred methods', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-deferred-'))
   try {
@@ -532,7 +584,7 @@ test('BindingStage follows merged constructor initialization and generic default
     const noise = Array.from({ length: 500 }, (_, i) => `export function noise${i}() { return '${i}'; }`).join('\n')
     const sources = {
       'api.ts': "import { Schema } from './schema.js';\nexport function convert() { return Schema(); }",
-      'schema.ts': `${noise}\nexport interface Schema<T = Internals> { internals: T; }\n// Unicode before the owner: 😀🧪\nexport const Schema = (): Schema => install(initialize(), { convert() { return transform(); }, sibling() { return unrelated(); } });\nconst registry = { value: 1 };\nfunction initialize() { return Object.hasOwn(registry, 'value'); }\nfunction install(value: unknown, methods: unknown) { return { value, methods }; }\nfunction transform() { return true; }\nexport interface Internals { output: boolean; }\nfunction unrelated() { return 'must not expand'; }`,
+      'schema.ts': `${noise}\nexport interface Schema<T = Internals> { internals: T; }\n// Unicode before the owner: 😀🧪\nexport const Schema = (): Schema => install(initialize(), { convert() { return transform(); }, sibling() { return unrelated(); } });\nconst registry = { value: 1 };\nfunction initialize() { return first(); }\nfunction first() { return second(); }\nfunction second() { return third(); }\nfunction third() { return fourth(); }\nfunction fourth() { return Object.hasOwn(registry, 'value'); }\nfunction install(value: unknown, methods: unknown) { return { value, methods }; }\nfunction transform() { return true; }\nexport interface Internals { output: boolean; }\nfunction unrelated() { return 'must not expand'; }`,
     }
     const files = []
     for (const [path, content] of Object.entries(sources)) {
@@ -544,7 +596,7 @@ test('BindingStage follows merged constructor initialization and generic default
     const manifest = { projectId: 'project', operationId: 'operation', references: files.map((f, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: f.path, artifactDigest: f.digest })) }
     const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Modify convert in api.ts.')
     const supplied = evidence.find(c => c.path === 'schema.ts').content
-    for (const declaration of ['export const Schema =', 'export interface Schema<', 'export interface Internals', 'const registry =', 'function initialize()', 'function install(', 'function transform()']) assert.ok(supplied.includes(declaration), declaration)
+    for (const declaration of ['export const Schema =', 'export interface Schema<', 'export interface Internals', 'const registry =', 'function initialize()', 'function first()', 'function second()', 'function third()', 'function fourth()', 'function install(', 'function transform()']) assert.ok(supplied.includes(declaration), declaration)
     assert.ok(supplied.includes('sibling() { return unrelated(); }'), 'The actual owner remains intact')
     assert.doesNotMatch(supplied, /function unrelated\(/)
     assert.doesNotMatch(supplied, /function noise/)
