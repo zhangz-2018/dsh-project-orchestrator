@@ -2007,7 +2007,7 @@ test('Planning V3 HTTP startup seeds default policy without retaining the outer 
   })
 })
 
-test('Planning V3 candidate atomically publishes evidence-grounded tasks only after trusted assignment and preflight', async () => {
+for (const recoverBeforeRuntime of [false, true]) test(`Planning V3 candidate atomically publishes evidence-grounded tasks only after trusted assignment and preflight${recoverBeforeRuntime ? ' with explicit pre-runtime recovery' : ''}`, async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-v3-candidate-'))
   try {
     const repository = await createPlanningV3Fixture(root)
@@ -2491,15 +2491,51 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(store.projects.get(project.id).status, 'approved')
     assert.equal(store.tasks.get(implementation.id).status, 'draft')
 
-    const firstDispatch = await service.dispatchPlanningV3(project.id, { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: [implementation.id, verification.id], idempotencyKey: 'dispatch-v3-implementation' })
-    assert.equal(firstDispatch.dispatch.outcome, 'partially_started')
+    let retryOfTaskRunId
+    if (recoverBeforeRuntime) {
+      // 用真实 Dispatch/失败结算复现启动前异常，不手工重置 Project 或 Task 状态。
+      const prepareWorktree = service.prepareWorktree.bind(service)
+      service.prepareWorktree = async () => { throw new Error('isolated worktree preparation failed') }
+      const failed = await service.dispatchPlanningV3(project.id, { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: [implementation.id], idempotencyKey: 'fail-before-runtime' })
+      await waitForProject(store, project.id, value => value.status === 'failed')
+      service.prepareWorktree = prepareWorktree
+      retryOfTaskRunId = failed.dispatch.createdTaskRunIds[0]
+      const failedTaskRun = structuredClone(store.taskRuns.get(retryOfTaskRunId))
+      assert.equal(failedTaskRun.status, 'failed')
+      assert.equal(failedTaskRun.startedAt, undefined)
+      const retryInput = { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: [implementation.id], retryOfTaskRunId, idempotencyKey: 'invalid-retry' }
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, { ...retryInput, retryOfTaskRunId: undefined }), error => error.code === 'execution-dispatch-stale')
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, { ...retryInput, taskIds: [verification.id] }), error => error.code === 'execution-retry-reconciliation-required')
+      for (const patch of [{ sessionId: 'possibly-started' }, { workspace: repository }, { failureDisposition: 'needs_reconciliation' }]) {
+        await store.taskRuns.put(failedTaskRun.id, { ...failedTaskRun, ...patch })
+        await assert.rejects(() => service.dispatchPlanningV3(project.id, retryInput), error => error.code === 'execution-retry-reconciliation-required')
+      }
+      await store.taskRuns.put(failedTaskRun.id, failedTaskRun)
+      await store.planningReviewsV3.put(frozenPlanReview.id, { ...frozenPlanReview, status: 'blocked' })
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, retryInput), error => error.code === 'execution-dispatch-stale')
+      await store.planningReviewsV3.put(frozenPlanReview.id, frozenPlanReview)
+      assert.equal(store.taskRuns.size, 1)
+      assert.equal(store.projects.get(project.id).status, 'failed')
+    }
+    const firstInput = { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: recoverBeforeRuntime ? [implementation.id] : [implementation.id, verification.id], ...(retryOfTaskRunId === undefined ? {} : { retryOfTaskRunId }), idempotencyKey: 'dispatch-v3-implementation' }
+    const firstDispatch = await service.dispatchPlanningV3(project.id, firstInput)
+    assert.equal(firstDispatch.dispatch.outcome, recoverBeforeRuntime ? 'started' : 'partially_started')
     assert.equal(firstDispatch.dispatch.createdTaskRunIds.length, 1)
-    assert.equal(firstDispatch.dispatch.taskResults.find((result) => result.taskId === verification.id).outcome, 'waiting_dependency')
+    if (!recoverBeforeRuntime) assert.equal(firstDispatch.dispatch.taskResults.find((result) => result.taskId === verification.id).outcome, 'waiting_dependency')
     const afterImplementation = await waitForProject(store, project.id, (value) => value.status !== 'running', 'First V3 frontier did not settle')
     assert.equal(afterImplementation.status, 'approved')
     assert.equal(store.tasks.get(implementation.id).status, 'completed')
     assert.equal(store.tasks.get(verification.id).status, 'draft')
-    assert.equal([...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id && taskRun.taskId === implementation.id).length, 1)
+    assert.equal([...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id && taskRun.taskId === implementation.id).length, recoverBeforeRuntime ? 2 : 1)
+    if (recoverBeforeRuntime) {
+      const recovered = store.taskRuns.get(firstDispatch.dispatch.createdTaskRunIds[0])
+      assert.equal(recovered.retryOf, retryOfTaskRunId)
+      assert.equal(recovered.attempt, 2)
+      assert.equal(store.taskRuns.get(retryOfTaskRunId).status, 'failed')
+      const replay = await service.dispatchPlanningV3(project.id, firstInput)
+      assert.equal(replay.dispatch.id, firstDispatch.dispatch.id)
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, { ...firstInput, retryOfTaskRunId: undefined }), error => error.code === 'execution-dispatch-idempotency-conflict')
+    }
     assert.equal([...store.projectReviews.records.values()].filter((review) => review.projectId === project.id).length, 0)
 
     // Startup must leave an idle V3 frontier alone and reject every legacy execution entry.
@@ -2509,29 +2545,31 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(store.taskRuns.size, beforeRestartRuns)
     await assert.rejects(() => service.startExecution(project.id), (error) => error.code === 'v3-approval-dispatch-separated')
     await assert.rejects(() => service.retryExecution(project.id), (error) => error.code === 'v3-approval-dispatch-separated')
-    const falseFailure = { ...afterImplementation, status: 'failed', lastError: 'Approved project could not resume automatically: Task requires role implementer.' }
-    await store.projects.put(project.id, falseFailure)
-    const savedApproval = structuredClone(store.planApprovalsV3.get(approval.id))
-    await store.planApprovalsV3.put(approval.id, { ...savedApproval, approvalDigest: 'f'.repeat(64) })
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'failed')
-    await store.planApprovalsV3.put(approval.id, savedApproval)
-    const savedImplementationRun = structuredClone([...store.taskRuns.records.values()].find((run) => run.taskId === implementation.id))
-    await store.taskRuns.put(savedImplementationRun.id, { ...savedImplementationRun, status: 'failed' })
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'failed')
-    await store.taskRuns.put(savedImplementationRun.id, savedImplementationRun)
-    await store.projects.put(project.id, { ...falseFailure, lastError: 'Harness restarted while this project had active work.' })
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'failed')
-    await store.projects.put(project.id, falseFailure)
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'approved')
-    assert.equal(store.projects.get(project.id).lastError, undefined)
-    assert.equal(store.taskRuns.size, beforeRestartRuns)
-    assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
-    await service.resumeApprovedProjects()
-    assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
+    if (!recoverBeforeRuntime) {
+      const falseFailure = { ...afterImplementation, status: 'failed', lastError: 'Approved project could not resume automatically: Task requires role implementer.' }
+      await store.projects.put(project.id, falseFailure)
+      const savedApproval = structuredClone(store.planApprovalsV3.get(approval.id))
+      await store.planApprovalsV3.put(approval.id, { ...savedApproval, approvalDigest: 'f'.repeat(64) })
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'failed')
+      await store.planApprovalsV3.put(approval.id, savedApproval)
+      const savedImplementationRun = structuredClone([...store.taskRuns.records.values()].find((run) => run.taskId === implementation.id))
+      await store.taskRuns.put(savedImplementationRun.id, { ...savedImplementationRun, status: 'failed' })
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'failed')
+      await store.taskRuns.put(savedImplementationRun.id, savedImplementationRun)
+      await store.projects.put(project.id, { ...falseFailure, lastError: 'Harness restarted while this project had active work.' })
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'failed')
+      await store.projects.put(project.id, falseFailure)
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'approved')
+      assert.equal(store.projects.get(project.id).lastError, undefined)
+      assert.equal(store.taskRuns.size, beforeRestartRuns)
+      assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
+      await service.resumeApprovedProjects()
+      assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
+    }
 
     const partialIntegration = structuredClone(store.deliveryIntegrationSnapshots.get(afterImplementation.currentDeliveryIntegrationSnapshotId))
     assert.equal(partialIntegration.status, 'integrating')
@@ -2576,7 +2614,9 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     const completed = await waitForProject(store, project.id, (value) => value.status !== 'running', 'Second V3 frontier did not settle')
     assert.equal(completed.status, 'completed')
     assert.equal(store.tasks.get(verification.id).status, 'completed')
-    const completedTaskRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id)
+    const allTaskRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id)
+    assert.equal(allTaskRuns.length, recoverBeforeRuntime ? 3 : 2)
+    const completedTaskRuns = allTaskRuns.filter(taskRun => taskRun.status === 'completed')
     assert.equal(completedTaskRuns.length, 2)
     for (const taskRun of completedTaskRuns) {
       assert.equal(taskRun.status, 'completed')
@@ -2602,6 +2642,12 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.throws(() => service.exportPlanningReleaseCanaryV3(project.id, { releaseVersion: '1.7.0' }), (error) => error.code === 'planning-canary-delivery-unconfirmed')
     await service.resolveProjectReview(project.id, { decision: 'approve', actor: 'release-owner', note: 'Independent canary review completed.' })
     await service.confirmProjectDelivery(project.id, { actor: 'release-owner', note: 'Canary delivery confirmed.' })
+    if (recoverBeforeRuntime) {
+      // 启动前失败没有 VerificationInvocation；恢复交付不等于满足更严格的发布 Canary 门禁。
+      assert.throws(() => service.exportPlanningReleaseCanaryV3(project.id, { releaseVersion: '1.7.0' }), error => error.issues?.some(issue => issue.path[0] === 'verificationInvocations' && issue.message.includes('every TaskRun')))
+      assert.equal(store.taskRuns.get(retryOfTaskRunId).status, 'failed')
+      return
+    }
     const canary = service.exportPlanningReleaseCanaryV3(project.id, { releaseVersion: '1.7.0' })
     assert.equal(canary.schemaVersion, 2)
     assert.equal(canary.executionDispatches.length, 2)
@@ -7369,6 +7415,45 @@ test('worktree TaskRun creates isolated branch, captures Git evidence, and clean
     assert.equal(store.workspaceLeases.get(`lease:${run.id}`).state, 'released')
     const branch = await execFileAsync('git', ['branch', '--list', run.branch], { cwd: repo })
     assert.match(branch.stdout, new RegExp(run.branch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('worktree branches distinguish long and sanitized TaskRun IDs without replacing historical refs', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-worktree-identity-'))
+  const repo = join(root, 'repo')
+  try {
+    await mkdir(repo)
+    await execFileAsync('git', ['init', '--initial-branch=main'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'base\n')
+    await execFileAsync('git', ['add', 'README.md'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: initialize worktree identity fixture'], { cwd: repo })
+    const git = async args => (await execFileAsync('git', args, { cwd: repo })).stdout.trim()
+    const baseline = await git(['rev-parse', 'HEAD'])
+    // 正式 Dispatch ID 的区分字段可能出现在第 80 个字符之后；旧分支必须继续保留。
+    const prefix = `task-run:execution-dispatch:${'shared-prefix-'.repeat(7)}`
+    const ids = [`${prefix}:plan-one`, `${prefix}:plan-two`, 'sanitized:run', 'sanitized-run']
+    const legacyBranch = `dsh/taskrun/${ids[0].replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 80)}`
+    await git(['branch', legacyBranch, baseline])
+    const service = new OrchestratorService({}, memoryStore())
+    const prepared = []
+    for (const id of ids) {
+      const workspace = await service.prepareWorktree({ id }, { ref: 'HEAD' }, repo)
+      prepared.push(workspace)
+      await git(['check-ref-format', '--branch', workspace.branchName])
+      assert.equal(workspace.baseCommit, baseline)
+      assert.notEqual(workspace.branchName, legacyBranch)
+    }
+    assert.equal(new Set(prepared.map(item => item.branchName)).size, ids.length)
+    assert.equal(new Set(prepared.map(item => item.workspacePath)).size, ids.length)
+    assert.equal(await git(['rev-parse', legacyBranch]), baseline)
+    // 相同 TaskRun 再次准备仍须拒绝；不能覆盖已有分支或复用未核实的工作区。
+    await assert.rejects(() => service.prepareWorktree({ id: ids[0] }, { ref: 'HEAD' }, repo), /already exists/)
+    for (const workspace of prepared) assert.equal(await git(['rev-parse', workspace.branchName]), baseline)
+    assert.equal(await git(['status', '--porcelain']), '')
   } finally {
     await rm(root, { recursive: true, force: true })
   }

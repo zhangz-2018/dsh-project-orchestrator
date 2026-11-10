@@ -3236,6 +3236,8 @@ export const ExecutionDispatchRecordSchema = z.object({
   approvalId: z.string().min(1),
   expectedProjectRevision: z.number().int().positive(),
   requestedTaskIds: z.array(z.string().min(1)).min(1).max(1_000),
+  /** 显式重试的旧 TaskRun；仅允许运行时尚未开始且未取得工作区的失败，旧记录永久保留。 */
+  retryOfTaskRunId: z.string().min(1).optional(),
   outcome: z.enum(['started', 'partially_started', 'waiting', 'blocked', 'stale']),
   taskResults: z.array(z.object({
     taskId: z.string().min(1),

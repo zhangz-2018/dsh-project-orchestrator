@@ -1,6 +1,6 @@
 # greeting 同构建隔离验收计划
 
-状态：技术规划通过，尚未登记人工批准、派发或交付。本材料供批准具体新计划，不构成已执行证明。
+状态：用户已批准本 revision 与摘要，正式批准已登记。首次实现任务在创建 worktree 时因旧分支命名截断重名而失败；修复后已通过正式接口显式重试，两项隔离任务均完成，原始 greeting 行为独立验收通过。最终 diff、历史失败与尚存交付投影缺口见[恢复交付审阅](canary-delivery-worktree-recovery-review-2026-11-10.zh-CN.md)；本材料不构成完整交付或发布通过证明。
 
 ## 精确对象
 
@@ -28,3 +28,5 @@
 此前批准的最终 commit `d5bbf64bad16a3c98cb21290395fdfaba3c4cc6d` 已完成登记、交付和导出，但属于另一个跨构建验收环境，不能代签本计划。最终交付完成后另行提供精确 commit 和独立验收材料。正式发布仍须当前构建的全样本规划及交付门禁全部通过。
 
 只读计划证据：`output/acceptance/formal-170-20261109/canary-measurement/plan-policy-context-review.json`；完整本次规划账本：同目录 `planning-policy-context.json`。
+
+执行批准及首次失败回执：同目录 `delivery-policy-context.json`；升级前完整领域快照：`branch-collision-terminal-domain.json`。原批准摘要保持不变。插件修复后执行将跨构建，不能再据此作为同构建发布 Canary；正式门禁仍需独立满足。

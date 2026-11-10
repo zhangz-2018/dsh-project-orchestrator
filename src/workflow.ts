@@ -1453,9 +1453,13 @@ export interface DispatchTaskV3 {
   stale?: boolean
 }
 
+/**
+ * 在调用方已核实审批及重试资格后，纯计算 DAG 可运行前沿并冻结派发命令。
+ * 依赖未完成或资源等待不会创建运行；未知任务和缺失运行 ID 拒绝，重试来源纳入摘要。
+ */
 export function planExecutionDispatchV3(
   tasks: DispatchTaskV3[],
-  input: { projectId: string; approvalId: string; expectedProjectRevision: number; requestedTaskIds: string[]; gateCurrent: boolean; gateDigest: string; idempotencyKey: string; taskRunIdsByTaskId: Record<string, string>; now?: string },
+  input: { projectId: string; approvalId: string; expectedProjectRevision: number; requestedTaskIds: string[]; gateCurrent: boolean; gateDigest: string; idempotencyKey: string; taskRunIdsByTaskId: Record<string, string>; retryOfTaskRunId?: string; now?: string },
 ): ExecutionDispatchRecord {
   assertUniqueKeys(input.requestedTaskIds, 'dispatch-task-duplicate')
   const byId = new Map(tasks.map((task) => [task.id, task]))
@@ -1483,6 +1487,8 @@ export function planExecutionDispatchV3(
   const core = {
     projectId: input.projectId, approvalId: input.approvalId, expectedProjectRevision: input.expectedProjectRevision,
     requestedTaskIds: [...input.requestedTaskIds], outcome, taskResults, createdTaskRunIds, observedGateDigest: input.gateDigest,
+    // 重试来源属于不可变 Dispatch 命令内容，必须同时进入摘要与幂等校验。
+    ...(input.retryOfTaskRunId === undefined ? {} : { retryOfTaskRunId: input.retryOfTaskRunId }),
     runnableFrontierDigest: digestObject(taskResults.map((result) => ({ taskId: result.taskId, taskRevision: result.taskRevision, outcome: result.outcome, predecessorTaskIds: result.predecessorTaskIds }))),
     idempotencyKey: input.idempotencyKey,
   }

@@ -398,6 +398,14 @@ Zod 后继错误推断 mini 的 boolean 输出为 unknown。固定 commit 的 `$
 
 本机证据包括 `source-ownership-focused-domain-facts.json`、`candidates-source-ownership-focused-policy-successors.json`、`source-ownership-terminal-{main,canary}.json`、`zod-boolean-oracle.json`、`zod-inherited-contract-capture.json`；对应日志为 `output/formal-170-contract-pressure-{before,old-runtime,after}.log`。相关 36 项回归通过。加入类型链及规范性标题修复后，完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0，588 项 Node、7 项浏览器、类型与文档检查、固定样本及 173 文件安装包 smoke 通过，日志为 `output/formal-170-inherited-contract-final-verify.log`。完整 `pnpm audit --json` 退出 0，各级漏洞均为 0。正式模型门禁仍未通过，未发布。
 
+### v55 启动前失败修复与隔离执行
+
+用户已明确批准 greeting revision 3、计划摘要 `21aed08d2675877201267d16b55e25a160c29fb93d20541dd2674740bd157b05`。正式批准登记成功，但首次实现派发在模型调用前因旧分支命名截断重名失败。新增回归先复现，`prepareWorktree` 改用完整原始 TaskRun ID 的 SHA-256 与可读前缀；保留旧分支，重复同一运行仍拒绝覆盖。V3 Dispatch 新增显式 `retryOfTaskRunId`，只接受尚未取得工作区、未启动 Runtime、无产物且租约已释放的当前计划失败；完整门禁重验，新运行绑定 `retryOf`，不重置或删除失败。旧版领域记录保持兼容，新增字段的降级边界已记录到技术方案。
+
+恢复执行 bundle 为 `8eac450ea76fa76a91564ffb42e99cc270172842211bc140e01d82bb65305aec`。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 退出 0：590 项 Node、7 项浏览器测试和其余本地检查通过；完整审计各级漏洞 0，8 项真实 Host 兼容检查通过（确定性适配器）。安装后完整领域快照与安装前一致。随后已正式执行实现与独立验证，两项完成、两项验证 passed，最终集成 commit `4ea366ea48ecb1363b24a56249b1c41132134a3f`，独立复验原始行为和精确文件范围通过，原失败原样保留。
+
+本次不能计作正式发布通过：跨构建，严格 Canary V2 拒绝缺少验证调用的启动前失败链路；最终 DeliveryRecord 按最后一次派发汇总，遗漏了实现任务的部分责任链摘要和完整 diffStat/testSummary。原始事实完整保留，具体缺口及本机证据见[恢复交付审阅](canary-delivery-worktree-recovery-review-2026-11-10.zh-CN.md)。最终人工审阅尚未登记，完整真实规划批次、同构建 Canary 和交付汇总修复仍待完成，不发布 1.7.0。
+
 ### v54 独立 Gold 完成，候选与交付状态
 
 当前已安装 bundle 为 `600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947`，生产源码仍为 `db865f4`，没有采用后续诊断 bundle。普通离线 npm 安装逐字核对四项构建产物，8 项真实隔离 Host 兼容检查通过；报告为本机 `output/compatibility/dsh-0.2.2-rc.1-1794280116856.json`。兼容检查使用确定性适配器，不计真实模型规划成绩。

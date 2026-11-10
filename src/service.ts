@@ -1090,6 +1090,8 @@ const ExecutionDispatchV3InputSchema = z.object({
   approvalId: z.string().min(1),
   expectedProjectRevision: z.number().int().positive(),
   taskIds: z.array(z.string().min(1)).min(1).max(1_000),
+  /** 人工显式选定的失败 TaskRun；不触发自动重试，也不放宽任何规划或执行门禁。 */
+  retryOfTaskRunId: z.string().min(1).optional(),
   idempotencyKey: z.string().trim().min(1).max(200),
 }).strict()
 
@@ -4327,6 +4329,11 @@ export class OrchestratorService {
     }
   }
 
+  /**
+   * 为 TaskRun 从资源的固定 ref 创建独立工作区，返回实际路径、分支和基线 commit。
+   * 调用方须持有执行资源；重复 ID 或已有分支由 Git 拒绝，不覆盖历史产物。
+   * 创建后校验失败时移除本次工作区，保留原始错误交给调用方记录。
+   */
   private async prepareWorktree(run: TaskRunRecord, resource: ProjectResource, sourcePath: string): Promise<{ workspacePath: string; branchName: string; baseCommit: string }> {
     const configuredRoot = run.runtimeId === undefined ? undefined : this.store.runtimes.get(run.runtimeId)?.workspaceRoot
     const parent = configuredRoot === undefined ? join(sourcePath, '..', '.dsh-worktrees') : await this.assertSafeRuntimeWorkspaceRoot(configuredRoot)
@@ -4335,7 +4342,8 @@ export class OrchestratorService {
     const workspacePath = join(canonicalParent, run.id)
     const relativeTarget = relative(canonicalParent, workspacePath)
     if (relativeTarget.startsWith('..') || isAbsolute(relativeTarget)) throw new WorkflowError('runtime-workspace-root-invalid', 'TaskRun worktree path escapes Runtime workspaceRoot.', 400)
-    const branchName = `dsh/taskrun/${run.id.replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 80)}`
+    // 可读前缀不承担身份区分；完整原始 ID 的摘要避免截断和标点归一化导致跨运行重名。
+    const branchName = `dsh/taskrun/${run.id.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 48)}-${createHash('sha256').update(run.id).digest('hex')}`
     const baseCommit = (await this.gitProcess(sourcePath, ['rev-parse', `${resource.ref ?? 'HEAD'}^{commit}`])).trim()
     await this.gitProcess(sourcePath, ['worktree', 'prune', '--expire', 'now'])
     if (configuredRoot !== undefined) await this.assertSafeRuntimeWorkspaceRoot(configuredRoot)
@@ -6021,18 +6029,24 @@ export class OrchestratorService {
     assertReview(snapshot.planReviewId, snapshot.planReviewDigest, 'plan', planSubjectDigest)
   }
 
+  /**
+   * 重校验当前批准计划并派发请求的可运行任务；所有写入失败均回滚本次派发。
+   * 显式重试仅接纳尚未取得工作区或启动 Runtime 的失败，保留旧运行并绑定 retryOf。
+   * 审批、仓库、能力、访问和前置验证失效时拒绝，不通过重置领域记录恢复执行。
+   */
   async dispatchPlanningV3(id: string, input: unknown): Promise<{ dispatch: ExecutionDispatchRecord; project: ProjectRecord; run?: RunRecord }> {
     const parsed = ExecutionDispatchV3InputSchema.parse(input)
     const existingId = `execution-dispatch:${id}:${parsed.idempotencyKey}`
     const existing = this.store.executionDispatches.get(existingId)
     if (existing !== undefined) {
-      if (existing.approvalId !== parsed.approvalId || existing.expectedProjectRevision !== parsed.expectedProjectRevision || JSON.stringify(existing.requestedTaskIds) !== JSON.stringify(parsed.taskIds)) throw new WorkflowError('execution-dispatch-idempotency-conflict', 'The dispatch idempotency key was already used with different inputs.', 409)
+      if (existing.approvalId !== parsed.approvalId || existing.expectedProjectRevision !== parsed.expectedProjectRevision || existing.retryOfTaskRunId !== parsed.retryOfTaskRunId || JSON.stringify(existing.requestedTaskIds) !== JSON.stringify(parsed.taskIds)) throw new WorkflowError('execution-dispatch-idempotency-conflict', 'The dispatch idempotency key was already used with different inputs.', 409)
       const run = [...this.store.runs.entries()].map(([, item]) => item).find((item) => item.executionDispatchId === existing.id)
       return { dispatch: existing, project: this.requireProject(id), ...(run === undefined ? {} : { run }) }
     }
     const project = this.requireProject(id)
     this.assertNotActive(id)
-    if (project.planningContractVersion !== 3 || project.status !== 'approved' || project.revision !== parsed.expectedProjectRevision) throw new WorkflowError('execution-dispatch-stale', 'Only the current approved V3 revision can be dispatched.', 409)
+    const retry = parsed.retryOfTaskRunId === undefined ? undefined : this.assertPreExecutionRetryV3(project, parsed)
+    if (project.planningContractVersion !== 3 || (project.status !== 'approved' && retry === undefined) || project.revision !== parsed.expectedProjectRevision) throw new WorkflowError('execution-dispatch-stale', 'Only the current approved V3 revision can be dispatched.', 409)
     const approval = this.store.planApprovalsV3.get(parsed.approvalId)
     if (approval === undefined || approval.projectId !== id || approval.projectRevision !== project.revision || approval.planSnapshotId !== project.currentPlanSnapshotId) throw new WorkflowError('execution-dispatch-stale', 'The V3 approval is missing or does not match the current project revision.', 409)
     const snapshot = this.store.planSnapshots.get(approval.planSnapshotId)
@@ -6088,10 +6102,11 @@ export class OrchestratorService {
           : agent.runtimeId !== undefined && (runtime?.lifecycle !== 'active' || runtime.status !== 'online') ? 'waiting_runtime'
             : occupied >= (agent.maxConcurrency ?? 1) ? 'waiting_capacity' : 'dispatchable'
       }
-      return { id: task.id, revision: task.taskRevision ?? 1, dependencies: task.dependencies, status: task.status, dispatchStatus }
+      // 仅在完整重试证据校验通过后，将该任务作为可运行候选；存储中的旧失败状态不改写。
+      return { id: task.id, revision: task.taskRevision ?? 1, dependencies: task.dependencies, status: retry?.taskId === task.id ? 'draft' as const : task.status, dispatchStatus }
     })
     const taskRunIdsByTaskId = Object.fromEntries(parsed.taskIds.map((taskId) => [taskId, `task-run:${existingId}:${taskId}`]))
-    const dispatch = planExecutionDispatchV3(dispatchTasks, { projectId: id, approvalId: approval.id, expectedProjectRevision: parsed.expectedProjectRevision, requestedTaskIds: parsed.taskIds, gateCurrent: true, gateDigest: approval.gateDigest, idempotencyKey: parsed.idempotencyKey, taskRunIdsByTaskId, now })
+    const dispatch = planExecutionDispatchV3(dispatchTasks, { projectId: id, approvalId: approval.id, expectedProjectRevision: parsed.expectedProjectRevision, requestedTaskIds: parsed.taskIds, gateCurrent: true, gateDigest: approval.gateDigest, idempotencyKey: parsed.idempotencyKey, taskRunIdsByTaskId, ...(retry === undefined ? {} : { retryOfTaskRunId: retry.id }), now })
     if (dispatch.outcome === 'blocked' || dispatch.outcome === 'stale') throw new WorkflowError(dispatch.outcome === 'stale' ? 'execution-dispatch-stale' : 'execution-dispatch-blocked', 'The requested V3 dispatch failed a hard gate; no TaskRun was created.', 409)
     if (dispatch.createdTaskRunIds.length === 0) {
       await this.store.executionDispatches.put(dispatch.id, dispatch)
@@ -6104,7 +6119,8 @@ export class OrchestratorService {
     try {
       await this.serializedMutation(async () => {
         const current = this.requireProject(id)
-        if (current.status !== 'approved' || current.revision !== parsed.expectedProjectRevision || current.currentPlanSnapshotId !== approval.planSnapshotId) throw new WorkflowError('execution-dispatch-stale', 'Project changed before dispatch commit.', 409)
+        if (retry !== undefined) this.assertPreExecutionRetryV3(current, parsed)
+        if ((current.status !== 'approved' && retry === undefined) || current.revision !== parsed.expectedProjectRevision || current.currentPlanSnapshotId !== approval.planSnapshotId) throw new WorkflowError('execution-dispatch-stale', 'Project changed before dispatch commit.', 409)
         await this.store.executionDispatches.put(dispatch.id, dispatch)
         await this.store.runs.put(run.id, run)
         for (const taskId of startedTaskIds) {
@@ -6118,7 +6134,7 @@ export class OrchestratorService {
             planningPolicyDigest: snapshot.policyDigest, accessGrantSnapshotId: snapshot.accessGrantSnapshotId, accessGrantSnapshotDigest: snapshot.accessGrantDigest,
             canonicalTargetBindingId: snapshot.canonicalTargetBindingId, canonicalTargetBindingDigest: snapshot.canonicalTargetBindingDigest,
             assignmentDecisionId: task.assignmentDecisionId, agentId: agent.id, ...(runtime === undefined ? {} : { runtimeId: runtime.id }),
-            runtimeNameSnapshot: runtime?.name ?? '本机默认环境', status: 'queued', trigger: 'approval', attempt: (task.attempts?.length ?? 0) + 1, cwd: project.cwd, createdAt: now,
+            runtimeNameSnapshot: runtime?.name ?? '本机默认环境', status: 'queued', trigger: retry === undefined ? 'approval' : 'retry', attempt: retry === undefined ? (task.attempts?.length ?? 0) + 1 : retry.attempt + 1, ...(retry === undefined ? {} : { retryOf: retry.id }), cwd: project.cwd, createdAt: now,
           })
           await this.store.tasks.put(taskId, { ...task, status: 'queued', latestRunId: run.id, updatedAt: now })
           writtenTaskIds.push(taskId)
@@ -6138,6 +6154,32 @@ export class OrchestratorService {
       ])
       throw error
     }
+  }
+
+  /**
+   * 只允许显式恢复当前批准计划中最近一次、启动前失败的单任务派发。
+   * Runtime/工作区/产物或未释放租约意味着可能有副作用，必须另行核实，不能进入此路径。
+   */
+  private assertPreExecutionRetryV3(project: ProjectRecord, input: z.infer<typeof ExecutionDispatchV3InputSchema>): TaskRunRecord {
+    const previous = input.retryOfTaskRunId === undefined ? undefined : this.store.taskRuns.get(input.retryOfTaskRunId)
+    const run = previous?.runId === undefined ? undefined : this.store.runs.get(previous.runId)
+    const dispatch = run?.executionDispatchId === undefined ? undefined : this.store.executionDispatches.get(run.executionDispatchId)
+    const task = previous?.taskId === undefined ? undefined : this.store.tasks.get(previous.taskId)
+    const lease = previous === undefined ? undefined : this.store.workspaceLeases.get(`lease:${previous.id}`)
+    if (project.planningContractVersion !== 3 || project.status !== 'failed' || project.activeRunId !== undefined
+      || previous === undefined || previous.projectId !== project.id || previous.status !== 'failed' || previous.completedAt === undefined
+      || previous.failureDisposition === 'needs_reconciliation' || previous.startedAt !== undefined || previous.dispatchedAt !== undefined
+      || previous.runtimeExecutionId !== undefined || previous.executionContractDigest !== undefined || previous.sessionId !== undefined
+      || previous.workspace !== undefined || previous.branch !== undefined || previous.outputCommit !== undefined || (previous.artifactIds?.length ?? 0) > 0
+      || (lease !== undefined && lease.state !== 'released')
+      || task === undefined || !['blocked', 'failed'].includes(task.status) || task.latestRunId !== run?.id
+      || run?.status !== 'failed' || run.projectId !== project.id || run.planSnapshotId !== project.currentPlanSnapshotId
+      || dispatch?.approvalId !== input.approvalId || dispatch.expectedProjectRevision !== input.expectedProjectRevision || !immutableRecordDigestMatches(dispatch, 'dispatchDigest')
+      || !dispatch.createdTaskRunIds.includes(previous.id) || input.taskIds.length !== 1 || input.taskIds[0] !== previous.taskId
+      || [...this.store.taskRuns.entries()].some(([, item]) => item.projectId === project.id && !this.isTerminalTaskRun(item))) {
+      throw new WorkflowError('execution-retry-reconciliation-required', 'Retry requires the latest failed TaskRun from this approval, no Runtime/workspace side effects, and a fully settled Project.', 409)
+    }
+    return previous
   }
 
   listPlanningApprovalsV3(projectId: string): PlanApprovalV3Record[] {
@@ -9910,11 +9952,12 @@ export class OrchestratorService {
       let passed = false
       for (let automaticAttempt = 1; automaticAttempt <= MAX_AUTOMATIC_TASK_ATTEMPTS; automaticAttempt += 1) {
         const currentTask = this.requireTask(task.id)
-        const attempt = (currentTask.attemptCount ?? 0) + 1
         const reservedTaskRunId = automaticAttempt === 1 ? queuedRun.taskRunIdsByTaskId?.[task.id] : undefined
         const taskRunId = reservedTaskRunId ?? randomUUID()
         const taskMembership = this.store.projectAgentMemberships.get(`${projectId}:${agent.id}`)
         const reservedTaskRun = reservedTaskRunId === undefined ? undefined : this.store.taskRuns.get(reservedTaskRunId)
+        // 启动前失败未增加 Task.attemptCount；显式重试仍须继承已保留的运行次数。
+        const attempt = Math.max((currentTask.attemptCount ?? 0) + 1, reservedTaskRun?.attempt ?? 1)
         if (reservedTaskRunId !== undefined && (reservedTaskRun === undefined || reservedTaskRun.projectId !== projectId || reservedTaskRun.runId !== runId || reservedTaskRun.taskId !== task.id || reservedTaskRun.agentId !== agent.id || reservedTaskRun.status !== 'queued')) {
           throw new WorkflowError('execution-dispatch-stale', `Reserved TaskRun for Task "${task.id}" is missing or no longer current.`, 409)
         }
