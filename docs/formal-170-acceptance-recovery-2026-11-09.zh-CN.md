@@ -380,6 +380,14 @@ Zod 进一步只读核查发现真实采样方法与当前候选存在冲突：`
 
 新历史验证覆盖 38 组证据及 61 个项目，不推断后继 bundle，也不把后继计为独立根。首次历史核验误用领域全快照作为带 batchId 的事实报告而失败；补作正式只读事实核验后，重新逐字核验安装文件并生成新时间回执，原文件与失败均保留，不回填时间。新样本版本 `source-ownership-v53` 仅机械隔离版本名，25 份原需求及项目 ID 不变。独立 Gold 和新 canary 规划已启动，尚无本版正式通过结论。
 
+### v53 复合锚点审核缺口
+
+提交 `404691d` 的 Linux/macOS CI 和 CodeQL 均已通过，PR 当前开放代码扫描告警为 0。`source-ownership-v53` 的 25 份独立 Gold 全部 approved，之后才启动 Zod trim、mitt once 和 Ky HTTP 的三个重点真实根请求；结果仍须各自终态后判断。
+
+本版 greeting 根请求 `planning-v3:ee0d5104-48e1-4681-8161-62c1b26025d4` 在 requirement_review blocked。分析器将同一段落里的 AC-TRIM、AC-REJECT、AC-COMPAT 保留为一个复合 Acceptance，却因前次审核要求三个结构化 key 而声明阻塞；末次独立审核正确拒绝了该表示层冲突。原失败及其全部阶段记录保留于本机 `canary-measurement/planning-source-ownership.json`，不能将旧候选计划的 approved 审核展示当作本次请求通过。
+
+回归证实生成器有明确的复合锚点规则，而审核器缺少同等规则。将规则移到生成与独立审核共用的阶段边界，明确同一锚点下保留全部 AC 标签、具体结果及独立验证义务；没有新增多个 key 的表示要求，也不允许条款遗漏、重复消费来源或合并未决业务选择为 ready。分析 persona 及重复的“分别输出”措辞同步消歧，协议更新为 `requirements-v2.15`。新增断言在旧构建失败、修复后五项相关回归通过。完整 `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify` 再次退出 0，585 项 Node、7 项浏览器及其余检查通过；日志为本机 `output/formal-170-compound-review-{before,after,verify}.log`。修复尚需隔离升级和真实复验，不能据提示词或模拟回归宣称效果改善。
+
 ## 实际验证
 
 - `PO_TEST_BROWSER_CHANNEL=chrome pnpm verify`：退出 0，543 条 Node 测试、7 条浏览器测试、类型检查、文档检查、固定规划样本及 clean install/package smoke 通过。

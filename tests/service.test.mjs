@@ -3164,6 +3164,13 @@ test('Planning V3 preserves all clauses in a coarse source anchor without duplic
       assert.match(prompt, /A single source anchor can contain several explicitly labelled acceptance clauses/)
       assert.match(prompt, /Preserve every clause, its label and concrete expected outcome inside one compound acceptance criterion/)
       assert.match(prompt, /Never duplicate-consume that anchor or invent sub-anchor ids/)
+      const reviewPrompt = observation.requirementReviewPrompts[0]
+      assert.match(reviewPrompt, /A single source anchor can contain several explicitly labelled acceptance clauses/)
+      assert.match(reviewPrompt, /Preserve every clause, its label and concrete expected outcome inside one compound acceptance criterion/)
+      for (const stagePrompt of [prompt, reviewPrompt]) {
+        assert.match(stagePrompt, /Do not require a separate structured Acceptance key for each label sharing that sole anchor/)
+        assert.match(stagePrompt, /Missing a labelled clause or its independent verification remains a blocking omission/)
+      }
       const proposal = [...store.requirementAnalysisProposals.records.values()][0]
       assert.equal(proposal.analysis.requirements[0].acceptanceCriteria[0].statement, source)
       assert.equal(observation.requirementAnalysisCalls, 1)
