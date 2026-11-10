@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "5b5936c749ed36cfd84a96da6dd98eb7a862761d9a2ca0a17c94b31abdc5f8dd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_08b2c743030163c1016af202b488f087d0abe7b23c90f8e243:independent-gold-review:57ff1716-b3ec-4ed6-8d50-0fa169315066",
+    "reviewedAt": "2026-11-09T17:28:37.970Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity agree with the original PRD. DEC-001 materially determines hook-error propagation and simultaneous abort/error precedence; neither the recommended option nor conditional acceptance authorizes its resolution. B must therefore stop at decisions with requirement-decision-pending for DEC-001, after repository and requirements evidence, without assignable tasks or assignments. Later independent-review and capability prerequisites do not add blockers before this deterministic decision gate. The complete implementation-owner contents and package exports support index.js and the separately maintained index.d.ts as the owner pair; test.js and index.test-d.ts are verification scope, and package.json establishes xo && ava && tsd without requiring configuration edits. The supplied implementation supports the specified existing delay calculation, including decreasing backoff, zero delay, and remaining-budget capping, and exposes the post-hook cancellation check needed by the conditional acceptance. The truncated runtime-test excerpt does not prevent establishing this early-stage planning expectation or owner scope. Gold and preview release fingerprints agree across repository, source, team, decision inputs, prompts, model, sampling, budgets, and metric policy. The supplied provenance explains the distinct manifest/evaluation digest domains and original/saved PRD normalization. Empty trusted team facts are consistent with no assignment expectations. Historical project reuse does not establish a candidate result or resolve DEC-001; the supplied isolation facts preserve review independence. Approval is limited to this supplied pending case and does not attest a human Decision or independently approve the paired hypothetical C. Digests and saved-input bindings are accepted as Service-calculated evidence; I did not recompute hashes, execute code, or run candidates or tests.",
+    "goldDigest": "061cfcf1e247390d66358fac870773bb2e3fa431d45064c4c27b02003981a410"
+  }
+}

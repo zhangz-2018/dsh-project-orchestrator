@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_010f541610bd19c6016af282bf831087d29937505cecbeb2f4:independent-gold-review:a3dd4648-9ca7-47b4-880c-c6113978f2e7",
+    "reviewedAt": "2026-11-10T02:34:57.840Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD makes DEC-001 material: callers depend on the unresolved rejection error contract, and conditional acceptance criteria do not authorize selecting either option. Accordingly, blocked readiness with requirement-decision-pending for DEC-001, stopping after repository, requirements, and decisions evidence, is appropriate. REQ-001 and AC-001 through AC-003 are preserved consistently; empty task and assignment expectations match the prohibition on generating assignable tasks before resolution. The complete implementation-owner evidence supports source/index.ts and source/options.ts as the bounded owners. The package build configuration supports treating dist declarations as generated rather than separately maintained owners. Supplied nz implementation evidence establishes discovery and compiler checking of test-d files despite the source-only tsconfig; runtime tests are not substituted for type checking. The empty team and capability claims do not invalidate this expectation because the unresolved Decision gate precedes mandatory scenario-review and assignment prerequisites. Repository identity, base commit, and release fingerprints agree between Gold and preview. The supplied provenance explains the distinct original/saved PRD, manifest/evaluation source, and source/bundled-module digest domains. The original specification's remaining-work metadata is consistent with an earlier preparation snapshot, while the proposed Gold and preview contain the frozen releaseInput. Historical project operations are not treated as candidate results or capability attestations. This review uses only the supplied evidence and Service-calculated mechanical bindings; no code was executed, digests independently recomputed, or human decision attestation inferred.",
+    "goldDigest": "47bb08eab0274ebf102eb048b95e41cbe6b152e5e02a942a0331c87f4cc7542c"
+  }
+}

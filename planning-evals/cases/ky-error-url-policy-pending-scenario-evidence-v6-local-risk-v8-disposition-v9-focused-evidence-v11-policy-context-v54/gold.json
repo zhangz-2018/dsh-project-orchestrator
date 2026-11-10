@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "releaseInput": {
+    "repositoryDigest": "5ea88bc258dc4693f3b831532f0e6e98b4476bc05ce6fe27e6275fd29ed013e7",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06faaa3d1106a973016af28d4601a487d2b3e305c07393eaeb:independent-gold-review:d365b905-7438-4350-bdc8-346ccf0c581e",
+    "reviewedAt": "2026-11-10T03:19:48.771Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD explicitly leaves the material DEC-001 unresolved and prohibits ready or assignable tasks; Gold correctly expects blocked readiness with requirement-decision-pending on DEC-001, evidence through repository, requirements and decisions, and no assignment expectations. REQ-001 and AC-001 through AC-003, repository identity/base commit, paired-case identity and inspection-owner scope agree with the specification. The supplied source supports the message-formatting, normalization, hook snapshot, inheritance and fetch-filtering concerns. Forwarding and declaration consumers are inspection owners, not mandatory edits; distribution declarations are build outputs rather than separately maintained owners. The proposed type-test path is included by tsconfig.test.json, and runtime execution is correctly distinguished from type checking. The empty team and capability catalog does not invalidate this expectation because the unresolved-decision gate precedes mandatory scenario review and assignment. The supplied provenance explains the distinct original/saved PRD and manifest/evaluation fingerprint domains, and the Gold and preview release fingerprints agree across repository, source, team, decisions, prompt bundle, model, sampling, budgets and metric policy. I rely on the Service's mechanical digest bindings, without independently recomputing hashes or executing code. No candidate outputs or human decision attestations were used. Approval concerns the Gold expectation, not execution readiness or resolution of DEC-001.",
+    "goldDigest": "0dedeed48d215515ba58ea55f256b3f3cdb5cf6beac5801f085d8d4d466e7729"
+  }
+}

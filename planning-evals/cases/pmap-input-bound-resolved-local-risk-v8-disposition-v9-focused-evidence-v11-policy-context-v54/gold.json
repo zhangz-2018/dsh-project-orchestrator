@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "releaseInput": {
+    "repositoryDigest": "0f3e22f3860cf3a2ed2ab168474d81d196414ed808f75d2e9e579deb9d643d53",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "72556f1d644b44dfc55b8567f8516a98f32ea459315f982f164afa55697329ac",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01cd9a0b2e33c3b2016af28d49963487d2b32417ab9f7c51f5:independent-gold-review:7b775d63-a125-4c94-9e15-9ef39685aa1d",
+    "reviewedAt": "2026-11-10T03:19:59.106Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The complete PRD explicitly fixes OPT-1 as a hypothetical input, not a human Decision; the empty frozen human-decision input and humanConfirmed=false are therefore consistent with expectedReadiness=ready. An unresolved material DEC-001 in paired B must instead block at decisions. REQ-001, AC-001 through AC-003, DEC-001, and both task keys remain stable, with only the selected option imposing implementation and verification obligations. The supplied implementation, declaration, test, inventory, and package evidence supports the exact four-file writable scope without requiring unrelated configuration or consumer edits. The shared runtime engine and option types require preserving other exports, but do not require additional owner paths. Repository configuration and installed-tool source evidence support separate AVA runtime and tsd compile-time verification; the truncated existing test excerpts do not prevent assessing this planning scope. TASK-IMPLEMENT and dependent independent TASK-VERIFY have distinct eligible agents supported by the supplied original-project-scoped active capability records, including the required data, state, asynchronous integration, consumer, language, and testing capabilities. The configured verifier also satisfies the stated read-only planning-review prerequisite without conflating that prerequisite with implementation authorship or execution approval. Gold and preview release fingerprints agree; the supplied provenance explains the distinct source-manifest/evaluation-source domains, PRD trimming, claim projection, and executing-bundle prompt fingerprint. Model, sampling, budgets, and metric-policy identifiers are frozen consistently. The original specification's preparation placeholders do not override the subsequently supplied frozen release and scoped-team evidence. No candidate outputs were used. This review relies on the Service-supplied mechanical digest bindings and provenance; I did not recompute digests, execute code, or create a human attestation.",
+    "goldDigest": "c76f198791ddecf4fe1bac45633a3806f2bc866813a9775011ee4fb1e6932c23"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "3acb3dd8fe42ce4849ee8815908a5b5493d6a674c61320d8276011c9143c39a9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0eb3de9188c130a0016af23f114c5487d2aca9026d7cfb1278:independent-gold-review:9b89079d-6d8b-49e0-804a-2de5a145403c",
+    "reviewedAt": "2026-11-09T21:46:08.075Z",
+    "rationale": "The supplied frozen Gold is a coherent independent expectation for this planning-only C case. REQ-001, AC-001 through AC-003, DEC-001 and the task keys agree across the specification and Gold. C explicitly fixes OPT-1 as hypothetical source input, requires only that branch, and does not represent a human-confirmed Decision; an empty human decision input is therefore consistent. A material unresolved DEC-001 in B must still block at decisions before later prerequisites. The supplied implementation and package evidence support the exact four-file writable binding scope, with package.json serving as configuration inspection evidence rather than a mandatory edit. The scheduling, existing delay calculation, zero-delay cancellation and thrown-value priority requirements are compatible with the current implementation structure. The implementation task and dependent independent verification task are supported by the designated members' roles, availability and supplied project-scoped active trusted capability claims, including the verifier's additional testing.verification claim; eligibility does not depend on Persona or pending claims. The selected planning reviewer is permitted by the frozen reviewer-selection policy. Historical project reuse preserves the supplied claim scope without treating old operations as candidates for this bundle. Repository, source, team, decision, executing-bundle, model, sampling and metric-policy fingerprints are consistently recorded; the distinct source digest domains and PRD trimming are explained. Ready with no blocking reasons is appropriate as an expected planning outcome, not an assertion that implementation, verification or dispatch occurred. This review uses only the supplied evidence: no tools or code were executed, no digests were independently recomputed, and no human attestation was created.",
+    "goldDigest": "785b2224849c9f0aaccd66c4e31a564ce98f3d462065362659238b8c9e60d904"
+  }
+}

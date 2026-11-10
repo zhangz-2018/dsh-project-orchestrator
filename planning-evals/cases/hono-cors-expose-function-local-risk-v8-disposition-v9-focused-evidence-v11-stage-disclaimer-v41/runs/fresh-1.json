@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [
+    "src/middleware/cors/index.test.ts",
+    "src/hono.ts",
+    "src/middleware/cors/index.ts",
+    "src/context.ts",
+    "src/hono-base.ts",
+    "src/router/reg-exp-router/index.ts",
+    "src/router/smart-router/index.ts",
+    "src/router/trie-router/index.ts",
+    "src/types.ts",
+    "src/compose.ts",
+    "src/request.ts",
+    "src/router.ts",
+    "src/router/reg-exp-router/prepared-router.ts",
+    "src/router/reg-exp-router/router.ts",
+    "src/router/smart-router/router.ts",
+    "src/router/trie-router/router.ts",
+    "src/utils/constants.ts",
+    "src/utils/headers.ts",
+    "src/utils/html.ts",
+    "src/utils/http-status.ts",
+    "src/utils/mime.ts",
+    "src/utils/types.ts",
+    "src/utils/url.ts",
+    "src/middleware/bearer-auth/index.test.ts",
+    "src/middleware/secure-headers/index.test.ts",
+    "src/hono.test.ts",
+    "src/jsx/index.test.tsx",
+    "src/middleware/cache/index.test.ts",
+    "src/middleware/method-not-allowed/index.test.ts",
+    "src/request.test.ts",
+    "src/middleware/jsx-renderer/index.test.tsx",
+    "src/middleware/jwk/index.test.ts",
+    "runtime-tests/bun/index.test.tsx",
+    "src/client/client.test.ts",
+    "src/helper/factory/index.test.ts",
+    "src/middleware/method-not-allowed/index.ts",
+    "src/middleware/secure-headers/secure-headers.ts",
+    "src/middleware/csrf/index.test.ts",
+    "src/middleware/timing/index.test.ts",
+    "src/jsx/dom/index.test.tsx",
+    "src/middleware/jwt/index.test.ts",
+    "src/middleware/basic-auth/index.test.ts",
+    "src/middleware/serve-static/index.test.ts",
+    "src/helper/cookie/index.test.ts",
+    "src/middleware/cache/index.ts",
+    "src/middleware/body-limit/index.test.ts",
+    "src/middleware/compress/index.test.ts",
+    "src/middleware/ip-restriction/index.test.ts",
+    "src/middleware/mount/index.test.ts",
+    "src/helper/css/index.test.tsx",
+    "src/middleware/language/index.test.ts",
+    "adapters/lambda-edge/test/index.test.ts",
+    "runtime-tests/node/index.test.ts",
+    "src/middleware/bearer-auth/index.ts",
+    "src/middleware/request-id/index.test.ts",
+    "src/helper/proxy/index.test.ts",
+    "src/middleware/etag/index.test.ts",
+    "src/middleware/timing/timing.ts",
+    "src/middleware/trailing-slash/index.test.ts",
+    "src/helper/ssg/ssg.test.tsx",
+    "src/validator/validator.test.ts",
+    "src/middleware/context-storage/index.test.ts",
+    "src/compose.test.ts",
+    "src/middleware/csrf/index.ts",
+    "src/helper/proxy/index.ts",
+    "src/middleware/pretty-json/index.test.ts",
+    "runtime-tests/fastly/index.test.ts",
+    "src/context.test.ts",
+    "src/middleware/compress/index.ts",
+    "src/middleware/serve-static/index.ts",
+    "src/middleware/combine/index.test.ts",
+    "src/middleware/method-override/index.test.ts",
+    "src/middleware/powered-by/index.test.ts",
+    "src/middleware/basic-auth/index.ts",
+    "adapters/aws-lambda/test/index.test.ts",
+    "runtime-tests/deno/middleware.test.tsx",
+    "adapters/aws-lambda/src/handler.ts",
+    "src/middleware/logger/index.test.ts",
+    "src/middleware/timeout/index.test.ts",
+    "src/types.test.ts",
+    "adapters/aws-lambda/package.json",
+    "adapters/aws-lambda/tsconfig.json",
+    "adapters/bun/package.json",
+    "adapters/bun/tsconfig.json",
+    "adapters/cloudflare-workers/package.json",
+    "adapters/cloudflare-workers/tsconfig.json",
+    "adapters/deno/package.json",
+    "adapters/deno/tsconfig.json",
+    "adapters/lambda-edge/package.json",
+    "adapters/lambda-edge/tsconfig.json",
+    "adapters/netlify/package.json",
+    "adapters/netlify/tsconfig.json",
+    "adapters/service-worker/package.json",
+    "adapters/service-worker/tsconfig.json",
+    "adapters/vercel/package.json",
+    "adapters/vercel/tsconfig.json",
+    "benchmarks/fetch/package.json",
+    "benchmarks/fetch/tsconfig.json",
+    "benchmarks/jsx/package.json",
+    "benchmarks/jsx/src/react-jsx/tsconfig.json",
+    "benchmarks/jsx/tsconfig.json",
+    "benchmarks/query-param/package.json",
+    "benchmarks/routers/package.json",
+    "benchmarks/routers/tsconfig.json",
+    "benchmarks/utils/package.json",
+    "package.json",
+    "perf-measures/type-check/scripts/tsconfig.json",
+    "perf-measures/type-check/tsconfig.build.json",
+    "runtime-tests/bun/tsconfig.json",
+    "runtime-tests/fastly/tsconfig.json",
+    "runtime-tests/node/tsconfig.json",
+    "runtime-tests/workerd/tsconfig.json",
+    "tsconfig.base.json",
+    "tsconfig.build.json",
+    "tsconfig.json",
+    "tsconfig.spec.json"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "src/middleware/cors/index.test.ts",
+        "src/hono.ts",
+        "src/middleware/cors/index.ts",
+        "src/context.ts",
+        "src/types.ts",
+        "src/compose.ts",
+        "src/request.ts",
+        "src/utils/headers.ts",
+        "package.json",
+        "tsconfig.base.json",
+        "tsconfig.spec.json"
+      ],
+      "ownerPaths": [
+        "src/middleware/cors/index.ts",
+        "src/middleware/cors/index.test.ts"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "key": "TASK-IMPLEMENT",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "pnpm run test"
+      ]
+    },
+    {
+      "key": "TASK-VERIFY",
+      "acceptanceKeys": [
+        "AC-001",
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-005"
+      ],
+      "contextComplete": true,
+      "verificationCommandIds": [
+        "pnpm run test"
+      ]
+    }
+  ],
+  "assignments": [
+    {
+      "taskKey": "TASK-IMPLEMENT",
+      "outcome": "selected",
+      "agentId": "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+    },
+    {
+      "taskKey": "TASK-VERIFY",
+      "outcome": "selected",
+      "agentId": "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+    }
+  ],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "task-preflight-needs-clarification",
+      "subjectKeys": [
+        "TASK-IMPLEMENT",
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    {
+      "code": "task-preflight-needs-clarification",
+      "subjectKeys": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e",
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "reachedStage": "preflight",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd"
+      ]
+    },
+    {
+      "stage": "assignments",
+      "evidenceIds": [
+        "assignment-evaluation:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd:TASK-IMPLEMENT",
+        "assignment-evaluation:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd:TASK-VERIFY"
+      ]
+    },
+    {
+      "stage": "preflight",
+      "evidenceIds": [
+        "task-preflight:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd:TASK-IMPLEMENT",
+        "task-preflight:planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd:TASK-VERIFY"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "hono-cors-expose-function-local-risk-v8-disposition-v9-focused-evidence-v11-stage-disclaimer-v41",
+    "repositoryBaseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70",
+    "planningOperationId": "planning-v3:6daab2f8-cbae-4d9b-9197-4dc40569bbbd",
+    "planningOperationDigest": "96d30ef0365ba692c364c5df696721755a78cf07aa240d434e47df0c77b3c556",
+    "repositoryDigest": "055186837acdcd26e6403ba0fd2489aba8136e9d1118be3b651e63203ae175fb",
+    "sourceDigest": "1296bd3a5fa685b05c9911183b22ffd76d6923d748e3dbe4dc2d05fa9d7fe931",
+    "teamCatalogDigest": "8bb1ba1d9c66bf7fc46349a6b1d5aff300b13f422cdbd2197309c390b762ec41",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "promptVersionsDigest": "4663d88e94923727b6048f4417de201d16086068e78f2700cc1cad411b4709c9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-11-09T17:40:08.448Z",
+    "completedAt": "2026-11-09T17:47:45.635Z"
+  }
+}

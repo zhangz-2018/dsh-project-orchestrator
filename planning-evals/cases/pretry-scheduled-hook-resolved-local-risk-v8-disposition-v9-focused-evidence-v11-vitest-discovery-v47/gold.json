@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "3acb3dd8fe42ce4849ee8815908a5b5493d6a674c61320d8276011c9143c39a9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_085ee5bf9199804b016af2339737d887d09b3b7551c8d2e9fa:independent-gold-review:2daaf5f7-ce91-431e-ab73-5e6b27bc6193",
+    "reviewedAt": "2026-11-09T20:57:13.875Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C scenario. REQ-001, AC-001 through AC-003, DEC-001 and both task keys are preserved. OPT-1 is explicitly fixed hypothetical input, not a human Decision; only that branch is required. Consequently, C can be ready with no decision blocker, while a material unresolved DEC-001 must block the paired B scenario at decisions. The supplied implementation supports the specified delay calculation and identifies the hook insertion and cancellation-check boundary without requiring unrelated changes. The exact writable scope includes the maintained implementation, declaration and runtime/type regression owners; package.json is inspection evidence, not a mandatory edit. AVA discovery and tsd compilation evidence support the existing test entry points. The implementation and dependent independent-verification tasks are appropriate, with all required ACs requiring both relationships. Their allowed agents have matching delivery roles, availability and supplied project-scoped active trusted capability claims, including the required state, data and consumer capabilities and verifier-only testing.verification. Pending legacy claims and Persona content are not used as capability evidence. The selected planning reviewer is consistent with the supplied Service selection policy. Historical project reuse preserves the original scoped claim receipts and does not establish candidate execution on this bundle. Repository identity, base commit and file fingerprints align across the supplied records; source-manifest versus evaluation-source domains, PRD trimming, and source-module versus executing-bundle fingerprints are explicitly reconciled. Gold and preview release inputs agree on team, decisions, prompts, model, sampling, budgets and metric-policy fingerprints. The original specification's preparation placeholders are superseded by the supplied frozen preview and provenance, not evidence of implementation completion. This approval concerns expectation coherence only: I used no tools, executed no code, independently recomputed no digests, and created no human attestation.",
+    "goldDigest": "386217254e15336903eedf1f63196f5121fea342cf4cfc662e492a3f995f6f79"
+  }
+}

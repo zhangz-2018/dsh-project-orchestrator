@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_002069421e2c8ec9016af21d20167487d08e7e8008345ed501:independent-gold-review:f4778468-0e85-4e4f-a371-83309ffe75f8",
+    "reviewedAt": "2026-11-09T19:21:22.326Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity agree with the original specification. DEC-001 materially changes reentrancy and exception behavior and remains unresolved without human confirmation, so B must stop at decisions with requirement-decision-pending rather than select OPT-1 or OPT-2. AC-001 is explicitly conditional, not authorization to resolve the Decision. Required repository, requirements, and decisions evidence stages and empty task/assignment expectations are appropriate. The empty team and capability claims do not invalidate this earlier deterministic block or justify assignments; later scenario-review prerequisites need not be satisfied here. src/index.ts owns both runtime implementation and public type contracts. The supplied package configuration, CI sequence, ignore rules, and upstream microbundle source establish generated declarations rather than a separately maintained declaration owner; the two test files are the appropriate regression and type-checking scope. Any later task split remains conditional on decision resolution. The release fingerprints match between Gold and preview; supplied provenance explains the distinct source digest domains, PRD whitespace normalization, scoped team facts, empty resolved-decision input, and executing-bundle prompt fingerprint. Model, sampling, budgets, and metric-policy fingerprints are consistently frozen. Historical project reuse does not supply candidate results, capability evidence, or a new human Decision, and any fixed hypothetical C input must remain distinct from human resolution. This approval relies on the supplied Service-bound digest provenance, not independent digest recomputation or code execution.",
+    "goldDigest": "e9a19cb04e4b94c2c14b442821d273d71e6b14a13d217177cecfb443979766fc"
+  }
+}

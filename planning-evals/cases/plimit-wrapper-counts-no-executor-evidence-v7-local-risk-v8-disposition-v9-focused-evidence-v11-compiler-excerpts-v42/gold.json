@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_017ba7754c4db73d016af2098ecb2887d090147123aa6bb4cd:independent-gold-review:3e935b98-1cb2-42c6-b1bb-b4592db2bf5a",
+    "reviewedAt": "2026-11-09T17:57:48.199Z",
+    "rationale": "The supplied Gold is a coherent independent pre-candidate expectation. REQ-001 and AC-001 through AC-003 match the complete PRD and supplied source: limitFunction currently forwards clearQueue but lacks wrapper count properties and their return-type declarations. The exact binding scope correctly includes the runtime owner, maintained declaration owner, runtime regressions, and tsd regressions without requiring unrelated configuration changes or edits to already-correct logic. TASK-IMPLEMENT and dependent TASK-VERIFY preserve the required implementation and independent verification relationships. Both assignments must abstain: the only project member is a non-auto-assignable reviewer with no execution roles or capability claims. That active independent reviewer satisfies the stated earlier review prerequisite without making either execution task eligible. No unresolved material business Decision is present, so reaching assignments and blocking there is consistent. Repository identity, base commit, file fingerprints, and Gold/preview release fingerprints agree as supplied; the distinct manifest/evaluation source digest domains and PRD whitespace normalization are explicitly accounted for. Historical project reuse does not supply candidate evidence for this bundle. I reviewed the supplied inputs only, without executing code, independently recomputing digests, or providing human attestation. Approval concerns this Gold expectation, not benchmark run readiness; the remaining negative-control operations are still outstanding.",
+    "goldDigest": "196608f99441a5461c92afaf2988a08e641c86cd9e6223b35337d66111f7ad46"
+  }
+}

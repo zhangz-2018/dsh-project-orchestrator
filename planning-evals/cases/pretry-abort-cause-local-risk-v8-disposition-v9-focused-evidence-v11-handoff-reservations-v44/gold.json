@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-reservations-v44",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "985d3b990d6c677e96460ce14e3ea8d21c8aa8f04a8af39254e35cf1e883c557",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d607bc5026ced39a86e368028027005e23eb40615fa5c2f2238c50271aab3a96",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f64babff6ab8424016af2177bdb1487d0b1fc7f2ca4dc7ebb:independent-gold-review:fd934f69-2de0-4dd9-89fb-f46d8dce2b3c",
+    "reviewedAt": "2026-11-09T18:57:15.310Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 match the original PRD and supplied implementation: AbortError currently retains originalError without setting cause, and retry termination already throws originalError. The exact four-file writable scope covers the maintained runtime and declaration owners and their runtime/type regressions without requiring unnecessary edits. Package configuration and supplied tool sources establish separate AVA runtime testing and tsd discovery/type checking of index.test-d.ts. TASK-IMPLEMENT and dependent, independent TASK-VERIFY are consistent with the PRD, including implementation and verification coverage of every required AC. Their allowed agents have matching delivery roles, available slots, auto-assignable memberships, and supplied active project-scoped trusted claims for the relevant capability requirements; eligibility is not inferred from personas or pending claims. The configured planning reviewer is distinct from the implementer, and the supplied policy permits its verifier role at this inspection stage. Ready with no blocking reasons is appropriate: this case supplies no material unresolved DEC-001 or hypothetical C requiring disposition. Historical project reuse preserves the supplied claim scope without treating old operations as fresh candidates. Gold and preview release fingerprints agree; the supplied provenance explains the distinct original/saved PRD, source-manifest/evaluation-source, and source-module/executing-bundle digest domains. Model, policy, sampling and budget fingerprints are consistently frozen. The truncated runtime-test excerpt contains the relevant AbortError regressions and does not leave the bounded planning expectation ambiguous. This review used only supplied review data, accepted Service-calculated digest bindings, created no human attestation, and neither executed code nor independently recomputed digests. Approval concerns the Gold expectation, not task dispatch, implementation correctness, or completed test execution.",
+    "goldDigest": "cc71f452fb69bca08821beff6588cfd3accde1375a3753d98c248d260881c008"
+  }
+}

@@ -3499,6 +3499,10 @@ POST /projects/:projectId/execution-dispatches
 
 Approval 成功返回 201 PlanApprovalRecord，且响应中 TaskRun 数必须为 0。Dispatch 全部可启动时返回 201 `started`；可运行前沿部分启动时返回 201 `partially_started`；没有 Task 可启动且全部为 dependency/Runtime/容量/conflict soft wait 时返回 202 `waiting`；三者都返回逐 Task result，只有 started result 带 TaskRun ID。任一 requested Task stale、access/target/assignment/preflight blocked 或硬 uniqueness 冲突返回 409，整个命令创建 0 Run。
 
+启动前失败的显式恢复：Dispatch 请求可附加 `retryOfTaskRunId`，且 `taskIds` 必须仅包含该失败运行的任务。Service 只接受当前批准计划下最近一次派发的失败 TaskRun，要求项目已失败且无活动运行、旧运行从未取得工作区或启动 Runtime、无产物、租约已释放；存在 session、执行 claim 或待核实副作用时返回 `execution-retry-reconciliation-required`。批准、独立审核、需求决策、仓库、能力、访问、分配和预检仍按普通 Dispatch 完整重校验。新 Dispatch 将重试来源纳入摘要和幂等校验，新 TaskRun 用 `retryOf` 引用旧记录并增加 attempt；不改写旧失败，不自动重试，不恢复通用 V3 `/retry` 的旧执行语义。
+
+该可选字段不改变旧 Dispatch 的摘要或读取方式。生成重试记录前须升级所有共享该领域存储的读取方；旧版严格 Schema 不认识新字段，不能直接用旧版二进制读取含新记录的 home。回滚代码与恢复数据必须分开处理，执行前保留完整领域备份。恢复交付也不自动满足发布 Canary：当前 Canary V2 要求链路中每个 TaskRun 都有验证调用和证据，启动前失败链路仍会被拒绝。
+
 ### 17.2 查询 API
 
 ```http

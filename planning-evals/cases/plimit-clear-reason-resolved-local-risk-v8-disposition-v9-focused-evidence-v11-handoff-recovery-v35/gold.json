@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "64af684cd9b07aabe63b897df876342d5f7e7731c009dc36bd8f7c9a38045008",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03b1b0b14be0d7c7016af1ec51d5f087d2a1a86f03b7556915:independent-gold-review:f09b7646-5d57-4de8-89c2-f26314d47ebf",
+    "reviewedAt": "2026-11-09T15:53:04.463Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C input. The complete PRD fixes OPT-1 as a hypothetical benchmark input, not a human Decision; the empty decision input therefore does not conflict with ready status. A material unresolved DEC-001 in paired B must still block at decisions. REQ-001 and AC-001 through AC-003 consistently require identity-preserving explicit rejection values, explicit undefined distinguished from omission, and preservation of running-task and rejectOnClear=false behavior. The four exact writable owner/test paths match the supplied source: index.d.ts is a maintained declaration owner, while limitFunction forwards the existing clearQueue function and inherits its declaration through Pick without requiring a separate forwarding edit. package.json establishes the xo, ava, and tsd verification entry point without requiring configuration changes. The implementation and dependent independent-verification task expectations agree with the PRD. Their allowed agents have the appropriate roles, available capacity, and supplied active trusted capability claims, including shared-state data.change and asynchronous integration.consumer; the verifier additionally has testing.verification. A separate configured non-executing reviewer satisfies the stated earlier review prerequisite. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and PRD trimming. The original specification's preparation-time null release input and remaining checklist are superseded by the supplied frozen release input and team facts for this review, not evidence of a planning blocker. Review is based solely on the supplied pre-candidate evidence and Service-bound fingerprints; I did not execute code, recompute digests, or provide human attestation.",
+    "goldDigest": "b37710e3f187ac954de214c68525d13cfcf3e7c7d639f88d785388c52c03d2ca"
+  }
+}

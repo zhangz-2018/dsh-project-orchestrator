@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "releaseInput": {
+    "repositoryDigest": "eeeb2bfb5488123ee7b390ee25f96949381438699f26cd7319a013db172f4283",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "57437a4c841b37e1a325ca8c7d9f71ffc9f0d824bd892f37bd9ed03a4fa7a139",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0425c33d59e5f0db016af200be85c487d1b37ff92724fac83c:independent-gold-review:529c0d75-9588-4a19-a6e8-145b5e929dcf",
+    "reviewedAt": "2026-11-09T17:20:16.000Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. The original PRD expressly fixes DEC-001=OPT-1 as a hypothetical benchmark input, not a human Decision; an empty human decision input is therefore consistent with C being ready. This does not waive the requirement that an unresolved material DEC-001 block paired B at decisions. REQ-001, AC-001 through AC-003, task keys, repository identity/base commit, exact writable binding scope, and required evidence stages agree across the specification and Gold. The supplied implementation owners support the requested constructor option and admission behavior, including rejection before add events, preservation of the existing aborted-signal path, reentrant admission, and actual fixed/sliding-window start eligibility rather than reliance on isRateLimited. The bounded regression and type-test files are appropriate; package scripts and the supplied nz discovery/compiler logic establish a separate compile-time verification route. Generated dist declarations do not require separate maintained-owner bindings, and inspection-only consumers need not be edited. TASK-VERIFY is independently staffed and must depend on TASK-IMPLEMENT, with both relationships covering every required AC. The allowed implementer and verifier have supplied active trusted claims for the relevant API, shared-data, state, asynchronous integration, consumer, TypeScript, and testing capabilities; the verifier additionally has testing.verification. A distinct active project reviewer is configured, so the earlier independent-review prerequisite is supported without requiring execution claims for that reviewer. Gold and preview release fingerprints match; the supplied provenance explains the different manifest/evaluation digest domains and PRD trimming. Historical project reuse is compatible with preserving scoped attestations, and the isolation evidence distinguishes old-version operations from candidates on this bundle. Approval relies on the supplied Service-bound fingerprints and provenance, not independent digest recomputation, execution, or new human attestation. The truncated runtime-test excerpts limit exhaustive inspection of existing tests but do not undermine this planning-only expectation.",
+    "goldDigest": "72d2c87559f1168548f85473095d88acb90c45eb438d6a229c69e4bd8d1f0fbf"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "releaseInput": {
+    "repositoryDigest": "15801d93cb0cff38c3bdd9c36f8cafb9432f8657925a4b8684cd889d2145b03a",
+    "sourceDigest": "351ff7617007e5810a1a1ec20e53f91f91a4e222b1418828d8c49c7d6ebcb968",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06bb937f1ff6699c016af23efdccbc87d293835cd74b680b08:independent-gold-review:5f37f485-f17d-46d4-8a77-93e386c650f0",
+    "reviewedAt": "2026-11-09T21:45:48.681Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and owner bindings agree with the original PRD and supplied source evidence. DEC-001 materially affects rejection semantics and remains unresolved without human confirmation; the conditional recommended-option acceptance criteria do not resolve it. Blocked readiness at decisions, evidence stages repository/requirements/decisions, and empty task and assignment expectations are therefore coherent. The implementation and maintained declaration owners are index.js and index.d.ts; limitFunction forwards the existing clearQueue function and inherits its declaration through Pick, so forwarding does not require a separate owner edit. Runtime regression and compile-time validation correctly target test.js and index.test-d.ts through the configured xo/ava/tsd entry point. The empty team catalog and capability claims confer no assignment eligibility, but later reviewer and capability prerequisites need not be satisfied before this earlier deterministic decision stop. Gold and preview release fingerprints agree; the supplied provenance explains the distinct source-manifest/evaluation digest domains, PRD trim normalization, and executing-bundle prompt fingerprint. Model, policy, sampling, and budget fingerprints are frozen consistently in both releaseInput records. Historical project operations do not supply candidate evidence or capability authority. This approval concerns the independent expectation, not implementation correctness, task authorization, or release readiness. I relied on the supplied Service-bound digest and provenance records and did not recompute hashes, execute code, or supply a human Decision.",
+    "goldDigest": "94e63ecf94f9d875dc86b2e76b8c27b71e94d6fee2258fa40c886655f676c15f"
+  }
+}

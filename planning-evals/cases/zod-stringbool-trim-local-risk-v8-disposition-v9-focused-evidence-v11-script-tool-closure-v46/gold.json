@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "beea447dcbfe6fa92107662227e739b94bad31c8e03f9b4a59658e16d3434e0b",
+    "sourceDigest": "14926b22ca3797729a9608d10903623342aad0328928d515f8c997876539eead",
+    "teamCatalogDigest": "45831fdf6eeca4730d19d4a9941d40974c67e35b0dfd8608978b3e24895d704e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e0db4db73879eeb016af2255d686887d2b752c17fda14b4b0:independent-gold-review:91e63200-0201-4d6a-b336-6cc05cdc0b35",
+    "reviewedAt": "2026-11-09T19:56:30.214Z",
+    "rationale": "The supplied Gold is an appropriate independent planning expectation for the frozen specification. REQ-001 and AC-001 through AC-003 coherently specify opt-in input-only trimming before existing case handling, unchanged vocabulary whitespace, existing rejection behavior, and preserved encoding semantics. The supplied source places the parameter declaration and transformation in core/api.ts; classic/mini factories, normalization and exports already forward the shared parameter type and appropriately remain inspection owners. The exact writable scope includes both required regression files, including the proposed new mini test. Package build configuration establishes generated published declarations, so separate declaration edits are not required. Stable requirement, acceptance and task keys agree; TASK-VERIFY depends on TASK-IMPLEMENT and has a distinct eligible agent. Eligibility is supported by the supplied original project-scoped active capability records, not Persona or pending claims. The selected verifier can satisfy the independent read-only planning review prerequisite under the supplied policy. Supplemental fixed-commit configuration and focused installed Vitest evidence resolve the prior material evidence gaps and support runtime and compiler verification paths without establishing successful execution. Ready is coherent as a planning expectation, not execution or dispatch authorization. Repository, source, team, model, budget and policy fingerprints agree across the frozen Gold and preview; documented normalization and digest domains explain the different PRD and source-manifest values. I rely on the supplied Service bindings and have not recomputed digests, executed code, or created human attestations. No candidate output was used. No B or C variant is supplied for this case: its empty decision input is consistent with this PRD, and this approval does not waive a decisions-stage block for any separate B with unresolved material DEC-001 or treat hypothetical C as a human Decision.",
+    "goldDigest": "05ce95e3cd9f05f32ff01d4043e6ffe70b25de7d399ade63baa2d6b9607b5892"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "516f32e2fbc81ce2345367e6ff882ae2873371f570b2289eaa6396b332197636",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "6ab490c790258a276d8a589a2976c1faa513adb7794fa13865cde3d82bfd0edc",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_026f4f5184752f6b016af1ece2863887d2ac8a05cc7d04f5d7:independent-gold-review:167f3bd5-7501-489d-be1b-eb1266f48822",
+    "reviewedAt": "2026-11-09T15:55:39.618Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen C scenario. OPT-1 is explicitly fixed hypothetical source input, not a human Decision; the empty decision-input fingerprint and humanConfirmed=false are consistent with that distinction. Only the selected branch is required. A materially unresolved DEC-001 in paired B must instead block at decisions, before later review prerequisites. REQ-001, AC-001 through AC-003, DEC-001, and both task keys are consistent across the specification and Gold. The exact writable binding scope covers the implementation and runtime/type regression owners without requiring gratuitous edits. Supplied configuration and upstream build-source evidence establish index.d.ts and dist as generated outputs, not separately maintained owners, and establish build-before-test verification. The task split requires independent verification dependent on implementation and coverage of every required AC. Supplied scoped team facts support the designated implementer and verifier through active human-confirmed capability records, rather than persona inference; the separately configured reviewer satisfies the earlier independent-review prerequisite. Gold and preview release fingerprints agree, and the provenance explains the distinct source-manifest, evaluation-source, and trimmed/untrimmed PRD digest domains. Original preparation placeholders do not supersede the supplied frozen preview inputs. This review uses only the supplied specification and evidence, with no candidate comparison, execution, independent digest recomputation, or new human attestation.",
+    "goldDigest": "a79e765f06bbb61939ffa388719629c5b2165d7c32053087ab589684fd498808"
+  }
+}

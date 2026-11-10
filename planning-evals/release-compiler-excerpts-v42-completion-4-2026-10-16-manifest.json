@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-compiler-excerpts-v42-completion-4-2026-10-16",
+  "createdAt": "2026-11-09T18:02:06.199Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+      "goldDigest": "74780e188faca7c633a26682f2020c8d81c99885251c8ae82d3338e2c5784c08"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+      "attemptId": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42/fresh-1",
+      "operationId": "planning-v3:3c0f9fcd-a760-431b-91e5-4df7c6743318",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42/runs/fresh-1.json",
+      "startedAt": "2026-11-09T18:02:06.245Z",
+      "completedAt": "2026-11-09T18:14:16.430Z"
+    }
+  ]
+}

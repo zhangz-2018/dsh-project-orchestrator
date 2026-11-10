@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e1a160312fa2075016af22444f7e887d1801ed5149bc3ff4d:independent-gold-review:e7c9343b-6876-4dcf-af01-2b9767db0b2b",
+    "reviewedAt": "2026-11-09T19:51:48.658Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD preserves REQ-001, AC-001 through AC-003, and DEC-001 without authorizing selection of either option. The material unresolved DEC-001 therefore blocks B at decisions, consistent with the required repository/requirements/decisions evidence stages, blocked readiness, empty task expectations, and empty assignment expectations. Later scenario-review and capability prerequisites do not supersede this earlier gate; the empty project team does not invalidate this expectation. src/index.ts owns both the implementation and public Emitter contract. The supplied package configuration, CI workflow, ignore rules, and fixed microbundle source establish generated declaration ownership and the build-before-test prerequisite; tests and read-only consumers remain inspection/verification scope rather than additional mandatory implementation owners. The original specification and Gold agree on repository identity, base commit, stable keys, owner binding, blocking reason, and paired-case identity. Gold and preview release fingerprints agree, with supplied provenance explaining PRD trimming, distinct manifest/evaluation source digest domains, scoped team facts, empty resolved-decision input, and executing-bundle prompt fingerprint. Model, sampling, budget, and metric-policy fingerprints are consistently frozen in both release inputs. Preparatory null release/review fields in the original specification are distinguished from the supplied frozen preview. No candidate evidence was used, no hypothetical C was treated as a human Decision, and no execution or independent digest recomputation is claimed.",
+    "goldDigest": "1572a7f931d5116b4c65d53aadb668c9bbab9033828ccb04fc51d77578a37026"
+  }
+}

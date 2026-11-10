@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_094fb89782b01ad7016af21cd268fc87d1b4e2d0a56096817f:independent-gold-review:0e557b81-b2f4-441f-86ae-421c6244cec8",
+    "reviewedAt": "2026-11-09T19:20:01.177Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves the externally observable rejection-error contract unresolved at DEC-001; neither conditional acceptance criteria nor the listed options authorize resolving it. Consequently, blocked readiness with requirement-decision-pending for DEC-001, evidence through repository/requirements/decisions, and no task or assignment expectations are appropriate. The later independent-review and capability prerequisites do not supersede this earlier deterministic decision gate. REQ-001, AC-001 through AC-003, DEC-001, repository identity, base commit, and paired-case identity are consistent. The complete implementation-owner evidence supports source/index.ts and source/options.ts as the bounded owner pair. Build configuration supports treating dist declarations as generated rather than separately maintained owners; runtime tests and nz compiler-based type verification are correctly distinguished. The empty team and trusted-claim projections are consistent with no assignments. Gold and preview release fingerprints agree, with explicit provenance explaining the distinct source-manifest/evaluation digest domains and executing-bundle/source-module domains. The retained historical operation supplies no candidate output and is not treated as capability or decision evidence. This approval concerns the supplied frozen expectation, not execution readiness, a human decision, or approval of the paired hypothetical case. Digest bindings and normalization comparisons are accepted as supplied Service evidence; I did not recompute digests or execute code. The truncated runtime-test excerpts do not prevent evaluating this early decision-block expectation.",
+    "goldDigest": "88cd9aebf207ef8b7f3e817e1868a16f360ed4762b5d83abefad47a7eca1a08e"
+  }
+}

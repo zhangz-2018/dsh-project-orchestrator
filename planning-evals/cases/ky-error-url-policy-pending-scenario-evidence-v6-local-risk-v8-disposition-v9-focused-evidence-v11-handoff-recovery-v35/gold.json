@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_00304e6595ec120e016af1ec91ba7887d1a2459ec4617202b8:independent-gold-review:67082487-dd64-4c47-9d00-5e568c7a1682",
+    "reviewedAt": "2026-11-09T15:54:11.812Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD and acceptance criteria preserve REQ-001, AC-001 through AC-003, and DEC-001 without authorizing either default policy. Material unresolved DEC-001 must block B at decisions, consistent with blocked readiness, the requirement-decision-pending reason, evidence stages ending at decisions, and empty task and assignment expectations. Later reviewer and capability prerequisites do not supersede that earlier gate; the empty team catalog therefore does not invalidate this expectation. The supplied owner contents support the HTTPError formatting, option normalization, readonly snapshots, inheritance, and fetch-filtering scope. Forwarding and declaration consumers are inspection owners, not mandatory edits, and generated distribution declarations need not be separately maintained. The configured verification entry distinguishes runtime tests from test-d compilation. Repository identity, base commit, paired-case identity, stable keys, and release fingerprints agree across the supplied Gold and preview. The provenance explicitly explains the distinct manifest and evaluation source-digest domains and original versus persisted PRD normalization. Source, team, decision, prompt, model, sampling, budget, and policy fingerprints are supplied as Service-bound inputs. Approval relies on those mechanical bindings, not independent digest recomputation or code execution. No candidate results or human decision attestation were used, and no hypothetical C input is treated as a human Decision. This approves the benchmark expectation, not implementation readiness, execution, or task dispatch.",
+    "goldDigest": "f0011fa6207fce4bafd9b915044db270e04d7df52c1eff4f8fe399c2e6f334f8"
+  }
+}

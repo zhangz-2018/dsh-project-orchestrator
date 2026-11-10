@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "985d3b990d6c677e96460ce14e3ea8d21c8aa8f04a8af39254e35cf1e883c557",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0492ab4d82492cf4016af23f0f1eec87d0bb99c130d099b96d:independent-gold-review:80743e9c-f347-45b1-939f-03587ee026d6",
+    "reviewedAt": "2026-11-09T21:46:08.219Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001 through AC-003 consistently require cause identity with originalError while preserving constructor compatibility and pRetry's existing original-error rejection behavior. The exact four-file writable scope covers the maintained runtime and declaration owners and both regression files, without requiring gratuitous edits or changes to package configuration. Supplied configuration and tool-source evidence establish AVA runtime discovery and separate tsd compile-time discovery of index.test-d.ts; the focused test excerpt supplies the relevant existing AbortError coverage despite its disclosed truncation. TASK-IMPLEMENT and dependent, independent TASK-VERIFY match the specification. Their distinct allowed agents have the relevant active project-scoped trusted capability claims, delivery roles, auto-assignment eligibility and available slots; eligibility does not rely on Persona or pending claims. The configured verifier is permitted as the read-only planning reviewer under the supplied selection and independence policy. No unresolved material DEC-001 is supplied for this case, so ready with no blocking reasons is appropriate; the general B/C instructions do not introduce an additional decision into this input. Historical operations are explicitly old-bundle history, not candidate evidence for this bundle, and their retention is consistent with preserving original project-scoped attestations. Gold and preview release fingerprints agree, and supplied provenance explains the distinct original/saved PRD, manifest/evaluation source and source/bundle digest domains. The original specification's remaining preparation fields describe its earlier preparation state rather than contradicting the subsequently supplied freeze. Digest binding and provenance checks are accepted as supplied Service evidence, not independently recomputed results. No tools or code were executed, no human attestation was created, and this approval neither approves nor dispatches implementation tasks.",
+    "goldDigest": "8832b1c1db1b27390978e4ae2b75040a71777d970d59d2b24b0d619cf3e9124f"
+  }
+}

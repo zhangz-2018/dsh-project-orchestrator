@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "4dde9a7060578c08fe1cd0ea6a9a98e4bcdad7be8a99200b0ea3899d616214e0",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01c2a02115b884cc016af233bf09ac87d195d0797e1aa50df6:independent-gold-review:e8d24a74-1d6b-4022-87ff-2df87adb7458",
+    "reviewedAt": "2026-11-09T20:57:49.679Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C. The original PRD explicitly fixes OPT-1 as a hypothetical input, requiring RangeError capacity rejection without representing a registered human Decision; the empty frozen human-decision input is therefore consistent. A material unresolved DEC-001 in B must still block at decisions before later scenario-review prerequisites. REQ-001, AC-001 through AC-003, the paired-case identifier, and all seven evidence stages agree with the specification. The exact five-file writable binding covers the implementation, option contract, runtime regressions, and type tests without requiring gratuitous edits. The supplied build and nz discovery evidence supports generated dist declarations and compiler checking of test-d/index.test-d.ts despite the build tsconfig including only source; runtime transpilation is not treated as type checking. The two task roles, verification dependency, and implementation/verification coverage obligations are consistent. The supplied project-scoped active claims support the uniquely allowed implementer and verifier, including shared-state data.change and integration.consumer; eligibility need not rely on persona or pending claims. The selected verifier can serve as the independent read-only planning reviewer under the supplied policy. Historical project reuse preserves scoped claims without making old operations candidates for this bundle. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct PRD, manifest, evaluation-source, and executing-module digest domains. Approval concerns this planning expectation, not implementation correctness, execution readiness, or task dispatch. I reviewed only the supplied evidence, used no tools, executed no code, independently recomputed no digests, and created no human attestation.",
+    "goldDigest": "a55f3c315bfe04dfa56bc7b4c209e540c392b048af807dd651de91052926394b"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "3750aa4016eb23a6685563d3858c45cc79958c09bf8d6ae286009ba62ea05d60",
+    "teamCatalogDigest": "4dde9a7060578c08fe1cd0ea6a9a98e4bcdad7be8a99200b0ea3899d616214e0",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0784453a6cc627de016af21099c87887d18cdae1a949bd307c:independent-gold-review:bfd35301-05b9-40b2-b892-423f1ceb585c",
+    "reviewedAt": "2026-11-09T18:27:53.317Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C. The original PRD explicitly fixes OPT-1 as hypothetical input without asserting a human Decision, so ready with no blocking reasons is appropriate; an unresolved material DEC-001 in B must still block at decisions. REQ-001, AC-001 through AC-003, task keys, repository identity/base commit, and exact writable binding scopes agree across the specification and Gold. The implementation owners cover constructor options and queue admission, and the bounded regression scope covers runtime and type verification without requiring edits to already-correct files or read-only consumers. The supplied build configuration supports treating dist declarations as generated, while the frozen nz runner establishes discovery and compiler checking of test-d independently of runtime tests. The two task assignments are supported by distinct auto-assignable members with active trusted capability claims, including data.change and integration.consumer, and testing.verification for the verifier. The configured planning reviewer is consistent with the supplied selection and independence policy. Historical project reuse preserves scoped attestations and does not constitute a candidate run on this bundle. Release fingerprints and model, policy, sampling, and budget fields match between Gold and preview; the documented digest domains explain the differing manifest, evaluation-source, and normalized PRD fingerprints. I rely on the supplied Service-calculated mechanical bindings, without claiming independent digest recomputation, code execution, or human attestation. No material error or unresolved ambiguity was identified.",
+    "goldDigest": "e1634d9acfccc9cc7043727a6cc289feec947acc67f558b0a25bb2be5d35a2f6"
+  }
+}

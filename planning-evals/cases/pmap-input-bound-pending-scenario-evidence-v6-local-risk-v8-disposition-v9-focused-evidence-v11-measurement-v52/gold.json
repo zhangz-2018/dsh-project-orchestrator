@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "0f3e22f3860cf3a2ed2ab168474d81d196414ed808f75d2e9e579deb9d643d53",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e18a3910b97c6cb016af275f29cc087d099e992dde0b0ff51:independent-gold-review:b453feaa-444f-4deb-8f69-3efff172b9a4",
+    "reviewedAt": "2026-11-10T01:40:17.485Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved: AC-001 is conditional, not authorization to select OPT-1. Blocking at decisions with requirement-decision-pending for DEC-001, requiring repository/requirements/decisions evidence, and expecting no assignable tasks or assignments are therefore appropriate. REQ-001 and AC-001 through AC-003 are preserved consistently. The complete implementation and declaration evidence supports index.js and index.d.ts as the bounded owners; the shared runtime engine and shared option types require inspection to preserve other exports. package.json and the supplied tool evidence establish separate AVA runtime and tsd compile-time verification paths without requiring configuration edits. Truncated existing test excerpts do not prevent judging this decision-gated expectation. The empty team and capability claims do not introduce an earlier blocker because the unresolved-decision gate precedes mandatory scenario review and assignment prerequisites. Gold and preview release fingerprints match; supplied provenance explains the distinct source-manifest/evaluation digest domains, PRD whitespace normalization, and executing-bundle prompt fingerprint. The original preparation placeholders are superseded by the supplied frozen preview inputs. The retained historical operation is not evidence of a candidate run on this bundle or of trusted capabilities. This approval concerns Gold coherence only, not implementation readiness, human decision confirmation, or task dispatch. I relied on the Service-supplied mechanical digest bindings and provenance; I did not recompute digests or execute code.",
+    "goldDigest": "01d42550e0c3c7e932bd779cef86f61fd600e27abfd8bbf156c5c5d088dc3693"
+  }
+}

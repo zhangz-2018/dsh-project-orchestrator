@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "releaseInput": {
+    "repositoryDigest": "5ea88bc258dc4693f3b831532f0e6e98b4476bc05ce6fe27e6275fd29ed013e7",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_028247668f1d7894016af23f1d3e6c87d2b9ba8bec65f7ff06:independent-gold-review:cb34a373-7bcd-40fc-9986-94ab04b5cb19",
+    "reviewedAt": "2026-11-09T21:46:21.645Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this pending-decision case. The original PRD and structured acceptance criteria consistently preserve REQ-001, AC-001 through AC-003, and DEC-001. DEC-001 materially controls the omitted-option default and compatibility behavior, remains intentionally unresolved without human confirmation, and therefore must block B at decisions with requirement-decision-pending before Scenario Coverage or assignment prerequisites apply. The required repository, requirements, and decisions evidence stages and empty task/assignment expectations match that stopping point. TASK-IMPLEMENT and dependent TASK-VERIFY apply only after resolution; neither an assumed recommendation nor the paired C hypothetical supplies a human Decision. The nine source owners cover message construction, public/internal/normalized option contracts, normalization and hook snapshots, option filtering, instance forwarding, and merging. Correct generic forwarding and declaration consumers require inspection, not mandatory edits. The supplied build configuration supports treating distribution declarations as generated artifacts, not separately maintained owners. Runtime regression and compile-time validation are appropriately separated: test-d is included by tsconfig.test.json, while AVA uses tsx for runtime tests. Repository identity, base commit, stable keys, owner fingerprints, and the Gold/preview releaseInput values agree. The supplied provenance explains the distinct original/saved PRD, manifest/evaluation-source, and executing-bundle/source-module fingerprint domains. Empty team membership and capability claims do not invalidate an earlier deterministic decision block or authorize assignments. Model, prompt, sampling, budget, and metric-policy fingerprints are frozen consistently in the supplied release inputs. This approval concerns the expectation, not execution readiness, human attestation, or implementation correctness. I reviewed only the supplied evidence, used no tools, executed no code, and relied on the Service's mechanical digest bindings without independently recomputing them.",
+    "goldDigest": "6c0d845e03fc2d23b47846356656cc0223f108777fe576aba6b73a552090f2f7"
+  }
+}

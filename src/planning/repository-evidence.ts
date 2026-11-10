@@ -3,17 +3,84 @@ import { isAbsolute, join, posix, relative, sep } from 'node:path'
 import ts from 'typescript'
 import type { RepositoryContextSnapshotV3Record, RepositoryEvidenceRetrievalReport } from '../types.js'
 import { digestObject } from '../workflow.js'
+import { sourcePathTokens } from './source-path-tokens.js'
 
-const INDEX_VERSION = 'repository-evidence-index-v3.6.4'
+const INDEX_VERSION = 'repository-evidence-index-v3.6.9'
 const DEFAULT_SELECTION_LIMIT = 2_000
 const PER_REQUIREMENT_LIMIT = 80
 const MAX_INDEXED_SOURCE_BYTES = 512 * 1024
 const DEFAULT_INDEX_FILE_LIMIT = 20_000
 const DEFAULT_INDEX_BYTE_LIMIT = 64 * 1024 * 1024
 const EXCLUDED_PATH = /(?:^|\/)(?:node_modules|vendor|dist|build|coverage|\.next|\.nuxt|\.output|target|out|generated|__generated__)(?:\/|$)/iu
-const TEXT_EVIDENCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|json|ya?ml|toml|md|prisma|java|kt|kts|py|go|rs|sql|graphql|gql)$|(?:^|\/)(?:\.gitignore|\.npmignore|\.dockerignore)$/iu
+// 无扩展名的 ESLint 配置也约束原验证入口；仍不开放任意隐藏文件。
+const TEXT_EVIDENCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|json|ya?ml|toml|md|prisma|java|kt|kts|py|go|rs|sql|graphql|gql)$|(?:^|\/)(?:\.gitignore|\.npmignore|\.dockerignore|\.eslintrc)$/iu
 const SOURCE_PATH = /\.(?:ts|tsx|mts|cts|js|jsx|mjs|cjs|vue|java|kt|kts|py|go|rs)$/iu
 const STOP_TERMS = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'must', 'should', 'when', 'then', 'into', '需求', '必须', '需要', '实现', '支持', '功能', '系统', '任务', '正确'])
+
+/** 识别运行器及 ESLint 的验证配置；仅保留原样源码，不推定配置被命令加载或测试已执行。 */
+export function isVerificationConfigPathV3(path: string): boolean {
+  return /(?:^|\/)(?:vite|vitest|jest|playwright|cypress)\.(?:(?:[A-Za-z0-9_-]+\.)?config|root|workspace)\.(?:[cm]?[jt]s|json)$/iu.test(path)
+    || /(?:^|\/)(?:\.eslintrc(?:\.(?:[cm]?js|json|ya?ml))?|eslint\.config\.[cm]?[jt]s)$/iu.test(path)
+}
+
+/** 只选来源点名的已确认脚本和待创建入口的现有模板；不把尚未创建的目标或任意 shell 字符串当源码。 */
+export function verificationEntryEvidencePathsV3(repository: Pick<RepositoryContextSnapshotV3Record, 'files' | 'workingFiles' | 'verifiedCommands' | 'plannedVerificationEntries'>, focus: string): string[] {
+  const paths = new Set((repository.workingFiles ?? repository.files).map(file => file.path))
+  const templates = new Set((repository.plannedVerificationEntries ?? []).map(entry => entry.templateCommand))
+  const selected = new Set<string>()
+  for (const command of repository.verifiedCommands ?? []) {
+    // 扫描完整 token 后检查扩展名，避免无匹配长输入在每个后缀上重复回溯。
+    const tokens = sourcePathTokens(command).filter(path => /\.[cm]?[jt]sx?$/u.test(path))
+    for (const token of tokens) {
+      const candidates = paths.has(token) ? [token] : [...paths].filter(path => path.endsWith(`/${token}`))
+      if (candidates.length !== 1) continue
+      const path = candidates[0]!
+      if (focus.includes(path) || focus.includes(command) || templates.has(command)) selected.add(path)
+    }
+  }
+  return [...selected].sort()
+}
+
+/** 在已冻结文本中追踪脚本的三层同目录 import；生产库导入不被升级为完整验证配置，最多保留 16 个文件。 */
+export function verificationEntryDependencyPathsV3(entries: string[], contents: Array<{ path: string; content: string }>): string[] {
+  const byPath = new Map(contents.map(item => [item.path, item.content]))
+  const paths = new Set(byPath.keys())
+  const selected = new Set<string>()
+  const queue = entries.map(path => ({ path, root: posix.dirname(path), depth: 0 }))
+  while (queue.length && selected.size < 16) {
+    const current = queue.shift()!
+    if (selected.has(current.path) || !paths.has(current.path) || current.depth >= 3) continue
+    selected.add(current.path)
+    for (const specifier of importedSpecifiers(byPath.get(current.path)!)) {
+      const path = resolveImport(current.path, specifier, paths, { baseUrl: '.', paths: [] })
+      if (path?.startsWith(`${current.root}/`)) queue.push({ path, root: current.root, depth: current.depth + 1 })
+    }
+  }
+  return [...selected].sort()
+}
+
+/** 只读提取运行器配置中的静态文件字面量及 resolve/join(__dirname, ...literals)；仅返回冻结库存内的文件，不执行配置或展开变量、glob。 */
+export function referencedVerificationConfigPathsV3(path: string, content: string, paths: ReadonlySet<string>): string[] {
+  if (!isVerificationConfigPathV3(path)) return []
+  const result = new Set<string>()
+  const add = (value: string): void => {
+    if (isAbsolute(value) || value.includes('\\') || value.includes('\0')) return
+    const target = posix.normalize(posix.join(posix.dirname(path), value))
+    if (paths.has(target)) result.add(target)
+  }
+  const visit = (node: ts.Node): void => {
+    if (ts.isStringLiteral(node)) add(node.text)
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && ['resolve', 'join'].includes(node.expression.text)
+      && node.arguments.length > 1 && ts.isIdentifier(node.arguments[0]!) && node.arguments[0]!.text === '__dirname'
+      && node.arguments.slice(1).every(ts.isStringLiteral)) {
+      add(node.arguments.slice(1).map(argument => (argument as ts.StringLiteral).text).join('/'))
+    }
+    // 函数实参中的字面量不自动相对配置目录解析；只有上面明确的 __dirname 调用可建立路径。
+    ts.forEachChild(node, child => { if (!ts.isCallExpression(node) || !ts.isStringLiteral(child)) visit(child) })
+  }
+  visit(ts.createSourceFile(path, content, ts.ScriptTarget.Latest))
+  return [...result].sort()
+}
 
 type EvidenceCategory = 'source' | 'test' | 'schema' | 'migration' | 'workflow' | 'docs' | 'manifest' | 'other'
 
@@ -28,6 +95,8 @@ export interface BuildRepositoryEvidenceReportInput {
   operationId: string
   repository: RepositoryContextSnapshotV3Record
   requirements: RepositoryEvidenceRequirementInput[]
+  /** 冻结来源及适用政策原文，用于保留精确点名的检查 owner 和验证脚本；不新增产品需求或写权限。 */
+  inspectionFocus?: string
   selectionLimit?: number
   indexFileLimit?: number
   indexByteLimit?: number
@@ -66,7 +135,7 @@ function normalizedRepositoryPath(path: string): string {
 }
 
 function categoryForPath(path: string): EvidenceCategory {
-  if (/(?:^|\/)(?:package\.json|tsconfig[^/]*\.json|pom\.xml|build\.gradle(?:\.kts)?|go\.mod|pyproject\.toml)$/iu.test(path)) return 'manifest'
+  if (isVerificationConfigPathV3(path) || /(?:^|\/)(?:package\.json|tsconfig[^/]*\.json|pom\.xml|build\.gradle(?:\.kts)?|go\.mod|pyproject\.toml)$/iu.test(path)) return 'manifest'
   if (/(?:^|\/)(?:test|tests|__tests__|e2e|browser)(?:\/|$)|\.(?:spec|test)\.[^.]+$/iu.test(path)) return 'test'
   if (/\.prisma$|(?:^|\/)schemas?(?:\/|$)|\.(?:graphql|gql)$/iu.test(path)) return 'schema'
   if (/(?:^|\/)(?:migrations?|db\/migrate)(?:\/|$)|\.sql$/iu.test(path)) return 'migration'
@@ -103,7 +172,8 @@ async function readEvidenceFile(root: string, path: string): Promise<{ content: 
 
 function importedSpecifiers(content: string): string[] {
   const values: string[] = []
-  for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*\(|\brequire\s*\()\s*['"]([^'"]+)['"]/gu)) {
+  // setup 常以副作用 import 初始化；它与具名导入、动态导入和 require 一样属于只读依赖。
+  for (const match of content.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)['"]([^'"]+)['"]/gu)) {
     if (match[1] !== undefined) values.push(match[1])
   }
   return [...new Set(values)].sort()
@@ -260,7 +330,8 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
   const dependencies = new Map<string, string[]>()
   const consumers = new Map<string, string[]>()
   for (const file of indexed) {
-    const resolved = file.imports.map((specifier) => resolveImport(file.path, specifier, pathSet, resolution)).filter((path): path is string => path !== undefined)
+    const resolved = [...file.imports.map((specifier) => resolveImport(file.path, specifier, pathSet, resolution)).filter((path): path is string => path !== undefined),
+      ...referencedVerificationConfigPathsV3(file.path, file.content, pathSet)]
     dependencies.set(file.path, [...new Set(resolved)].sort())
     for (const dependency of resolved) consumers.set(dependency, [...(consumers.get(dependency) ?? []), file.path])
   }
@@ -272,7 +343,9 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
   const rankedByRequirement = new Map<string, Array<{ file: IndexedFile; score: number; matchedTerms: string[] }>>()
   for (const seed of querySeeds) {
     const requirement = input.requirements.find(item => item.key === seed.requirementKey)!
-    const source = [requirement.statement, ...requirement.acceptanceStatements].join('\n')
+    // 摘要可能省略只读 factory/consumer 路径；先保留原始来源点名的实际文件，再展开依赖。
+    // 原文只影响精确路径优先级，不扩大词法查询或创建缺失文件的 evidence ref。
+    const source = [requirement.statement, ...requirement.acceptanceStatements, input.inspectionFocus ?? ''].join('\n')
     const ranked = indexed.map((file) => {
       const scored = evidenceScore(file, seed.terms)
       return { file, ...scored, score: scored.score + (source.includes(file.path) ? 10_000 : 0) }
@@ -328,7 +401,23 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
     }
     rankedByRequirement.set(seed.requirementKey, [...expanded.values()].sort((left, right) => right.score - left.score || left.file.path.localeCompare(right.file.path)).slice(0, PER_REQUIREMENT_LIMIT))
   }
-  const mandatory = indexed.filter((file) => file.category === 'manifest' || /(?:^|\/)AGENTS\.md$/iu.test(file.path)).map((file) => ({ file, score: 1 }))
+  // 配置及其静态 setup/import 闭包不依赖需求词命中；沿用三层深度及总选取预算，缺失/动态路径仍不作推定。
+  const mandatoryPaths = new Set(indexed.filter(file => file.category === 'manifest' || /(?:^|\/)AGENTS\.md$/iu.test(file.path)).map(file => file.path))
+  const entryPaths = verificationEntryEvidencePathsV3(input.repository, input.inspectionFocus ?? input.requirements.flatMap(requirement => [requirement.statement, ...requirement.acceptanceStatements]).join('\n'))
+  for (const path of verificationEntryDependencyPathsV3(entryPaths, indexed)) mandatoryPaths.add(path)
+  const configQueue = indexed.filter(file => isVerificationConfigPathV3(file.path)).map(file => ({ path: file.path, depth: 0 }))
+  const visitedConfigs = new Set<string>()
+  while (configQueue.length && mandatoryPaths.size < selectionLimit) {
+    const current = configQueue.shift()!
+    if (visitedConfigs.has(current.path) || current.depth >= 3) continue
+    visitedConfigs.add(current.path)
+    for (const dependency of dependencies.get(current.path) ?? []) {
+      mandatoryPaths.add(dependency)
+      configQueue.push({ path: dependency, depth: current.depth + 1 })
+      if (mandatoryPaths.size >= selectionLimit) break
+    }
+  }
+  const mandatory = indexed.filter(file => mandatoryPaths.has(file.path)).map(file => ({ file, score: 1 }))
   const selected = new Map<string, { file: IndexedFile; score: number }>()
   for (let rank = 0; selected.size < selectionLimit && rank < PER_REQUIREMENT_LIMIT; rank += 1) {
     for (const seed of querySeeds) {

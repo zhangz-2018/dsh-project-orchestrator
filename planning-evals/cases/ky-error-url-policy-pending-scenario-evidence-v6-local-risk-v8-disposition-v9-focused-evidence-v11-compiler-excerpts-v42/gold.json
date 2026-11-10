@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "releaseInput": {
+    "repositoryDigest": "1f51684a7bd1666365f8b374a87d00cc747ff69ba5520b7227c20ac58222fd9e",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_08de80a19303f4ac016af2095aafa487d19411bdac35fdd7e7:independent-gold-review:619963e3-933d-4bdd-bac8-5be18e477b8d",
+    "reviewedAt": "2026-11-09T17:56:56.339Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD, acceptance statements and Gold preserve REQ-001, AC-001 through AC-003 and DEC-001 consistently. Material unresolved DEC-001 must block B at decisions, without selecting either default policy or generating assignable tasks; blocked readiness, the decision-pending reason, required evidence stages and empty task/assignment expectations agree with that requirement. The supplied source establishes the message-construction, option-normalization, filtering, forwarding and public-type ownership chain. Forwarding and declaration consumers require inspection, not mandatory edits, and the build configuration identifies distribution declarations as generated outputs rather than separately maintained owners. Runtime regression and compile-time verification are correctly distinguished. The empty team and capability catalog does not invalidate an intentional decision-stage stop because later reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization. The retained historical operation is compatible with project reuse and does not constitute a candidate on this bundle under the supplied isolation facts. The paired C scenario is not evidence of a human Decision resolving B. Approval concerns the frozen benchmark expectation, not authorization to execute or dispatch tasks. This review used only supplied evidence; no code was executed, digests independently recomputed, or human attestations inferred.",
+    "goldDigest": "f990c1c41aaebd00184c5716c074478331ad27de51fbb9f58c1fe203791d4cb5"
+  }
+}

@@ -133,6 +133,7 @@ test('DeliveryService completes execution with a review, delivery record, and te
         delegations: new MemoryTable(),
         decisions: new MemoryTable(),
         acceptanceCriteria: new MemoryTable(),
+        planSnapshots: new MemoryTable(),
         verificationEvidence: new MemoryTable(),
         projectReviews: new MemoryTable(),
         deliveryRecords: new MemoryTable(),
@@ -142,11 +143,15 @@ test('DeliveryService completes execution with a review, delivery record, and te
       const run = { id: 'run-1', projectId: project.id, status: 'running', currentTaskId: 'task-1', createdAt: now }
       const task = { id: 'task-1', projectId: project.id, title: 'Task', attemptCount: 1 }
       await store.projects.put(project.id, project)
+      project.currentPlanSnapshotId = 'current-plan'
+      await store.projects.put(project.id, project)
+      await store.planSnapshots.put('current-plan', { id: 'current-plan', projectId: project.id, requirementBundleIds: ['current-bundle'] })
       await store.runs.put(run.id, run)
       await store.tasks.put(task.id, task)
       await store.taskRuns.put('task-run-1', { id: 'task-run-1', projectId: project.id, taskId: task.id, runId: run.id, status: 'completed', attempt: 1, artifactIds: [], changedFiles: ['feature.txt'], testExitCode: 0 })
       await store.verificationEvidence.put('evidence-1', { id: 'evidence-1', projectId: project.id, taskId: task.id, taskRunId: 'task-run-1', attempt: 1, status: 'passed', actorType: 'system', artifactIds: [], createdAt: now })
-      await store.acceptanceCriteria.put('acceptance-1', { id: 'acceptance-1', projectId: project.id, status: 'verified', evidenceIds: ['evidence-1'] })
+      await store.acceptanceCriteria.put('acceptance-1', { id: 'acceptance-1', projectId: project.id, bundleId: 'current-bundle', status: 'verified', evidenceIds: ['evidence-1'] })
+      await store.acceptanceCriteria.put('acceptance-old', { id: 'acceptance-old', projectId: project.id, bundleId: 'failed-old-bundle', status: 'open', evidenceIds: [] })
       const service = new DeliveryService(store, {
         serializedMutation: (operation) => operation(),
         recordActivity: async () => {},
@@ -178,6 +183,8 @@ test('DeliveryService completes execution with a review, delivery record, and te
       assert.deepEqual(delivery.responsibilityChain.tasks.map((item) => item.taskRunIds), [['task-run-1']])
       assert.deepEqual(delivery.responsibilityChain.verifications.map((item) => item.evidenceId), ['evidence-1'])
       assert.equal(store.projectReviews.get(delivery.reviewId).acceptanceResults[0].result, 'passed')
+      assert.deepEqual(store.projectReviews.get(delivery.reviewId).acceptanceResults.map(item => item.acceptanceId), ['acceptance-1'])
+      assert.equal(store.acceptanceCriteria.get('acceptance-old').status, 'open')
       assert.equal(store.projects.get(project.id).deliveryStage, 'review')
       assert.equal(store.projects.get(project.id).activeRunId, undefined)
       assert.equal(store.runs.get(run.id).status, 'completed')
@@ -221,6 +228,40 @@ test('DeliveryService owns changes-required completion and restores the Run when
   assert.equal(store.projects.get(project.id).activeRunId, undefined)
   assert.equal(store.runs.get(run.id).status, 'completed')
   assert.equal(activities[0].type, 'delivery.convergence_changes_required')
+})
+
+test('pending review scope recovery is idempotent, preserves decisions and rolls back audit failure', async () => {
+  const store = { projects: new MemoryTable(), planSnapshots: new MemoryTable(), acceptanceCriteria: new MemoryTable(), projectReviews: new MemoryTable() }
+  const project = { id: 'project', revision: 3, currentPlanSnapshotId: 'plan', planningContractVersion: 3, deliveryStage: 'review' }
+  await store.projects.put(project.id, project)
+  await store.planSnapshots.put('plan', { id: 'plan', projectId: project.id, requirementBundleIds: ['current', 'retained'] })
+  const old = { id: 'old', projectId: project.id, bundleId: 'old', status: 'open', evidenceIds: [] }
+  for (const item of [old, { ...old, id: 'current', bundleId: 'current', status: 'verified', evidenceIds: ['proof'] }, { ...old, id: 'retained', bundleId: 'retained' }]) await store.acceptanceCriteria.put(item.id, item)
+  const review = { id: 'review', projectId: project.id, revision: 3, planSnapshotId: 'plan', status: 'pending', acceptanceResults: [{ acceptanceId: old.id, result: 'failed', evidenceIds: [] }] }
+  const approved = { ...review, id: 'approved', status: 'approved' }
+  const stale = { ...review, id: 'stale', revision: 2 }
+  for (const item of [review, approved, stale]) await store.projectReviews.put(item.id, item)
+  let auditFails = true
+  const activities = []
+  const service = new DeliveryService(store, { serializedMutation: operation => operation(), recordActivity: async activity => {
+    if (auditFails) throw new Error('injected audit failure')
+    activities.push(activity)
+  } })
+  await assert.rejects(() => service.reconcilePendingReviewAcceptance(), /injected audit failure/)
+  assert.deepEqual(store.projectReviews.get(review.id), review)
+  auditFails = false
+  await service.reconcilePendingReviewAcceptance()
+  await service.reconcilePendingReviewAcceptance()
+  assert.deepEqual(store.projectReviews.get(review.id).acceptanceResults, [
+    { acceptanceId: 'current', result: 'passed', evidenceIds: ['proof'] },
+    { acceptanceId: 'retained', result: 'failed', evidenceIds: [] },
+  ])
+  assert.equal(activities.length, 1)
+  assert.deepEqual(store.projectReviews.get(approved.id), approved)
+  assert.deepEqual(store.projectReviews.get(stale.id), stale)
+  assert.deepEqual(store.acceptanceCriteria.get(old.id), old)
+  await store.planSnapshots.put('plan', { id: 'plan', projectId: 'foreign', requirementBundleIds: ['current'] })
+  assert.throws(() => service.listCurrentAcceptanceCriteria(project.id), error => error.code === 'delivery-plan-missing')
 })
 
 test('late audit reconciliation cannot overwrite a concurrently closed delivery', async () => {

@@ -4,9 +4,27 @@ import { mkdir, mkdtemp, realpath, rename, rm, symlink, writeFile } from 'node:f
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { buildRepositoryEvidenceRetrievalReportV3, buildRepositoryStackProfileV3, RepositoryEvidenceRetrievalReportSchema } from '../lib/index.js'
+import { buildRepositoryEvidenceRetrievalReportV3, buildRepositoryStackProfileV3, referencedVerificationConfigPathsV3, RepositoryEvidenceRetrievalReportSchema } from '../lib/index.js'
 
 const digest = (value) => createHash('sha256').update(value).digest('hex')
+
+test('retrieval preserves source-declared measurement entry and local sampling harness outside product requirements', { timeout: 5000 }, async () => {
+  const files = {
+    'package.json': '{}',
+    'src/api.ts': 'export function convert(value) { return value }',
+    'packages/bench/memory.ts': 'import { sample } from "./harness.js"; sample();',
+    'packages/bench/harness.ts': 'export function sample() { return Math.min(1, 2) }',
+  }
+  const { root, snapshot } = await fixture(files)
+  try {
+    snapshot.verifiedCommands = ['-'.repeat(100_000), 'nub --expose-gc packages/bench/memory.ts']
+    snapshot.plannedVerificationEntries = [{ command: 'nub --expose-gc packages/bench/new.ts', targetPath: 'packages/bench/new.ts', targetState: 'absent', templateCommand: snapshot.verifiedCommands[1], declarationDigest: 'a'.repeat(64) }]
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: snapshot.projectId, operationId: snapshot.operationId, repository: snapshot,
+      requirements: [{ key: 'REQ-API', statement: 'Change src/api.ts convert behavior', acceptanceStatements: [] }], inspectionFocus: 'The authorized measurement entry must be created before running.' })
+    for (const path of ['src/api.ts', 'packages/bench/memory.ts', 'packages/bench/harness.ts']) assert.ok(report.selectedEvidenceIds.includes(path), path)
+    assert.equal(report.selectedEvidenceIds.includes('packages/bench/new.ts'), false)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
 
 async function fixture(files) {
   const root = await mkdtemp(join(tmpdir(), 'orchestrator-evidence-'))
@@ -108,6 +126,25 @@ test('Repository Evidence prioritizes exact requested files over broad vocabular
   } finally { await rm(context.root, { recursive: true, force: true }) }
 })
 
+test('Repository Evidence retains exact inspection owners omitted by summarized requirements before expanding barrels', async () => {
+  const context = await fixture({
+    'src/api.ts': "export * from './barrel.js'",
+    'src/barrel.ts': Array.from({ length: 90 }, (_, i) => `export * from './noise-${i}.js'`).join('\n'),
+    ...Object.fromEntries(Array.from({ length: 90 }, (_, i) => [`src/noise-${i}.ts`, 'export const compatibility = true'])),
+    'public/schemas.ts': "import { decode } from './parse.js'; export const stringbool = decode",
+    'public/parse.ts': 'export const decode = (value: unknown) => value',
+    'tests/stringbool.test.ts': 'export {}',
+  })
+  try {
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
+      inspectionFocus: 'Inspect public/schemas.ts and tests/stringbool.test.ts read-only; absent/new.ts is not existing evidence.',
+      requirements: [{ key: 'REQ-OWNER', statement: 'Maintain compatibility in src/api.ts.', acceptanceStatements: ['Preserve public stringbool parsing.'] }] })
+    for (const path of ['src/api.ts', 'public/schemas.ts', 'public/parse.ts', 'tests/stringbool.test.ts']) assert.ok(report.selectedEvidenceIds.includes(path), `Missing original inspection owner ${path}`)
+    assert.equal(report.selectedEvidenceIds.includes('absent/new.ts'), false)
+    assert.ok(report.selectedEvidenceIds.length <= 80)
+  } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
 test('Repository Evidence retains spec and test TypeScript configurations as manifests', async () => {
   const context = await fixture({
     'src/api.ts': 'export const value = true',
@@ -120,6 +157,53 @@ test('Repository Evidence retains spec and test TypeScript configurations as man
     assert.ok(report.selectedEvidenceIds.includes('tsconfig.spec.json'))
     assert.ok(report.selectedEvidenceIds.includes('tsconfig.test.json'))
   } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
+test('Repository Evidence retains runner discovery configurations when unrelated owners fill the lexical cap', async () => {
+  const configs = ['vitest.config.ts', 'vitest.compile.config.ts', 'vitest.root.mjs', 'vitest.workspace.ts', 'vite.config.mts', 'runtime-tests/node/vitest.config.ts', 'jest.config.cjs', 'playwright.config.ts', 'cypress.config.ts']
+  const context = await fixture({
+    ...Object.fromEntries(Array.from({ length: 90 }, (_, i) => [`src/noise-${i}.ts`, 'export const callback = "compatibility request"\n'])),
+    'src/api.ts': 'export const callback = true\n',
+    ...Object.fromEntries(configs.map(path => [path, "export default { test: { include: ['**/*.test.ts'], exclude: ['**/sandbox/**'] } }\n"])),
+    'vitest.compile.config.ts': "export default { test: { setupFiles: [resolve(__dirname, 'scripts', 'setup.ts')], tsconfig: './tsconfig.compile.json' } }\n",
+    'scripts/setup.ts': "import './assert-setup.ts'; throw new Error('MUST_NOT_EXECUTE')\n",
+    'scripts/assert-setup.ts': "export const initialized = true\n",
+    'tsconfig.compile.json': '{"include":["src"]}',
+    'unrelated.config.ts': 'export default {}\n',
+    'vitest.compile.config.test.ts': 'export default {}\n',
+  })
+  try {
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
+      requirements: [{ key: 'REQ-CONFIG', statement: 'Add callback compatibility request in src/api.ts.', acceptanceStatements: [] }] })
+    for (const path of configs) assert.ok(report.selectedEvidenceIds.includes(path), `${path} must survive lexical selection`)
+    for (const path of ['scripts/setup.ts', 'scripts/assert-setup.ts', 'tsconfig.compile.json']) assert.ok(report.selectedEvidenceIds.includes(path), `${path} is frozen configuration evidence`)
+    assert.equal(report.selectedEvidenceIds.includes('unrelated.config.ts'), false)
+    assert.equal(report.selectedEvidenceIds.includes('vitest.compile.config.test.ts'), false)
+  } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
+test('Repository Evidence retains lint configuration and local inheritance without indexing arbitrary dotfiles', async () => {
+  const context = await fixture({
+    'src/api.ts': 'export const value = true',
+    '.eslintrc': '{"extends":"./config/lint-base.json","parserOptions":{"sourceType":"module"}}',
+    'config/lint-base.json': '{"rules":{"semi":[2,"always"]}}',
+    '.credentials': 'never-index-this-value',
+  })
+  try {
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: 'project:test', operationId: 'operation:test', repository: context.snapshot,
+      requirements: [{ key: 'REQ-LINT', statement: 'Change value in src/api.ts.', acceptanceStatements: [] }] })
+    assert.ok(report.selectedEvidenceIds.includes('.eslintrc'))
+    assert.ok(report.selectedEvidenceIds.includes('config/lint-base.json'))
+    assert.equal(report.selectedEvidenceIds.includes('.credentials'), false)
+  } finally { await rm(context.root, { recursive: true, force: true }) }
+})
+
+test('Verification configuration references require static paths inside the frozen inventory', () => {
+  const files = new Set(['scripts/setup.ts', 'scripts/check.ts', 'vitest.root.mjs', 'private.key', 'src/ordinary.ts'])
+  const source = "import root from './vitest.root.mjs'; export default { setupFiles: [resolve(__dirname, 'scripts', 'setup.ts'), './scripts/check.ts', resolve(otherRoot, 'scripts', 'setup.ts'), variable, './scripts/*.ts', '../outside.ts', '/private.key'] };"
+  assert.deepEqual(referencedVerificationConfigPathsV3('vitest.compile.config.ts', source, files), ['scripts/check.ts', 'scripts/setup.ts', 'vitest.root.mjs'])
+  assert.deepEqual(referencedVerificationConfigPathsV3('src/ordinary.ts', source, files), [])
+  assert.deepEqual(referencedVerificationConfigPathsV3('vitest.config.ts', "export default { setupFiles: [resolve(otherRoot, './scripts/setup.ts'), resolve(__dirname, variable, './scripts/check.ts'), getPath('./scripts/check.ts'), variable, './scripts/*.ts', '../outside.ts', '/private.key'] }", files), [])
 })
 
 test('Repository Evidence admits tracked ignore policies without admitting arbitrary dotfiles', async () => {

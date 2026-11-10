@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "adaac0eda96c4c73333ac1eb7fe9aeac8ea74b2bdabdf30028b0e9abd38b5eb3",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_080d62ebe5f44274016af27640af3087d09d336c5d9845b207:independent-gold-review:471b1e9b-4720-4d08-a6db-8460166a0c1d",
+    "reviewedAt": "2026-11-10T01:41:36.260Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The complete PRD preserves REQ-001, AC-001 through AC-003, and DEC-001, explicitly makes the recommended behavior conditional, and does not authorize choosing either option. The materially different reentrancy and exception-cleanup semantics therefore correctly require B to stop at decisions with requirement-decision-pending for DEC-001. Required evidence stages, empty task expectations, and empty assignment expectations match that stop; the empty team catalog does not introduce a prerequisite from a later stage. Source evidence supports src/index.ts as the maintained implementation and public-type owner, with the two test files as verification scope. Package configuration, CI ordering, ignore rules, and fixed upstream build evidence support generated declarations rather than a separately maintained declaration owner. The proposed Gold and preview release fingerprints agree across repository, source, team, decisions, prompt, model, sampling, budgets, and metric policy. Supplied provenance explains the distinct source-manifest and evaluation digest domains, PRD persistence trimming, and bundled prompt fingerprint. The original specification's preparation-time remaining items and null releaseInput do not contradict the subsequently supplied frozen preview. Historical project operations are not treated as candidate evidence or capability attestations, and the paired hypothetical case is not treated as a human Decision. This approval concerns the frozen expectation, not execution readiness or implementation correctness. I reviewed the supplied evidence without running tools, executing code, independently recomputing digests, or asserting human attestation.",
+    "goldDigest": "90e0e73daadb2f8c142b6276157914fed8afe813a3e022edb1a3692d6cf7b940"
+  }
+}

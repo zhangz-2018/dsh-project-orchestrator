@@ -23,6 +23,7 @@ import {
   VerificationService,
   assertExecutable,
   buildPlanningCheckpointV3,
+  buildRequirementSourceManifest,
   digestObject,
   createHttpHandler,
   planDigest,
@@ -1376,6 +1377,26 @@ test('Project Review enforces independent human waiver details and persists the 
   assert.equal(store.projects.get(project.id).deliveryStage, 'delivery_ready')
 })
 
+test('current-plan review excludes old bundles but keeps append bundles and rejects current failures', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Scoped review', cwd: '/tmp', prd: 'Review current requirements', technicalDesign: '' })
+  const planId = 'scoped-plan'
+  await store.projects.put(project.id, { ...project, currentPlanSnapshotId: planId, status: 'completed', deliveryStage: 'review' })
+  await store.planSnapshots.put(planId, { id: planId, projectId: project.id, requirementBundleIds: ['retained', 'current'] })
+  const criterion = (id, bundleId, status) => ({ id, projectId: project.id, bundleId, key: id, status, evidenceIds: status === 'verified' ? ['proof'] : [], createdAt: now, updatedAt: now })
+  await store.acceptanceCriteria.put('old', criterion('old', 'superseded', 'open'))
+  await store.acceptanceCriteria.put('retained', criterion('retained', 'retained', 'verified'))
+  await store.acceptanceCriteria.put('current', criterion('current', 'current', 'open'))
+  const review = { id: 'scoped-review', projectId: project.id, revision: project.revision, planSnapshotId: planId, status: 'pending', reviewerType: 'human', waivers: [], evidenceIds: [], acceptanceResults: [], round: 1, summary: 'pending', createdAt: now }
+  await store.projectReviews.put(review.id, review)
+  await assert.rejects(() => service.resolveProjectReview(project.id, { decision: 'approve', actor: 'owner', note: 'Review' }), error => error.code === 'acceptance-incomplete')
+  await store.acceptanceCriteria.put('current', criterion('current', 'current', 'verified'))
+  const resolved = await service.resolveProjectReview(project.id, { decision: 'approve', actor: 'owner', note: 'Review' })
+  assert.deepEqual(resolved.acceptanceResults.map(item => item.acceptanceId).sort(), ['current', 'retained'])
+  assert.equal(store.acceptanceCriteria.get('old').status, 'open')
+})
+
 test('Project Review rejection closes the current round and creates a revision Decision in Inbox', async () => {
   const store = memoryStore()
   const service = new OrchestratorService(agentContext(), store)
@@ -1755,6 +1776,58 @@ test('Repository command discovery honors declared runners and grounds type and 
     assert.equal(commands.some(command => /missing|escape|size\.test|pnpm|<name>/u.test(command)), false)
     assert.equal(commands.every(command => !command.includes('--outfile')), true, 'Size probes must not invent a writable output file')
     assert.deepEqual((await capture()).snapshot.verifiedCommands, commands)
+    const targetPath = 'tools/bench/acceptance.ts'
+    const command = `nub --expose-gc --conditions=@fixture/source ${targetPath}`
+    const declared = { ...project, prd: `${project.prd}\nplanned-verification-entry: ${JSON.stringify({ targetPath, command })}` }
+    const declaredSnapshot = (await service.captureRepositorySnapshotV3(declared, 'planned-command-observation')).snapshot
+    assert.equal(declaredSnapshot.verifiedCommands.includes(command), false)
+    assert.equal(declaredSnapshot.plannedVerificationEntries[0].targetState, 'absent')
+    assert.notEqual(declaredSnapshot.repositoryDigest, snapshot.repositoryDigest)
+    assert.equal((await service.captureRepositorySnapshotV3(declared, 'another-observation')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest)
+    const sourceCore = { projectId: project.id, operationId: 'revise-source', prd: declared.prd, technicalDesign: '' }
+    const frozenSource = { id: 'frozen-revise-source', ...sourceCore, sourceInputDigest: digestObject(sourceCore) }
+    await service.store.planningSourceInputs.put(frozenSource.id, frozenSource)
+    await service.store.planningOperations.put('revise-source', { id: 'revise-source', projectId: project.id, sourceInputId: frozenSource.id, sourceInputDigest: frozenSource.sourceInputDigest })
+    assert.equal((await service.captureRepositorySnapshotV3(project, 'revise-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'An unpublished revision must use its frozen batch rather than the old Project PRD')
+    assert.equal((await service.captureRepositorySnapshotV3(project, 'review-freshness', 'revise-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Review freshness must reuse the same frozen source')
+    await service.store.planSnapshots.put('revise-plan', { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'revise-source' })
+    const publishedRevision = { ...project, planningContractVersion: 3, currentPlanSnapshotId: 'revise-plan' }
+    for (const observation of ['approval-check', 'dispatch-check', 'startup-recovery-check', 'final-delivery']) {
+      assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, observation)).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, `${observation} must use the revised plan source while Project retains its original PRD`)
+    }
+    assert.equal((await service.deliveryService.dependencies.captureRepositorySnapshot(publishedRevision, 'final-delivery')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest)
+    const retained = { id: 'retained-bundle', projectId: project.id, prd: declared.prd, technicalDesign: '' }
+    retained.sourceDigest = buildRequirementSourceManifest(retained).sourceDigest
+    await service.store.requirementBundles.put(retained.id, retained)
+    const appendCore = { projectId: project.id, operationId: 'append-source', mode: 'append', prd: 'Add another requirement without removing existing verification.', technicalDesign: '' }
+    const appendSource = { id: 'frozen-append-source', ...appendCore, sourceInputDigest: digestObject(appendCore) }
+    await service.store.planningSourceInputs.put(appendSource.id, appendSource)
+    await service.store.planningOperations.put('append-source', { id: 'append-source', projectId: project.id, sourceInputId: appendSource.id, sourceInputDigest: appendSource.sourceInputDigest })
+    await service.store.planSnapshots.put('revise-plan', { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'revise-source', requirementBundleIds: [retained.id] })
+    assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, 'append-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Append must retain declarations owned by unchanged bundles')
+    await service.store.planSnapshots.put('revise-plan', { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'append-source', requirementBundleIds: [retained.id] })
+    assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, 'approval-check')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Published append must retain the same declaration set')
+    await service.store.requirementBundles.put(retained.id, { ...retained, prd: 'tampered' })
+    await assert.rejects(() => service.captureRepositorySnapshotV3(publishedRevision, 'approval-check'), error => error.code === 'planning-operation-source-stale')
+    await service.store.requirementBundles.put(retained.id, retained)
+    const revisionCore = { ...appendCore, operationId: 'targeted-source', mode: 'revise', reviseBundleId: retained.id }
+    const revisionSource = { id: 'frozen-targeted-source', ...revisionCore, sourceInputDigest: digestObject(revisionCore) }
+    await service.store.planningSourceInputs.put(revisionSource.id, revisionSource)
+    await service.store.planningOperations.put('targeted-source', { id: 'targeted-source', projectId: project.id, sourceInputId: revisionSource.id, sourceInputDigest: revisionSource.sourceInputDigest })
+    assert.equal((await service.captureRepositorySnapshotV3(publishedRevision, 'targeted-source')).snapshot.repositoryDigest, snapshot.repositoryDigest, 'A targeted replacement must remove declarations owned only by its replaced bundle')
+    for (const invalidPlan of [
+      { id: 'revise-plan', projectId: 'another-project', planningContractVersion: 3, planningOperationId: 'revise-source' },
+      { id: 'revise-plan', projectId: project.id, planningContractVersion: 3 },
+      { id: 'revise-plan', projectId: project.id, planningContractVersion: 3, planningOperationId: 'missing-source' },
+    ]) {
+      await service.store.planSnapshots.put('revise-plan', invalidPlan)
+      await assert.rejects(() => service.captureRepositorySnapshotV3(publishedRevision, 'approval-check'), error => error.code === 'planning-operation-source-stale')
+    }
+    await service.store.planSnapshots.delete('revise-plan')
+    await assert.rejects(() => service.captureRepositorySnapshotV3(publishedRevision, 'approval-check'), error => error.code === 'planning-operation-source-stale')
+    await assert.rejects(() => service.captureRepositorySnapshotV3(project, 'review-freshness', 'missing-source'), error => error.code === 'planning-operation-source-stale')
+    await service.store.planningSourceInputs.put(frozenSource.id, { ...frozenSource, prd: 'tampered' })
+    await assert.rejects(() => service.captureRepositorySnapshotV3(project, 'review-freshness', 'revise-source'), error => error.code === 'planning-operation-source-stale')
     assert.equal((await execFileAsync('git', ['status', '--porcelain'], { cwd: repository })).stdout, '', 'Discovery must not execute commands or modify the checkout')
     const bin = join(root, 'bin')
     await mkdir(bin)
@@ -1934,7 +2007,7 @@ test('Planning V3 HTTP startup seeds default policy without retaining the outer 
   })
 })
 
-test('Planning V3 candidate atomically publishes evidence-grounded tasks only after trusted assignment and preflight', async () => {
+for (const recoverBeforeRuntime of [false, true]) test(`Planning V3 candidate atomically publishes evidence-grounded tasks only after trusted assignment and preflight${recoverBeforeRuntime ? ' with explicit pre-runtime recovery' : ''}`, async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-v3-candidate-'))
   try {
     const repository = await createPlanningV3Fixture(root)
@@ -2061,7 +2134,17 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(observation.preflightCalls, 2)
     const preflightPrompts = observation.prompts.filter((prompt) => prompt.includes('TaskPreflight V3 JSON object'))
     assert.equal(preflightPrompts.length, 2)
+    const preflightRepository = store.repositorySnapshotsV3.get(committedOperation.repositorySnapshotId)
     for (const preflightPrompt of preflightPrompts) {
+      const handedCoverage = JSON.parse(preflightPrompt.split('Candidate plan coverage (unapproved):\n')[1].split('\n\nFrozen repository identity:')[0])
+      const frozenProposal = [...store.planningProposalPacks.records.values()].find(item => item.operationId === committedOperation.id)
+      assert.deepEqual(handedCoverage, frozenProposal.plan.tasks.map(item => ({ key: item.key, kind: item.kind, relationship: item.relationship,
+        requirementKeys: item.requirementKeys, acceptanceKeys: item.acceptanceKeys, scenarioKeys: item.scenarioKeys,
+        dependencyKeys: item.dependencyKeys, completionCriteria: item.completionCriteria,
+        selectedAgentId: [...store.assignmentDrafts.records.values()].find(draft => draft.operationId === committedOperation.id && draft.taskKey === item.key)?.executingAgentId })))
+      const handedRepository = JSON.parse(preflightPrompt.split('Frozen repository identity:\n')[1].split('\n\nAssignment:')[0])
+      assert.deepEqual(handedRepository, { snapshotId: preflightRepository.id, repositoryDigest: preflightRepository.repositoryDigest,
+        headCommit: preflightRepository.headCommit, trackedTreeDigest: preflightRepository.trackedTreeDigest, dirtyDigest: preflightRepository.dirtyDigest })
       assert.match(preflightPrompt, /opaque refs are identifiers, not repository filenames/i)
       assert.match(preflightPrompt, /Authoritative evidence projections:/)
       assert.match(preflightPrompt, /"repositoryPaths":\["src\/records\.ts"/)
@@ -2069,6 +2152,10 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
       assert.match(preflightPrompt, /target file or directory may not exist yet/)
       assert.match(preflightPrompt, /configured free-form Agent skills are execution-time preferences/)
       assert.match(preflightPrompt, /"permissions":\["evidence_read","repository_read","worktree_write","command_execute","artifact_write"\]/)
+      const handedScenarios = JSON.parse(preflightPrompt.split('Frozen acceptance scenarios:\n')[1].split('\n\nInstalled verification tool evidence:')[0])
+      const handedTask = JSON.parse(preflightPrompt.split('Task proposal:\n')[1].split('\n\nFrozen acceptance scenarios:')[0])
+      assert.deepEqual(handedScenarios.map((item) => item.key), handedTask.scenarioKeys)
+      for (const scenario of handedScenarios) assert.deepEqual(store.acceptanceScenarios.get(scenario.id), scenario)
     }
     assert.equal((observation.sections ?? []).some((section) => section.name === 'deployment:assigned-skills' && section.text.includes('free-form-execution-skill-that-is-not-installed')), false)
     const scenarioPrompt = observation.prompts.find((prompt) => prompt.includes('Acceptance Scenario V3 JSON object'))
@@ -2404,15 +2491,51 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(store.projects.get(project.id).status, 'approved')
     assert.equal(store.tasks.get(implementation.id).status, 'draft')
 
-    const firstDispatch = await service.dispatchPlanningV3(project.id, { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: [implementation.id, verification.id], idempotencyKey: 'dispatch-v3-implementation' })
-    assert.equal(firstDispatch.dispatch.outcome, 'partially_started')
+    let retryOfTaskRunId
+    if (recoverBeforeRuntime) {
+      // 用真实 Dispatch/失败结算复现启动前异常，不手工重置 Project 或 Task 状态。
+      const prepareWorktree = service.prepareWorktree.bind(service)
+      service.prepareWorktree = async () => { throw new Error('isolated worktree preparation failed') }
+      const failed = await service.dispatchPlanningV3(project.id, { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: [implementation.id], idempotencyKey: 'fail-before-runtime' })
+      await waitForProject(store, project.id, value => value.status === 'failed')
+      service.prepareWorktree = prepareWorktree
+      retryOfTaskRunId = failed.dispatch.createdTaskRunIds[0]
+      const failedTaskRun = structuredClone(store.taskRuns.get(retryOfTaskRunId))
+      assert.equal(failedTaskRun.status, 'failed')
+      assert.equal(failedTaskRun.startedAt, undefined)
+      const retryInput = { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: [implementation.id], retryOfTaskRunId, idempotencyKey: 'invalid-retry' }
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, { ...retryInput, retryOfTaskRunId: undefined }), error => error.code === 'execution-dispatch-stale')
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, { ...retryInput, taskIds: [verification.id] }), error => error.code === 'execution-retry-reconciliation-required')
+      for (const patch of [{ sessionId: 'possibly-started' }, { workspace: repository }, { failureDisposition: 'needs_reconciliation' }]) {
+        await store.taskRuns.put(failedTaskRun.id, { ...failedTaskRun, ...patch })
+        await assert.rejects(() => service.dispatchPlanningV3(project.id, retryInput), error => error.code === 'execution-retry-reconciliation-required')
+      }
+      await store.taskRuns.put(failedTaskRun.id, failedTaskRun)
+      await store.planningReviewsV3.put(frozenPlanReview.id, { ...frozenPlanReview, status: 'blocked' })
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, retryInput), error => error.code === 'execution-dispatch-stale')
+      await store.planningReviewsV3.put(frozenPlanReview.id, frozenPlanReview)
+      assert.equal(store.taskRuns.size, 1)
+      assert.equal(store.projects.get(project.id).status, 'failed')
+    }
+    const firstInput = { approvalId: approval.id, expectedProjectRevision: settled.revision, taskIds: recoverBeforeRuntime ? [implementation.id] : [implementation.id, verification.id], ...(retryOfTaskRunId === undefined ? {} : { retryOfTaskRunId }), idempotencyKey: 'dispatch-v3-implementation' }
+    const firstDispatch = await service.dispatchPlanningV3(project.id, firstInput)
+    assert.equal(firstDispatch.dispatch.outcome, recoverBeforeRuntime ? 'started' : 'partially_started')
     assert.equal(firstDispatch.dispatch.createdTaskRunIds.length, 1)
-    assert.equal(firstDispatch.dispatch.taskResults.find((result) => result.taskId === verification.id).outcome, 'waiting_dependency')
+    if (!recoverBeforeRuntime) assert.equal(firstDispatch.dispatch.taskResults.find((result) => result.taskId === verification.id).outcome, 'waiting_dependency')
     const afterImplementation = await waitForProject(store, project.id, (value) => value.status !== 'running', 'First V3 frontier did not settle')
     assert.equal(afterImplementation.status, 'approved')
     assert.equal(store.tasks.get(implementation.id).status, 'completed')
     assert.equal(store.tasks.get(verification.id).status, 'draft')
-    assert.equal([...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id && taskRun.taskId === implementation.id).length, 1)
+    assert.equal([...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id && taskRun.taskId === implementation.id).length, recoverBeforeRuntime ? 2 : 1)
+    if (recoverBeforeRuntime) {
+      const recovered = store.taskRuns.get(firstDispatch.dispatch.createdTaskRunIds[0])
+      assert.equal(recovered.retryOf, retryOfTaskRunId)
+      assert.equal(recovered.attempt, 2)
+      assert.equal(store.taskRuns.get(retryOfTaskRunId).status, 'failed')
+      const replay = await service.dispatchPlanningV3(project.id, firstInput)
+      assert.equal(replay.dispatch.id, firstDispatch.dispatch.id)
+      await assert.rejects(() => service.dispatchPlanningV3(project.id, { ...firstInput, retryOfTaskRunId: undefined }), error => error.code === 'execution-dispatch-idempotency-conflict')
+    }
     assert.equal([...store.projectReviews.records.values()].filter((review) => review.projectId === project.id).length, 0)
 
     // Startup must leave an idle V3 frontier alone and reject every legacy execution entry.
@@ -2422,29 +2545,31 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.equal(store.taskRuns.size, beforeRestartRuns)
     await assert.rejects(() => service.startExecution(project.id), (error) => error.code === 'v3-approval-dispatch-separated')
     await assert.rejects(() => service.retryExecution(project.id), (error) => error.code === 'v3-approval-dispatch-separated')
-    const falseFailure = { ...afterImplementation, status: 'failed', lastError: 'Approved project could not resume automatically: Task requires role implementer.' }
-    await store.projects.put(project.id, falseFailure)
-    const savedApproval = structuredClone(store.planApprovalsV3.get(approval.id))
-    await store.planApprovalsV3.put(approval.id, { ...savedApproval, approvalDigest: 'f'.repeat(64) })
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'failed')
-    await store.planApprovalsV3.put(approval.id, savedApproval)
-    const savedImplementationRun = structuredClone([...store.taskRuns.records.values()].find((run) => run.taskId === implementation.id))
-    await store.taskRuns.put(savedImplementationRun.id, { ...savedImplementationRun, status: 'failed' })
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'failed')
-    await store.taskRuns.put(savedImplementationRun.id, savedImplementationRun)
-    await store.projects.put(project.id, { ...falseFailure, lastError: 'Harness restarted while this project had active work.' })
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'failed')
-    await store.projects.put(project.id, falseFailure)
-    await service.resumeApprovedProjects()
-    assert.equal(store.projects.get(project.id).status, 'approved')
-    assert.equal(store.projects.get(project.id).lastError, undefined)
-    assert.equal(store.taskRuns.size, beforeRestartRuns)
-    assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
-    await service.resumeApprovedProjects()
-    assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
+    if (!recoverBeforeRuntime) {
+      const falseFailure = { ...afterImplementation, status: 'failed', lastError: 'Approved project could not resume automatically: Task requires role implementer.' }
+      await store.projects.put(project.id, falseFailure)
+      const savedApproval = structuredClone(store.planApprovalsV3.get(approval.id))
+      await store.planApprovalsV3.put(approval.id, { ...savedApproval, approvalDigest: 'f'.repeat(64) })
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'failed')
+      await store.planApprovalsV3.put(approval.id, savedApproval)
+      const savedImplementationRun = structuredClone([...store.taskRuns.records.values()].find((run) => run.taskId === implementation.id))
+      await store.taskRuns.put(savedImplementationRun.id, { ...savedImplementationRun, status: 'failed' })
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'failed')
+      await store.taskRuns.put(savedImplementationRun.id, savedImplementationRun)
+      await store.projects.put(project.id, { ...falseFailure, lastError: 'Harness restarted while this project had active work.' })
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'failed')
+      await store.projects.put(project.id, falseFailure)
+      await service.resumeApprovedProjects()
+      assert.equal(store.projects.get(project.id).status, 'approved')
+      assert.equal(store.projects.get(project.id).lastError, undefined)
+      assert.equal(store.taskRuns.size, beforeRestartRuns)
+      assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
+      await service.resumeApprovedProjects()
+      assert.equal([...store.activity.records.values()].filter((item) => item.type === 'project.v3_approval_recovered').length, 1)
+    }
 
     const partialIntegration = structuredClone(store.deliveryIntegrationSnapshots.get(afterImplementation.currentDeliveryIntegrationSnapshotId))
     assert.equal(partialIntegration.status, 'integrating')
@@ -2489,7 +2614,9 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     const completed = await waitForProject(store, project.id, (value) => value.status !== 'running', 'Second V3 frontier did not settle')
     assert.equal(completed.status, 'completed')
     assert.equal(store.tasks.get(verification.id).status, 'completed')
-    const completedTaskRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id)
+    const allTaskRuns = [...store.taskRuns.records.values()].filter((taskRun) => taskRun.projectId === project.id)
+    assert.equal(allTaskRuns.length, recoverBeforeRuntime ? 3 : 2)
+    const completedTaskRuns = allTaskRuns.filter(taskRun => taskRun.status === 'completed')
     assert.equal(completedTaskRuns.length, 2)
     for (const taskRun of completedTaskRuns) {
       assert.equal(taskRun.status, 'completed')
@@ -2515,6 +2642,12 @@ test('Planning V3 candidate atomically publishes evidence-grounded tasks only af
     assert.throws(() => service.exportPlanningReleaseCanaryV3(project.id, { releaseVersion: '1.7.0' }), (error) => error.code === 'planning-canary-delivery-unconfirmed')
     await service.resolveProjectReview(project.id, { decision: 'approve', actor: 'release-owner', note: 'Independent canary review completed.' })
     await service.confirmProjectDelivery(project.id, { actor: 'release-owner', note: 'Canary delivery confirmed.' })
+    if (recoverBeforeRuntime) {
+      // 启动前失败没有 VerificationInvocation；恢复交付不等于满足更严格的发布 Canary 门禁。
+      assert.throws(() => service.exportPlanningReleaseCanaryV3(project.id, { releaseVersion: '1.7.0' }), error => error.issues?.some(issue => issue.path[0] === 'verificationInvocations' && issue.message.includes('every TaskRun')))
+      assert.equal(store.taskRuns.get(retryOfTaskRunId).status, 'failed')
+      return
+    }
     const canary = service.exportPlanningReleaseCanaryV3(project.id, { releaseVersion: '1.7.0' })
     assert.equal(canary.schemaVersion, 2)
     assert.equal(canary.executionDispatches.length, 2)
@@ -3056,6 +3189,42 @@ test('Planning V3 repairs competing source dispositions with the invalid output 
   }
 })
 
+test('Planning V3 preserves all clauses in a coarse source anchor without duplicating its disposition', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-compound-anchor-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    const store = memoryStore()
+    const source = 'REQ-TRIM: Trim the name. AC-TRIM: padded names are normalized. AC-REJECT: empty names throw TypeError. AC-COMPAT: existing names retain their result.'
+    const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+      assert.equal(manifest.anchors.length, 1)
+      generated.requirements[0].statement = source
+      generated.requirements[0].acceptanceCriteria[0].statement = source
+      return generated
+    } }
+    const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+    try {
+      const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Compound anchor', cwd: repository, prd: source })
+      await service.startDecomposition(project.id)
+      await waitForPlanning(store, project.id)
+      const prompt = observation.requirementAnalysisPrompts[0]
+      assert.match(prompt, /A single source anchor can contain several explicitly labelled acceptance clauses/)
+      assert.match(prompt, /Preserve every clause, its label and concrete expected outcome inside one compound acceptance criterion/)
+      assert.match(prompt, /Never duplicate-consume that anchor or invent sub-anchor ids/)
+      const reviewPrompt = observation.requirementReviewPrompts[0]
+      assert.match(reviewPrompt, /A single source anchor can contain several explicitly labelled acceptance clauses/)
+      assert.match(reviewPrompt, /Preserve every clause, its label and concrete expected outcome inside one compound acceptance criterion/)
+      for (const stagePrompt of [prompt, reviewPrompt]) {
+        assert.match(stagePrompt, /Do not require a separate structured Acceptance key for each label sharing that sole anchor/)
+        assert.match(stagePrompt, /Missing a labelled clause or its independent verification obligation remains a blocking omission/)
+      }
+      const proposal = [...store.requirementAnalysisProposals.records.values()][0]
+      assert.equal(proposal.analysis.requirements[0].acceptanceCriteria[0].statement, source)
+      assert.equal(observation.requirementAnalysisCalls, 1)
+      assert.equal(store.executionDispatches.size, 0)
+    } finally { await service.close() }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 scenario policy keeps sibling recovery out of synchronous constructor and type checks', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-v3-local-recovery-'))
   try {
@@ -3132,6 +3301,98 @@ test('Planning V3 preserves explicit required source categories without borrowin
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('Planning V3 derives compatibility from explicit preserved contracts within the Acceptance source only', async () => {
+  const samples = [
+    { text: 'AC-COMPAT: greet("Ada") 的既有输出保持 "Hello, Ada!"。不改变导出名或函数签名。', required: true },
+    { text: '保持既有输出，并在输入规范化后返回问候语。', required: true },
+    { text: 'Preserve the existing output and retain the original function signature.', required: true },
+    { text: 'The existing public interface and output must remain unchanged.', required: true },
+    { text: 'Do not change the function signature when adding input normalization.', required: true },
+    { text: 'Maintain backwards compatibility with existing consumers.', required: true },
+    { text: '必须保持现有调用方的兼容性。', required: true },
+    { text: '检查 src/compatibility.ts 文件，测试标签使用 compatibility。', required: false },
+    { text: 'Inspect src/preserve-existing-output.ts without adding new behavior.', required: false },
+    { text: '保留内部缓存变量并返回新结果。', required: false },
+    { text: 'Use the existing node:test runner for the new regression.', required: false },
+    { text: '无需保持现有输出，按新契约返回结果。', required: false },
+    { text: 'We are not required to preserve the existing output.', required: false },
+  ]
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-preserved-contract-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    for (const sample of samples) {
+      const store = memoryStore()
+      const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+        const anchors = manifest.anchors.filter(anchor => anchor.requiredDisposition)
+        return { ...generated, requirements: [{ ...generated.requirements[0], sourceRefs: anchors.map(anchor => anchor.id),
+          acceptanceCriteria: anchors.map((anchor, index) => ({ key: `AC-${String(index + 1).padStart(3, '0')}`,
+            statement: anchor.text, required: true, scenario: 'happy_path', sourceRefs: [anchor.id] })) }] }
+      } }
+      const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+      try {
+        const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Preserved contract', cwd: repository,
+          prd: `# Contract\n\n${sample.text}\n\n执行独立的类型检查。` })
+        await service.startDecomposition(project.id)
+        await waitForPlanning(store, project.id)
+        const policies = [...store.acceptanceScenarioCoveragePolicies.records.values()]
+        assert.equal(policies.length, 2)
+        const own = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-001'))
+        const sibling = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-002'))
+        assert.equal(own.categories.find(item => item.category === 'compatibility').applicability, sample.required ? 'required' : 'not_applicable', sample.text)
+        assert.equal(sibling.categories.find(item => item.category === 'compatibility').applicability, 'not_applicable', 'Do not import preserved contracts from sibling source anchors')
+        const analysis = [...store.requirementAnalysisProposals.records.values()][0].analysis
+        assert.deepEqual(own.categories.find(item => item.category === 'compatibility').sourceAnchorIds, analysis.requirements[0].acceptanceCriteria[0].sourceRefs.slice().sort())
+        assert.equal(store.executionDispatches.size, 0)
+      } finally { await service.close() }
+    }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('Planning V3 derives explicit input rejection from its own source even when the model labels it happy_path', async () => {
+  const samples = [
+    { text: 'AC-REJECT: 空字符串或只有空白的姓名必须抛出 TypeError。', required: true },
+    { text: 'Reject invalid input names with TypeError.', required: true },
+    { text: 'For an empty name, greet must throw a TypeError.', required: true },
+    { text: '输入校验失败时拒绝调用，不产生业务写入。', required: true },
+    { text: 'Use src/reject-invalid-input.ts and the business_rejection test label.', required: false },
+    { text: '无需拒绝空姓名，按新契约返回结果。', required: false },
+    { text: 'Do not reject empty inputs; return the configured result.', required: false },
+    { text: 'Empty inputs must not throw a TypeError.', required: false },
+    { text: '空姓名不得抛出 TypeError，按新契约返回结果。', required: false },
+    { text: 'Reject invalid inputs but do not throw a TypeError.', required: true },
+    { text: 'The dependency throws a TypeError; preserve its identity.', required: false },
+    { text: 'Preserve the existing TypeError declaration and error object.', required: false },
+  ]
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-input-rejection-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    for (const sample of samples) {
+      const store = memoryStore()
+      const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+        const anchors = manifest.anchors.filter(anchor => anchor.requiredDisposition)
+        return { ...generated, requirements: [{ ...generated.requirements[0], sourceRefs: anchors.map(anchor => anchor.id),
+          acceptanceCriteria: anchors.map((anchor, index) => ({ key: `AC-${String(index + 1).padStart(3, '0')}`,
+            statement: anchor.text, required: true, scenario: 'happy_path', sourceRefs: [anchor.id] })) }] }
+      } }
+      const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+      try {
+        const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Input rejection', cwd: repository,
+          prd: `# Contract\n\n${sample.text}\n\n执行独立的类型检查。` })
+        await service.startDecomposition(project.id)
+        await waitForPlanning(store, project.id)
+        const policies = [...store.acceptanceScenarioCoveragePolicies.records.values()]
+        assert.equal(policies.length, 2)
+        const own = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-001'))
+        const sibling = policies.find(policy => policy.acceptanceCriterionId.endsWith(':AC-002'))
+        assert.equal(own.categories.find(item => item.category === 'business_rejection').applicability, sample.required ? 'required' : 'not_applicable', sample.text)
+        assert.equal(sibling.categories.find(item => item.category === 'business_rejection').applicability, 'not_applicable')
+        assert.equal(observation.requirementReviewCalls, 1)
+        assert.equal(store.executionDispatches.size, 0)
+      } finally { await service.close() }
+    }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 recovery policy requires a recovery action or successful retry contract, not retry vocabulary', async () => {
   const cases = [
     { text: '次数耗尽、时间预算耗尽、AbortError、非网络 TypeError、shouldRetry=false 或已取消均不发事件。推荐方案下 hook 抛错原样终止；另一方案忽略同步抛错并继续，但仍执行取消检查。',
@@ -3179,6 +3440,80 @@ test('Planning V3 recovery policy requires a recovery action or successful retry
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('Planning V3 event oracle keeps reentrant emissions observable after a once listener is removed', () => {
+  // 隔离 EventTarget 的真实监听器生命周期，复现“多发事件但 once 计数仍为 1”的反例。
+  const observe = (emitRejectedNestedEvent) => {
+    const events = new EventTarget()
+    let onceCalls = 0
+    const collected = []
+    events.addEventListener('add', () => collected.push('add'))
+    events.addEventListener('add', () => {
+      onceCalls += 1
+      if (emitRejectedNestedEvent) events.dispatchEvent(new Event('add'))
+    }, { once: true })
+    events.dispatchEvent(new Event('add'))
+    return { onceCalls, collected }
+  }
+  const correct = observe(false)
+  const faulty = observe(true)
+  assert.equal(correct.onceCalls, faulty.onceCalls, 'The once-only counter cannot distinguish the forbidden nested event')
+  assert.deepEqual(correct.collected, ['add'])
+  assert.deepEqual(faulty.collected, ['add', 'add'])
+  const service = new OrchestratorService({}, memoryStore())
+  const prompt = service.scenarioCompletionPromptV3({ requirements: [] }, {}, { anchors: [] }, new Map(), false)
+  assert.match(prompt, /Event observer lifetime grounding/)
+  assert.match(prompt, /independent non-once collector/)
+  assert.match(prompt, /register it before the first trigger/)
+  assert.match(prompt, /faulty producer that emits a forbidden nested event and then rejects/)
+  assert.match(prompt, /Variant event coverage grounding/)
+  assert.match(prompt, /A present event in one variant cannot be covered by an absent event in another/)
+  assert.match(prompt, /Event phase coverage grounding/)
+  assert.match(prompt, /one entry must not combine an earlier absence with a later presence/)
+  assert.match(prompt, /EVT-AC-001-REENTRANT-BEFORE-SETTLEMENT-ABSENT/)
+  assert.match(prompt, /EVT-AC-001-REENTRANT-AFTER-SETTLEMENT-PRESENT/)
+  assert.match(prompt, /Do not repeat out-of-scope stage concepts as exclusions, negated assumptions or disclaimers/)
+  assert.match(prompt, /"required":true,"sourceAnchorIds":\["source-anchor-id"\],"eventObservables":\[/)
+})
+
+test('Planning V3 task Decision refs come only from frozen resolved records, not hypothetical source labels', () => {
+  const service = new OrchestratorService({}, memoryStore())
+  const analysis = { requirements: [{ key: 'REQ-001', scope: 'in_scope', statement: 'DEC-001 is a hypothetical source label; OPT-1 is fixed without a human Decision.' }] }
+  const prompt = decisions => service.plannerPromptV3({ taskLanguage: 'zh-CN' }, analysis, [], { bindings: [] }, [], { references: [] }, decisions, false)
+  assert.match(prompt(new Map()), /Allowed task decisionKeys: \[\]/)
+  assert.match(prompt(new Map()), /no resolved records means decisionKeys must be \[\]/)
+  const resolved = prompt(new Map([['DEC-REAL', { chosenOption: 'OPT-1', resolution: 'confirmed' }]]))
+  assert.match(resolved, /Allowed task decisionKeys: \["DEC-REAL"\]/)
+  assert.doesNotMatch(resolved, /Allowed task decisionKeys: \[[^\]]*DEC-001/)
+})
+
+test('Planning V3 does not infer security from a local API removal restriction', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-v3-local-api-restriction-'))
+  try {
+    const repository = await createPlanningV3Fixture(root)
+    const samples = [
+      { text: 'off(type, originalHandler) 仍仅移除匹配原函数的普通注册；既有允许省略 handler 的 off(type) 清空该 key。保留 wildcard off 的现有类型限制。', security: false },
+      { text: '只有管理员允许执行删除，普通用户无权操作；权限不足时拒绝请求。', security: true },
+    ]
+    for (const sample of samples) {
+      const store = memoryStore()
+      const observation = { requirementAnalysisResponse: ({ generated, manifest }) => {
+        const anchors = manifest.anchors.filter(a => a.requiredDisposition)
+        return { ...generated, requirements: [{ ...generated.requirements[0], sourceRefs: anchors.map(a => a.id),
+          acceptanceCriteria: [{ key: 'AC-001', statement: sample.text, required: true, scenario: 'happy_path', sourceRefs: anchors.map(a => a.id) }] }] }
+      } }
+      const service = new OrchestratorService(agentContext('unused', observation), store, undefined, undefined, { planningContractMode: 'v3-candidate' })
+      try {
+        const project = await service.createProjectFromRequest({ mode: 'empty', name: 'Local API restriction', cwd: repository, prd: `# Contract\n\n${sample.text}` })
+        await service.startDecomposition(project.id)
+        await waitForPlanning(store, project.id)
+        const policy = [...store.acceptanceScenarioCoveragePolicies.records.values()][0]
+        for (const category of ['security', 'business_rejection']) assert.equal(policy.categories.find(c => c.category === category).applicability, sample.security ? 'required' : 'not_applicable', `${category}: ${sample.text}`)
+        assert.equal(store.executionDispatches.size, 0)
+      } finally { await service.close() }
+    }
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('Planning V3 dependency policy distinguishes error contracts from actual dependency faults', async () => {
   const cases = [
     { text: 'DEC-001: 等待队列已满时，拒绝值使用原生 RangeError，还是 name 为 QueueCapacityError 的普通 Error？调用方依赖错误类型分支，未选择前不能固定错误契约。', required: false },
@@ -3194,6 +3529,8 @@ test('Planning V3 dependency policy distinguishes error contracts from actual de
     { text: 'Propagate upstream errors unchanged.', required: true },
     { text: '依赖服务抛出错误对象时原样传播。', required: true },
     { text: 'The dependency throws the same error object; preserve its identity.', required: true },
+    { text: 'The handler throws the original error; preserve synchronous propagation.', required: false },
+    { text: 'AC-001 [dependency_failure, required]: handler 抛错前已注销，emit 同步传播同一异常，不添加异步调度。', required: true },
     { text: 'AC-001 [dependency_failure, required]: 验证约定的结果。', required: true },
   ]
   const root = await mkdtemp(join(tmpdir(), 'po-v3-dependency-contract-'))
@@ -3218,6 +3555,8 @@ test('Planning V3 dependency policy distinguishes error contracts from actual de
         const category = policies[0].categories.find(c => c.category === 'dependency_failure')
         assert.equal(category.applicability, sample.required ? 'required' : 'not_applicable', sample.text)
         assert.equal(observation.requirementReviewCalls, 1)
+        assert.match(observation.requirementAnalysisPrompts[0], /A dependency can be a source-declared user-supplied handler or callback/)
+        assert.match(service.scenarioCompletionPromptV3({ requirements: [] }, {}, { anchors: [] }, new Map(), false), /connect a callback throwing a concrete sentinel error through the public registration\/invocation API/)
         assert.equal(store.executionDispatches.size, 0)
       } finally { await service.close() }
     }
@@ -4806,6 +5145,8 @@ test('Planning evaluation preview freezes independent inputs before any model re
     const first = await service.previewPlanningEvaluationInputV3(project.id)
     const second = await service.previewPlanningEvaluationInputV3(project.id)
     assert.deepEqual(first.releaseInput, second.releaseInput)
+    assert.deepEqual(first.verificationCommands, ['npm run verify'], 'Independent review receives the commands frozen into the repository digest.')
+    assert.deepEqual(first.verificationCommands, second.verificationCommands)
     assert.equal(observation.createCalls, undefined)
     assert.deepEqual(Object.fromEntries(Object.entries(store).filter(([, table]) => table instanceof MemoryTable).map(([name, table]) => [name, table.size])), sizes)
     await service.startDecomposition(project.id)
@@ -7074,6 +7415,45 @@ test('worktree TaskRun creates isolated branch, captures Git evidence, and clean
     assert.equal(store.workspaceLeases.get(`lease:${run.id}`).state, 'released')
     const branch = await execFileAsync('git', ['branch', '--list', run.branch], { cwd: repo })
     assert.match(branch.stdout, new RegExp(run.branch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+test('worktree branches distinguish long and sanitized TaskRun IDs without replacing historical refs', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-worktree-identity-'))
+  const repo = join(root, 'repo')
+  try {
+    await mkdir(repo)
+    await execFileAsync('git', ['init', '--initial-branch=main'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.email', 'test@example.com'], { cwd: repo })
+    await execFileAsync('git', ['config', 'user.name', 'Test'], { cwd: repo })
+    await writeFile(join(repo, 'README.md'), 'base\n')
+    await execFileAsync('git', ['add', 'README.md'], { cwd: repo })
+    await execFileAsync('git', ['commit', '-m', 'test: initialize worktree identity fixture'], { cwd: repo })
+    const git = async args => (await execFileAsync('git', args, { cwd: repo })).stdout.trim()
+    const baseline = await git(['rev-parse', 'HEAD'])
+    // 正式 Dispatch ID 的区分字段可能出现在第 80 个字符之后；旧分支必须继续保留。
+    const prefix = `task-run:execution-dispatch:${'shared-prefix-'.repeat(7)}`
+    const ids = [`${prefix}:plan-one`, `${prefix}:plan-two`, 'sanitized:run', 'sanitized-run']
+    const legacyBranch = `dsh/taskrun/${ids[0].replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 80)}`
+    await git(['branch', legacyBranch, baseline])
+    const service = new OrchestratorService({}, memoryStore())
+    const prepared = []
+    for (const id of ids) {
+      const workspace = await service.prepareWorktree({ id }, { ref: 'HEAD' }, repo)
+      prepared.push(workspace)
+      await git(['check-ref-format', '--branch', workspace.branchName])
+      assert.equal(workspace.baseCommit, baseline)
+      assert.notEqual(workspace.branchName, legacyBranch)
+    }
+    assert.equal(new Set(prepared.map(item => item.branchName)).size, ids.length)
+    assert.equal(new Set(prepared.map(item => item.workspacePath)).size, ids.length)
+    assert.equal(await git(['rev-parse', legacyBranch]), baseline)
+    // 相同 TaskRun 再次准备仍须拒绝；不能覆盖已有分支或复用未核实的工作区。
+    await assert.rejects(() => service.prepareWorktree({ id: ids[0] }, { ref: 'HEAD' }, repo), /already exists/)
+    for (const workspace of prepared) assert.equal(await git(['rev-parse', workspace.branchName]), baseline)
+    assert.equal(await git(['status', '--porcelain']), '')
   } finally {
     await rm(root, { recursive: true, force: true })
   }

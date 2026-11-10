@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-event-variant-v37",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "1ab10bb86646caf26dc67b13837a893523f041e83b2087a736a966c8c9ef0eaf",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "985d3b990d6c677e96460ce14e3ea8d21c8aa8f04a8af39254e35cf1e883c557",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "c8709d90690a8e8f73f761a3bddff44c98209c49b99f2198428c0737b354a4dc",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06b46c1f37d0c655016af1f70c9a3487d1af46d59551cc57d1:independent-gold-review:52cda245-0b25-4bd0-8c6e-5dab858d2653",
+    "reviewedAt": "2026-11-09T16:38:52.081Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 preserve the original AbortError identity, string-wrapping, declaration, and retry-termination contracts. The supplied implementation and declaration evidence supports the exact four-file writable scope, with package.json establishing the existing xo, AVA, and tsd verification entry point; unchanged correct logic need not be edited. TASK-IMPLEMENT and the dependent independent TASK-VERIFY match the specification, and their allowed agents have the corresponding delivery roles, availability, and supplied active project-scoped trusted capability claims, including the additional verification capability for the verifier. The active independent reviewer membership supports the stated review prerequisite without requiring execution claims. No material unresolved Decision is supplied for this case, so ready with no blocking reasons and all seven evidence stages is consistent. Repository identity and commit agree, and the release-input source, team, decision, prompt, model, sampling, budget, and policy fingerprints match between Gold and preview. The provenance explicitly explains the different source-manifest and evaluation digest domains and the original-versus-persisted PRD whitespace normalization. Historical project reuse is identified as preserving scoped attestations, with old operations retained and no candidate outputs supplied for this bundle. This approval assesses expectation coherence, not implementation completion or test success; the runtime-test excerpt is explicitly truncated. Digests and persistence comparisons are accepted as supplied Service-bound facts, not independently recomputed. No tools or code were executed, and no human attestation was created.",
+    "goldDigest": "4318b48c3f14a18caf711e2e737b73503dd4f41b92f83c6747e69a66d4ce4f63"
+  }
+}

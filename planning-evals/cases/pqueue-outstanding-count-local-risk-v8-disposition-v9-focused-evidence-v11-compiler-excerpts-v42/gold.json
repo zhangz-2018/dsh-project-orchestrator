@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "6333363079138a8735624e895a1e04e2e5fa79b359f65b680e65b418072c7386",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_026f276441929bd4016af20963171087d0a97809d585a68069:independent-gold-review:893bebb7-a1a9-44a2-8bfe-0e06b8280409",
+    "reviewedAt": "2026-11-09T17:57:05.852Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001, AC-001 through AC-003, and the two task keys agree across the specification and Gold. The exact writable scope covers the implementation and required runtime/type regressions without requiring unnecessary edits or separately maintained generated declarations. The source supports a derived read-only getter and confirms that completed/error events precede the deferred pending decrement, making the event-time equality and post-onIdle zero checks appropriate. The supplied nz runner establishes discovery and compiler checking of test-d files despite the build tsconfig including only source; compiler excerpts establish unused @ts-expect-error detection. TASK-VERIFY appropriately depends on TASK-IMPLEMENT. Both expected assignees have the relevant supplied active trusted claims, including data.change and integration.consumer, with testing.verification additionally present for the verifier. The configured independent, active, non-assignable Reviewer satisfies the stated early review prerequisite without execution claims. No material unresolved Decision is supplied for this case, so ready with no blocking reasons is consistent. The release fingerprints match between Gold and preview; provenance explains the distinct manifest/evaluation digest domains and PRD whitespace normalization. Isolation evidence states that this Gold precedes every candidate on this bundle. This assessment uses the supplied evidence and Service-bound digests only; I did not execute code, independently recompute digests, or create a human attestation. Approval concerns the benchmark expectation, not task dispatch or implementation correctness.",
+    "goldDigest": "80b6053edd04458ac4515decbe596afdb6506e79bdf4a9f9c04e49fe8870f3b1"
+  }
+}

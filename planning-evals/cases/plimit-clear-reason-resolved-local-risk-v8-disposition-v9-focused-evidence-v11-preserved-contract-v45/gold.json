@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-preserved-contract-v45",
+  "releaseInput": {
+    "repositoryDigest": "d066dca6296e9959778f788d77ffd821c0518d78ba7b8981860c83a915a8e047",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "64af684cd9b07aabe63b897df876342d5f7e7731c009dc36bd8f7c9a38045008",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "bfe534ad47c7fec9b5f4f4ed8f0d8f0e38de361490cb7deb903de8142bccb8cf",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_07562f80f604e314016af21cb296bc87d19cdca1b6af35464e:independent-gold-review:dc188e2d-144f-4de9-b318-953e9f1571a0",
+    "reviewedAt": "2026-11-09T19:19:29.164Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for this frozen C bundle. REQ-001, AC-001 through AC-003, DEC-001 and both task keys are preserved consistently. C explicitly fixes OPT-1 as a hypothetical input, not a human Decision; an empty frozen human-decision input is therefore consistent with readiness=ready. This does not resolve the paired B case: a material unresolved DEC-001 must block B at decisions before later prerequisites. The complete supplied source supports the exact four-file writable scope: index.js owns queue rejection, index.d.ts independently maintains the public declaration, and test.js plus index.test-d.ts own runtime and compile-time regressions. limitFunction forwards the existing method and derives its declaration through Pick, so its forwarding consumers do not require separate edits. package.json establishes xo, ava and tsd as verification entry points without requiring configuration changes or implying tests have run. The implementation and dependent independent-verification expectations match the supplied delivery roles, auto-assignment eligibility, available slots and original project-scoped active capability claims, including shared-state/data and asynchronous-consumer capabilities; eligibility is not inferred from personas or pending claims. The selected planning reviewer is supported by the supplied selection and independence policy. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation source domains, PRD trimming and bundled-module prompt fingerprint. The original specification's preparation-time remaining items and runnable=false describe preparation state, not a contradictory planning-readiness expectation. Review is based solely on the supplied pre-candidate inputs and Service-provided mechanical bindings. I did not execute code, independently recompute digests, create human attestations or use candidate outputs.",
+    "goldDigest": "c597c878bd3dd63584215bbcb6a838905aa57ef1cc29a8110d9962d3a5efb849"
+  }
+}

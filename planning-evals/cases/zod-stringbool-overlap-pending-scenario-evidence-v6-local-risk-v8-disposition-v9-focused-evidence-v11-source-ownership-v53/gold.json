@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "releaseInput": {
+    "repositoryDigest": "f686e3f3b9e174ab02264246572711e166eda384e8ca02e7aa922c0ba60f176c",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04fbe7c8ead9f1f3016af2831cb69c87d2bf44899feb047d57:independent-gold-review:5c94c539-fc5b-41a9-aa79-f87f94b40e8d",
+    "reviewedAt": "2026-11-10T02:36:34.656Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD preserves REQ-001, AC-001 through AC-003, DEC-001 and its options, and explicitly makes construction-time TypeError rejection conditional rather than authorizing OPT-1. The supplied source shows existing truthy-first resolution after case normalization, without trimming, shared by classic and mini through core._stringbool. Consequently, material unresolved DEC-001 must block B at decisions with requirement-decision-pending, after repository and requirements evidence, without assignable tasks or assignment expectations. The empty team and capability claims do not invalidate this earlier deterministic block; later scenario-review and assignment prerequisites are not reached. The owner paths consistently identify the shared implementation, parameter normalization, wrappers and export inspection surface, not mandatory edits to every listed file. Package build configuration supports treating emitted declarations as generated rather than separately maintained owners. Runtime regression and compiler-based type validation are distinguished, and the mini test is correctly identified as proposed rather than existing. Gold and preview release fingerprints agree, with supplied provenance explaining the distinct original/saved PRD, manifest/evaluation source, and bundled-module prompt digest domains. Model, sampling, policy and budget identifiers are frozen consistently in those release inputs. Historical project reuse and its retained old operation do not constitute candidate evidence for this bundle or capability attestations. No human decision or candidate outcome was inferred, and any fixed hypothetical C must remain separate from a human Decision. This approval relies on the supplied Service-calculated mechanical bindings; I did not recompute digests, execute code, attest human confirmation, or approve task dispatch.",
+    "goldDigest": "91607e7f2ea0c712a7fd5aa3bfbfc96d05db192bd87742e2e5abfe38ca71f1d5"
+  }
+}

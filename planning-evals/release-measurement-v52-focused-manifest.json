@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-measurement-v52-focused",
+  "createdAt": "2026-11-10T01:42:38.271Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+      "goldDigest": "cd76f4ee27b1438c51f41c40288b984a8c9a0c11b8840550da4b82ad44b98655"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+      "goldDigest": "cb27dec56dc2a066e56bab34d5e6c9a6fc927134c990597dfc352be236b3c943"
+    },
+    {
+      "caseId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+      "goldDigest": "c42528ab2f84e2d20cb3d869a85139c1cce447ebf218761502967be7bbb54f8a"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+      "attemptId": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52/fresh-1",
+      "operationId": "planning-v3:6a51c232-cf59-454f-915a-736ad69483b7",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52/runs/fresh-1.json",
+      "startedAt": "2026-11-10T01:42:38.316Z",
+      "completedAt": "2026-11-10T01:56:24.323Z"
+    },
+    {
+      "caseId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+      "attemptId": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52/fresh-1",
+      "operationId": "planning-v3:643bc864-ed16-4246-a06f-6b13ca47d5a6",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52/runs/fresh-1.json",
+      "startedAt": "2026-11-10T01:42:38.318Z",
+      "completedAt": "2026-11-10T01:46:39.132Z"
+    },
+    {
+      "caseId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+      "attemptId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52/fresh-1",
+      "operationId": "planning-v3:e08c254f-8e71-4ece-8f22-09ae54abe435",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-11-10T01:42:38.324Z",
+      "completedAt": "2026-11-10T01:47:34.009Z"
+    }
+  ]
+}

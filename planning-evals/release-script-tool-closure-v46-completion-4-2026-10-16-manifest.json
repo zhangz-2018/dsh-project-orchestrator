@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-script-tool-closure-v46-completion-4-2026-10-16",
+  "createdAt": "2026-11-09T19:58:10.679Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+      "goldDigest": "647e2dce24352b000b0b38d27614cb5eb457a27c1bfb9b69134aaed8c4311c01"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+      "attemptId": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46/fresh-1",
+      "operationId": "planning-v3:6687712e-bb94-46ba-935c-69882f647ecd",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46/runs/fresh-1.json",
+      "startedAt": "2026-11-09T19:58:10.726Z",
+      "completedAt": "2026-11-09T20:08:52.680Z"
+    }
+  ]
+}

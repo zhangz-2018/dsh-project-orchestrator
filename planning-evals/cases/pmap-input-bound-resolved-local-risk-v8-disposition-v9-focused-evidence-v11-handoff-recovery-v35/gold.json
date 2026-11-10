@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "72556f1d644b44dfc55b8567f8516a98f32ea459315f982f164afa55697329ac",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_044d5e0ba9452e3d016af1ec93700087d0a112009465ea0a9f:independent-gold-review:e74c4f3b-28ff-4ed3-ad3c-ff2156864b40",
+    "reviewedAt": "2026-11-09T15:54:14.100Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation, with no candidate results used. C explicitly fixes OPT-1 as a hypothetical source input, not a human Decision; humanConfirmed=false and the empty decision-input fingerprint are therefore consistent with ready planning. An unresolved material DEC-001 in paired B must still block at decisions before downstream gates. REQ-001, AC-001 through AC-003, DEC-001, and both task keys remain stable; only the selected option creates implementation and verification obligations. The four exact binding paths cover the runtime engine, maintained public declarations, runtime regressions, and tsd regressions without requiring unrelated edits. Complete implementation, declaration, and package configuration evidence supports these owners and the xo/ava/tsd verification entry point; the test excerpts are explicitly truncated and are not evidence of executed or complete regression coverage. Task roles, independent verification dependency, and assignment expectations align with the supplied project membership, availability, and active trusted claims for the relevant contract, shared-state/data, asynchronous-consumer, language, failure-handling, and testing capabilities. The independent active reviewer satisfies the stated pre-binding review prerequisite without needing execution claims. Gold and preview release fingerprints agree; the documented manifest/evaluation digest domains and PRD trimming explain the distinct source fingerprints. Original preparation-time remaining items and runnable=false do not contradict expected downstream planning readiness. This approval relies on the supplied Service-bound fingerprints and evidence, not independent digest recomputation, code execution, new human attestation, or authorization to dispatch tasks.",
+    "goldDigest": "19f30572bf9d4b7e6d3f744e67c4a88395c4c18e529586ff6a3a8aa6f56dac2c"
+  }
+}

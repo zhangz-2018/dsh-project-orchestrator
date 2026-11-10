@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join, matchesGlob, posix } from 'node:path'
 import type { OrchestratorStore } from '../storage.js'
 import type {
+  AcceptanceCriterionRecord,
   AcceptanceScenarioRecord,
   ActivityEvent,
   CanonicalTargetBindingRecord,
@@ -114,6 +115,46 @@ export class DeliveryService {
     private readonly store: OrchestratorStore,
     private readonly dependencies: DeliveryServiceDependencies,
   ) {}
+
+  /** 当前计划的需求包是交付验收范围；append 保留的包仍纳入，历史失败不删除。缺失的 V3 计划拒绝读取。 */
+  listCurrentAcceptanceCriteria(projectId: string): AcceptanceCriterionRecord[] {
+    const project = this.requireProject(projectId)
+    const plan = project.currentPlanSnapshotId === undefined ? undefined : this.store.planSnapshots?.get(project.currentPlanSnapshotId)
+    if (project.planningContractVersion === 3 && (plan === undefined || plan.projectId !== projectId || plan.requirementBundleIds === undefined)) {
+      throw new WorkflowError('delivery-plan-missing', 'Current V3 acceptance requires the matching frozen plan and requirement bundles.', 409)
+    }
+    const bundles = plan?.requirementBundleIds === undefined ? undefined : new Set(plan.requirementBundleIds)
+    return [...this.store.acceptanceCriteria.entries()].map(([, criterion]) => criterion)
+      .filter(criterion => criterion.projectId === projectId && (bundles === undefined || bundles.has(criterion.bundleId)))
+  }
+
+  /** 启动时修正尚未人工裁决的历史范围投影；仅同 revision/plan 的 pending Review 可更新，不改变能力、验收事实或批准。 */
+  async reconcilePendingReviewAcceptance(): Promise<void> {
+    for (const review of [...this.store.projectReviews.entries()].map(([, item]) => item as ProjectReviewRecord)) {
+      const project = this.store.projects.get(review.projectId) as ProjectRecord | undefined
+      if (review.status !== 'pending' || project?.deliveryStage !== 'review' || project.revision !== review.revision
+        || review.planSnapshotId === undefined || review.planSnapshotId !== project.currentPlanSnapshotId) continue
+      await this.dependencies.serializedMutation(async () => {
+        const current = this.store.projectReviews.get(review.id) as ProjectReviewRecord | undefined
+        if (current?.status !== 'pending' || digestObject(current) !== digestObject(review)) return
+        const acceptance = this.listCurrentAcceptanceCriteria(review.projectId)
+        const expectedIds = acceptance.map(criterion => criterion.id).sort()
+        if (digestObject(current.acceptanceResults.map(item => item.acceptanceId).sort()) === digestObject(expectedIds)) return
+        const acceptanceResults = acceptance.map(criterion => ({ acceptanceId: criterion.id,
+          result: criterion.status === 'verified' ? 'passed' as const : criterion.status === 'waived' ? 'waived' as const : 'failed' as const,
+          evidenceIds: [...criterion.evidenceIds] }))
+        await this.store.projectReviews.put(current.id, { ...current, acceptanceResults })
+        try {
+          await this.dependencies.recordActivity({ id: `activity:review-scope-reconciled:${review.id}`, projectId: review.projectId,
+            actorType: 'system', type: 'project.review_scope_reconciled', message: 'Pending Review acceptance was scoped to its frozen plan; historical criteria remain unchanged.',
+            metadata: { reviewId: review.id, planSnapshotId: review.planSnapshotId, previousAcceptanceIds: current.acceptanceResults.map(item => item.acceptanceId), acceptanceIds: expectedIds } })
+        } catch (error) {
+          await this.store.projectReviews.put(current.id, current)
+          throw error
+        }
+      })
+    }
+  }
 
   private runGit(...args: Parameters<typeof gitProcess>): ReturnType<typeof gitProcess> {
     return (this.dependencies.runGit ?? gitProcess)(...args)
@@ -820,6 +861,7 @@ export class DeliveryService {
     return { repository, ...(baseCommit === undefined ? {} : { baseCommit }), ...(headCommit === undefined ? {} : { headCommit }), ...(branch === undefined ? {} : { branch }), ...(worktree === undefined ? {} : { worktree }), changedFiles, ...(diffStat === '' ? {} : { diffStat }), testSummary, immutableDigest }
   }
 
+  /** 从本次执行的集成结果创建 pending Review 与不可变交付；验收仅投影当前计划，失败恢复未完成状态。 */
   async completeExecutionForReview(projectId: string, runId: string, integration?: DeliveryIntegrationSnapshotRecord, convergence?: DeliveryConvergenceReviewRecord): Promise<DeliveryRecord> {
     return this.dependencies.serializedMutation(async () => {
       const currentProject = this.store.projects.get(projectId)
@@ -843,7 +885,7 @@ export class DeliveryService {
         ...(currentProject.currentPlanSnapshotId === undefined ? {} : { planSnapshotId: currentProject.currentPlanSnapshotId }),
         evidenceIds: evidence.map((item) => item.id),
         round: 1,
-        acceptanceResults: [...this.store.acceptanceCriteria.entries()].map(([, criterion]) => criterion).filter((criterion) => criterion.projectId === projectId).map((criterion) => ({
+        acceptanceResults: this.listCurrentAcceptanceCriteria(projectId).map((criterion) => ({
           acceptanceId: criterion.id,
           result: criterion.status === 'verified' ? 'passed' as const : criterion.status === 'waived' ? 'waived' as const : 'failed' as const,
           evidenceIds: [...criterion.evidenceIds],

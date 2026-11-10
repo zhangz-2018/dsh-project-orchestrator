@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-event-phase-v40",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "985d3b990d6c677e96460ce14e3ea8d21c8aa8f04a8af39254e35cf1e883c557",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "2a77be6dc5a88b78d48c20c1c4ede4ce11e0c294d247fd514167be7e15613aff",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0492154638a2ebbc016af200adc07087d2b74663aa41da4e15:independent-gold-review:3a6ca29e-c63d-4bf8-9d94-f1a465f974b4",
+    "reviewedAt": "2026-11-09T17:19:57.726Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001 through AC-003 preserve error identity, string-wrapper compatibility, retry termination, and declaration compatibility. The exact four-file writable scope includes the implementation, maintained declaration, runtime regressions, and tsd regressions without requiring unnecessary edits. Supplied source and package configuration support these owners and the xo && ava && tsd verification entry; the relevant AbortError tests are visible despite the explicitly truncated remainder of test.js. TASK-IMPLEMENT and the dependent independent TASK-VERIFY match the specification. Their distinct allowed agents have matching delivery roles, assignable memberships, available capacity, and supplied active trusted claims for the bounded scope, including testing.verification for the verifier. The configured independent active reviewer satisfies the stated review prerequisite without needing execution claims. Ready status and the evidence stages are consistent with the supplied empty decision input; no unresolved material DEC-001 or B/C scenario is supplied in this case. Gold and preview release fingerprints agree, and provenance explains the distinct manifest/evaluation digest domains and trim-only PRD normalization. Historical operations remain explicitly non-fresh and do not establish candidate results for this bundle. This assessment relies on the supplied Service-bound fingerprints and recorded capability facts; I did not recompute digests, execute code, or provide human attestation.",
+    "goldDigest": "f28e1e1d5c78157015a1a5f0b1f0abdf75cb023a5107d9a5ddebbd744bdada6c"
+  }
+}

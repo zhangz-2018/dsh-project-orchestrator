@@ -7,18 +7,25 @@ import { digestObject } from '../lib/index.js'
 
 const run = promisify(execFile)
 const args = process.argv.slice(2)
-assert.ok(args.length === 0 || (args.length === 2 && args[0] === '--output'))
+assert.ok(args.length === 0 || ([2, 4].includes(args.length) && args[0] === '--output'))
 const reportPath = resolve(args[1] ?? 'output/acceptance/canary-delivery-verified-2026-10-15.json')
-const base = 'http://127.0.0.1:3087/project-orchestrator/api'
-const reviewed = JSON.parse(await readFile(resolve('output/acceptance/canary-plan-review-ready-2026-10-15.json'), 'utf8'))
-const prepared = JSON.parse(await readFile(resolve('output/acceptance/isolated-harness-2026-10-14.json'), 'utf8'))
+const reviewed = JSON.parse(await readFile(resolve(args[2] ?? 'output/acceptance/canary-plan-review-ready-2026-10-15.json'), 'utf8'))
+const prepared = JSON.parse(await readFile(resolve(args[3] ?? 'output/acceptance/isolated-harness-2026-10-14.json'), 'utf8'))
+const journal = reviewed.journalPath === undefined ? undefined : JSON.parse(await readFile(reviewed.journalPath, 'utf8'))
+const base = `${journal?.baseUrl ?? 'http://127.0.0.1:3087'}/project-orchestrator/api`
+if (journal) {
+  assert.equal(journal.state, 'terminal')
+  assert.equal(journal.currentOperationId, reviewed.operationId)
+  assert.equal(journal.bundleSha256, reviewed.bundleSha256)
+  assert.equal(journal.baselineCommit, prepared.baselineCommit)
+}
 const { projectId, operationId } = reviewed
 assert.equal(projectId, 'ac9fafa7-c07b-4802-a177-6f4c986130bc')
 const response = await fetch(`${base}/snapshot`, { signal: AbortSignal.timeout(30_000) })
 assert.equal(response.ok, true)
 const snapshot = await response.json()
 const project = snapshot.projects.find(item => item.id === projectId)
-const cwd = join(prepared.root, 'workspaces/greeting')
+const cwd = prepared.workspace ?? join(prepared.root, 'workspaces/greeting')
 assert.equal(project?.cwd, cwd)
 assert.equal(project.currentPlanSnapshotId, reviewed.plan.id)
 assert.equal(project.revision, reviewed.project.revision)
@@ -29,7 +36,7 @@ const integration = snapshot.deliveryIntegrationSnapshots.find(item => item.id =
 const convergence = snapshot.deliveryConvergenceReviews.find(item => item.id === project.currentDeliveryConvergenceReviewId)
 assert.equal(integration?.status, 'ready')
 assert.equal(integration.approvedPlanSnapshotId, reviewed.plan.id)
-assert.equal(integration.baseCommit, '6c046d7e11150f45ac9767146708663614803a1f')
+assert.equal(integration.baseCommit, prepared.baselineCommit ?? '6c046d7e11150f45ac9767146708663614803a1f')
 assert.equal(convergence?.status, 'converged')
 assert.equal(convergence.integratedFinalCommit, integration.finalCommit)
 assert.equal(convergence.deliveryIntegrationSnapshotId, integration.id)
@@ -80,7 +87,7 @@ const behavior = await run(process.execPath, ['--experimental-strip-types', '--i
 assert.equal((await git(['rev-parse', 'HEAD'])).trim(), integration.finalCommit)
 assert.equal((await git(['status', '--porcelain'])).trim(), '')
 const report = {
-  observedAt: new Date().toISOString(), projectId, operationId, cwd,
+  observedAt: new Date().toISOString(), projectId, operationId, cwd, baseUrl: journal?.baseUrl ?? 'http://127.0.0.1:3087',
   status: 'technical_acceptance_passed', finalHumanConfirmationRequired: ['review', 'delivery_ready'].includes(project.deliveryStage),
   baselineCommit: integration.baseCommit, finalCommit: integration.finalCommit,
   changedFiles: paths, diff, integration, convergence, review, delivery, verifications,

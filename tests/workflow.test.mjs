@@ -526,6 +526,25 @@ test('V3 repository evidence reads legacy Git object digests but keeps non-repos
   assert.throws(() => PlanningPromptReferenceManifestRecordSchema.parse({ ...manifest, references: [{ ...manifest.references[0], kind: 'evidence_claim' }] }), /legacy repository evidence/i)
 })
 
+test('V3 planned verification requires bounded creation and dependency ordering before consumers can run it', () => {
+  const { manifest, plan } = planningV3Fixture()
+  const targetPath = 'bench/new.ts'
+  const command = 'nub --expose-gc bench/new.ts'
+  manifest.references[1].artifactId = command
+  const input = { requirementKeys: ['REQ-001'], acceptanceKeys: ['AC-001'], requiredAcceptanceKeys: ['AC-001'], scenarioKeys: ['SCN-001'], requiredScenarioKeys: ['SCN-001'], decisionKeys: [], resolvedDecisionKeys: [], bindingKeys: ['BIND-API'], requiredPolicyRefs: ['ref-policy-must'], promptReferenceManifest: manifest,
+    plannedVerificationEntries: [{ command, targetPath, targetState: 'absent', templateCommand: 'nub --expose-gc bench/old.ts', declarationDigest: 'a'.repeat(64) }] }
+  const parse = value => parseGeneratedPlanV3(JSON.stringify(value), input)
+  assert.throws(() => parse(plan), error => error.code === 'planned-verification-owner-missing')
+  plan.tasks[0].changeContract.allowedPathScopes.push(targetPath)
+  plan.tasks[0].contextPack.expectedChangeSurfaces.push(targetPath)
+  assert.doesNotThrow(() => parse(plan))
+  const unordered = structuredClone(plan)
+  unordered.tasks.push({ ...structuredClone(plan.tasks[0]), key: 'TASK-EARLY', changeContract: { ...plan.tasks[0].changeContract, allowedPathScopes: ['tests/local.test.ts'] }, contextPack: { ...plan.tasks[0].contextPack, expectedChangeSurfaces: ['tests/local.test.ts'] } })
+  assert.throws(() => parse(unordered), error => error.code === 'planned-verification-dependency-missing')
+  unordered.tasks[2].dependencyKeys = ['TASK-IMPLEMENT']
+  assert.doesNotThrow(() => parse(unordered))
+})
+
 test('V3 planner can only use frozen local keys and attempt-scoped opaque references', () => {
   const { manifest, binding, plan } = planningV3Fixture()
   assert.deepEqual(parseGeneratedBindingAnalysisV3(JSON.stringify(binding), { requirementKeys: ['REQ-001'], allowedEvidenceRefs: ['ref-evidence-owner'] }), binding)

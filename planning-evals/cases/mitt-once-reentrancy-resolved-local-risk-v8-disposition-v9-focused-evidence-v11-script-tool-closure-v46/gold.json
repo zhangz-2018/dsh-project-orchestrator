@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "6ab490c790258a276d8a589a2976c1faa513adb7794fa13865cde3d82bfd0edc",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e5b3dc04e5cdad4016af22464ef2087d19b7d74d8b6a464bc:independent-gold-review:e166526e-fd37-4bd7-af34-1bf1200461d2",
+    "reviewedAt": "2026-11-09T19:52:20.716Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the complete supplied PRD and frozen inputs. Repository identity and base commit, REQ/AC/DEC keys, exact three-file writable binding scope, evidence stages, and implementation/independent-verification task expectations agree. C explicitly fixes OPT-1 as a hypothetical input without asserting a human Decision; only the selected branch is required, so ready with no decision blocker is appropriate. A material unresolved DEC-001 in paired B must still block at decisions. OPT-1 accounts for callback reentrancy, stale outer snapshots, wildcard behavior, and synchronous exception propagation while preserving other subscriptions' snapshot semantics. The supplied build configuration and pinned upstream source establish declaration generation, so index.d.ts and dist are not separately maintained owners; read-only consumers do not require edits. Verification planning correctly distinguishes runtime tests from compiler checks and requires rebuilding before root-entry tests. The allowed implementer and verifier have matching delivery roles, availability, and supplied project-scoped active trusted claims, including shared-state/data capabilities and the verifier's additional testing.verification claim; eligibility does not depend on Persona or pending claims. The selected planning reviewer is consistent with the supplied selection and independence policy. Source manifest versus evaluation fingerprints, PRD trimming, team claim projections, executing-bundle prompt fingerprint, empty human-decision input, and repository/model/sampling/metric-policy release fingerprints are coherently explained and consistent across the supplied records. The original specification's preparation-time remaining items do not contradict the later frozen preview or the expected planning readiness. Review uses only the supplied pre-candidate evidence and Service-calculated digest bindings; I did not execute code, independently recompute hashes, or create or independently authenticate human attestations. No material error or unresolved ambiguity was found.",
+    "goldDigest": "edf6378e19e2c103e5a76a05cb8da8511de9f5bbb77696e70d82fdd1c101c321"
+  }
+}

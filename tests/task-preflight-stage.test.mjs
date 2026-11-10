@@ -90,6 +90,115 @@ test('TaskPreflightStage supports zero-tool handoff using only relevant frozen s
   assert.equal(preflights[0].serviceVerdict, 'accepted')
 })
 
+test('TaskPreflightStage passes the authoritative frozen commit without claiming checkout verification', async () => {
+  const { store, input } = await fixture()
+  const repository = { id: 'repo-1', projectId: 'project-1', operationId: 'operation-1', repositoryDigest: input.repositoryDigest,
+    headCommit: 'a'.repeat(40), trackedTreeDigest: 'b'.repeat(64), dirtyDigest: 'c'.repeat(64), canonicalRoot: '/private/should-not-be-projected' }
+  await new TaskPreflightStage(store).run({ ...input, repository, runReadOnly: async prompt => {
+    const identity = JSON.parse(prompt.split('Frozen repository identity:\n')[1].split('\n\nAssignment:')[0])
+    assert.deepEqual(identity, { snapshotId: repository.id, repositoryDigest: repository.repositoryDigest, headCommit: repository.headCommit,
+      trackedTreeDigest: repository.trackedTreeDigest, dirtyDigest: repository.dirtyDigest })
+    assert.doesNotMatch(prompt, /private\/should-not-be-projected/u)
+    assert.match(prompt, /Actual checkout verification remains execution-time work/u)
+    return JSON.stringify(report())
+  } })
+})
+
+test('preflight retains command sampling source and local harness without inventing the planned target', async () => {
+  const { store, input } = await fixture()
+  const command = 'nub --expose-gc packages/bench/new.ts'
+  const templateCommand = 'nub --expose-gc packages/bench/memory.ts'
+  input.manifest.references[1].artifactId = command
+  const plannedVerificationEntries = [{ command, templateCommand, targetPath: 'packages/bench/new.ts', targetState: 'absent', declarationDigest: '1'.repeat(64) }]
+  const sourceEvidence = [
+    { ref: 'ref-memory', path: 'packages/bench/memory.ts', digest: '1'.repeat(64), content: 'import { sample } from "./harness.js"; sample();', truncated: false },
+    { ref: 'ref-harness', path: 'packages/bench/harness.ts', digest: '2'.repeat(64), content: 'export function sample() { return Math.min(1, 2) }', truncated: false },
+    { ref: 'ref-other', path: 'src/irrelevant.ts', digest: '3'.repeat(64), content: 'unrelated text', truncated: false },
+  ]
+  await new TaskPreflightStage(store).run({ ...input, sourceEvidence, plannedVerificationEntries, runReadOnly: async prompt => {
+    const excerpts = JSON.parse(prompt.split('Frozen repository source excerpts:\n')[1].split('\n\nReference manifest identity:')[0])
+    assert.deepEqual(excerpts.map(source => source.path), ['packages/bench/memory.ts', 'packages/bench/harness.ts'])
+    const projections = JSON.parse(prompt.split('Authoritative evidence projections:\n')[1].split('\n\nFrozen repository source excerpts:')[0])
+    assert.deepEqual(projections.find(item => item.kind === 'verification_command').plannedEntry, plannedVerificationEntries[0])
+    assert.match(prompt, /before the first product-source modification/u)
+    return JSON.stringify(report())
+  } })
+})
+
+test('TaskPreflightStage refuses a foreign or mismatched repository identity before a model call', async () => {
+  const { store, input } = await fixture()
+  const repository = { id: 'repo-1', projectId: 'project-1', operationId: 'operation-1', repositoryDigest: input.repositoryDigest,
+    headCommit: 'a'.repeat(40), trackedTreeDigest: 'b'.repeat(64), dirtyDigest: 'c'.repeat(64) }
+  let calls = 0
+  for (const mismatch of [{ projectId: 'other' }, { operationId: 'other' }, { repositoryDigest: '0'.repeat(64) }]) {
+    await assert.rejects(() => new TaskPreflightStage(store).run({ ...input, repository: { ...repository, ...mismatch }, runReadOnly: async () => {
+      calls++
+      return JSON.stringify(report())
+    } }), error => error.code === 'task-preflight-stale')
+  }
+  assert.equal(calls, 0)
+  assert.equal([...store.taskPreflightsV3.entries()].length, 0)
+})
+
+test('TaskPreflightStage hands off complete scenario variants and installed verification tool evidence', async () => {
+  const { store, input } = await fixture()
+  const scenario = { key: 'SCN-BOUNDARY', projectId: 'project-1', operationId: 'operation-1', trigger: 'maxQueued: -1, NaN, 0.5, -Infinity, undefined, null, "1", MAX_SAFE_INTEGER + 1', scenarioDigest: '3'.repeat(64) }
+  const unrelated = { ...scenario, key: 'SCN-UNRELATED', trigger: 'unrelated-scenario-do-not-disclose' }
+  const verificationTools = [{ packageName: 'nz', binName: 'nz', files: [{ path: 'distribution/index.js', content: 'checkProject("test-d/index.test-d.ts")', truncated: false }],
+    sourceExcerpts: [{ path: 'distribution/compiler.js', symbol: 'diagnostics', sourceDigest: '4'.repeat(64), sourceBytes: 70_000, startOffset: 0, endOffset: 25, startLine: 1, endLine: 1, content: 'function diagnostics() {}', digest: '5'.repeat(64) }], unavailablePaths: ['distribution/compiler.js'] }]
+  input.tasks[0].scenarioKeys = [scenario.key]
+  await new TaskPreflightStage(store).run({ ...input, scenarios: [scenario, unrelated], verificationTools, runReadOnly: async prompt => {
+    const scenarios = JSON.parse(prompt.split('Frozen acceptance scenarios:\n')[1].split('\n\nInstalled verification tool evidence:')[0])
+    assert.deepEqual(scenarios, [scenario])
+    const tools = JSON.parse(prompt.split('Installed verification tool evidence:\n')[1].split('\n\nFrozen access:')[0])
+    assert.deepEqual(tools, verificationTools)
+    assert.doesNotMatch(prompt, /unrelated-scenario-do-not-disclose/u)
+    assert.match(prompt, /not proof of successful execution/u)
+    assert.match(prompt, /complete AST nodes at exact offsets and lines/u)
+    assert.match(prompt, /do not establish unseen code, dependencies, or successful execution/u)
+    return JSON.stringify(report())
+  } })
+})
+
+test('TaskPreflightStage exposes successor verification coverage without claiming execution or authorizing its writes', async () => {
+  const { store, input } = await fixture()
+  const implement = { ...input.tasks[0], relationship: 'implementation', kind: 'code', requirementKeys: ['REQ-1'], acceptanceKeys: ['AC-1'], scenarioKeys: ['SCN-1'], dependencyKeys: [], completionCriteria: ['Implement the behavior.'] }
+  const verifier = { ...implement, key: 'TASK-VERIFY', relationship: 'verification', kind: 'test', dependencyKeys: [implement.key], completionCriteria: ['Independently verify AC-1.'], contextPack: { ...implement.contextPack, objective: 'Unrelated private context must not be projected here.' } }
+  const otherAssignment = { ...input.assignments[0], id: 'assignment-2', taskKey: verifier.key, executingAgentId: 'agent-2' }
+  await store.agents.put('agent-2', { id: 'agent-2', status: 'active' })
+  await new TaskPreflightStage(store).run({ ...input, tasks: [implement, verifier], assignments: [...input.assignments, otherAssignment], runReadOnly: async (prompt, agent) => {
+    const coverage = JSON.parse(prompt.split('Candidate plan coverage (unapproved):\n')[1].split('\n\nFrozen repository identity:')[0])
+    assert.deepEqual(coverage, [implement, verifier].map((task, index) => ({ key: task.key, kind: task.kind, relationship: task.relationship,
+      requirementKeys: task.requirementKeys, acceptanceKeys: task.acceptanceKeys, scenarioKeys: task.scenarioKeys, dependencyKeys: task.dependencyKeys,
+      completionCriteria: task.completionCriteria, selectedAgentId: index === 0 ? 'agent-1' : 'agent-2' })))
+    if (agent.id === 'agent-1') assert.doesNotMatch(prompt, /Unrelated private context/u)
+    assert.match(prompt, /neither authorizes another Task's writes nor proves any Task has executed/u)
+    return JSON.stringify({ ...report(), agentId: agent.id })
+  } })
+})
+
+test('TaskPreflightStage rejects a foreign successor assignment before any current-task model call', async () => {
+  const { store, input } = await fixture()
+  let calls = 0
+  await assert.rejects(() => new TaskPreflightStage(store).run({ ...input,
+    assignments: [...input.assignments, { ...input.assignments[0], taskKey: 'TASK-VERIFY', projectId: 'other-project' }],
+    runReadOnly: async () => { calls++; return JSON.stringify(report()) },
+  }), error => error.code === 'task-preflight-stale')
+  assert.equal(calls, 0)
+})
+
+test('TaskPreflightStage rejects missing or foreign scenario contracts before the model handoff', async () => {
+  const { store, input } = await fixture()
+  input.tasks[0].scenarioKeys = ['SCN-BOUNDARY']
+  let calls = 0
+  const runReadOnly = async () => { calls++; return JSON.stringify(report()) }
+  for (const scenarios of [[], [{ key: 'SCN-BOUNDARY', projectId: 'other-project', operationId: 'operation-1' }], [{ key: 'SCN-BOUNDARY', projectId: 'project-1', operationId: 'other-operation' }]]) {
+    await assert.rejects(() => new TaskPreflightStage(store).run({ ...input, scenarios, runReadOnly }), error => error.code === 'task-preflight-scenario-unresolved')
+  }
+  assert.equal(calls, 0)
+  assert.equal([...store.taskPreflightsV3.entries()].length, 0)
+})
+
 test('TaskPreflightStage retries a malformed report once but does not retry a failed model call', async () => {
   const { store, input } = await fixture()
   const prompts = []

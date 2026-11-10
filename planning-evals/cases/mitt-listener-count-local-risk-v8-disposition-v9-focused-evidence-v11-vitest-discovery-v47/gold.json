@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-vitest-discovery-v47",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "f6deee899a297142c4589a0228b42323885064802589d5638528f2d2f7db13d9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "3c3cd0d4878329d6d0301658804d433aa496ee65b11c7427e6275e2b0460c069",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ac0eb184791e87b016af23462631487d2bee1b0527fecfcd9:independent-gold-review:608c0af4-3019-49d4-9262-d9fcb9e98588",
+    "reviewedAt": "2026-11-09T21:00:37.587Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001 through AC-003 preserve exact-key counting, live shared-map state, duplicate registrations, wildcard isolation, compatibility and restricted event-key typing. The three exact writable binding paths cover the implementation/interface and required runtime/type regressions without forcing unnecessary edits. Package configuration, CI and the pinned microbundle source support treating index.d.ts and dist as generated artifacts, not separately maintained owners. Verification must rebuild before checking root-entry consumers. The supplied Mocha discovery implementation also shows that the positional test directory can load test/test-types-compilation.ts despite the narrower configured spec, making the PRD's non-executing type assertions important and appropriate. Stable task keys, independent verification and its implementation dependency agree with the specification. The allowed implementer and verifier have the relevant active project-scoped trusted claims, including shared-state/data capabilities and the verifier's additional testing.verification claim; eligibility does not depend on Persona or pending claims. The selected planning reviewer is consistent with the frozen selection policy and is distinct from the prospective task authors at this pre-candidate stage. No material unresolved DEC-001 or B/C variant is supplied in this case, so none should be invented or resolved by this review. The expected ready outcome concerns planning, not execution, dispatch or release approval; the original preparation placeholders do not override the separately supplied frozen release inputs. Repository, normalized PRD/source, team, decision, executing-module, model, sampling and metric-policy fingerprints are internally consistent across the supplied records and their stated digest domains. Historical project reuse preserves the supplied project-scoped claims without supplying candidate results for this bundle. I reviewed only the supplied evidence, accepted Service-calculated digest bindings as supplied, did not independently recompute hashes or execute code, and create no human attestation.",
+    "goldDigest": "cfd342652732587d653ce123386dbd024744cda0e3be13378811966ccf3b73fa"
+  }
+}

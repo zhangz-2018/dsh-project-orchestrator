@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_08af9d12856163f6016af21098b23c87d086386aadca00209d:independent-gold-review:974a8510-519c-4a39-b7a2-d1cb932df197",
+    "reviewedAt": "2026-11-09T18:27:51.454Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved; AC-001 is conditional and does not authorize selecting OPT-1. Therefore B must stop at decisions with requirement-decision-pending for DEC-001, retaining REQ-001 and AC-001 through AC-003 without generating assignable tasks. The empty task and assignment expectations and required repository, requirements, and decisions evidence stages agree with that boundary. Supplied source establishes shared core _stringbool ownership, existing case normalization without trimming, truthy-first overlap behavior, and classic/mini forwarding. Listed forwarding and export consumers are inspection owners, not mandatory edits; build configuration supports treating emitted declarations as generated rather than separately maintained owners. Runtime and TypeScript verification are distinguished, including the compile-mode configuration's disabled typechecking. The empty team and capability claims do not invalidate this earlier deterministic decision block, and no later reviewer or assignment eligibility is presumed. Repository identity, base commit, stable keys, paired-case reference, and preview/Gold release fingerprints agree. Source provenance explains the distinct manifest and evaluation digest domains and PRD persistence normalization. Model, policy, sampling, prompt, and budget fingerprints are frozen consistently in the supplied release inputs. This review relies on the Service's stated mechanical digest binding; I did not recompute digests, execute code, inspect candidate outputs, or supply a human Decision. Approval is limited to this pending case and does not resolve DEC-001 or approve tasks for delivery.",
+    "goldDigest": "5f78820c01886ad78332cc6cb69e9d7da3654b28cd9b9860da3e2e2b9390a1da"
+  }
+}

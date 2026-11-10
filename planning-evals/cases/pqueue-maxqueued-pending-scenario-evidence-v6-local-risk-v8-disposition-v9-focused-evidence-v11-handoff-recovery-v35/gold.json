@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "eeeb2bfb5488123ee7b390ee25f96949381438699f26cd7319a013db172f4283",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_04ed4c7dc0717341016af1ec71052887d196d0d97833ce0b8b:independent-gold-review:7e840f9a-ce76-4ae3-8f06-997b512b59ad",
+    "reviewedAt": "2026-11-09T15:53:38.240Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD and Gold preserve REQ-001, AC-001 through AC-003, the repository identity/base commit, and the paired-case identity. DEC-001 materially determines the rejection error contract and remains unresolved without human confirmation; conditional acceptance language does not authorize selecting either option. Gold therefore correctly expects blocked readiness at decisions, requires repository/requirements/decisions evidence, and specifies no assignments. The later implementation/verification task split is explicitly conditional on resolution and does not apply here. The complete supplied implementation owners support source/index.ts and source/options.ts as the binding-owner set. Package/build configuration supports treating dist declarations as generated rather than separately maintained owners, and the supplied nz implementation establishes discovery and compiler checking of test-d independently of runtime tests. The empty team catalog is compatible with stopping at the earlier deterministic Decision gate, before mandatory later review or assignment prerequisites. Gold and preview release fingerprints match field-for-field, including repository, evaluation source, team, decision input, prompt versions, model, sampling, budgets, and metric policy. Supplied provenance explains the distinct manifest/evaluation digest domains and original/saved PRD whitespace normalization. The original specification's null releaseInput and remaining preparation items are contextual preparation state; the later preview and Gold provide the frozen release input. Isolation evidence states that Gold precedes every candidate for this bundle and supplies no historical candidates or operations. Approval concerns the blocked expectation, not execution readiness or a human Decision. I reviewed the supplied data only; I did not execute code or independently recompute digests.",
+    "goldDigest": "51108af250184da411bbe0ad49e651afeed55bc78229d92ce95791c1b93168b4"
+  }
+}

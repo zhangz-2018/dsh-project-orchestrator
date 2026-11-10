@@ -158,8 +158,11 @@ export function mapPolicySubjectsV3(selector: PolicyTargetSelector, subjects: Po
   return [...subjects].sort((left, right) => left.subjectType.localeCompare(right.subjectType) || left.subjectId.localeCompare(right.subjectId)).map((subject) => evaluatePolicyApplicabilityV3(selector, subject))
 }
 
+/** 提取显式规范句并保留嵌套 ATX 标题中的主体；不执行示例，超出上下文预算时仍保留原规则。 */
 export function extractNormativePolicyStatementsV3(content: string): string[] {
   const statements: string[] = []
+  // depth 是 Markdown 标题层级，title 是原文标题；同级及更高标题终止前一个参数作用域。
+  const headings: Array<[depth: number, title: string]> = []
   let fenced = false
   for (const line of content.replace(/\r\n?/g, '\n').split('\n')) {
     if (/^\s*```/u.test(line)) {
@@ -167,6 +170,13 @@ export function extractNormativePolicyStatementsV3(content: string): string[] {
       continue
     }
     if (fenced) continue
+    const heading = /^ {0,3}(#{1,6})[\t ]+(.+)$/u.exec(line)
+    if (heading !== null) {
+      const depth = heading[1]!.length
+      while (headings.length > 0 && headings.at(-1)![0] >= depth) headings.pop()
+      headings.push([depth, heading[2]!.trim()])
+      // 标题自身也可能是 MUST 规则；更新作用域后仍按原规范句规则提取，不能漏掉它。
+    }
     const normalized = line
       .replace(/^\s*(?:>\s*)?/u, '')
       .replace(/^\s*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)/u, '')
@@ -174,7 +184,12 @@ export function extractNormativePolicyStatementsV3(content: string): string[] {
     if (normalized.length < 4) continue
     for (const sentence of normalized.match(/[^。！？!?]+[。！？!?]?/gu) ?? []) {
       const statement = sentence.trim()
-      if (statement.length >= 4 && statement.length <= 2_000 && NORMATIVE_TERM.test(statement)) statements.push(statement)
+      if (statement.length >= 4 && statement.length <= 2_000 && NORMATIVE_TERM.test(statement)) {
+        // 根标题通常只有仓库名；嵌套 API/参数标题才标识规则主体，不能靠相同限制句跨参数去重。
+        const section = headings.filter(([depth]) => depth > 1).map(([, title]) => title).join(' > ')
+        const contextual = section === '' ? statement : `${section}: ${statement}`
+        statements.push(contextual.length <= 2_000 ? contextual : statement)
+      }
     }
   }
   return [...new Set(statements)]

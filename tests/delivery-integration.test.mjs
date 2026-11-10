@@ -152,7 +152,7 @@ async function fixture() {
   }
   const plan = {
     id: planId, projectId, revision: 1, mode: 'initial', taskIds: [taskId], planHash: 'a'.repeat(64), teamComposition: { members: [], squads: [], teamDigest: 'e'.repeat(64), capturedAt: now },
-    teamDigest: 'e'.repeat(64), assignmentDigest: 'f'.repeat(64), planningContractVersion: 3, canonicalTargetBindingId: bindingId,
+    teamDigest: 'e'.repeat(64), assignmentDigest: 'f'.repeat(64), planningContractVersion: 3, planningOperationId: 'operation-1', canonicalTargetBindingId: bindingId,
     canonicalTargetBindingDigest: bindingDigest, accessGrantSnapshotId: accessId, accessGrantDigest: accessDigest, status: 'approved', createdAt: now,
   }
   const target = {
@@ -172,11 +172,14 @@ async function fixture() {
     actualBaseCommit: baseCommit, outputCommit, outputTree: await git(root, 'rev-parse', `${outputCommit}^{tree}`), outputDiffDigest: '0'.repeat(64), outputPatchIds: [], outputChangedPaths: [],
     createdAt: now, completedAt: now,
   }
-  const store = memoryStore({ projects: [project], tasks: [task], plan_snapshots: [plan], canonical_target_bindings: [target], resource_access_grants: [grant], project_access_grant_snapshots: [accessSnapshot], task_runs: [taskRun] })
+  const sourceCore = { projectId, operationId: 'operation-1', mode: 'initial', prd: project.prd, technicalDesign: project.technicalDesign }
+  const source = { id: 'source-1', ...sourceCore, sourceInputDigest: digestObject(sourceCore) }
+  const operation = { id: 'operation-1', projectId, sourceInputId: source.id, sourceInputDigest: source.sourceInputDigest }
+  const store = memoryStore({ projects: [project], tasks: [task], plan_snapshots: [plan], planning_operations: [operation], planning_source_inputs: [source], canonical_target_bindings: [target], resource_access_grants: [grant], project_access_grant_snapshots: [accessSnapshot], task_runs: [taskRun] })
   const service = new OrchestratorService({}, store)
   const outputEvidence = await gitCommitEvidence(root, baseCommit, outputCommit)
   await store.taskRuns.put(runId, { ...taskRun, outputTree: outputEvidence.tree, outputDiffDigest: outputEvidence.diffDigest, outputPatchIds: outputEvidence.patchIds, outputChangedPaths: outputEvidence.changedPaths })
-  return { root, service, store, project, plan, task, taskRun: store.taskRuns.get(runId), target, baseCommit, outputCommit }
+  return { root, service, store, project, plan, task, taskRun: store.taskRuns.get(runId), target, baseCommit, outputCommit, operation }
 }
 
 async function twoTaskFixture() {
@@ -661,7 +664,7 @@ test('V3 Convergence repair replays the same baseline request while decompositio
 
     const replay = await context.service.startConvergenceRepairV3(project.id, { expectedBaselineDigest: baseline.baselineDigest })
     assert.deepEqual(replay, active)
-    assert.equal([...context.store.planningOperations.entries()].length, 0)
+    assert.deepEqual([...context.store.planningOperations.entries()], [[context.operation.id, context.operation]])
   } finally {
     await rm(context.root, { recursive: true, force: true })
   }
@@ -681,7 +684,7 @@ test('V3 Convergence repair rejects a repository that moved after the parent fin
       () => context.service.startConvergenceRepairV3(context.project.id, { expectedBaselineDigest: baseline.baselineDigest }),
       (error) => error.code === 'convergence-repair-repository-stale',
     )
-    assert.equal([...context.store.planningOperations.entries()].length, 0)
+    assert.deepEqual([...context.store.planningOperations.entries()], [[context.operation.id, context.operation]])
   } finally {
     await rm(context.root, { recursive: true, force: true })
   }

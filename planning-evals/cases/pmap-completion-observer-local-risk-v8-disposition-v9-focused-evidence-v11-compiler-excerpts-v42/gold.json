@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-completion-observer-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "df9b7ec85b47649d379fbddd841676a49a94af1c9511c279e1720d8297599bce",
+    "teamCatalogDigest": "70b8ef0b4fc7d2cb7c70b58a43a5c33dbb5e9e808ff560cd794b75492d799565",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ffd85c33eac23a1016af20a570d6c87d097265432dad92c67:independent-gold-review:b0138e30-1a12-4d81-bd35-ee6fd080f260",
+    "reviewedAt": "2026-11-09T18:01:13.696Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only case. REQ-001 and AC-001 through AC-003 preserve the original completion-time notification semantics, control-symbol exclusions, hook-error handling, compatibility boundaries, and type-inference requirements. The exact four-file writable binding covers the runtime owner, maintained declaration owner, runtime regressions, and tsd regressions without requiring unrelated edits. package.json establishes xo, ava, and tsd as the verification entry point; approval does not imply those checks were executed or tools installed. TASK-IMPLEMENT and dependent independent TASK-VERIFY match the required split and acceptance coverage. Their allowed agents have the corresponding active trusted capability claims in the supplied Service-filtered team facts, including data.change, domain.state, integration.async, integration.consumer, and verifier-only testing.verification. The selected planning reviewer is consistent with the frozen reviewer-selection policy and does not conflict with independent later execution verification. No material unresolved decision is supplied for this case, so ready with no blocking reasons is appropriate. The original-versus-saved PRD normalization and manifest-versus-evaluation source fingerprint domains are explicitly distinguished; the Gold and preview release fingerprints agree for repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. I rely on the stated Service mechanical binding, not independent digest recomputation. The test excerpts are explicitly truncated, but the complete runtime and declaration owners, configuration, inventory, and frozen test fingerprints provide sufficient evidence for these planning expectations, without asserting a complete test audit. No candidate outputs informed this review, and no code was executed or human attestation created.",
+    "goldDigest": "74780e188faca7c633a26682f2020c8d81c99885251c8ae82d3338e2c5784c08"
+  }
+}

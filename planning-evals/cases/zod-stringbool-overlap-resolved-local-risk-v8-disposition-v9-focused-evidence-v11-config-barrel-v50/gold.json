@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "releaseInput": {
+    "repositoryDigest": "f686e3f3b9e174ab02264246572711e166eda384e8ca02e7aa922c0ba60f176c",
+    "sourceDigest": "fbb0907800c9bfd4b64367a10ca56a348b9ee47097038e8966899668b653c63a",
+    "teamCatalogDigest": "2e4e48db7a6c9abf482825aa7b2662d43edf81e6ad4a6eb5fe886ab4dba7c5ed",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0d7691777a2f4d85016af23f600ec087d0872f256411888538:independent-gold-review:b040db08-bf40-4774-a5d7-980c6602f8a8",
+    "reviewedAt": "2026-11-09T21:47:27.927Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for C. The PRD explicitly fixes OPT-1 as a hypothetical input, without asserting a registered human Decision; the empty decision-input fingerprint is therefore consistent. Only the selected branch is required, while REQ-001, AC-001 through AC-003, DEC-001 and both task keys remain stable. The supplied source shows that classic and mini synchronously forward to core._stringbool, where normalization and both sets are constructed, supporting the exact writable scope of core/api.ts and the two regression files. The remaining forwarding, declaration and utility consumers are inspection owners, not mandatory edits; the build configuration supports treating emitted declarations as generated artifacts. Runtime and type-check configuration evidence supports the proposed regression locations and distinguishes type checking from compile-mode runtime tests. Implementation and dependent independent verification expectations agree with the supplied roles, availability and original project-scoped active capability claims, without relying on personas or pending claims. The configured verifier can serve as the independent read-only planning reviewer under the supplied policy. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct PRD, persisted-source, manifest, evaluation-source and executing-module digest domains. C's ready expectation does not waive B's required decisions-stage block for an unresolved material DEC-001. Approval concerns the frozen expectation only, not execution success, task dispatch or a new human attestation. No candidate outputs were used, no code was executed, and digest calculations and mechanical bindings are accepted as supplied Service evidence rather than independently recomputed.",
+    "goldDigest": "097d43482904414aa387a4716abc6faf64461954c4422dee9e6b18865d146948"
+  }
+}

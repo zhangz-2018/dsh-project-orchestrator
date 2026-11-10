@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-clear-reason-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "15801d93cb0cff38c3bdd9c36f8cafb9432f8657925a4b8684cd889d2145b03a",
+    "sourceDigest": "6723819564e4ee03462bf394631e4cb0faedac80c2ba789c82a372b5da3978f7",
+    "teamCatalogDigest": "e2cb92993fb26e73454c1e9a9e0acd32b89542a7af357d5b71a017cc8581a532",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a0c7f9d90b0ebb2016af275bc229c87d08536545c0a28b091:independent-gold-review:cb2c16b8-e687-4727-baac-a28b6a5a10ff",
+    "reviewedAt": "2026-11-10T01:39:23.722Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The original PRD explicitly fixes OPT-1 as hypothetical input, without asserting a human Decision; an empty frozen human-decision input is therefore consistent with ready and no blocking reasons. This does not waive the decisions-stage block for a material unresolved DEC-001 in paired B. REQ-001, AC-001 through AC-003, DEC-001, and both task keys remain stable. The four exact writable owner paths cover the maintained runtime implementation, public declaration, runtime regressions, and tsd checks. limitFunction forwards the same clearQueue function and derives its declaration through Pick, so it does not require a separate owner or mandatory redundant edit. The supplied package configuration and tsd source support distinct runtime and compile-time verification without dependency or release-configuration changes. Implementation and dependent independent verification expectations are supported by the respective delivery roles, auto-assignable memberships, available slots, and supplied original project-scoped active trusted claims, including data.change, domain.state, integration.async, integration.consumer, JavaScript, TypeScript, failure handling, automation, and verifier-only testing.verification. Pending legacy claims and Persona data are not used as authority. The configured selected verifier can satisfy the supplied read-only planning-review policy; the non-executing reviewer need not receive execution assignments. Repository identity and base commit agree, both releaseInput copies agree, and the supplied provenance explains PRD trimming, manifest versus evaluation source digest domains, team-claim projection, and executing-bundle versus source fingerprints. Model, sampling, policy, and budget fingerprints are frozen consistently. Historical project reuse preserves scoped claims without treating old operations as candidates on this bundle. Original preparation placeholders do not override the subsequently supplied frozen inputs. This approval concerns expectation coherence, not task dispatch, implementation correctness, or successful execution. I reviewed only the supplied data, did not execute code or independently recompute digests, and did not create or independently attest any human confirmation.",
+    "goldDigest": "24f14d8fcdd5a79ee5ba21d7e835ef2fae6f0de24026f788622bdf3d53f2e08b"
+  }
+}

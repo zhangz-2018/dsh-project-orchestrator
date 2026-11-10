@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "6333363079138a8735624e895a1e04e2e5fa79b359f65b680e65b418072c7386",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0330b6770684e30c016af282c758ec87d2b86b9b6ef4c64512:independent-gold-review:96fd8500-bc95-4c82-9816-490a7725daf5",
+    "reviewedAt": "2026-11-10T02:35:06.575Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this planning-only bundle. REQ-001 and AC-001 through AC-003 coherently specify a read-only, derived outstandingCount without changing scheduling, event ordering, or existing counter-update timing. The exact four-file writable scope matches the PRD and supplied ownership evidence; package.json and tsconfig.json are inspection evidence, and generated dist declarations do not require a separately maintained owner. The supplied nz implementation establishes discovery and compiler checking of test-d/index.test-d.ts despite the build tsconfig including only source; runtime tests alone are not treated as type verification. TASK-IMPLEMENT and its dependent, independent TASK-VERIFY preserve the stable keys and required acceptance coverage. Their distinct allowed agents have appropriate delivery roles, availability, auto-assignment eligibility, and supplied active project-scoped trusted capability claims, including testing.verification for the verifier. The selected planning reviewer and supplied independence policy support the earlier review prerequisite. No material unresolved DEC-001 or hypothetical C input is present in this case, so neither a decision block nor a fabricated human Decision is warranted. The original specification's preparation-time remaining items and runnable=false do not contradict the frozen planning readiness expectation: scoped capability provenance and releaseInput are supplied separately, while this response completes the independent Gold review. Repository identity, commit, file fingerprints, and the repeated releaseInput fields are consistent. The documented normalization, manifest/evaluation digest domains, and bundled prompt fingerprint explain their distinct values. Model, sampling, budget, team, decision, and metric-policy fingerprints are frozen consistently across Gold and preview. This assessment uses only the supplied specification and evidence, without candidate outputs, code execution, independent digest recomputation, or creation of any human attestation; Service-calculated digest bindings are accepted as supplied.",
+    "goldDigest": "c45c745ef217b5408574430159a40eda74f04c5bb5c89889faf707a095b8b30a"
+  }
+}

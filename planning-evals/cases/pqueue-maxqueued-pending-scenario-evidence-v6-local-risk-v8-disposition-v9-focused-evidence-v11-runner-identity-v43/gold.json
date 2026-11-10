@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_080197bef626325b016af2105721fc87d0a229a94e597babb2:independent-gold-review:f56566fb-17ec-479d-b94f-e6b18871df69",
+    "reviewedAt": "2026-11-09T18:26:48.239Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision case. The complete original PRD, acceptance statements and Gold consistently preserve REQ-001, AC-001 through AC-003 and material unresolved DEC-001. The error-type choice affects the public rejection contract, so B must stop at decisions with requirement-decision-pending for DEC-001; conditional acceptance criteria do not authorize resolving it. Required evidence stages repository, requirements and decisions, empty task expectations and empty assignment expectations are consistent with that stop. The complete implementation-owner evidence supports source/index.ts and source/options.ts as the bounded owner set. The supplied configuration and nz runner evidence distinguish runtime regression tests from compiler-based type verification and support treating dist declarations as generated outputs, not separately maintained owners. Truncated existing runtime-test excerpts do not prevent establishing this decision-stage expectation. The empty team and capability-claim catalog does not introduce an earlier blocker: the supplied policy explicitly places the unresolved material Decision gate before Scenario Coverage and its independent-review prerequisite. Gold and preview release fingerprints agree for repository, source, team, decisions, prompts, metric policy, model, sampling and budgets. The supplied provenance explains the distinct source-manifest and evaluation digest domains and the original-versus-trimmed saved PRD fingerprints. Historical project reuse is compatible with the stated isolation constraints and supplies no candidate-derived expectation. The paired resolved case is a separate hypothetical, not a human resolution of this case. This assessment relies on the supplied Service-bound fingerprints and source evidence; I did not independently recompute digests, execute code or provide human attestation. No material error or ambiguity was identified.",
+    "goldDigest": "2e33134f2596383587218c47fb69bb476aa37451e05ca422b42eb1720b2bd2fe"
+  }
+}

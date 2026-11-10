@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-once-reentrancy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "238b0ffd588c734d4dda45f5cbef21631237fbba6f77a03053ac76c4a19ce535",
+    "teamCatalogDigest": "6ab490c790258a276d8a589a2976c1faa513adb7794fa13865cde3d82bfd0edc",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0a94ca05c30d04bd016af276383f9487d0addd84b72b094b90:independent-gold-review:4f83d06b-9c7a-46a4-b3b5-1b8625973356",
+    "reviewedAt": "2026-11-10T01:41:31.361Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. The original PRD explicitly fixes OPT-1 as hypothetical input, without asserting a human Decision; the empty human-decision fingerprint is therefore consistent. A material unresolved DEC-001 in paired B must still block at decisions. REQ-001, AC-001 through AC-003, the exact three-file writable binding scope, and the implementation/independent-verification task split agree with the specification. Only OPT-1 creates delivery obligations in C, including unregister-before-callback, synchronous exception propagation, and a per-registration fired guard against stale ordinary and wildcard snapshots. Source and build evidence support treating index.d.ts and dist as generated artifacts, not separately maintained owners. Verification planning correctly requires rebuilding before root-entry tests and keeping negative type assertions non-executing, since the Mocha directory entry can also discover the type-compilation file. The allowed implementer and verifier have distinct delivery roles, available slots, and supplied active project-scoped trusted claims for the relevant contract, TypeScript, shared-data, state, failure-handling, and testing capabilities; the verifier additionally has testing.verification. Synchronous local emitter calls do not independently require an integration_boundary capability. The configured selected reviewer is consistent with the supplied selection policy and can satisfy read-only planning review subject to author independence. Historical project reuse does not invalidate the preserved project-scoped claim provenance or imply candidate execution on this bundle. Gold and preview release fingerprints agree; the differing manifest/evaluation source digests, trimmed/untrimmed PRD digests, and bundled-module/source digests have explicitly documented domains. The original preparation flags describe an earlier preparation state, not the expected planning readiness of the frozen preview. On the supplied Service-bound evidence, ready with no blocking reasons is appropriate. This review used no candidates, executed no code, independently recomputed no digests, and creates no human attestation.",
+    "goldDigest": "cd76f4ee27b1438c51f41c40288b984a8c9a0c11b8840550da4b82ad44b98655"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-compiler-excerpts-v42",
+  "releaseInput": {
+    "repositoryDigest": "3c1dfcd46f89dabb2c19459540e53ba2d6b960afb6e65c7d6657ad2273ad57e4",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "df5e38054efe2fb139c094f2b71fe89bf8c007daa57eab5aea7ca236782f1345",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_01b759975b0f71b8016af209757a0087d28ba59357f7ccbecc:independent-gold-review:503c41b1-58cf-489e-b144-69bfc8390489",
+    "reviewedAt": "2026-11-09T17:57:21.850Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. REQ-001, AC-001 through AC-003, DEC-001, repository identity, base commit and paired-case reference agree with the original PRD. DEC-001 materially changes overlap behavior and remains intentionally unresolved without human confirmation, so blocked readiness at decisions, with requirement-decision-pending targeting DEC-001 and no assignable tasks, is appropriate. Conditional acceptance of OPT-1 does not authorize selecting it. The supplied source establishes existing truthy precedence, lowercase-only insensitive normalization, shared classic/mini construction through core._stringbool, and the stated compatibility surface. The nine listed owners are appropriate inspection scope, not mandatory edits; forwarding modules need not change, and the supplied zshy build configuration supports treating emitted declarations as generated artifacts. Runtime and TypeScript verification are distinguished by the supplied configurations. Empty team membership and capability claims do not invalidate this earlier decision-stage block because later review and assignment prerequisites are not reached. Gold and preview release fingerprints agree; the differing manifest/evaluation source digests and original/saved PRD digests are explained by their explicit digest domains and trim-only persistence. Historical project reuse supplies no candidate output or decision authorization. This approval concerns the independent benchmark expectation, not execution readiness or a human resolution of DEC-001. I reviewed only the supplied evidence, without tools, code execution or independent digest recomputation.",
+    "goldDigest": "5d0e4770a5b25df4411911a2a4f62c25e388d01ea84007f2a8792e2abc7456eb"
+  }
+}

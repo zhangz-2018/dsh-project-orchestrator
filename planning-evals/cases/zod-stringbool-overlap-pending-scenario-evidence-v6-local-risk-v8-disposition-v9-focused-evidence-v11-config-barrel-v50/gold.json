@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-config-barrel-v50",
+  "releaseInput": {
+    "repositoryDigest": "f686e3f3b9e174ab02264246572711e166eda384e8ca02e7aa922c0ba60f176c",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_03a46b0d4135e403016af23f31678c87d1ab2cf2fde21a358c:independent-gold-review:7d2cd3f2-575a-4c14-84d0-f3d37b2f23c2",
+    "reviewedAt": "2026-11-09T21:46:37.802Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD preserves REQ-001, AC-001 through AC-003, and DEC-001; construction-time TypeError rejection is explicitly conditional on OPT-1 and does not authorize resolving the Decision. The supplied source establishes existing case normalization without trimming, truthy-first overlap handling, and shared core delegation from classic and mini. The listed barrels and forwarding consumers are inspection owners, not mandatory edits; the package build configuration supports treating emitted declarations as generated rather than separately maintained owners. Gold correctly expects blocked readiness with requirement-decision-pending on DEC-001, evidence through repository, requirements, and decisions, and no assignable tasks or assignments. The empty team and trusted capability claims do not invalidate this expectation because the material unresolved Decision gate precedes scenario-review and assignment prerequisites. Repository identity, base commit, paired-case reference, stable keys, and release fingerprints are consistent across the supplied records. The documented normalization and separate digest domains explain the differing PRD, source-manifest, evaluation-source, and executing-module fingerprints. Historical project reuse supplies no candidate results or capability authorization, and no hypothetical input is treated as a human Decision. This approval concerns Gold coherence only, not execution or release authorization. Digests and binding assertions are accepted as Service-provided evidence; I did not recompute them or execute code.",
+    "goldDigest": "1cd42b1b40a1077688daec829160222c6817a3b9709f926cfc0fd4c48d9d570a"
+  }
+}

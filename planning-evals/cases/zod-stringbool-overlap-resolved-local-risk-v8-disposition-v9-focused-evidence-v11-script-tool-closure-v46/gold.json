@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "beea447dcbfe6fa92107662227e739b94bad31c8e03f9b4a59658e16d3434e0b",
+    "sourceDigest": "fbb0907800c9bfd4b64367a10ca56a348b9ee47097038e8966899668b653c63a",
+    "teamCatalogDigest": "2e4e48db7a6c9abf482825aa7b2662d43edf81e6ad4a6eb5fe886ab4dba7c5ed",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_058b3fc3e2cbb904016af2243c665c87d1bd7102b70eedbadf:independent-gold-review:52603979-8118-42f7-848d-b6839ae3e88a",
+    "reviewedAt": "2026-11-09T19:51:42.689Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C case. DEC-001=OPT-1 is explicitly fixed hypothetical source input, not a human-confirmed Decision; the empty resolved-decision fingerprint is therefore consistent. A material unresolved DEC-001 in B must still block at decisions before later gates. REQ-001, AC-001 through AC-003, task keys, verification dependency and exact writable scopes agree with the PRD. The supplied source places normalization and truthy-first behavior in core/api.ts, with classic and mini forwarding to that implementation, supporting the bounded core change and both regression owners. Read-only forwarding and declaration consumers do not require edits, and the build configuration supports treating emitted declarations as generated rather than separately maintained owners. Boundary coverage and unchanged inference and codec behavior are sufficiently specified, with only the selected option required in C. The frozen project-scoped active claims, roles, membership eligibility and capacity support the two allowed assignees without relying on persona or pending claims. The selected planning reviewer is distinct from those authoring the eventual plan under the supplied independence policy; no candidate author or output is assumed here. Source normalization and distinct manifest/evaluation digest domains explain the differing fingerprints; Gold and preview release fingerprints agree, including repository, team, decision, prompt, model, sampling, policy and budgets. Original preparation placeholders are not treated as overriding the supplied frozen preview. This approval relies on the supplied Service-bound fingerprints and provenance, not independent digest recomputation, execution, or new human attestation. Unavailable installed-tool internals do not prevent this planning-expectation review and are not evidence of successful execution.",
+    "goldDigest": "f71c911dc3ddbbbf61e800bd9481c30f4cf070eb349e76b44722fdc7c623ddab"
+  }
+}

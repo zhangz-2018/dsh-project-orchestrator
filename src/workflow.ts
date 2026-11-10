@@ -25,6 +25,7 @@ import {
   type GeneratedPlanningReviewV3,
   type GeneratedPlanV3,
   type PlanningPromptReferenceManifestRecord,
+  type RepositoryContextSnapshotV3Record,
   type CapabilityRequirementDraftRecord,
   type AssignmentDraftRecord,
   type AssignmentEvaluationRecord,
@@ -370,7 +371,7 @@ function requirementSectionPathSegment(title: string): string {
   return `${title.slice(0, REQUIREMENT_SECTION_PATH_SEGMENT_MAX_LENGTH - digestSuffix.length)}${digestSuffix}`
 }
 
-/** 只依据业务描述推导来源提示；路径名称不代表数据、状态或权限行为。 */
+/** 只依据业务描述推导来源提示；路径名称及普通 API 的允许/限制措辞不代表权限边界。 */
 function sourceNormativeHints(text: string, section: 'acceptance' | 'questions' | 'other'): NonNullable<RequirementSourceManifest['anchors'][number]['normativeHints']> {
   // Keep the source and its identity intact; filenames are inspection targets,
   // not evidence of data/state/security behavior in the surrounding prose.
@@ -381,7 +382,8 @@ function sourceNormativeHints(text: string, section: 'acceptance' | 'questions' 
   if (/业务规则|规则|约束|invariant|business rule/iu.test(text)) hints.add('business_rule')
   if (/数据|字段|表|数据库|schema|migration|索引|唯一/iu.test(text)) hints.add('data')
   if (/状态|流转|state|status|transition/iu.test(text)) hints.add('state')
-  if (/权限|授权|角色|认证|管理员|操作员|仅.{0,20}(?:可以|允许)|permission|access|auth|administrator/iu.test(text)) hints.add('permission')
+  // 权限必须有身份或访问控制对象；“仅移除原函数，允许省略参数”属于 API 契约。
+  if (/权限|授权|角色|认证|管理员|操作员|permission|access|auth|administrator/iu.test(text)) hints.add('permission')
   if (/失败|错误|异常|超时|重试|回滚|降级|failure|error|timeout|retry/iu.test(text)) hints.add('failure')
   if (/性能|安全|可用性|并发|幂等|审计|performance|security|availability|concurrency|idempot/iu.test(text)) hints.add('non_functional')
   if (/迁移|migration|backfill|数据修复/iu.test(text)) hints.add('migration')
@@ -808,6 +810,8 @@ export interface GeneratedPlanV3ValidationInput {
   requiredPolicyStatementsByRef?: Record<string, string>
   requiredPolicySubjectsByRef?: Record<string, { requirementKeys: string[]; scenarioKeys: string[] }>
   promptReferenceManifest: PlanningPromptReferenceManifestRecord
+  /** 同一仓库摘要冻结的来源入口；缺失文件必须由本计划的实现任务创建，使用者须满足依赖顺序。 */
+  plannedVerificationEntries?: RepositoryContextSnapshotV3Record['plannedVerificationEntries']
 }
 
 function planTaskContractText(task: GeneratedPlanV3['tasks'][number]): string {
@@ -1089,6 +1093,20 @@ export function parseGeneratedPlanV3(raw: string, input: GeneratedPlanV3Validati
   for (const task of plan.tasks.filter((item) => item.relationship === 'verification' || item.relationship === 'review' || item.relationship === 'release')) {
     if (!plan.tasks.some((candidate) => candidate.relationship === 'implementation' && dependsOn(task.key, candidate.key))) {
       throw new WorkflowError('task-relationship-dependency-invalid', `Task "${task.key}" must have a dependency path to an implementation task.`, 422)
+    }
+  }
+  for (const entry of input.plannedVerificationEntries ?? []) {
+    if (entry.targetState !== 'absent') continue
+    const owners = plan.tasks.filter(task => task.relationship === 'implementation'
+      && task.contextPack.expectedChangeSurfaces.includes(entry.targetPath)
+      && task.changeContract.allowedPathScopes.some(scope => scopeIsWithin(entry.targetPath, scope))
+      && !task.changeContract.excludedPathScopes.some(scope => scopeIsWithin(entry.targetPath, scope)))
+    if (owners.length === 0) throw new WorkflowError('planned-verification-owner-missing', `Planned verification entry "${entry.targetPath}" requires an implementation owner inside its allowed scope.`, 422)
+    for (const task of plan.tasks) {
+      const refs = [...task.verificationCommandRefs, ...task.contextPack.verificationSteps.flatMap(step => step.commandEvidenceRef === undefined ? [] : [step.commandEvidenceRef])]
+      if (refs.some(ref => verificationCommandByRef.get(ref) === entry.command) && !owners.some(owner => owner.key === task.key || dependsOn(task.key, owner.key))) {
+        throw new WorkflowError('planned-verification-dependency-missing', `Task "${task.key}" uses a planned verification entry without depending on its creation owner.`, 422)
+      }
     }
   }
   return plan
@@ -1435,9 +1453,13 @@ export interface DispatchTaskV3 {
   stale?: boolean
 }
 
+/**
+ * 在调用方已核实审批及重试资格后，纯计算 DAG 可运行前沿并冻结派发命令。
+ * 依赖未完成或资源等待不会创建运行；未知任务和缺失运行 ID 拒绝，重试来源纳入摘要。
+ */
 export function planExecutionDispatchV3(
   tasks: DispatchTaskV3[],
-  input: { projectId: string; approvalId: string; expectedProjectRevision: number; requestedTaskIds: string[]; gateCurrent: boolean; gateDigest: string; idempotencyKey: string; taskRunIdsByTaskId: Record<string, string>; now?: string },
+  input: { projectId: string; approvalId: string; expectedProjectRevision: number; requestedTaskIds: string[]; gateCurrent: boolean; gateDigest: string; idempotencyKey: string; taskRunIdsByTaskId: Record<string, string>; retryOfTaskRunId?: string; now?: string },
 ): ExecutionDispatchRecord {
   assertUniqueKeys(input.requestedTaskIds, 'dispatch-task-duplicate')
   const byId = new Map(tasks.map((task) => [task.id, task]))
@@ -1465,6 +1487,8 @@ export function planExecutionDispatchV3(
   const core = {
     projectId: input.projectId, approvalId: input.approvalId, expectedProjectRevision: input.expectedProjectRevision,
     requestedTaskIds: [...input.requestedTaskIds], outcome, taskResults, createdTaskRunIds, observedGateDigest: input.gateDigest,
+    // 重试来源属于不可变 Dispatch 命令内容，必须同时进入摘要与幂等校验。
+    ...(input.retryOfTaskRunId === undefined ? {} : { retryOfTaskRunId: input.retryOfTaskRunId }),
     runnableFrontierDigest: digestObject(taskResults.map((result) => ({ taskId: result.taskId, taskRevision: result.taskRevision, outcome: result.outcome, predecessorTaskIds: result.predecessorTaskIds }))),
     idempotencyKey: input.idempotencyKey,
   }

@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-trim-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/classic/tests/stringbool.test.ts",
+        "packages/zod/src/v4/mini/tests/stringbool.test.ts",
+        "packages/bench/stringbool-acceptance.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "d47832b55e2b681494409bbd05566adb5799d4f17ef95fb5bf3780477c0aae52",
+    "sourceDigest": "f1bd2e857732f4aac6e3eb2ea21adee2f21f28ab50436fdbe605332447386b5b",
+    "teamCatalogDigest": "45831fdf6eeca4730d19d4a9941d40974c67e35b0dfd8608978b3e24895d704e",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ae10ca40d0752d9016af275bc491c87d1a3e090c4d0fe2ba8:independent-gold-review:d5e6b1d9-0bab-4940-bbe3-e814f6a6ee3b",
+    "reviewedAt": "2026-11-10T01:39:30.460Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only bundle. REQ-001, AC-001 through AC-003, the exact four-file writable scope, and the implementation and dependent independent-verification tasks agree with the original PRD. The source supports adding the parameter and decode-only normalization in core/api.ts while leaving correct generic normalization, public factories and exports as inspection owners. Existing encode case normalization, first-item selection and empty-first-item fallback are accurately preserved. The build configuration supports treating emitted declarations as generated artifacts rather than separately maintained owners. Runtime regression and compiler-based type verification are distinguished, and the absent benchmark entry is explicitly planned rather than represented as existing or successfully executed. The measurement requirements preserve baseline-before-product-edit sampling, interleaving, revision isolation for tight parsing, fixed iterations, GC, result consumption, runtime minimum summaries, retained-heap measurements and separate classic/mini bundle measurements. The frozen project-scoped active capability claims, role memberships and availability support the two specified eligible agents without relying on personas or pending claims; the selected planning reviewer is distinct from the implementer. No unresolved material DEC-001 or B/C variant is present in this case's supplied PRD or frozen decision input. Ready therefore coherently describes expected planning readiness, not permission to dispatch or a claim of completed execution. Historical operations remain explicitly old-version history and do not constitute candidates on this bundle. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation source digest domains, PRD persistence normalization, team projection and executing-bundle prompt fingerprint. I rely on the Service's supplied mechanical bindings and provenance, not independent digest recomputation, code execution or a new human attestation.",
+    "goldDigest": "cb27dec56dc2a066e56bab34d5e6c9a6fc927134c990597dfc352be236b3c943"
+  }
+}

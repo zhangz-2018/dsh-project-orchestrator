@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "564d82167f093eb4d9e2332cd4d815071d6095f1e982b7db67589dfd004ebe28",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "dbc70a5f66a6a5d3ce7df9c332ae06be99419ddc7b719711d1242c32fcf97698",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e4d16ae05ab3543016af1ec82f9c487d18ca39e9a597f4ed0:independent-gold-review:43d6111f-6c2e-4e6c-b053-b0cbc388fda3",
+    "reviewedAt": "2026-11-09T15:53:52.827Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved: AC-001 is conditional and does not authorize OPT-1. Accordingly, blocked readiness with requirement-decision-pending on DEC-001, evidence through repository/requirements/decisions, and no task or assignment expectations are appropriate. Later scenario-review and capability prerequisites do not supersede that earlier deterministic gate. REQ-001, AC-001 through AC-003, DEC-001, repository identity/base commit, and paired-case identity are consistent. Complete implementation and declaration evidence supports index.js and index.d.ts as the bounded owners; the shared runtime engine and shared option types require inspection to preserve other exports, without expanding mandatory edit ownership. Package configuration confirms separate AVA runtime and tsd type verification through xo && ava && tsd. Test excerpts are truncated, but that does not prevent establishing this decision-stage blocking expectation. Gold and preview release fingerprints match throughout; supplied provenance explains the distinct manifest/evaluation source digest domains and original/saved PRD normalization. The empty team catalog is consistent with no assignments at this gate. The original specification's unfinished preparation fields are distinguished from the supplied frozen preview release input. No candidate or historical outputs inform this review, and no human decision or attestation is inferred. Fingerprints are accepted as Service-calculated, mechanically bound evidence; I did not independently recompute digests or execute code. Approval concerns this blocked planning expectation, not implementation readiness or task dispatch.",
+    "goldDigest": "6a51e2082b611dbb2c84882bf958f6ea675cb90cd44a85b8bc2ff6551daa7aad"
+  }
+}

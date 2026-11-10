@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pmap-input-bound-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-map",
+    "identity": "sindresorhus/p-map",
+    "baseCommit": "d61b6a33cc1d5533ad5711b435959f3f78c3d2fe"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-runner-identity-v43",
+  "releaseInput": {
+    "repositoryDigest": "ce9ba09e24f013483d3e01513cdaf50c37ae16e22ec40d914e24d98a73d49739",
+    "sourceDigest": "dd26288ce1fa764fa73380e7e6dc435d5e13a6daf16e374edc988508db2ff040",
+    "teamCatalogDigest": "72556f1d644b44dfc55b8567f8516a98f32ea459315f982f164afa55697329ac",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "e7a4ffd22bfb5e867e989a89d6083aff6146063ac132b4287b01d1bbb4dcb293",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_018eaa585be72efc016af21048cfbc87d2bc9c14eb3532fd80:independent-gold-review:397462d3-4a70-46d5-b08b-5d12026110fd",
+    "reviewedAt": "2026-11-09T18:26:37.746Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C case. The original PRD explicitly fixes hypothetical DEC-001=OPT-1 without representing it as a human-confirmed Decision; only the selected branch is required. Accordingly, ready with no blocking reasons is appropriate here, whereas a material unresolved DEC-001 in paired B must block at decisions before later prerequisites. Repository identity, base commit, stable REQ/AC/DEC/task keys, exact writable owner/test scopes, and required evidence stages agree. The complete implementation and declaration evidence supports index.js and index.d.ts as maintained owners, including the need to isolate maxItems from other exports sharing the engine and option types. The prescribed implementation and dependent independent-verification tasks cover all required acceptance criteria. Their distinct allowed agents have matching delivery roles, availability, auto-assignment eligibility, and supplied active trusted capability claims, including data.change, domain.state, integration.async, integration.consumer, and verifier-only testing.verification. The selected planning reviewer is permitted by the frozen reviewer-selection policy; future planning evidence must still establish independence from planning authors. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct manifest/evaluation source digest domains, PRD trimming, and empty human-decision input. Model identity, budgets, team, prompt, and metric-policy fingerprints are consistently frozen. Original preparatory remaining/runnable fields do not constitute an implementation-readiness block. Test excerpts are explicitly truncated, so this approval does not certify exhaustive existing regression coverage or successful verification. No candidate output informed this review. Digest bindings are accepted as supplied Service-calculated evidence; I did not recompute digests, execute code, or create a human attestation.",
+    "goldDigest": "3da5f88b6b263922bf5f4ff323d21e80a83bf70331cb38babd2467a0847f0d3c"
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-codex-route-blocked-20261109",
+  "createdAt": "2026-11-09T15:56:31.048Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "4e37e74e281c866030f1031646d4839d96dd42511139e15d5b2527bc4169a714"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "164d65d9657a25193dedb06f9581f4836fe023e2b620ebaecd0552ab85aa1e0e"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "51108af250184da411bbe0ad49e651afeed55bc78229d92ce95791c1b93168b4"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "6a51e2082b611dbb2c84882bf958f6ea675cb90cd44a85b8bc2ff6551daa7aad"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "f0011fa6207fce4bafd9b915044db270e04d7df52c1eff4f8fe399c2e6f334f8"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "3b354e1d011996fa4573f1c070ac9579e7ccb678e883ede0c2d9bd3cf11626af"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "56530187fb9d46a8449bb348d056ccc03d1f4df2a50bd95579f2a7107330e0e7"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "84907cb29f2e9d715856ab4e92efc28915df551de2b703cf79bef313eb3d9d4c"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "goldDigest": "8feb0a6d55a2bb1632032e62a1791125c45854bc30f3a491530ec31f241da154"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:9172680f-43a9-4262-b672-209627f9605b",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-clear-reason-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T15:56:31.084Z",
+      "completedAt": "2026-11-09T15:57:40.031Z"
+    },
+    {
+      "caseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:f9028c7c-78bb-4e11-9ce7-133b67e59056",
+      "outcome": "candidate",
+      "candidateRef": "cases/pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T15:56:31.099Z",
+      "completedAt": "2026-11-09T15:57:52.562Z"
+    },
+    {
+      "caseId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:cd9b4bab-6960-48bc-9c8c-69f98a34e343",
+      "outcome": "candidate",
+      "candidateRef": "cases/pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T15:57:41.598Z",
+      "completedAt": "2026-11-09T15:58:56.224Z"
+    },
+    {
+      "caseId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:3f268655-8eba-40a5-9dbf-71e4ad32eaa2",
+      "outcome": "candidate",
+      "candidateRef": "cases/pmap-input-bound-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T15:57:56.668Z",
+      "completedAt": "2026-11-09T15:59:12.940Z"
+    },
+    {
+      "caseId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:0f47eb2d-e55a-426f-9e4c-68ca7faa0bab",
+      "outcome": "candidate",
+      "candidateRef": "cases/ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T15:58:57.008Z",
+      "completedAt": "2026-11-09T16:00:12.259Z"
+    },
+    {
+      "caseId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:723f4934-5c3a-4a9c-9cef-2950bb488947",
+      "outcome": "candidate",
+      "candidateRef": "cases/hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T15:59:17.074Z",
+      "completedAt": "2026-11-09T16:00:30.924Z"
+    },
+    {
+      "caseId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:ca8eb384-1a6f-4e8a-bd0f-f1ec5dc71703",
+      "outcome": "candidate",
+      "candidateRef": "cases/zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T16:00:12.459Z",
+      "completedAt": "2026-11-09T16:01:26.925Z"
+    },
+    {
+      "caseId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:92ae364c-f3d6-4e09-99f8-b9fac7b0033d",
+      "outcome": "candidate",
+      "candidateRef": "cases/mitt-once-reentrancy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T16:00:32.528Z",
+      "completedAt": "2026-11-09T16:02:09.866Z"
+    },
+    {
+      "caseId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35",
+      "attemptId": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/fresh-1",
+      "operationId": "planning-v3:88fbb770-8c19-4d60-874a-b13897341e76",
+      "outcome": "candidate",
+      "candidateRef": "cases/plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-handoff-recovery-v35/runs/fresh-1.json",
+      "startedAt": "2026-11-09T16:01:27.855Z",
+      "completedAt": "2026-11-09T16:09:43.824Z"
+    }
+  ]
+}

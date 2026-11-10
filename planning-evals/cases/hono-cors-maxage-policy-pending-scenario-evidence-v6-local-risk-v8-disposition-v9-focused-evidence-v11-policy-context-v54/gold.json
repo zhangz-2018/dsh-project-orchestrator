@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-policy-context-v54",
+  "releaseInput": {
+    "repositoryDigest": "f755133c3198823a7f080a0d60aa1e5f20f85fdd4a3086bf50bf9888259f895e",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "600d0defdba7c040748ce1f258c367a95c503f1f2c68ba82ee6dab246dfe0947",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_006b30fde36332ce016af28d5b647887d186f15f9a477a41de:independent-gold-review:d297e3a5-78aa-4b59-98fc-aa08e2221467",
+    "reviewedAt": "2026-11-10T03:20:12.792Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved and makes AC-001 conditional, so neither the recommendation nor the paired hypothetical case authorizes selecting OPT-1. B must stop at decisions with requirement-decision-pending for DEC-001, after repository and requirements evidence, without generating assignable tasks. REQ-001, AC-001 through AC-003, the owner binding, readiness, blocking reason, and empty task/assignment expectations agree across the specification and Gold. The supplied implementation establishes src/middleware/cors/index.ts as the bounded implementation owner; index.test.ts is the regression/type-validation scope. Package exports are inspection surfaces, and the build configuration establishes that dist declarations are generated rather than separately maintained owners. The documented test script distinctly performs TypeScript checking before runtime tests. The empty team and capability claims do not invalidate this earlier deterministic decision block or justify inferred assignments. Gold and preview release fingerprints match; the supplied provenance explains the distinct manifest/evaluation source digest domains, PRD trimming, and bundled-module prompt fingerprint. Repository, team, decision, model, sampling, policy, and budget fingerprints are specified consistently. The original specification's null releaseInput and remaining-work fields describe preparation state, while Gold and preview supply the frozen release input. Review is based solely on the supplied specification and evidence, without candidate outputs, inferred human attestation, code execution, or independent digest recomputation. Approval concerns the benchmark expectation, not resolution of DEC-001 or authorization to execute tasks.",
+    "goldDigest": "aba5523fb33cd50f36fa33aed83d7b45026fb05041e35536d38b1ed76ed49e8d"
+  }
+}

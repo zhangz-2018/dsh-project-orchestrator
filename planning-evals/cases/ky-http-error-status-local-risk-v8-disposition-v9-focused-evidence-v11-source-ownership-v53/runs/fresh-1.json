@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 2,
+  "runId": "fresh-1",
+  "executionKind": "real_model",
+  "status": "blocked",
+  "repositoryEvidenceIds": [
+    "test/http-error.ts",
+    "source/index.ts",
+    "source/utils/types.ts",
+    "test/helpers/create-http-test-server.ts",
+    "source/core/constants.ts",
+    "source/core/Ky.ts",
+    "source/errors/ForceRetryError.ts",
+    "source/errors/NetworkError.ts",
+    "source/errors/NonError.ts",
+    "source/errors/ResponseSizeError.ts",
+    "source/errors/SchemaValidationError.ts",
+    "source/errors/TimeoutError.ts",
+    "source/types/hooks.ts",
+    "source/types/ky.ts",
+    "source/types/ResponsePromise.ts",
+    "source/types/standard-schema.ts",
+    "source/utils/merge.ts",
+    "source/utils/type-guards.ts",
+    "source/core/retry-timing.ts",
+    "source/utils/body.ts",
+    "source/utils/delay.ts",
+    "source/utils/is-network-error.ts",
+    "source/utils/is.ts",
+    "source/utils/normalize.ts",
+    "source/utils/options.ts",
+    "source/utils/timeout.ts",
+    "source/errors/HTTPError.ts",
+    "source/errors/KyError.ts",
+    "source/types/options.ts",
+    "source/types/request.ts",
+    "source/types/response.ts",
+    "source/types/common.ts",
+    "source/types/retry.ts",
+    "package.json",
+    "tsconfig.test.json",
+    "test/hooks.ts",
+    "test/browser.ts",
+    "readme.md",
+    "test/response-size.ts",
+    "test/fetch.ts",
+    "test/retry.ts",
+    "test/errors.ts",
+    "test/http-response-bodies.ts",
+    "test/main.ts",
+    "test/resilience.ts",
+    "test/retry-options.ts",
+    "test/http-semantics.ts",
+    "test/stream.ts",
+    "test/response-consumption.ts",
+    "test/http-metadata.ts",
+    "test/response-handling.ts",
+    "test/error-data.ts",
+    "test/http-redirects.ts",
+    "test/request-construction.ts",
+    "test/type-guards.ts",
+    "test/context.ts",
+    "test-d/normalized-options.ts",
+    "test/headers.ts",
+    "test/validation.ts",
+    "test/merge.ts",
+    "test/formdata-searchparams.ts",
+    "test-d/request-options.ts",
+    "test/network-error.ts",
+    "test-d/response-size.ts",
+    "test/request-body-serialization.ts",
+    "test/request-stream-support.ts",
+    "test/request-options.ts",
+    "test/retry-decisions.ts",
+    "test-d/error-names.ts",
+    "test/bytes.ts",
+    "test-d/network-error-cause.ts",
+    "test-d/request-clone.ts",
+    "test/base-url.ts",
+    "test-d/hooks.ts",
+    "test/request-stream-support-runtimes.ts",
+    "test-d/fetch-request.ts",
+    "test/prefix.ts",
+    "test/methods.ts",
+    "test-d/response-clone.ts",
+    "test-d/method-options.ts",
+    "AGENTS.md",
+    "tsconfig.dist.json",
+    "tsconfig.json"
+  ],
+  "requirements": [
+    {
+      "key": "REQ-001"
+    }
+  ],
+  "decisions": [],
+  "bindings": [
+    {
+      "requirementKey": "REQ-001",
+      "evidenceIds": [
+        "test/http-error.ts",
+        "source/index.ts",
+        "source/core/Ky.ts",
+        "source/types/hooks.ts",
+        "source/utils/type-guards.ts",
+        "source/errors/HTTPError.ts",
+        "source/errors/KyError.ts",
+        "source/types/options.ts",
+        "source/types/request.ts",
+        "source/types/response.ts",
+        "package.json",
+        "tsconfig.test.json",
+        "tsconfig.dist.json",
+        "tsconfig.json"
+      ],
+      "ownerPaths": [
+        "source/errors/HTTPError.ts",
+        "test/http-error.ts",
+        "test-d/http-error-status.ts"
+      ]
+    }
+  ],
+  "tasks": [],
+  "assignments": [],
+  "substantiveRewriteRequired": false,
+  "blockingReasons": [
+    {
+      "code": "planning-evidence-insufficient",
+      "subjectKeys": [
+        "BIND-REQ-001",
+        "REQ-001",
+        "ref-policy-p0006"
+      ]
+    }
+  ],
+  "reachedStage": "tasks",
+  "completedStageEvidence": [
+    {
+      "stage": "repository",
+      "evidenceIds": [
+        "repo-snapshot:planning-v3:6c62e591-81ec-4961-9570-464aca5063aa"
+      ]
+    },
+    {
+      "stage": "requirements",
+      "evidenceIds": [
+        "requirement-analysis-proposal:planning-v3:6c62e591-81ec-4961-9570-464aca5063aa:1"
+      ]
+    },
+    {
+      "stage": "decisions",
+      "evidenceIds": [
+        "source-policy-precheck:planning-v3:6c62e591-81ec-4961-9570-464aca5063aa"
+      ]
+    },
+    {
+      "stage": "bindings",
+      "evidenceIds": [
+        "code-binding:planning-v3:6c62e591-81ec-4961-9570-464aca5063aa:BIND-REQ-001"
+      ]
+    },
+    {
+      "stage": "tasks",
+      "evidenceIds": [
+        "proposal-pack:planning-v3:6c62e591-81ec-4961-9570-464aca5063aa"
+      ]
+    }
+  ],
+  "humanReviewRefs": [],
+  "provenance": {
+    "caseId": "ky-http-error-status-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+    "repositoryBaseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+    "planningOperationId": "planning-v3:6c62e591-81ec-4961-9570-464aca5063aa",
+    "planningOperationDigest": "14096791b7b47db8f79cee1586b2c1586538de9b5a4f04a7db299d5860ff6213",
+    "repositoryDigest": "5ea88bc258dc4693f3b831532f0e6e98b4476bc05ce6fe27e6275fd29ed013e7",
+    "sourceDigest": "36bcce1ca3e97fee760a0ef83ea455fd3af4c246b751fd09baf9277096f010bf",
+    "teamCatalogDigest": "9a57e48b0d86f2c94e16643f14e00587cd580c0fc4c63fa87bda65468063fce5",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0,
+    "startedAt": "2026-11-10T02:37:35.583Z",
+    "completedAt": "2026-11-10T02:46:50.549Z"
+  }
+}

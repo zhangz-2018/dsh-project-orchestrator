@@ -4,16 +4,27 @@ import { resolve } from 'node:path'
 import { digestObject, PlanningReleaseCanarySchema } from '../lib/index.js'
 import { validatePlanningCanary } from '../planning-evals/contracts.mjs'
 
-const path = resolve('output/acceptance/greeting-release-canary-v2-2026-10-15.json')
+// 重建环境显式提供当前导出与技术验收材料；不沿用遗失环境的最终 commit。
+const [reportArgument, canaryArgument, technicalArgument] = process.argv.slice(2)
+assert.ok([canaryArgument, technicalArgument].every(Boolean) || ![canaryArgument, technicalArgument].some(Boolean))
+const technical = technicalArgument === undefined ? undefined : JSON.parse(await readFile(resolve(technicalArgument), 'utf8'))
+if (technical) assert.equal(technical.status, 'technical_acceptance_passed')
+const path = resolve(canaryArgument ?? 'output/acceptance/greeting-release-canary-v2-2026-10-15.json')
 const canary = PlanningReleaseCanarySchema.parse(validatePlanningCanary(JSON.parse(await readFile(path, 'utf8')), '1.7.0'))
 assert.equal(canary.schemaVersion, 2)
-assert.equal(canary.finalCommit, '8541b63a4959b3b82ce12df570f93507f6435cba')
+assert.equal(canary.finalCommit, technical?.finalCommit ?? '8541b63a4959b3b82ce12df570f93507f6435cba')
 assert.equal(canary.taskRunCount, 2)
-const response = await fetch('http://127.0.0.1:3087/project-orchestrator/api/snapshot', { signal: AbortSignal.timeout(30_000) })
+const response = await fetch(`${technical?.baseUrl ?? 'http://127.0.0.1:3087'}/project-orchestrator/api/snapshot`, { signal: AbortSignal.timeout(30_000) })
 assert.equal(response.ok, true)
 const snapshot = await response.json()
 const projectId = 'ac9fafa7-c07b-4802-a177-6f4c986130bc'
 const project = snapshot.projects.find(item => item.id === projectId)
+if (technical) {
+  assert.equal(technical.projectId, projectId)
+  assert.equal(technical.operationId, canary.planningOperationId)
+  assert.equal(technical.integration.approvedPlanSnapshotId, canary.planSnapshotId)
+  assert.equal(technical.cwd, project?.cwd)
+}
 assert.equal(project?.status, 'completed')
 assert.equal(project.deliveryStage, 'delivered')
 const record = (table, id) => {
@@ -82,6 +93,6 @@ const bundle = {
 assert.equal(digestObject(bundle), canary.evidenceBundleDigest)
 const report = { verifiedAt: new Date().toISOString(), status: 'canary_v2_verified', path, projectId, finalCommit: canary.finalCommit,
   evidenceBundleDigest: canary.evidenceBundleDigest, taskRunCount: runs.length, humanReviewApproved: true, deliveryConfirmed: true }
-const reportPath = resolve(process.argv[2] ?? 'output/acceptance/canary-export-verified-2026-10-15.json')
+const reportPath = resolve(reportArgument ?? 'output/acceptance/canary-export-verified-2026-10-15.json')
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' })
 console.log(JSON.stringify(report))

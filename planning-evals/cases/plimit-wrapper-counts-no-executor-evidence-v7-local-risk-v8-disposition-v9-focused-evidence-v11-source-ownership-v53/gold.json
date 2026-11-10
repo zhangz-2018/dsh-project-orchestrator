@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "id": "plimit-wrapper-counts-no-executor-evidence-v7-local-risk-v8-disposition-v9-focused-evidence-v11-source-ownership-v53",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-limit",
+    "identity": "sindresorhus/p-limit",
+    "baseCommit": "a8a6fbec4e0e866d6d779b10889bb4f5567e70eb"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": false,
+      "allowedAgentIds": []
+    }
+  },
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-IMPLEMENT"
+      ]
+    },
+    {
+      "code": "abstained-no-eligible",
+      "subjectKeys": [
+        "TASK-VERIFY"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "15801d93cb0cff38c3bdd9c36f8cafb9432f8657925a4b8684cd889d2145b03a",
+    "sourceDigest": "24ad306d522a415c5e4aec65b4643a97ea27606cac08afad4cb06857aaa211a3",
+    "teamCatalogDigest": "495efb0a064913c19e132058242145d992d96a1f4837487b85e22d79d906285d",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "578c56349cc32bd097dd0546e3d69bc30b261306f633b5f4eec38784f5ea8418",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0ccce34b72e5a10d016af2834724d487d2980905e894068f70:independent-gold-review:f82cbac2-f102-4355-bde1-8b41b07a3349",
+    "reviewedAt": "2026-11-10T02:37:15.362Z",
+    "rationale": "The supplied frozen Gold is a coherent independent planning expectation for the original PRD. REQ-001 and AC-001 through AC-003 consistently require live readonly wrapper counts from the existing limiter while preserving Promise, scheduling and clearQueue behavior. The supplied source establishes index.js and the separately maintained index.d.ts as implementation owners, with test.js and index.test-d.ts as the bounded regression owners; package.json is inspection/configuration evidence and needs no mandatory edit. The configured test entry and tsd source support separate runtime and compile-time verification, including readonly assignment negatives. TASK-IMPLEMENT and dependent independent TASK-VERIFY must cover every required acceptance criterion. Neither has an eligible executor: the only project member is a non-autoassignable reviewer with no capability claims. That member supplies the configured read-only review prerequisite for the async/state risk without establishing execution eligibility. Consequently, completing the listed planning stages and blocking both assignments with abstained-no-eligible is appropriate. This case specifies no unresolved business Decision; there is no basis to introduce DEC-001 or substitute a hypothetical input for a human resolution. Repository identity, base commit, stable keys and source-file fingerprints agree across the supplied records. Gold and preview release fingerprints match, and the supplied provenance explains the distinct original/saved PRD, manifest/evaluation source and source/bundled-module digest domains. Team, empty decision input, model, sampling, budget and metric-policy fingerprints are consistently frozen. I rely on the Service's stated mechanical digest bindings and isolation evidence; I did not recompute digests, execute code or infer human attestation. Approval is limited to Gold coherence, not benchmark release readiness: the separately listed fresh negative-control operations remain outstanding.",
+    "goldDigest": "4538781a4aeac0fb9e4df60e9ad98aecfa9f9d8a84d724ea3040d86e486fc127"
+  }
+}

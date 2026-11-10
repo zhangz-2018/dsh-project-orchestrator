@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "batchId": "release-script-tool-closure-v46-completion-9-2026-10-16",
+  "createdAt": "2026-11-09T20:16:37.916Z",
+  "metricPolicy": {
+    "id": "release-quality-2026-10-16",
+    "version": "1",
+    "thresholds": {
+      "requiredRequirementRecall": {
+        "min": 1
+      },
+      "requiredAcceptanceCoverage": {
+        "min": 1
+      },
+      "unresolvedHighDecisionBypass": {
+        "max": 0
+      },
+      "falseReady": {
+        "max": 0
+      },
+      "invalidEvidenceReferences": {
+        "max": 0
+      },
+      "bindingOwnerPrecision": {
+        "min": 0.9
+      },
+      "bindingOwnerRecall": {
+        "min": 0.95
+      },
+      "executableTaskRate": {
+        "min": 0.9
+      },
+      "assignableRate": {
+        "min": 1
+      },
+      "correctAbstentionRate": {
+        "min": 1
+      },
+      "substantiveRewriteRate": {
+        "max": 0.2
+      },
+      "falseReadyRate": {
+        "max": 0
+      },
+      "falseBlockedRate": {
+        "max": 0
+      },
+      "blockingReasonPrecision": {
+        "min": 1
+      },
+      "blockingReasonRecall": {
+        "min": 1
+      },
+      "firstPassApprovableRate": {
+        "min": 1
+      },
+      "requiredEvidenceStageCoverage": {
+        "min": 1
+      },
+      "modelFailureRate": {
+        "max": 0
+      }
+    },
+    "digest": "9f679e947129b80fdad5c8559b59cbf07754d152856bd4a995bdd16228e9bdd4"
+  },
+  "cases": [
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+      "goldDigest": "449cac2a5bfe2d163d0dc2f1d6fe63ef6667734bc09e5ebfcb0f5a551dee0410"
+    }
+  ],
+  "attempts": [
+    {
+      "caseId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+      "attemptId": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46/fresh-1",
+      "operationId": "planning-v3:3781c6bc-4543-42a5-8c12-1225faf3f05d",
+      "outcome": "infrastructure_failure",
+      "failureCode": "planning-policy-superseded",
+      "startedAt": "2026-11-09T20:16:38.026Z",
+      "completedAt": "2026-11-09T20:22:53.731Z"
+    }
+  ]
+}

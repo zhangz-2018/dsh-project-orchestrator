@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-maxqueued-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "source/options.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "pqueue-maxqueued-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-script-tool-closure-v46",
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "5c29d90c49a1aed75024c56f8d7260bc20172c1cbcae891be628f21f8a30bb3e",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "1e79fc0f22e7a09e34eb80ab85eb9b28bc2315f2e611112d155417381c8d05b4",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0620114137fef961016af223f26ab087d1ac332416ad0b0187:independent-gold-review:ea9ad210-4c91-4a80-9186-77d5c521a3c4",
+    "reviewedAt": "2026-11-09T19:50:23.593Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD preserves REQ-001, AC-001 through AC-003, and DEC-001, explicitly leaves the materially significant rejection-error contract unresolved, and prohibits ready or assignable tasks. Gold correctly expects blocked readiness at decisions with requirement-decision-pending for DEC-001, requires repository/requirements/decisions evidence, and contains no task or assignment expectations. The empty team and capability claims do not introduce an earlier prerequisite: the supplied policy places the unresolved material Decision gate before Scenario Coverage and its independent-reviewer requirement. Complete implementation-owner evidence supports source/index.ts and source/options.ts; the supplied build and type-test tooling evidence supports generated declarations and discovery of test-d/index.test-d.ts without requiring separately maintained declaration edits or configuration changes. Truncated runtime-test excerpts do not prevent assessing this decision-blocked planning expectation and are not treated as proof of executed coverage. Repository identity, base commit, paired-case identity, and release fingerprints agree across the supplied records. The provenance explains the distinct original/saved PRD and manifest/evaluation digest domains and the executing-bundle prompt fingerprint. The original specification's null releaseInput and remaining preparation items are historical preparation state, supplemented by the supplied frozen preview and matching Gold releaseInput. This approval neither resolves DEC-001 nor treats the paired hypothetical as a human Decision. It relies on the Service's supplied mechanical digest bindings; I did not independently recompute digests, execute code, or use candidate outputs.",
+    "goldDigest": "654825ae2c107c338a3c6832603d6e8abdca7c8f6b8fb7ff8653048c52b4ef07"
+  }
+}

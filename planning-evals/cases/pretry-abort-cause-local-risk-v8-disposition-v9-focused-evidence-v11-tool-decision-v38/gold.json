@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-abort-cause-local-risk-v8-disposition-v9-focused-evidence-v11-tool-decision-v38",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "57efa247e4a1395f3e4442ea8974193ac2a49d4c7667fd69d176f6f1fefeee5b",
+    "sourceDigest": "a12b24888b1d3b09eba444a850bc9f3e63248f1096a5753f0b6766ce6ed4e781",
+    "teamCatalogDigest": "985d3b990d6c677e96460ce14e3ea8d21c8aa8f04a8af39254e35cf1e883c557",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "d69d4940c1f2ea3e2140c1eeede10867837113b746c931a285935a3c5b8033be",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0419254cee393010016af1fbb9a02087d0bb35f49143924fff:independent-gold-review:f46242fd-5477-453c-9e2b-50e0828d170e",
+    "reviewedAt": "2026-11-09T16:58:51.296Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD and frozen inputs. REQ-001 and AC-001 through AC-003 preserve Error identity, string-wrapper identity, compatible message/name behavior, original-error propagation, and the existing declaration signatures. The exact writable scope correctly includes index.js, the maintained public declaration index.d.ts, and both regression files; package.json establishes the existing xo && ava && tsd verification entry without requiring configuration edits. The focused test excerpt is explicitly truncated but includes the relevant AbortError regressions; the implementation, declaration, type tests, configuration, and inventory sufficiently establish ownership for this bounded planning review. TASK-IMPLEMENT and dependent independent TASK-VERIFY agree with the specification, including implementation and verification coverage of every required AC. Their allowed agents have the supplied active project-scoped trusted claims for the relevant contract, language, failure-handling, automation, state, data, and consumer capabilities; the verifier additionally has testing.verification. The configured separate, active, non-assignable reviewer satisfies the stated non-executing review prerequisite. No material unresolved DEC-001 or hypothetical C input is supplied for this case, so ready with no blocking reasons is consistent. Gold and preview release fingerprints match, and the supplied provenance explains the distinct manifest/evaluation digest domains and trim-only PRD persistence normalization. Historical operations are explicitly retained as old-version, non-fresh evidence and do not establish candidate execution on this bundle. The original preparation snapshot's remaining items are distinguished from the subsequently supplied frozen team and release inputs. This approval concerns Gold suitability only, not task dispatch or implementation success. I inspected only the supplied review data, accepted the Service's stated mechanical digest bindings, and neither executed code nor independently recomputed digests or supplied a human attestation.",
+    "goldDigest": "03b5a066a7c9a49d4fb1ef1cdc61afaba070af16fa3bff71146fdf25935dc346"
+  }
+}

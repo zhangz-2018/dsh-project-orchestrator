@@ -2248,7 +2248,42 @@ export const VerificationToolEvidenceV3Schema = z.object({
   binName: z.string().min(1).max(240),
   entryPath: z.string().min(1).max(4_096),
   files: z.array(z.object({ path: z.string().min(1).max(4_096), digest: Sha256Schema, content: z.string().max(65_536), truncated: z.boolean() }).strict()).max(24),
+  /** 大文件的完整 AST 节点摘录；不代表整文件可见，不代替未提供的依赖或执行结果。旧快照可省略。 */
+  sourceExcerpts: z.array(z.object({
+    /** 相对已核验包根的源码路径；不授权修改该文件。 */
+    path: z.string().min(1).max(4_096),
+    /** 完整文件的 SHA-256，未摘录部分发生变化也会使冻结证据失效。 */
+    sourceDigest: Sha256Schema,
+    /** 完整 UTF-8 源码字节数；采集器最多解析 8 MiB。 */
+    sourceBytes: z.number().int().positive().max(8_388_608),
+    /** 以 AST 精确定位的声明、import/export 声明组或诊断符号名称。 */
+    symbol: z.string().min(1).max(240),
+    /** 源码字符串 UTF-16 起始偏移，包含该位置。 */
+    startOffset: z.number().int().nonnegative(),
+    /** 源码字符串 UTF-16 结束偏移，不包含该位置。 */
+    endOffset: z.number().int().positive(),
+    /** 原文件中从 1 开始的起止行，均包含。 */
+    startLine: z.number().int().positive(),
+    endLine: z.number().int().positive(),
+    /** 完整节点的原样文本和文本摘要；全部摘录与 files 共用原 96 KiB 预算。 */
+    content: z.string().min(1).max(65_536),
+    digest: Sha256Schema,
+  }).strict()).max(24).optional(),
   unavailablePaths: z.array(z.string().max(4_096)).max(1_000),
+}).strict()
+
+/** 来源明确声明的验证入口；只复用仓库已有 Nub 调用模板，不代表文件已经创建或命令运行成功。 */
+export const PlannedVerificationEntryV3Schema = z.object({
+  /** 完整、确定性的调用；不允许 shell 拼接或新增 runner 参数。 */
+  command: z.string().min(1).max(10_000),
+  /** 来源要求创建的仓库相对文件；实际写权限仍由 Binding、Task 和批准共同决定。 */
+  targetPath: z.string().min(1).max(4_096),
+  /** 该操作捕获时目标是否存在；absent 必须有创建任务及依赖顺序。 */
+  targetState: z.enum(['absent', 'present']),
+  /** 目标目录树中已有脚本的精确调用，证明 runner、参数及路径模板的来源。 */
+  templateCommand: z.string().min(1).max(10_000),
+  /** 显式来源声明的摘要；不是目标文件的源码或运行证据。 */
+  declarationDigest: Sha256Schema,
 }).strict()
 
 export const RepositoryContextSnapshotV3RecordSchema = z.object({
@@ -2269,6 +2304,8 @@ export const RepositoryContextSnapshotV3RecordSchema = z.object({
   workingFiles: z.array(z.object({ path: z.string().min(1).max(4_096), digest: RepositoryEvidenceDigestSchema }).strict()).max(22_000).optional(),
   dirtyFiles: z.array(z.string().min(1).max(4_096)).max(2_000).optional(),
   verifiedCommands: z.array(z.string().min(1).max(10_000)).max(100),
+  /** 与现有命令分开冻结的来源声明入口；旧快照省略，所有字段参与仓库摘要。 */
+  plannedVerificationEntries: z.array(PlannedVerificationEntryV3Schema).max(4).optional(),
   verificationTools: z.array(VerificationToolEvidenceV3Schema).max(4).optional(),
   status: z.enum(['ready', 'partial', 'failed', 'stale']),
   diagnostics: z.array(PlanningV3DiagnosticSchema).max(200).default([]),
@@ -2692,6 +2729,8 @@ export const ScenarioCoverageReviewRecordSchema = z.object({
   repositoryEvidence: z.object({
     repositoryDigest: Sha256Schema,
     verificationCommands: z.array(z.string().min(1)).max(100).optional(),
+    /** 后续允许引用但尚需创建的入口，不能冒充固定 commit 中的文件或实测数据。 */
+    plannedVerificationEntries: z.array(PlannedVerificationEntryV3Schema).max(4).optional(),
     verificationTools: z.array(VerificationToolEvidenceV3Schema).max(4).optional(),
     contents: z.array(z.object({
       ref: z.string().min(1),
@@ -3197,6 +3236,8 @@ export const ExecutionDispatchRecordSchema = z.object({
   approvalId: z.string().min(1),
   expectedProjectRevision: z.number().int().positive(),
   requestedTaskIds: z.array(z.string().min(1)).min(1).max(1_000),
+  /** 显式重试的旧 TaskRun；仅允许运行时尚未开始且未取得工作区的失败，旧记录永久保留。 */
+  retryOfTaskRunId: z.string().min(1).optional(),
   outcome: z.enum(['started', 'partially_started', 'waiting', 'blocked', 'stale']),
   taskResults: z.array(z.object({
     taskId: z.string().min(1),

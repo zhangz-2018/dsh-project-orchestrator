@@ -12,6 +12,7 @@ import type {
   ResourceAccessGrantRecord,
 } from '../types.js'
 import { digestObject, qualifyAssignmentsV3, WorkflowError, type AssignmentCandidateV3 } from '../workflow.js'
+import { repositoryVerificationCommandCatalogV3 } from './repository-commands.js'
 
 type AssignmentStageStore = Pick<OrchestratorStore,
   'projects' | 'projectAgentMemberships' | 'agents' | 'capabilityDefinitions' | 'agentCapabilityClaims'
@@ -72,6 +73,7 @@ export class AssignmentStage {
     return snapshot
   }
 
+  /** 按有效成员资格登记仓库授权并冻结快照；命令包含显式声明的待创建入口，但仍受任务写入范围和创建依赖校验。缺少 canonical 集成授权时拒绝。 */
   async captureAccessGrants(project: ProjectRecord, operationId: string, repository: RepositoryContextSnapshotV3Record, canonicalTarget: CanonicalTargetBindingRecord, now: string, teamDigest: () => string): Promise<ProjectAccessGrantSnapshotRecord> {
     const repositoryIdentityDigest = canonicalTarget.repositoryIdentityDigest
     const memberships = this.activeMemberships(project.id)
@@ -82,7 +84,7 @@ export class AssignmentStage {
       const core = {
         projectId: project.id, principalType: 'agent' as const, principalId: membership.agentId, resourceId: canonicalTarget.resourceId, repositoryIdentityDigest,
         permissions: ['evidence_read', 'repository_read', 'worktree_write', 'command_execute', 'artifact_write'] as Array<'evidence_read' | 'repository_read' | 'worktree_write' | 'command_execute' | 'artifact_write'>,
-        pathScopes: ['.'], commandIds: repository.verifiedCommands, grantedBy: membership.joinedBy, grantSource: 'project_membership' as const, validFrom: existing?.validFrom ?? now,
+        pathScopes: ['.'], commandIds: repositoryVerificationCommandCatalogV3(repository), grantedBy: membership.joinedBy, grantSource: 'project_membership' as const, validFrom: existing?.validFrom ?? now,
         reason: 'Active project membership grants bounded access to the project repository only.',
       }
       const grant: ResourceAccessGrantRecord = { id, ...core, grantDigest: digestObject(core) }

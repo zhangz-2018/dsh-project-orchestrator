@@ -81,6 +81,31 @@ test('BindingStage supplies verified source content while rejecting changed, cro
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage freezes complete existing sampling code and its harness without creating a proposed file', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-measurement-'))
+  try {
+    await run('git', ['init', '--initial-branch=main', root])
+    await mkdir(join(root, 'bench'))
+    const files = { 'owner.ts': 'export const convert = (value: string) => value', 'bench/memory.ts': 'import { sample } from "./harness.js"; sample();', 'bench/harness.ts': 'export function sample() { for (let i = 0; i < 10; i++) globalThis.gc?.(); }' }
+    const inventory = []
+    for (const [path, content] of Object.entries(files)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      inventory.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: inventory,
+      verifiedCommands: ['nub --expose-gc bench/memory.ts'], plannedVerificationEntries: [{ command: 'nub --expose-gc bench/new.ts', targetPath: 'bench/new.ts', targetState: 'absent', templateCommand: 'nub --expose-gc bench/memory.ts', declarationDigest: 'a'.repeat(64) }] }
+    const manifest = { projectId: 'project', operationId: 'operation', references: inventory.map((file, index) => ({ ref: `ref-source-${index}`, kind: 'repository_evidence', artifactId: file.path, artifactDigest: file.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Modify owner.ts and create bench/new.ts to measure the change.')
+    for (const path of ['bench/memory.ts', 'bench/harness.ts']) {
+      assert.equal(evidence.find(item => item.path === path).content, files[path])
+      assert.equal(evidence.find(item => item.path === path).truncated, false)
+    }
+    assert.equal(evidence.some(item => item.path === 'bench/new.ts'), false)
+    assert.ok(evidence.reduce((size, item) => size + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage bounds source excerpts and labels incomplete evidence explicitly', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-budget-'))
   try {
@@ -103,6 +128,126 @@ test('BindingStage bounds source excerpts and labels incomplete evidence explici
     const oversized = references[0].artifactId
     await writeFile(join(root, oversized), 'x'.repeat(2_000_001))
     await assert.rejects(() => new BindingStage(store()).loadFrozenEvidence({ canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }, { projectId: 'project', operationId: 'operation', references }), (error) => error.code === 'repository-evidence-content-too-large')
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('BindingStage preserves complete runner discovery configuration without requiring a lexical match', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-runner-config-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const path = 'vitest.config.ts'
+    const source = `import { defineConfig } from 'vitest/config'\n${'// unrelated runner setup\n'.repeat(80)}export default defineConfig({ test: { projects: [{ test: { include: ['src/**/*.test.ts'], exclude: ['**/sandbox/**'] } }] } })\n`
+    await writeFile(join(root, path), source)
+    const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+    const digest = digestObject({ path, blob: stdout.trim() })
+    const files = [{ path, digest }]
+    const references = [{ ref: 'ref-config', kind: 'repository_evidence', artifactId: path, artifactDigest: digest }]
+    const variants = ['vitest.compile.config.ts', 'vitest.root.mjs', 'vitest.workspace.ts']
+    for (const variant of variants) {
+      await writeFile(join(root, variant), source)
+      const { stdout: blob } = await run('git', ['hash-object', '--no-filters', '--', variant], { cwd: root })
+      const variantDigest = digestObject({ path: variant, blob: blob.trim() })
+      files.push({ path: variant, digest: variantDigest })
+      references.push({ ref: `ref-${variant}`, kind: 'repository_evidence', artifactId: variant, artifactDigest: variantDigest })
+    }
+    const setupPath = 'setup-helper.ts'
+    const setup = `${'// setup context\n'.repeat(80)}export const initialized = true\n`
+    await writeFile(join(root, setupPath), setup)
+    const { stdout: setupBlob } = await run('git', ['hash-object', '--no-filters', '--', setupPath], { cwd: root })
+    const setupDigest = digestObject({ path: setupPath, blob: setupBlob.trim() })
+    files.push({ path: setupPath, digest: setupDigest })
+    references.push({ ref: 'ref-setup', kind: 'repository_evidence', artifactId: setupPath, artifactDigest: setupDigest })
+    const compileSource = source + "export const setupFiles = [resolve(__dirname, './setup-helper.ts')];\n"
+    await writeFile(join(root, variants[0]), compileSource)
+    const { stdout: compileBlob } = await run('git', ['hash-object', '--no-filters', '--', variants[0]], { cwd: root })
+    const compileDigest = digestObject({ path: variants[0], blob: compileBlob.trim() })
+    files.find(file => file.path === variants[0]).digest = compileDigest
+    references.find(reference => reference.artifactId === variants[0]).artifactDigest = compileDigest
+    for (let index = 0; index < 8; index++) {
+      const ownerPath = `owner-${index}.ts`
+      await writeFile(join(root, ownerPath), `export const callback = '${'x'.repeat(20_000)}'\n`)
+      const { stdout: blob } = await run('git', ['hash-object', '--no-filters', '--', ownerPath], { cwd: root })
+      const ownerDigest = digestObject({ path: ownerPath, blob: blob.trim() })
+      files.push({ path: ownerPath, digest: ownerDigest })
+      references.push({ ref: `ref-owner-${index}`, kind: 'repository_evidence', artifactId: ownerPath, artifactDigest: ownerDigest })
+    }
+    const contents = await new BindingStage(store()).loadFrozenEvidence(
+      { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
+      { projectId: 'project', operationId: 'operation', references },
+      `Change callback compatibility request in ${files.filter(file => file.path.startsWith('owner-')).map(file => file.path).join(' ')}.`,
+    )
+    const config = contents.find(item => item.path === path)
+    assert.equal(config.content, source)
+    assert.equal(config.truncated, false)
+    for (const variant of variants) {
+      const evidence = contents.find(item => item.path === variant)
+      assert.equal(evidence.content, variant === variants[0] ? compileSource : source, variant)
+      assert.equal(evidence.truncated, false, variant)
+    }
+    assert.equal(contents.find(item => item.path === setupPath).content, setup)
+    assert.equal(contents.find(item => item.path === setupPath).truncated, false)
+    assert.ok(contents.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('BindingStage reserves a requested regression owner before broad small-module evidence exhausts the shared budget', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-test-reservation-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const regression = `const callback = () => 'existing';\n${Array.from({ length: 370 }, (_, i) => `test('existing CORS regression ${i}', () => {});`).join('\n')}\n`
+    assert.ok(Buffer.byteLength(regression) > 16_384 && Buffer.byteLength(regression) < 24_576)
+    const inputs = { 'cors.test.ts': regression, 'vitest.config.ts': "export default { test: { include: ['**/*.test.ts'] } };\n" }
+    for (let i = 0; i < 16; i++) inputs[`helper-${i}.ts`] = `export const callback = '${'x'.repeat(7_000)}';\n`
+    const files = []
+    const references = []
+    for (const [path, content] of Object.entries(inputs)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      const digest = digestObject({ path, blob: stdout.trim() })
+      files.push({ path, digest })
+      references.push({ ref: `ref-${files.length}`, kind: 'repository_evidence', artifactId: path, artifactDigest: digest })
+    }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(
+      { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
+      { projectId: 'project', operationId: 'operation', references },
+      `Inspect callback behavior and preserve regression ownership in ${Object.keys(inputs).join(' ')}.`,
+    )
+    assert.equal(evidence.find(item => item.path === 'cors.test.ts').content, regression)
+    assert.equal(evidence.find(item => item.path === 'cors.test.ts').truncated, false)
+    assert.equal(evidence.find(item => item.path === 'vitest.config.ts').content, inputs['vitest.config.ts'])
+    assert.ok(evidence.some(item => item.path.startsWith('helper-') && item.truncated))
+    assert.ok(evidence.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('BindingStage setup barrel imports cannot promote unrelated production modules over requested declarations', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-config-barrel-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const inputs = {
+      'vitest.config.ts': "export default { test: { setupFiles: ['./setup.ts'] } };\n",
+      'setup.ts': "import * as runtime from './barrel.js';\nconsole.log(runtime.context);\n",
+      'barrel.ts': Array.from({ length: 12 }, (_, i) => `export * from './unrelated-${i}.js';`).join('\n'),
+      'factory.ts': `export function requestedFactory(input: string) { return input.trim(); }\n${'// unrelated context\n'.repeat(1500)}`,
+    }
+    for (let i = 0; i < 12; i++) inputs[`unrelated-${i}.ts`] = `export const context${i} = '${'x'.repeat(15_000)}';\n`
+    const files = []
+    const references = []
+    for (const [path, content] of Object.entries(inputs)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      const digest = digestObject({ path, blob: stdout.trim() })
+      files.push({ path, digest })
+      references.push({ ref: `ref-${files.length}`, kind: 'repository_evidence', artifactId: path, artifactDigest: digest })
+    }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(
+      { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files },
+      { projectId: 'project', operationId: 'operation', references },
+      'Inspect requestedFactory in factory.ts and its test configuration.',
+    )
+    for (const path of ['vitest.config.ts', 'setup.ts', 'barrel.ts']) assert.equal(evidence.find(c => c.path === path).content, inputs[path])
+    assert.match(evidence.find(c => c.path === 'factory.ts').content, /export function requestedFactory\(input: string\)/)
+    assert.ok(evidence.reduce((sum, c) => sum + Buffer.byteLength(c.content), 0) <= 98_304)
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
@@ -268,6 +413,33 @@ test('BindingStage reserves intact named owners before large regression excerpts
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage preserves an indirectly referenced large request class within the existing single-class envelope', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-indirect-class-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const inputs = {
+      'index.ts': "import { Client } from './Client.js';\nexport const request = () => Client.create();\n",
+      'Client.ts': `export class Client {\n${Array.from({ length: 600 }, (_, i) => `  // ${'request documentation '.repeat(4)}\n  operation${i}(value: number) { return value + ${i}; }`).join('\n')}\n  static create() { return new Client().fetch(); }\n  fetch() { throw new Error('HTTP request failed'); }\n}\n`,
+      'Unrelated.ts': `export class Unrelated { ${'/* unused */'.repeat(4000)} }`,
+      'package.json': '{"scripts":{"test":"node --test"}}',
+    }
+    const files = []
+    for (const [path, content] of Object.entries(inputs)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((f, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: f.path, artifactDigest: f.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Inspect request in index.ts and preserve the HTTP failure contract.')
+    const owner = evidence.find(c => c.path === 'Client.ts')
+    for (const fact of ['export class Client', 'static create()', 'operation599(', "throw new Error('HTTP request failed')"]) assert.ok(owner.content.includes(fact), `Missing indirect class fact ${fact}`)
+    assert.equal(owner.truncated, true)
+    assert.ok(Buffer.byteLength(owner.content) <= 32_768)
+    assert.ok(evidence.reduce((n, c) => n + Buffer.byteLength(c.content), 0) <= 131_072)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage reserves command and compiler manifests before large code declaration closures', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-config-reservation-'))
   try {
@@ -353,6 +525,58 @@ test('BindingStage preserves local parameter contracts and whole small forwardin
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage follows named runtime barrel exports without treating path extensions as requested APIs', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-runtime-barrel-'))
+  try {
+    await run('git', ['init', '--initial-branch=main', root])
+    const sources = {
+      'entry.ts': "export * from './public.js';",
+      'package.json': '{}',
+      'public.ts': `${Array.from({ length: 500 }, (_, i) => `export function noise${i}() { return '${i}'; }`).join('\n')}\nexport const parse = () => first();\nfunction first() { return second(); }\nfunction second() { return third(); }\nfunction third() { return fourth(); }\nfunction fourth() { return 'public output'; }\nexport const json = () => unrelated();\nfunction unrelated() { return 'unrequested factory'; }`,
+    }
+    const files = []
+    for (const [path, content] of Object.entries(sources)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((file, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: file.path, artifactDigest: file.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Inspect entry.ts and package.json; preserve parse.')
+    const supplied = evidence.find(item => item.path === 'public.ts').content
+    for (const text of ['export const parse', 'function first()', 'function second()', 'function third()', 'function fourth()']) assert.ok(supplied.includes(text), text)
+    assert.doesNotMatch(supplied, /export const json|function unrelated|function noise/u)
+    assert.ok(evidence.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('BindingStage shares one bounded allowance across multiple real public runtime owners', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-multiple-owners-'))
+  try {
+    await run('git', ['init', '--initial-branch=main', root])
+    const sources = {}
+    // 每个声明低于单文件上限，十个实现的总量超过补充额度；出口不能继续扩大预算。
+    for (let i = 0; i < 10; i += 1) {
+      sources[`entry-${i}.ts`] = `export * from './owner-${i}.js';`
+      sources[`owner-${i}.ts`] = `export const parse = () => '${'x'.repeat(15_000)}';\n${Array.from({ length: 600 }, (_, n) => `export const unrelated${n} = ${n};`).join('\n')}`
+    }
+    const files = []
+    for (const [path, content] of Object.entries(sources)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((file, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: file.path, artifactDigest: file.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, `Preserve parse in ${Object.keys(sources).filter(path => path.startsWith('entry-')).join(', ')}.`)
+    const bytes = evidence.reduce((sum, item) => sum + Buffer.byteLength(item.content), 0)
+    assert.ok(bytes > 98_304, 'Distinct implementations receive the shared allowance')
+    assert.ok(bytes <= 131_072, 'Additional implementations cannot multiply the allowance')
+    assert.ok(evidence.some(item => item.truncated), 'Omitted source must remain visibly truncated')
+    for (const item of evidence) assert.doesNotMatch(item.content, /export const unrelated/u)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage follows merged constructor initialization and generic defaults without expanding unrelated deferred methods', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-deferred-'))
   try {
@@ -360,7 +584,7 @@ test('BindingStage follows merged constructor initialization and generic default
     const noise = Array.from({ length: 500 }, (_, i) => `export function noise${i}() { return '${i}'; }`).join('\n')
     const sources = {
       'api.ts': "import { Schema } from './schema.js';\nexport function convert() { return Schema(); }",
-      'schema.ts': `${noise}\nexport interface Schema<T = Internals> { internals: T; }\n// Unicode before the owner: 😀🧪\nexport const Schema = (): Schema => install(initialize(), { convert() { return transform(); }, sibling() { return unrelated(); } });\nconst registry = { value: 1 };\nfunction initialize() { return Object.hasOwn(registry, 'value'); }\nfunction install(value: unknown, methods: unknown) { return { value, methods }; }\nfunction transform() { return true; }\nexport interface Internals { output: boolean; }\nfunction unrelated() { return 'must not expand'; }`,
+      'schema.ts': `${noise}\nexport interface Schema<T = Internals> { internals: T; }\n// Unicode before the owner: 😀🧪\nexport const Schema = (): Schema => install(initialize(), { convert() { return transform(); }, sibling() { return unrelated(); } });\nconst registry = { value: 1 };\nfunction initialize() { return first(); }\nfunction first() { return second(); }\nfunction second() { return third(); }\nfunction third() { return fourth(); }\nfunction fourth() { return Object.hasOwn(registry, 'value'); }\nfunction install(value: unknown, methods: unknown) { return { value, methods }; }\nfunction transform() { return true; }\nexport interface Internals { output: boolean; }\nfunction unrelated() { return 'must not expand'; }`,
     }
     const files = []
     for (const [path, content] of Object.entries(sources)) {
@@ -372,7 +596,7 @@ test('BindingStage follows merged constructor initialization and generic default
     const manifest = { projectId: 'project', operationId: 'operation', references: files.map((f, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: f.path, artifactDigest: f.digest })) }
     const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Modify convert in api.ts.')
     const supplied = evidence.find(c => c.path === 'schema.ts').content
-    for (const declaration of ['export const Schema =', 'export interface Schema<', 'export interface Internals', 'const registry =', 'function initialize()', 'function install(', 'function transform()']) assert.ok(supplied.includes(declaration), declaration)
+    for (const declaration of ['export const Schema =', 'export interface Schema<', 'export interface Internals', 'const registry =', 'function initialize()', 'function first()', 'function second()', 'function third()', 'function fourth()', 'function install(', 'function transform()']) assert.ok(supplied.includes(declaration), declaration)
     assert.ok(supplied.includes('sibling() { return unrelated(); }'), 'The actual owner remains intact')
     assert.doesNotMatch(supplied, /function unrelated\(/)
     assert.doesNotMatch(supplied, /function noise/)
@@ -422,6 +646,36 @@ test('BindingStage preserves complete transitive output type projections without
     assert.doesNotMatch(contents.find(c => c.path === 'unrelated-projections.ts').content, /function (?:Output|Input)/)
     assert.ok(contents.reduce((n, c) => n + Buffer.byteLength(c.content), 0) <= 65_536)
     assert.deepEqual(await stage.loadFrozenEvidence(repository, manifest, focus), contents)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test('BindingStage retains small inherited output contracts under runtime owner pressure', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-contract-pressure-'))
+  try {
+    await run('git', ['init', '--object-format=sha1', '--initial-branch=main', root])
+    const noise = Array.from({ length: 500 }, (_, i) => `export function noise${i}() { return '${i}'; }`).join('\n')
+    const sources = {
+      'api.ts': `import { Flag, Codec } from './factory.js';\n${noise}\nexport function convert(): Codec<Flag> { return Codec(); }`,
+      'factory.ts': `import type { FlagInternals, CodecInternals } from './internals.js';\n${noise}\nexport interface Flag<T = unknown> { internals: FlagInternals<T>; }\nexport interface Codec<T> { internals: CodecInternals<T>; }\nexport const Codec = () => ({ parse: () => true });`,
+      'internals.ts': `import type { ValueInternals } from './base.js';\n${noise}\nexport interface FlagInternals<T> extends ValueInternals<boolean, T> {}\nexport interface CodecInternals<T> extends ValueInternals<T['internals']['output'], unknown> {}`,
+      'base.ts': `${noise}\n/** ${'The first generic is output and the second is input. '.repeat(20)} */\nexport interface ValueInternals<O, I> { output: O; input: I; }`,
+      ...Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`owner${i}.ts`, `export function Owner${i}() { return [${Array.from({ length: 36 }, (_, j) => `helper${j}()`).join(',')}]; }\n${Array.from({ length: 36 }, (_, j) => `function helper${j}() { return '${'runtime payload '.repeat(20)}${j}'; }`).join('\n')}`])),
+    }
+    const files = []
+    for (const [path, content] of Object.entries(sources)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      files.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: files }
+    const manifest = { projectId: 'project', operationId: 'operation', references: files.map((f, i) => ({ ref: `ref-${i}`, kind: 'repository_evidence', artifactId: f.path, artifactDigest: f.digest })) }
+    const focus = `Modify convert in api.ts; inspect ${Array.from({ length: 10 }, (_, i) => `Owner${i} in owner${i}.ts`).join(' ')}.`
+    const contents = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, focus)
+    for (const [path, declaration] of [['factory.ts', 'interface Flag<T = unknown>'], ['internals.ts', 'interface FlagInternals<T> extends ValueInternals<boolean, T>'], ['base.ts', 'interface ValueInternals<O, I> { output: O; input: I; }']]) {
+      assert.ok(contents.find(c => c.path === path).content.includes(declaration), `Missing inferred output contract: ${path}`)
+    }
+    assert.ok(contents.reduce((n, c) => n + Buffer.byteLength(c.content), 0) <= 98_304)
+    assert.doesNotMatch(contents.find(c => c.path === 'base.ts').content, /function noise/)
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
