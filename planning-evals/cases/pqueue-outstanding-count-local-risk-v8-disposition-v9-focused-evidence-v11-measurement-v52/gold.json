@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "id": "pqueue-outstanding-count-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-queue",
+    "identity": "sindresorhus/p-queue",
+    "baseCommit": "7f272ab5ff2254c0dc2537b7977e88ede1cd55e8"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/index.ts",
+        "test/basic.ts",
+        "test/advanced.ts",
+        "test-d/index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "841e6677ffda8c301279f2ec94eeec1973de26df0fbe71da647b21d531b6fcdf",
+    "sourceDigest": "a085eefefc4df661ab1ae2b5ccf4f5c67ebf7449f33129224178dafa7eb7db0a",
+    "teamCatalogDigest": "6333363079138a8735624e895a1e04e2e5fa79b359f65b680e65b418072c7386",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_06cbdc35f1fd233c016af275e4f9d887d18fe2701dbabc7d2f:independent-gold-review:c1b229df-cd1e-46a3-a0dd-bad0cc6d91ef",
+    "reviewedAt": "2026-11-10T01:40:08.365Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the original PRD. REQ-001, AC-001 through AC-003, the exact four-file writable scope, and the implementation/independent-verification task split agree with the specification. The supplied implementation supports a computed read-only getter without changing scheduling, clear behavior, event order, or deferred pending-count updates; event-time equality and final zero after onIdle are appropriate expectations. The package scripts and supplied nz runner establish that test-d/index.test-d.ts receives compiler checking despite the production tsconfig including only source. Generated dist declarations need not be separately maintained, and inspection-only consumers need not be edited. The designated implementer and verifier have distinct eligible roles, available slots, and the necessary active project-scoped trusted capability claims, including data.change and integration.consumer; pending claims and Persona are not used as eligibility evidence. The selected verifier can satisfy the supplied read-only planning-review policy when independent of planning authors. No unresolved material DEC-001 or B/C scenario is supplied for this case, so the ready expectation and empty blocking reasons are consistent. Repository identity, stable keys, and release fingerprints agree across the supplied records; the source-manifest/evaluation digest domains, PRD trimming, and executing-bundle prompt fingerprint differences are explicitly explained. Original preparation-time remaining items and null releaseInput are distinguished from the subsequently frozen preview inputs. Review relies solely on the supplied evidence and Service-bound fingerprints: I did not execute code, independently recompute digests, create human attestations, or inspect candidate outputs.",
+    "goldDigest": "ca1d1fe223c92d5a3287ce170158922c9c2d1507123527d8f7df4c2a55735626"
+  }
+}

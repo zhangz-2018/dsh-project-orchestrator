@@ -104,6 +104,27 @@ test('TaskPreflightStage passes the authoritative frozen commit without claiming
   } })
 })
 
+test('preflight retains command sampling source and local harness without inventing the planned target', async () => {
+  const { store, input } = await fixture()
+  const command = 'nub --expose-gc packages/bench/new.ts'
+  const templateCommand = 'nub --expose-gc packages/bench/memory.ts'
+  input.manifest.references[1].artifactId = command
+  const plannedVerificationEntries = [{ command, templateCommand, targetPath: 'packages/bench/new.ts', targetState: 'absent', declarationDigest: '1'.repeat(64) }]
+  const sourceEvidence = [
+    { ref: 'ref-memory', path: 'packages/bench/memory.ts', digest: '1'.repeat(64), content: 'import { sample } from "./harness.js"; sample();', truncated: false },
+    { ref: 'ref-harness', path: 'packages/bench/harness.ts', digest: '2'.repeat(64), content: 'export function sample() { return Math.min(1, 2) }', truncated: false },
+    { ref: 'ref-other', path: 'src/irrelevant.ts', digest: '3'.repeat(64), content: 'unrelated text', truncated: false },
+  ]
+  await new TaskPreflightStage(store).run({ ...input, sourceEvidence, plannedVerificationEntries, runReadOnly: async prompt => {
+    const excerpts = JSON.parse(prompt.split('Frozen repository source excerpts:\n')[1].split('\n\nReference manifest identity:')[0])
+    assert.deepEqual(excerpts.map(source => source.path), ['packages/bench/memory.ts', 'packages/bench/harness.ts'])
+    const projections = JSON.parse(prompt.split('Authoritative evidence projections:\n')[1].split('\n\nFrozen repository source excerpts:')[0])
+    assert.deepEqual(projections.find(item => item.kind === 'verification_command').plannedEntry, plannedVerificationEntries[0])
+    assert.match(prompt, /before the first product-source modification/u)
+    return JSON.stringify(report())
+  } })
+})
+
 test('TaskPreflightStage refuses a foreign or mismatched repository identity before a model call', async () => {
   const { store, input } = await fixture()
   const repository = { id: 'repo-1', projectId: 'project-1', operationId: 'operation-1', repositoryDigest: input.repositoryDigest,

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "id": "hono-cors-maxage-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/hono",
+    "identity": "honojs/hono",
+    "baseCommit": "588ec13fa68ea44fed1b5e1b503341db2bf09d70"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/middleware/cors/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "hono-cors-maxage-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "f755133c3198823a7f080a0d60aa1e5f20f85fdd4a3086bf50bf9888259f895e",
+    "sourceDigest": "e460aa576d608085847487d1de559574bde21604e582a9f2e4da5fabe315adb6",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0f3d9f54ed456968016af2761a2c2087d097110d402f831611:independent-gold-review:5891c4cd-4a75-44f8-b866-97fb5bb45b2b",
+    "reviewedAt": "2026-11-10T01:40:56.464Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision case. The original PRD expressly leaves material DEC-001 unresolved and makes AC-001 conditional on the recommended option, without authorizing its selection. Blocking B at decisions with requirement-decision-pending on DEC-001, retaining REQ-001 and AC-001 through AC-003, and producing no assignable tasks therefore matches the specification. The required evidence stages correctly stop at repository, requirements, and decisions. Empty assignment expectations and the empty team catalog are appropriate because this deterministic gate precedes scenario-review and assignment prerequisites. The supplied implementation establishes src/middleware/cors/index.ts as the behavioral owner; index.test.ts is the regression and type-verification scope. Package exports are inspection consumers, and the build configuration establishes that dist declarations are generated rather than separately maintained owners. The test script explicitly performs TypeScript checking before Vitest, and tsconfig.spec.json includes the specified test file. Gold and preview release fingerprints agree across repository, source, team, decisions, prompts, model, sampling, budgets, and metric policy. The supplied provenance explains the distinct manifest/evaluation source digest domains, PRD whitespace normalization, and bundled-module prompt fingerprint. Historical project reuse does not supply capability or decision authority, and no candidate evidence was used. The paired hypothetical case does not resolve this case's Decision. This approval concerns the benchmark expectation, not implementation readiness, execution, human attestation, or task dispatch. Digest bindings are accepted as Service-calculated evidence; I did not independently recompute digests or execute code.",
+    "goldDigest": "36d752e0f4b8a528cf24d6c3183c7f211428d1a6429196858d95507f032e15ac"
+  }
+}

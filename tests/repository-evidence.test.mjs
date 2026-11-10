@@ -8,6 +8,24 @@ import { buildRepositoryEvidenceRetrievalReportV3, buildRepositoryStackProfileV3
 
 const digest = (value) => createHash('sha256').update(value).digest('hex')
 
+test('retrieval preserves source-declared measurement entry and local sampling harness outside product requirements', async () => {
+  const files = {
+    'package.json': '{}',
+    'src/api.ts': 'export function convert(value) { return value }',
+    'packages/bench/memory.ts': 'import { sample } from "./harness.js"; sample();',
+    'packages/bench/harness.ts': 'export function sample() { return Math.min(1, 2) }',
+  }
+  const { root, snapshot } = await fixture(files)
+  try {
+    snapshot.verifiedCommands = ['nub --expose-gc packages/bench/memory.ts']
+    snapshot.plannedVerificationEntries = [{ command: 'nub --expose-gc packages/bench/new.ts', targetPath: 'packages/bench/new.ts', targetState: 'absent', templateCommand: snapshot.verifiedCommands[0], declarationDigest: 'a'.repeat(64) }]
+    const report = await buildRepositoryEvidenceRetrievalReportV3({ projectId: snapshot.projectId, operationId: snapshot.operationId, repository: snapshot,
+      requirements: [{ key: 'REQ-API', statement: 'Change src/api.ts convert behavior', acceptanceStatements: [] }], inspectionFocus: 'The authorized measurement entry must be created before running.' })
+    for (const path of ['src/api.ts', 'packages/bench/memory.ts', 'packages/bench/harness.ts']) assert.ok(report.selectedEvidenceIds.includes(path), path)
+    assert.equal(report.selectedEvidenceIds.includes('packages/bench/new.ts'), false)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 async function fixture(files) {
   const root = await mkdtemp(join(tmpdir(), 'orchestrator-evidence-'))
   for (const [path, content] of Object.entries(files)) {

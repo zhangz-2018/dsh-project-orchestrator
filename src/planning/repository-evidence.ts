@@ -4,7 +4,7 @@ import ts from 'typescript'
 import type { RepositoryContextSnapshotV3Record, RepositoryEvidenceRetrievalReport } from '../types.js'
 import { digestObject } from '../workflow.js'
 
-const INDEX_VERSION = 'repository-evidence-index-v3.6.7'
+const INDEX_VERSION = 'repository-evidence-index-v3.6.8'
 const DEFAULT_SELECTION_LIMIT = 2_000
 const PER_REQUIREMENT_LIMIT = 80
 const MAX_INDEXED_SOURCE_BYTES = 512 * 1024
@@ -20,6 +20,41 @@ const STOP_TERMS = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that',
 export function isVerificationConfigPathV3(path: string): boolean {
   return /(?:^|\/)(?:vite|vitest|jest|playwright|cypress)\.(?:(?:[A-Za-z0-9_-]+\.)?config|root|workspace)\.(?:[cm]?[jt]s|json)$/iu.test(path)
     || /(?:^|\/)(?:\.eslintrc(?:\.(?:[cm]?js|json|ya?ml))?|eslint\.config\.[cm]?[jt]s)$/iu.test(path)
+}
+
+/** 只选来源点名的已确认脚本和待创建入口的现有模板；不把尚未创建的目标或任意 shell 字符串当源码。 */
+export function verificationEntryEvidencePathsV3(repository: Pick<RepositoryContextSnapshotV3Record, 'files' | 'workingFiles' | 'verifiedCommands' | 'plannedVerificationEntries'>, focus: string): string[] {
+  const paths = new Set((repository.workingFiles ?? repository.files).map(file => file.path))
+  const templates = new Set((repository.plannedVerificationEntries ?? []).map(entry => entry.templateCommand))
+  const selected = new Set<string>()
+  for (const command of repository.verifiedCommands ?? []) {
+    const tokens = command.match(/[A-Za-z0-9_./-]+\.[cm]?[jt]sx?/gu) ?? []
+    for (const token of tokens) {
+      const candidates = paths.has(token) ? [token] : [...paths].filter(path => path.endsWith(`/${token}`))
+      if (candidates.length !== 1) continue
+      const path = candidates[0]!
+      if (focus.includes(path) || focus.includes(command) || templates.has(command)) selected.add(path)
+    }
+  }
+  return [...selected].sort()
+}
+
+/** 在已冻结文本中追踪脚本的三层同目录 import；生产库导入不被升级为完整验证配置，最多保留 16 个文件。 */
+export function verificationEntryDependencyPathsV3(entries: string[], contents: Array<{ path: string; content: string }>): string[] {
+  const byPath = new Map(contents.map(item => [item.path, item.content]))
+  const paths = new Set(byPath.keys())
+  const selected = new Set<string>()
+  const queue = entries.map(path => ({ path, root: posix.dirname(path), depth: 0 }))
+  while (queue.length && selected.size < 16) {
+    const current = queue.shift()!
+    if (selected.has(current.path) || !paths.has(current.path) || current.depth >= 3) continue
+    selected.add(current.path)
+    for (const specifier of importedSpecifiers(byPath.get(current.path)!)) {
+      const path = resolveImport(current.path, specifier, paths, { baseUrl: '.', paths: [] })
+      if (path?.startsWith(`${current.root}/`)) queue.push({ path, root: current.root, depth: current.depth + 1 })
+    }
+  }
+  return [...selected].sort()
 }
 
 /** 只读提取运行器配置中的静态文件字面量及 resolve/join(__dirname, ...literals)；仅返回冻结库存内的文件，不执行配置或展开变量、glob。 */
@@ -58,6 +93,8 @@ export interface BuildRepositoryEvidenceReportInput {
   operationId: string
   repository: RepositoryContextSnapshotV3Record
   requirements: RepositoryEvidenceRequirementInput[]
+  /** 冻结来源及适用政策的原文，仅辅助发现验证脚本；不新增产品需求或写权限。 */
+  inspectionFocus?: string
   selectionLimit?: number
   indexFileLimit?: number
   indexByteLimit?: number
@@ -362,6 +399,8 @@ export async function buildRepositoryEvidenceRetrievalReportV3(input: BuildRepos
   }
   // 配置及其静态 setup/import 闭包不依赖需求词命中；沿用三层深度及总选取预算，缺失/动态路径仍不作推定。
   const mandatoryPaths = new Set(indexed.filter(file => file.category === 'manifest' || /(?:^|\/)AGENTS\.md$/iu.test(file.path)).map(file => file.path))
+  const entryPaths = verificationEntryEvidencePathsV3(input.repository, input.inspectionFocus ?? input.requirements.flatMap(requirement => [requirement.statement, ...requirement.acceptanceStatements]).join('\n'))
+  for (const path of verificationEntryDependencyPathsV3(entryPaths, indexed)) mandatoryPaths.add(path)
   const configQueue = indexed.filter(file => isVerificationConfigPathV3(file.path)).map(file => ({ path: file.path, depth: 0 }))
   const visitedConfigs = new Set<string>()
   while (configQueue.length && mandatoryPaths.size < selectionLimit) {

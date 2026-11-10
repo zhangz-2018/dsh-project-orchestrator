@@ -165,7 +165,8 @@ for (const item of packet.cases.filter((c) => c.expectedReadiness === readiness 
   }
   const evidence = []
   for (const file of item.files) {
-    if (file.kind === 'proposed_new_test') { evidence.push(file); continue }
+    // 显式拟新增的测量入口与测试都不是固定 commit 的源码，不读文件或补造内容。
+    if (['proposed_new_test', 'proposed_new_verification'].includes(file.kind)) { evidence.push(file); continue }
     const bytes = await readFile(resolve('output/acceptance/repositories', item.repositoryIdentity.split('/')[1], file.path))
     assert.equal(hash(bytes), file.sha256)
     const content = bytes.toString('utf8')

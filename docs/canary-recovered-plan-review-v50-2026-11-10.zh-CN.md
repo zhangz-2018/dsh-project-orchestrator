@@ -1,6 +1,8 @@
 # 隔离 greeting 新版计划审阅
 
-本材料对应 v50 构建的真实候选计划，尚未登记人工批准或派发任务。随后 v50 质量失败需要修改构建，本计划暂不登记批准；待稳定构建产生新计划后另行审阅。旧计划和旧最终 commit 的批准不计为本计划批准，也不继承旧交付成绩。
+本材料对应 v50 构建的真实候选计划。用户已明确批准本计划并执行隔离验收；正式接口已登记审批，两项任务均已完成。最终 commit 为 `d5bbf64bad16a3c98cb21290395fdfaba3c4cc6d`，用户已另行批准最终 diff，正式登记和导出复核均完成。旧计划和旧最终 commit 的批准不计为本计划批准，也不继承旧交付成绩。
+
+计划生成使用 v50，实际执行使用 v51（bundle SHA-256 `839d0590c548dc3c21c39e675a046085c87d2a67783d79822292e6196ab1fe6e`）；这是已批准计划的实际执行记录，不能计为最终发布构建的同版 canary。独立检查发现 pending Review 错误包含旧失败计划的验收项，正在修复并保留原始失败记录。
 
 | 对象 | 固定值 |
 | --- | --- |
@@ -9,7 +11,7 @@
 | 规划操作 | `planning-v3:763656a7-cc4d-4bdf-bb45-47c02eba82d8` |
 | 项目 revision | `5` |
 | planDigest | `49ef698c3c94c3da072200279c63ac75e25947de6bb6e49ebb482746d95c958a` |
-| 执行 bundle SHA-256 | `093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174` |
+| 计划生成 bundle SHA-256 | `093197292ecf1e873e9a25c7c18de18531fbd14c652540a42911216655bd6174` |
 | 重建基线 commit | `77aa9a174da47c111f190d8cc52dfb91c8b00635` |
 | 工作区 | `output/acceptance/formal-170-20261109/canary-workspace` |
 
@@ -34,7 +36,7 @@
 
 真实规划的需求、场景、绑定、计划审核均为 approved；两项成员分配为 selected，两项 TaskPreflight 为 accepted；planningReadiness 与 executionPreparation 均为 ready。原九项项目能力声明逐字核验通过，未新增或扩大能力事实。
 
-本机完整证据：`output/acceptance/formal-170-20261109/canary-recovery/plan-review-config-barrel.json`，原始账本：`canary-recovery/planning-config-barrel.json`。只读捕获再次核验了当前候选、revision、摘要、两项任务、审核、分配及预检，确认没有人工审批、派发、TaskRun 或交付记录。
+本机计划证据：`output/acceptance/formal-170-20261109/canary-recovery/plan-review-config-barrel.json`，原始规划账本：`canary-recovery/planning-config-barrel.json`。审批与执行账本：`canary-recovery/delivery-authorized-v50.json`。两个不同成员各完成一次 TaskRun 和一次 `npm run test`，Integration 为 ready、CAS matched，Convergence 为 converged 且 findingIds 为空；工作区干净，仅改动获批的两个文件。
 
 ## 本次批准的含义
 

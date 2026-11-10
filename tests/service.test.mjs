@@ -1376,6 +1376,26 @@ test('Project Review enforces independent human waiver details and persists the 
   assert.equal(store.projects.get(project.id).deliveryStage, 'delivery_ready')
 })
 
+test('current-plan review excludes old bundles but keeps append bundles and rejects current failures', async () => {
+  const store = memoryStore()
+  const service = new OrchestratorService({}, store)
+  const project = await service.createProject({ name: 'Scoped review', cwd: '/tmp', prd: 'Review current requirements', technicalDesign: '' })
+  const planId = 'scoped-plan'
+  await store.projects.put(project.id, { ...project, currentPlanSnapshotId: planId, status: 'completed', deliveryStage: 'review' })
+  await store.planSnapshots.put(planId, { id: planId, projectId: project.id, requirementBundleIds: ['retained', 'current'] })
+  const criterion = (id, bundleId, status) => ({ id, projectId: project.id, bundleId, key: id, status, evidenceIds: status === 'verified' ? ['proof'] : [], createdAt: now, updatedAt: now })
+  await store.acceptanceCriteria.put('old', criterion('old', 'superseded', 'open'))
+  await store.acceptanceCriteria.put('retained', criterion('retained', 'retained', 'verified'))
+  await store.acceptanceCriteria.put('current', criterion('current', 'current', 'open'))
+  const review = { id: 'scoped-review', projectId: project.id, revision: project.revision, planSnapshotId: planId, status: 'pending', reviewerType: 'human', waivers: [], evidenceIds: [], acceptanceResults: [], round: 1, summary: 'pending', createdAt: now }
+  await store.projectReviews.put(review.id, review)
+  await assert.rejects(() => service.resolveProjectReview(project.id, { decision: 'approve', actor: 'owner', note: 'Review' }), error => error.code === 'acceptance-incomplete')
+  await store.acceptanceCriteria.put('current', criterion('current', 'current', 'verified'))
+  const resolved = await service.resolveProjectReview(project.id, { decision: 'approve', actor: 'owner', note: 'Review' })
+  assert.deepEqual(resolved.acceptanceResults.map(item => item.acceptanceId).sort(), ['current', 'retained'])
+  assert.equal(store.acceptanceCriteria.get('old').status, 'open')
+})
+
 test('Project Review rejection closes the current round and creates a revision Decision in Inbox', async () => {
   const store = memoryStore()
   const service = new OrchestratorService(agentContext(), store)
@@ -1755,6 +1775,22 @@ test('Repository command discovery honors declared runners and grounds type and 
     assert.equal(commands.some(command => /missing|escape|size\.test|pnpm|<name>/u.test(command)), false)
     assert.equal(commands.every(command => !command.includes('--outfile')), true, 'Size probes must not invent a writable output file')
     assert.deepEqual((await capture()).snapshot.verifiedCommands, commands)
+    const targetPath = 'tools/bench/acceptance.ts'
+    const command = `nub --expose-gc --conditions=@fixture/source ${targetPath}`
+    const declared = { ...project, prd: `${project.prd}\nplanned-verification-entry: ${JSON.stringify({ targetPath, command })}` }
+    const declaredSnapshot = (await service.captureRepositorySnapshotV3(declared, 'planned-command-observation')).snapshot
+    assert.equal(declaredSnapshot.verifiedCommands.includes(command), false)
+    assert.equal(declaredSnapshot.plannedVerificationEntries[0].targetState, 'absent')
+    assert.notEqual(declaredSnapshot.repositoryDigest, snapshot.repositoryDigest)
+    assert.equal((await service.captureRepositorySnapshotV3(declared, 'another-observation')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest)
+    const sourceCore = { projectId: project.id, operationId: 'revise-source', prd: declared.prd, technicalDesign: '' }
+    const frozenSource = { id: 'frozen-revise-source', ...sourceCore, sourceInputDigest: digestObject(sourceCore) }
+    await service.store.planningSourceInputs.put(frozenSource.id, frozenSource)
+    await service.store.planningOperations.put('revise-source', { id: 'revise-source', projectId: project.id, sourceInputId: frozenSource.id, sourceInputDigest: frozenSource.sourceInputDigest })
+    assert.equal((await service.captureRepositorySnapshotV3(project, 'revise-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'An unpublished revision must use its frozen batch rather than the old Project PRD')
+    assert.equal((await service.captureRepositorySnapshotV3(project, 'review-freshness', 'revise-source')).snapshot.repositoryDigest, declaredSnapshot.repositoryDigest, 'Review freshness must reuse the same frozen source')
+    await service.store.planningSourceInputs.put(frozenSource.id, { ...frozenSource, prd: 'tampered' })
+    await assert.rejects(() => service.captureRepositorySnapshotV3(project, 'review-freshness', 'revise-source'), error => error.code === 'planning-operation-source-stale')
     assert.equal((await execFileAsync('git', ['status', '--porcelain'], { cwd: repository })).stdout, '', 'Discovery must not execute commands or modify the checkout')
     const bin = join(root, 'bin')
     await mkdir(bin)

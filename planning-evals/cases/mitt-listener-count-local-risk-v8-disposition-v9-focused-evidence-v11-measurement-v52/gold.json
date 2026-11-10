@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "id": "mitt-listener-count-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/mitt",
+    "identity": "developit/mitt",
+    "baseCommit": "6b41670516ed8e8b738612f60491995470aa63b3"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "src/index.ts",
+        "test/index_test.ts",
+        "test/test-types-compilation.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "releaseInput": {
+    "repositoryDigest": "96935e9c88c0ddab42e0a2ac3e7585bb57ca4db928cd745db0f72df7059cadd4",
+    "sourceDigest": "5545ea303c918167499f9e38c38ec507ce9ac560e7dc91ebfdf7ba14588af85a",
+    "teamCatalogDigest": "f6deee899a297142c4589a0228b42323885064802589d5638528f2d2f7db13d9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_069ee5ccafdbde11016af2763cf34487d2bfd46eef0ea5db57:independent-gold-review:788d569a-153c-41c5-b12c-15f3854251c4",
+    "reviewedAt": "2026-11-10T01:41:35.768Z",
+    "rationale": "The supplied Gold is a coherent independent planning expectation for the frozen inputs. REQ-001 and AC-001 through AC-003 consistently require exact-key counts from the current handler map, including duplicates, external map/array mutations, wildcard isolation, and unchanged existing behavior and type constraints. The exact writable binding scope covers the maintained implementation/interface and both regression files without requiring gratuitous edits. Repository configuration and the fixed upstream build evidence support treating index.d.ts and dist as generated artifacts, with rebuilding required before root-entry verification. TASK-IMPLEMENT and the dependent independent TASK-VERIFY match the PRD; their respective allowed agents have the applicable supplied project-scoped active trusted claims, delivery roles, membership eligibility, and capacity. Pending legacy claims and Persona data are not needed to establish eligibility. The selected planning reviewer is supported by the frozen selection policy. No material unresolved DEC-001 or B/C scenario input is present in this case, so the empty decision input and ready planning expectation are consistent; a material unresolved decision would instead block at decisions. Historical project reuse does not itself invalidate the preserved scoped claims or establish candidate contamination. Gold and preview release fingerprints agree, and the supplied provenance explains the distinct PRD normalization, manifest/evaluation source, and source/bundle fingerprint domains. The original preparation-time runnable=false and remaining checklist do not represent a contradictory planning-readiness result. This approval concerns the expectation only, not task dispatch, human attestation, successful verification, or release authorization. I reviewed the supplied evidence without tools, code execution, candidate outputs, or independent digest recomputation.",
+    "goldDigest": "dad4f9676db1afbeb7e4ff425ed87e73de96245d8638f35c15195b188ffd536e"
+  }
+}

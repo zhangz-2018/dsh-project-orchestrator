@@ -81,6 +81,31 @@ test('BindingStage supplies verified source content while rejecting changed, cro
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test('BindingStage freezes complete existing sampling code and its harness without creating a proposed file', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'po-binding-measurement-'))
+  try {
+    await run('git', ['init', '--initial-branch=main', root])
+    await mkdir(join(root, 'bench'))
+    const files = { 'owner.ts': 'export const convert = (value: string) => value', 'bench/memory.ts': 'import { sample } from "./harness.js"; sample();', 'bench/harness.ts': 'export function sample() { for (let i = 0; i < 10; i++) globalThis.gc?.(); }' }
+    const inventory = []
+    for (const [path, content] of Object.entries(files)) {
+      await writeFile(join(root, path), content)
+      const { stdout } = await run('git', ['hash-object', '--no-filters', '--', path], { cwd: root })
+      inventory.push({ path, digest: digestObject({ path, blob: stdout.trim() }) })
+    }
+    const repository = { canonicalRoot: root, projectId: 'project', operationId: 'operation', workingFiles: inventory,
+      verifiedCommands: ['nub --expose-gc bench/memory.ts'], plannedVerificationEntries: [{ command: 'nub --expose-gc bench/new.ts', targetPath: 'bench/new.ts', targetState: 'absent', templateCommand: 'nub --expose-gc bench/memory.ts', declarationDigest: 'a'.repeat(64) }] }
+    const manifest = { projectId: 'project', operationId: 'operation', references: inventory.map((file, index) => ({ ref: `ref-source-${index}`, kind: 'repository_evidence', artifactId: file.path, artifactDigest: file.digest })) }
+    const evidence = await new BindingStage(store()).loadFrozenEvidence(repository, manifest, 'Modify owner.ts and create bench/new.ts to measure the change.')
+    for (const path of ['bench/memory.ts', 'bench/harness.ts']) {
+      assert.equal(evidence.find(item => item.path === path).content, files[path])
+      assert.equal(evidence.find(item => item.path === path).truncated, false)
+    }
+    assert.equal(evidence.some(item => item.path === 'bench/new.ts'), false)
+    assert.ok(evidence.reduce((size, item) => size + Buffer.byteLength(item.content), 0) <= 98_304)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test('BindingStage bounds source excerpts and labels incomplete evidence explicitly', async () => {
   const root = await mkdtemp(join(tmpdir(), 'po-binding-budget-'))
   try {

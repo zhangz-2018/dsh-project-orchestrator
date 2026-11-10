@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "id": "pretry-scheduled-hook-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/p-retry",
+    "identity": "sindresorhus/p-retry",
+    "baseCommit": "1472907affe8d6107aba5884abc36d6361b3042e"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "index.js",
+        "index.d.ts",
+        "test.js",
+        "index.test-d.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {
+    "TASK-IMPLEMENT": {
+      "taskKey": "TASK-IMPLEMENT",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "da6f43df-b9a4-499b-ae1a-d39ae3f51711"
+      ]
+    },
+    "TASK-VERIFY": {
+      "taskKey": "TASK-VERIFY",
+      "hasEligibleMember": true,
+      "allowedAgentIds": [
+        "2ef2743b-5017-4ab1-9853-329cc8c1ca8e"
+      ]
+    }
+  },
+  "expectedReadiness": "ready",
+  "expectedBlockingReasons": [],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions",
+    "bindings",
+    "tasks",
+    "assignments",
+    "preflight"
+  ],
+  "pairedCaseId": "pretry-scheduled-hook-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "a9f7ef6fd0c0fd73750ac777a4cce69523a4322e1189c272a4ca223c7531e9ba",
+    "sourceDigest": "781abea9cc2feb339fb3c115ed41f0e08389ad5ad43c0286b517bffa01fafb0a",
+    "teamCatalogDigest": "3acb3dd8fe42ce4849ee8815908a5b5493d6a674c61320d8276011c9143c39a9",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_067f541e312e8040016af275ce0ae487d0940ce6478c8762ab:independent-gold-review:83cb89b3-7cb5-4341-b54b-3b38b2f059b2",
+    "reviewedAt": "2026-11-10T01:39:44.060Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this planning-only C scenario. REQ-001, AC-001 through AC-003, DEC-001 and both task keys remain stable. C explicitly fixes OPT-1 as hypothetical input, requires only that selected branch, and does not assert a human Decision; the empty human-decision fingerprint is therefore consistent. An unresolved material DEC-001 in paired B must still block at decisions. The runtime implementation, maintained public declaration, regression and type-test owners support the exact four-file writable scope without requiring gratuitous edits or configuration changes. The supplied configuration and tool evidence distinguish AVA runtime verification from tsd compile-time verification. Separate implementer and verifier assignments are supported by their delivery roles, availability and supplied original-project-scoped active trusted claims, including the required state, data and consumer capabilities. The configured selected reviewer is compatible with the frozen read-only planning-review policy. Repository identity and base commit agree, and the supplied provenance explains the distinct original/saved PRD, manifest/evaluation source and source/bundle fingerprint domains. Gold and preview release fingerprints, model identity, policy identity and budgets agree. Historical project reuse does not imply a candidate run on this frozen bundle or create new attestations. The truncated existing test excerpt limits inspection of unrelated existing tests but does not leave the bounded planning expectation unresolved. This approval relies on the supplied Service-bound digests and provenance; I did not recompute hashes, execute code, attest human decisions or evaluate any candidate.",
+    "goldDigest": "fef3f0856a8b7c32dc1a28010cbb039e82e629c653dab643a8fa7d6676d04092"
+  }
+}

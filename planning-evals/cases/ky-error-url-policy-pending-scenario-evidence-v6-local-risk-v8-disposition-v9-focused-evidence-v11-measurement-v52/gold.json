@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "ky-error-url-policy-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/ky",
+    "identity": "sindresorhus/ky",
+    "baseCommit": "3541888878c4d303a8bc2ad61815f4e048f55a5d"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "source/errors/HTTPError.ts",
+        "source/types/options.ts",
+        "source/core/Ky.ts",
+        "source/core/constants.ts",
+        "source/utils/options.ts",
+        "source/utils/merge.ts",
+        "source/index.ts",
+        "source/types/hooks.ts",
+        "source/types/ky.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "ky-error-url-policy-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "5ea88bc258dc4693f3b831532f0e6e98b4476bc05ce6fe27e6275fd29ed013e7",
+    "sourceDigest": "3333ecc8d39d7a9825e827b55a22ee556a81260c040917c1008f4177625b82bd",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e31dcdf536f4bfb016af2760492d087d0a07692859426160b:independent-gold-review:87f9a9a8-4b11-4275-9ea2-ba14ddf9b76a",
+    "reviewedAt": "2026-11-10T01:40:38.881Z",
+    "rationale": "The supplied Gold is an appropriate independent expectation for this pending-decision planning case. The original PRD, structured specification, stable REQ-001/AC-001 through AC-003/DEC-001 keys, repository identity and base commit agree. DEC-001 materially controls omitted-option behavior and remains intentionally unresolved without human confirmation; therefore B must stop at decisions with requirement-decision-pending for DEC-001, after repository and requirements evidence, without generating assignable tasks or selecting either default. Empty task and assignment expectations are consistent with that stop. The nine source owners cover message construction, public and internal option contracts, normalization and snapshots, option filtering, instance forwarding and merging, and hook/declaration consumers. Correct generic forwarding and declaration consumers require inspection, not mandatory edits. The supplied build configuration supports treating distribution declarations as generated rather than separately maintained owners, and tsconfig.test.json includes the proposed test-d file for compile-time assertions separately from AVA/tsx runtime tests. The empty team and capability claims do not invalidate this expectation because the decision gate precedes Scenario Coverage and assignment prerequisites. Gold and preview release fingerprints agree; supplied provenance explains the distinct manifest/evaluation source digest domains, PRD persistence trimming, and executing-bundle prompt fingerprint. Model identity, budgets, sampling fingerprint and metric-policy identity/version/digest are consistently frozen in both releaseInput records. Original-specification preparation fields retaining null releaseInput and remaining preparation steps do not supersede the supplied frozen releaseInput. No candidate evidence or human decision was inferred, and no paired hypothetical input was treated as a human resolution. This approval concerns Gold coherence, not execution readiness or task authorization. I reviewed only the supplied data and did not execute code or independently recompute digests.",
+    "goldDigest": "15e2f26afd1cacabed5b8cf30caeee85d657d6aafc1b41f9ff3a9081657a1b87"
+  }
+}

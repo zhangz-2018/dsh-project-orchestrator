@@ -2272,6 +2272,20 @@ export const VerificationToolEvidenceV3Schema = z.object({
   unavailablePaths: z.array(z.string().max(4_096)).max(1_000),
 }).strict()
 
+/** 来源明确声明的验证入口；只复用仓库已有 Nub 调用模板，不代表文件已经创建或命令运行成功。 */
+export const PlannedVerificationEntryV3Schema = z.object({
+  /** 完整、确定性的调用；不允许 shell 拼接或新增 runner 参数。 */
+  command: z.string().min(1).max(10_000),
+  /** 来源要求创建的仓库相对文件；实际写权限仍由 Binding、Task 和批准共同决定。 */
+  targetPath: z.string().min(1).max(4_096),
+  /** 该操作捕获时目标是否存在；absent 必须有创建任务及依赖顺序。 */
+  targetState: z.enum(['absent', 'present']),
+  /** 目标目录树中已有脚本的精确调用，证明 runner、参数及路径模板的来源。 */
+  templateCommand: z.string().min(1).max(10_000),
+  /** 显式来源声明的摘要；不是目标文件的源码或运行证据。 */
+  declarationDigest: Sha256Schema,
+}).strict()
+
 export const RepositoryContextSnapshotV3RecordSchema = z.object({
   id: z.string().min(1),
   projectId: z.string().min(1),
@@ -2290,6 +2304,8 @@ export const RepositoryContextSnapshotV3RecordSchema = z.object({
   workingFiles: z.array(z.object({ path: z.string().min(1).max(4_096), digest: RepositoryEvidenceDigestSchema }).strict()).max(22_000).optional(),
   dirtyFiles: z.array(z.string().min(1).max(4_096)).max(2_000).optional(),
   verifiedCommands: z.array(z.string().min(1).max(10_000)).max(100),
+  /** 与现有命令分开冻结的来源声明入口；旧快照省略，所有字段参与仓库摘要。 */
+  plannedVerificationEntries: z.array(PlannedVerificationEntryV3Schema).max(4).optional(),
   verificationTools: z.array(VerificationToolEvidenceV3Schema).max(4).optional(),
   status: z.enum(['ready', 'partial', 'failed', 'stale']),
   diagnostics: z.array(PlanningV3DiagnosticSchema).max(200).default([]),
@@ -2713,6 +2729,8 @@ export const ScenarioCoverageReviewRecordSchema = z.object({
   repositoryEvidence: z.object({
     repositoryDigest: Sha256Schema,
     verificationCommands: z.array(z.string().min(1)).max(100).optional(),
+    /** 后续允许引用但尚需创建的入口，不能冒充固定 commit 中的文件或实测数据。 */
+    plannedVerificationEntries: z.array(PlannedVerificationEntryV3Schema).max(4).optional(),
     verificationTools: z.array(VerificationToolEvidenceV3Schema).max(4).optional(),
     contents: z.array(z.object({
       ref: z.string().min(1),

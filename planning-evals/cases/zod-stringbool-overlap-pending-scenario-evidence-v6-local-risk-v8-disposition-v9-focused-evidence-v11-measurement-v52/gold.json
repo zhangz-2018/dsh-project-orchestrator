@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "id": "zod-stringbool-overlap-pending-scenario-evidence-v6-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "repository": {
+    "fixture": "output/acceptance/repositories/zod",
+    "identity": "colinhacks/zod",
+    "baseCommit": "680d19f7d1e042e55934209caeb79bc843b94f44"
+  },
+  "requiredRequirementKeys": [
+    "REQ-001"
+  ],
+  "requiredAcceptanceKeys": [
+    "AC-001",
+    "AC-002",
+    "AC-003"
+  ],
+  "allowedBindingOwnerPathsByRequirement": {
+    "REQ-001": [
+      [
+        "packages/zod/src/v4/core/api.ts",
+        "packages/zod/src/v4/core/util.ts",
+        "packages/zod/src/v4/core/index.ts",
+        "packages/zod/src/v4/classic/schemas.ts",
+        "packages/zod/src/v4/classic/external.ts",
+        "packages/zod/src/v4/classic/index.ts",
+        "packages/zod/src/v4/mini/schemas.ts",
+        "packages/zod/src/v4/mini/external.ts",
+        "packages/zod/src/v4/mini/index.ts"
+      ]
+    ]
+  },
+  "assignmentExpectations": {},
+  "expectedReadiness": "blocked",
+  "expectedBlockingReasons": [
+    {
+      "code": "requirement-decision-pending",
+      "subjectKeys": [
+        "DEC-001"
+      ]
+    }
+  ],
+  "requiredEvidenceStages": [
+    "repository",
+    "requirements",
+    "decisions"
+  ],
+  "pairedCaseId": "zod-stringbool-overlap-resolved-local-risk-v8-disposition-v9-focused-evidence-v11-measurement-v52",
+  "releaseInput": {
+    "repositoryDigest": "f686e3f3b9e174ab02264246572711e166eda384e8ca02e7aa922c0ba60f176c",
+    "sourceDigest": "d2967f8690eafe8d0f031ef20a82406a86cd7b139cf538c9aee12a18abc50b4d",
+    "teamCatalogDigest": "2122a386a6e37388790e3eb568a83b654ae617de47ee997c4197c91dd3f9352c",
+    "decisionInputDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "promptVersionsDigest": "f86e61e55ab5b31dc3fc350d3cfcdbd9085460f61234405a6df65be6e33cc350",
+    "metricPolicyId": "metric-policy:68060c425125600ef15c50857de01e80",
+    "metricPolicyVersion": "v3.3-default-1",
+    "metricPolicyDigest": "453d1465b8eeac4422f72cd917e63c3d19246903984363950a41a4d16ce6eec9",
+    "modelProvider": "pockapi",
+    "modelId": "gpt-6.1-sol",
+    "modelVersion": "gpt-6.1-sol",
+    "samplingConfigDigest": "8fbe31c8813d187aab383be1fd0e74a107db6f83dbf43b26988ddbf0eab0c11c",
+    "inputTokenBudget": 983616,
+    "outputTokenBudget": 16384,
+    "toolCallBudget": 0
+  },
+  "review": {
+    "reviewer": "independent-model:pockapi/gpt-6.1-sol:resp_0e3aa8bfc5e9d957016af2762ce81087d1b8495c12670d81f9:independent-gold-review:34d663e6-3a7a-48b6-8b50-549e560e3487",
+    "reviewedAt": "2026-11-10T01:41:17.465Z",
+    "rationale": "The supplied Gold is a coherent independent expectation for this pending-decision planning case. The original PRD explicitly leaves material DEC-001 unresolved; the recommended rejection behavior is conditional acceptance, not authorization to select OPT-1. Accordingly, B must stop at decisions with requirement-decision-pending for DEC-001, after repository and requirements evidence, without assignable tasks or assignments. REQ-001 and AC-001 through AC-003, repository identity/base commit, paired-case identity, owner scope, and empty task expectations agree between the specification and Gold. The supplied source shows shared core _stringbool normalization and existing truthy-first parsing, with classic and mini forwarding to that implementation. Forwarding/export owners require inspection, not mandatory edits; the build configuration establishes generated declarations rather than separately maintained declaration owners. The empty team and capability claims do not invalidate this earlier deterministic decision block because subsequent reviewer and assignment prerequisites are not reached. Gold and preview release fingerprints agree; the supplied provenance explains the distinct manifest/evaluation source digest domains, persisted PRD trimming, team projection, and executing-bundle prompt fingerprint. Model, sampling, budgets, and metric-policy identifiers are consistently frozen in the release inputs. No candidate or historical candidate output informed this review, and no human decision or attestation is inferred; a fixed hypothetical C would not resolve DEC-001. This is a review of supplied evidence only: I neither executed code nor independently recomputed digests. Approval concerns the benchmark expectation, not implementation correctness, task dispatch, or release authorization.",
+    "goldDigest": "3c48ae86b6589723dbedf3b5878d6b018e05a1bd8006f74f88752e5692cd0809"
+  }
+}

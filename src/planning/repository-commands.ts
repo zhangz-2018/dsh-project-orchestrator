@@ -1,4 +1,44 @@
-import { WorkflowError } from '../workflow.js'
+import { z } from 'zod'
+import type { RepositoryContextSnapshotV3Record } from '../types.js'
+import { digestObject, WorkflowError } from '../workflow.js'
+
+const plannedEntryDeclaration = z.object({ targetPath: z.string().min(1), command: z.string().min(1) }).strict()
+
+/** 同一规则交给场景、计划、审核与预检，明确待创建入口与现有源码/执行事实的边界。 */
+export const PLANNED_VERIFICATION_ENTRY_RULE_V3 = 'Planned verification entries are separately marked source declarations, not existing repository files or successful executions. Their exact commands may receive Task command refs only because an existing invocation in the target directory tree confirms the runner and every flag. When targetState is absent, the plan must assign bounded creation of targetPath to an implementation Task and order every other user after that producer. The producer must put targetPath in expectedChangeSurfaces and allowedPathScopes, describe the sampling implementation, and create it before running it. For before/after measurements, creation of this authorized measurement-only entry may precede baseline capture; baseline capture must finish before the first product-source modification, preserve the frozen baseline identity, use the same measurement code on both revisions, and retain comparable raw samples, units and environment. Do not claim unseen target source was read, require its results during planning, omit any original axis or sampling rule, infer arbitrary commands, or treat a planned entry as permission to write outside the frozen source and Binding scope. '
+
+/** 解析项目来源中的显式 JSON 声明；仅支持目标目录树内已确认的 Nub GC 模板，拒绝任意 shell、路径遍历、重复及超额入口。 */
+export function plannedVerificationEntriesV3(paths: readonly string[], verifiedCommands: readonly string[], source: string): NonNullable<RepositoryContextSnapshotV3Record['plannedVerificationEntries']> {
+  const result: NonNullable<RepositoryContextSnapshotV3Record['plannedVerificationEntries']> = []
+  for (const line of source.split('\n').filter(line => line.startsWith('planned-verification-entry:'))) {
+    let declaration: z.infer<typeof plannedEntryDeclaration>
+    try { declaration = plannedEntryDeclaration.parse(JSON.parse(line.slice('planned-verification-entry:'.length).trim())) }
+    catch { throw new WorkflowError('planned-verification-entry-invalid', 'A planned verification entry requires an exact JSON targetPath and command declaration.', 422) }
+    const { targetPath, command } = declaration
+    const pathParts = targetPath.split('/')
+    if (!/^[A-Za-z0-9_./-]+\.[cm]?ts$/u.test(targetPath) || pathParts.some(part => part === '' || part === '.' || part === '..') || pathParts.length < 2) {
+      throw new WorkflowError('planned-verification-entry-invalid', 'A planned verification entry requires a bounded relative TypeScript path.', 422)
+    }
+    const match = /^(nub --expose-gc(?: --conditions=[A-Za-z0-9@/_.-]+)?) ([A-Za-z0-9_./-]+\.[cm]?ts)$/u.exec(command)
+    const directory = targetPath.slice(0, targetPath.lastIndexOf('/') + 1)
+    const templateCommand = match === null || match[2] !== targetPath ? undefined : verifiedCommands.find(candidate => {
+      if (!candidate.startsWith(`${match[1]} `)) return false
+      const templatePath = candidate.slice(match[1]!.length + 1)
+      return paths.includes(templatePath) && templatePath.startsWith(directory)
+    })
+    if (templateCommand === undefined) throw new WorkflowError('planned-verification-template-unconfirmed', 'The declared entry has no existing runner and exact flag template in its directory tree.', 422)
+    if (result.some(item => item.targetPath === targetPath) || result.length >= 4) throw new WorkflowError('planned-verification-entry-invalid', 'Planned verification targets must be unique and limited to four.', 422)
+    result.push({ command, targetPath, targetState: paths.includes(targetPath) ? 'present' : 'absent', templateCommand, declarationDigest: digestObject(declaration) })
+  }
+  return result.sort((a, b) => a.targetPath.localeCompare(b.targetPath))
+}
+
+/** 合并已存在入口与有独立来源标记的待创建入口；超过原 100 命令预算拒绝，不静默丢失声明。 */
+export function repositoryVerificationCommandCatalogV3(repository: Pick<RepositoryContextSnapshotV3Record, 'verifiedCommands' | 'plannedVerificationEntries'>): string[] {
+  const commands = [...new Set([...repository.verifiedCommands, ...(repository.plannedVerificationEntries ?? []).map(entry => entry.command)])]
+  if (commands.length > 100) throw new WorkflowError('repository-command-catalog-too-large', 'The verification command catalog exceeds its 100-entry budget.', 413)
+  return commands
+}
 
 export interface RepositoryCommandManifest {
   packageManager?: unknown

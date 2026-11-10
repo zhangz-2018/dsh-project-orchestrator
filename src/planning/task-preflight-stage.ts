@@ -15,6 +15,8 @@ import type {
 } from '../types.js'
 import { boundedText, evaluateTaskPreflightV3, WorkflowError } from '../workflow.js'
 import type { BindingEvidenceContent } from './binding-stage.js'
+import { verificationEntryDependencyPathsV3, verificationEntryEvidencePathsV3 } from './repository-evidence.js'
+import { PLANNED_VERIFICATION_ENTRY_RULE_V3 } from './repository-commands.js'
 
 type TaskPreflightStore = Pick<OrchestratorStore, 'agents' | 'resourceAccessGrants' | 'taskPreflightsV3'>
 /** 只携带上游冻结的 Git 身份；不投影本机路径，不把摘要等同于实际 checkout 检查。 */
@@ -66,6 +68,8 @@ export function buildTaskPreflightPromptV3(
     scenarios?: AcceptanceScenarioRecord[]
     /** 同一仓库快照捕获的本地验证工具源码，仅用于核对发现规则，不代表测试已执行。 */
     verificationTools?: RepositoryContextSnapshotV3Record['verificationTools']
+    /** 与同次 repositoryDigest 绑定的入口声明；只说明创建责任，不能充当已有源码。 */
+    plannedVerificationEntries?: RepositoryContextSnapshotV3Record['plannedVerificationEntries']
   },
 ): string {
   if (input.repository !== undefined && (input.repository.projectId !== manifest.projectId || input.repository.operationId !== manifest.operationId || input.repository.repositoryDigest !== input.repositoryDigest)) {
@@ -134,9 +138,16 @@ export function buildTaskPreflightPromptV3(
       if (constraint === undefined || constraint.constraintDigest !== reference.artifactDigest) throw new WorkflowError('task-preflight-evidence-unresolved', `TaskPreflight policy ref "${reference.ref}" does not resolve to a current constraint.`, 409)
       return { ref: reference.ref, kind: reference.kind, constraintId: constraint.id, level: constraint.level, statement: constraint.statement, applicability: constraint.applicability, constraintDigest: constraint.constraintDigest }
     }
-    return { ref: reference.ref, kind: reference.kind, artifactId: reference.artifactId, artifactDigest: reference.artifactDigest }
+    const plannedEntry = reference.kind === 'verification_command' ? input.plannedVerificationEntries?.find(entry => entry.command === reference.artifactId) : undefined
+    return { ref: reference.ref, kind: reference.kind, artifactId: reference.artifactId, artifactDigest: reference.artifactDigest,
+      ...(plannedEntry === undefined ? {} : { plannedEntry, entryContract: PLANNED_VERIFICATION_ENTRY_RULE_V3 }) }
   })
   const relevantPaths = new Set(evidenceProjections.flatMap((projection) => 'repositoryPaths' in projection ? projection.repositoryPaths : []))
+  const commandNames = manifest.references.filter(reference => referenced.has(reference.ref) && reference.kind === 'verification_command').map(reference => reference.artifactId)
+  const plannedEntries = input.plannedVerificationEntries?.filter(entry => commandNames.includes(entry.command))
+  const entryPaths = verificationEntryEvidencePathsV3({ files: (input.sourceEvidence ?? []).map(source => ({ path: source.path, digest: source.digest })),
+    verifiedCommands: [...commandNames, ...(plannedEntries ?? []).map(entry => entry.templateCommand)], plannedVerificationEntries: plannedEntries }, commandNames.join('\n'))
+  for (const path of verificationEntryDependencyPathsV3(entryPaths, input.sourceEvidence ?? [])) relevantPaths.add(path)
   const sourceExcerpts = input.sourceEvidence?.filter((source) => relevantPaths.has(source.path))
   const inspection = sourceExcerpts === undefined
     ? 'then use read-only repository tools to inspect the projected repository paths needed to confirm the starting points and current owners.'
@@ -214,6 +225,8 @@ export class TaskPreflightStage {
     scenarios?: AcceptanceScenarioRecord[]
     /** 上游仓库快照中的工具源码，不能由执行者补猜或当作执行成功证据。 */
     verificationTools?: RepositoryContextSnapshotV3Record['verificationTools']
+    /** 同次快照的计划入口声明；不由预检模型新增命令或创建事实。 */
+    plannedVerificationEntries?: RepositoryContextSnapshotV3Record['plannedVerificationEntries']
     operationId: string
     now: string
     runReadOnly: (prompt: string, agent: AgentRecord) => Promise<string>
@@ -240,6 +253,7 @@ export class TaskPreflightStage {
         planAssignments: input.assignments,
         ...(input.scenarios === undefined ? {} : { scenarios: input.scenarios }),
         ...(input.verificationTools === undefined ? {} : { verificationTools: input.verificationTools }),
+        ...(input.plannedVerificationEntries === undefined ? {} : { plannedVerificationEntries: input.plannedVerificationEntries }),
         ...(input.sourceEvidence === undefined ? {} : { sourceEvidence: input.sourceEvidence }),
       })
       let report: z.infer<typeof TaskPreflightReportV3Schema> | undefined

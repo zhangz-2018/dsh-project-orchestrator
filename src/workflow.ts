@@ -25,6 +25,7 @@ import {
   type GeneratedPlanningReviewV3,
   type GeneratedPlanV3,
   type PlanningPromptReferenceManifestRecord,
+  type RepositoryContextSnapshotV3Record,
   type CapabilityRequirementDraftRecord,
   type AssignmentDraftRecord,
   type AssignmentEvaluationRecord,
@@ -809,6 +810,8 @@ export interface GeneratedPlanV3ValidationInput {
   requiredPolicyStatementsByRef?: Record<string, string>
   requiredPolicySubjectsByRef?: Record<string, { requirementKeys: string[]; scenarioKeys: string[] }>
   promptReferenceManifest: PlanningPromptReferenceManifestRecord
+  /** 同一仓库摘要冻结的来源入口；缺失文件必须由本计划的实现任务创建，使用者须满足依赖顺序。 */
+  plannedVerificationEntries?: RepositoryContextSnapshotV3Record['plannedVerificationEntries']
 }
 
 function planTaskContractText(task: GeneratedPlanV3['tasks'][number]): string {
@@ -1090,6 +1093,20 @@ export function parseGeneratedPlanV3(raw: string, input: GeneratedPlanV3Validati
   for (const task of plan.tasks.filter((item) => item.relationship === 'verification' || item.relationship === 'review' || item.relationship === 'release')) {
     if (!plan.tasks.some((candidate) => candidate.relationship === 'implementation' && dependsOn(task.key, candidate.key))) {
       throw new WorkflowError('task-relationship-dependency-invalid', `Task "${task.key}" must have a dependency path to an implementation task.`, 422)
+    }
+  }
+  for (const entry of input.plannedVerificationEntries ?? []) {
+    if (entry.targetState !== 'absent') continue
+    const owners = plan.tasks.filter(task => task.relationship === 'implementation'
+      && task.contextPack.expectedChangeSurfaces.includes(entry.targetPath)
+      && task.changeContract.allowedPathScopes.some(scope => scopeIsWithin(entry.targetPath, scope))
+      && !task.changeContract.excludedPathScopes.some(scope => scopeIsWithin(entry.targetPath, scope)))
+    if (owners.length === 0) throw new WorkflowError('planned-verification-owner-missing', `Planned verification entry "${entry.targetPath}" requires an implementation owner inside its allowed scope.`, 422)
+    for (const task of plan.tasks) {
+      const refs = [...task.verificationCommandRefs, ...task.contextPack.verificationSteps.flatMap(step => step.commandEvidenceRef === undefined ? [] : [step.commandEvidenceRef])]
+      if (refs.some(ref => verificationCommandByRef.get(ref) === entry.command) && !owners.some(owner => owner.key === task.key || dependsOn(task.key, owner.key))) {
+        throw new WorkflowError('planned-verification-dependency-missing', `Task "${task.key}" uses a planned verification entry without depending on its creation owner.`, 422)
+      }
     }
   }
   return plan
